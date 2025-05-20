@@ -8,17 +8,51 @@ import subprocess
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                             QHBoxLayout, QLabel, QLineEdit, QPushButton, 
                             QTextEdit, QFileDialog, QMessageBox)
-from PyQt5.QtCore import QSettings, Qt
+from PyQt5.QtCore import QSettings, Qt, QCoreApplication
 from PyQt5.QtGui import QFont, QIcon
+
+# 设置Qt插件路径
+def setup_qt_paths():
+    # 获取应用程序路径
+    if getattr(sys, 'frozen', False):
+        # 如果是已打包的应用
+        application_path = os.path.dirname(sys.executable)
+        if sys.platform == 'darwin':
+            # macOS应用包
+            bundle_dir = os.path.normpath(os.path.join(os.path.dirname(sys.executable), os.pardir, os.pardir, 'Resources'))
+            plugin_path = os.path.join(bundle_dir, 'plugins')
+        else:
+            # Windows/Linux
+            plugin_path = os.path.join(application_path, 'plugins')
+    else:
+        # 如果是开发环境
+        application_path = os.path.dirname(os.path.abspath(__file__))
+        plugin_path = os.path.join(application_path, 'plugins')
+    
+    # 添加插件路径
+    if os.path.exists(plugin_path):
+        print(f"添加Qt插件路径: {plugin_path}")
+        QCoreApplication.addLibraryPath(plugin_path)
+    
+    # 打印Qt库路径便于调试
+    print("Qt库路径:")
+    for path in QCoreApplication.libraryPaths():
+        print(f"  - {path}")
+
+# 在导入QApplication之前设置路径
+setup_qt_paths()
 
 class ShareHtmlApp(QMainWindow):
     def __init__(self, file_path=None):
         super().__init__()
+        print("初始化ShareHtmlApp...")
         self.settings = QSettings("XiaoBu", "ShareHTML")
         self.initUI()
         if file_path and os.path.exists(file_path):
+            print(f"打开文件: {file_path}")
             self.file_path_input.setText(file_path)
             self.update_share_filename()
+        print("初始化完成，显示界面")
 
     def initUI(self):
         self.setWindowTitle("快捷分享HTML")
