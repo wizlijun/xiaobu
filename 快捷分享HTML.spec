@@ -5,7 +5,7 @@ a = Analysis(
     ['sharehtml.py'],
     pathex=[],
     binaries=[],
-    datas=[('plugins', 'plugins')],
+    datas=[],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -19,32 +19,26 @@ pyz = PYZ(a.pure)
 exe = EXE(
     pyz,
     a.scripts,
+    a.binaries,
+    a.datas,
     [],
-    exclude_binaries=True,
     name='快捷分享HTML',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
+    upx_exclude=[],
+    runtime_tmpdir=None,
     console=False,
     disable_windowed_traceback=False,
     argv_emulation=True,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['appicon.icns'],
-)
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.datas,
-    strip=False,
-    upx=True,
-    upx_exclude=[],
-    name='快捷分享HTML',
+    icon='appicon.icns',
 )
 app = BUNDLE(
-    coll,
+    exe,
     name='快捷分享HTML.app',
     icon='appicon.icns',
     bundle_identifier='net.xiaobu.sharehtml',
@@ -59,9 +53,5 @@ app = BUNDLE(
             }
         ],
         'NSHumanReadableCopyright': 'Copyright © 2023 小布',
-        'LSEnvironment': {
-            'QT_QPA_PLATFORM_PLUGIN_PATH': '@executable_path/../Resources/plugins/platforms',
-            'QT_PLUGIN_PATH': '@executable_path/../Resources/plugins',
-        },
     },
 )
