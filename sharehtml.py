@@ -3,16 +3,25 @@
 
 import sys
 import os
+
+# 在导入PyQt5之前设置环境变量
+import PyQt5
+os.environ['QT_PLUGIN_PATH'] = os.path.join(os.path.dirname(PyQt5.__file__), "Qt5", "plugins")
+os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = os.path.join(os.path.dirname(PyQt5.__file__), "Qt5", "plugins", "platforms")
+# 添加Mac上下文菜单支持
+os.environ['QT_MAC_WANTS_LAYER'] = '1'
+
 import shutil
 import subprocess
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                             QHBoxLayout, QLabel, QLineEdit, QPushButton, 
-                            QTextEdit, QFileDialog, QMessageBox)
+                            QTextEdit, QFileDialog, QMessageBox, QMenu, QAction)
 from PyQt5.QtCore import QSettings, Qt, QCoreApplication
-from PyQt5.QtGui import QFont, QIcon
+from PyQt5.QtGui import QFont, QIcon, QContextMenuEvent
 
 # 设置Qt插件路径
 def setup_qt_paths():
+    import PyQt5
     # 获取应用程序路径
     if getattr(sys, 'frozen', False):
         # 如果是已打包的应用
@@ -21,13 +30,21 @@ def setup_qt_paths():
             # macOS应用包
             bundle_dir = os.path.normpath(os.path.join(os.path.dirname(sys.executable), os.pardir, os.pardir, 'Resources'))
             plugin_path = os.path.join(bundle_dir, 'plugins')
+            # 设置Qt库路径环境变量
+            os.environ['QT_PLUGIN_PATH'] = plugin_path
         else:
             # Windows/Linux
             plugin_path = os.path.join(application_path, 'plugins')
+            os.environ['QT_PLUGIN_PATH'] = plugin_path
     else:
         # 如果是开发环境
         application_path = os.path.dirname(os.path.abspath(__file__))
         plugin_path = os.path.join(application_path, 'plugins')
+        
+        # 添加PyQt5自带的插件路径
+        pyqt_path = os.path.dirname(PyQt5.__file__)
+        pyqt_plugins_path = os.path.join(pyqt_path, "Qt5", "plugins")
+        os.environ['QT_PLUGIN_PATH'] = pyqt_plugins_path
     
     # 添加插件路径
     if os.path.exists(plugin_path):
@@ -38,6 +55,14 @@ def setup_qt_paths():
     print("Qt库路径:")
     for path in QCoreApplication.libraryPaths():
         print(f"  - {path}")
+    
+    # 确保能找到平台插件
+    if not os.path.exists(os.path.join(QCoreApplication.libraryPaths()[0], "platforms")):
+        print("警告: 在库路径中找不到platforms目录，尝试添加PyQt5的platforms路径")
+        pyqt_path = os.path.dirname(PyQt5.__file__)
+        platforms_path = os.path.join(pyqt_path, "Qt5", "plugins", "platforms")
+        if os.path.exists(platforms_path):
+            QCoreApplication.addLibraryPath(os.path.join(pyqt_path, "Qt5", "plugins"))
 
 # 在导入QApplication之前设置路径
 setup_qt_paths()
@@ -53,6 +78,10 @@ class ShareHtmlApp(QMainWindow):
             self.file_path_input.setText(file_path)
             self.update_share_filename()
         print("初始化完成，显示界面")
+        
+        # 设置应用程序接受右键上下文菜单
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.show_context_menu)
 
     def initUI(self):
         self.setWindowTitle("快捷分享HTML")
@@ -69,6 +98,8 @@ class ShareHtmlApp(QMainWindow):
         file_label = QLabel("待分享文件：")
         self.file_path_input = QLineEdit()
         self.file_path_input.textChanged.connect(self.update_share_filename)
+        # 启用文本输入框的上下文菜单
+        self.file_path_input.setContextMenuPolicy(Qt.DefaultContextMenu)
         select_file_btn = QPushButton("选择文件")
         select_file_btn.clicked.connect(self.select_file)
         file_layout.addWidget(file_label)
@@ -82,6 +113,8 @@ class ShareHtmlApp(QMainWindow):
         self.git_path_input = QLineEdit()
         self.git_path_input.setText(self.settings.value("git_path", os.path.expanduser("~/git/xiaobu/ai")))
         self.git_path_input.textChanged.connect(lambda: self.settings.setValue("git_path", self.git_path_input.text()))
+        # 启用文本输入框的上下文菜单
+        self.git_path_input.setContextMenuPolicy(Qt.DefaultContextMenu)
         select_git_btn = QPushButton("选择目录")
         select_git_btn.clicked.connect(self.select_git_path)
         git_layout.addWidget(git_label)
@@ -93,6 +126,8 @@ class ShareHtmlApp(QMainWindow):
         filename_layout = QHBoxLayout()
         filename_label = QLabel("分享后文件名：")
         self.share_filename_input = QLineEdit()
+        # 启用文本输入框的上下文菜单
+        self.share_filename_input.setContextMenuPolicy(Qt.DefaultContextMenu)
         filename_layout.addWidget(filename_label)
         filename_layout.addWidget(self.share_filename_input)
         main_layout.addLayout(filename_layout)
@@ -103,6 +138,8 @@ class ShareHtmlApp(QMainWindow):
         self.script_path_input = QLineEdit()
         self.script_path_input.setText(self.settings.value("script_path", os.path.expanduser("~/git/xiaobu/push.sh")))
         self.script_path_input.textChanged.connect(lambda: self.settings.setValue("script_path", self.script_path_input.text()))
+        # 启用文本输入框的上下文菜单
+        self.script_path_input.setContextMenuPolicy(Qt.DefaultContextMenu)
         select_script_btn = QPushButton("选择脚本")
         select_script_btn.clicked.connect(self.select_script_path)
         script_layout.addWidget(script_label)
@@ -116,6 +153,8 @@ class ShareHtmlApp(QMainWindow):
         self.website_input = QLineEdit()
         self.website_input.setText(self.settings.value("website", "https://www.xiaobu.net/ai/"))
         self.website_input.textChanged.connect(lambda: self.settings.setValue("website", self.website_input.text()))
+        # 启用文本输入框的上下文菜单
+        self.website_input.setContextMenuPolicy(Qt.DefaultContextMenu)
         website_layout.addWidget(website_label)
         website_layout.addWidget(self.website_input)
         main_layout.addLayout(website_layout)
@@ -134,11 +173,54 @@ class ShareHtmlApp(QMainWindow):
         log_label = QLabel("执行日志：")
         self.log_text = QTextEdit()
         self.log_text.setReadOnly(True)
+        # 启用文本区域的上下文菜单
+        self.log_text.setContextMenuPolicy(Qt.DefaultContextMenu)
         main_layout.addWidget(log_label)
         main_layout.addWidget(self.log_text)
         
         # 状态栏
         self.statusBar().showMessage("就绪")
+    
+    # 实现上下文菜单
+    def show_context_menu(self, pos):
+        context_menu = QMenu(self)
+        copy_action = QAction("复制", self)
+        paste_action = QAction("粘贴", self)
+        cut_action = QAction("剪切", self)
+        select_all_action = QAction("全选", self)
+        
+        # 获取当前焦点部件
+        focused_widget = QApplication.focusWidget()
+        
+        # 根据焦点部件类型启用/禁用相应菜单项
+        if isinstance(focused_widget, QLineEdit) or isinstance(focused_widget, QTextEdit):
+            has_selection = False
+            if isinstance(focused_widget, QLineEdit):
+                has_selection = focused_widget.hasSelectedText()
+                copy_action.triggered.connect(lambda: focused_widget.copy())
+                paste_action.triggered.connect(lambda: focused_widget.paste())
+                cut_action.triggered.connect(lambda: focused_widget.cut())
+                select_all_action.triggered.connect(lambda: focused_widget.selectAll())
+            elif isinstance(focused_widget, QTextEdit):
+                has_selection = focused_widget.textCursor().hasSelection()
+                copy_action.triggered.connect(lambda: focused_widget.copy())
+                paste_action.triggered.connect(lambda: focused_widget.paste())
+                cut_action.triggered.connect(lambda: focused_widget.cut())
+                select_all_action.triggered.connect(lambda: focused_widget.selectAll())
+            
+            # 根据是否有选中的文本启用/禁用复制和剪切操作
+            copy_action.setEnabled(has_selection)
+            cut_action.setEnabled(has_selection and not focused_widget.isReadOnly())
+            paste_action.setEnabled(not focused_widget.isReadOnly())
+            
+            context_menu.addAction(copy_action)
+            context_menu.addAction(paste_action)
+            context_menu.addAction(cut_action)
+            context_menu.addSeparator()
+            context_menu.addAction(select_all_action)
+            
+            # 显示上下文菜单
+            context_menu.exec_(self.mapToGlobal(pos))
 
     def select_file(self):
         file_path, _ = QFileDialog.getOpenFileName(
@@ -255,6 +337,7 @@ class ShareHtmlApp(QMainWindow):
 
 
 def main():
+    # 支持多实例运行 - 此应用允许同时运行多个实例
     app = QApplication(sys.argv)
     app.setStyle("Fusion")  # 使用Fusion风格，在macOS上看起来更原生
     

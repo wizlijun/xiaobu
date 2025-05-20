@@ -1,64 +1,55 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+"""
+This is a setup.py script for py2app
+
+Usage:
+    python setup.py py2app
+"""
 
 from setuptools import setup
 import os
 import sys
-from PyQt5 import QtCore
-import glob
 
-# 获取Qt库路径
-qt_path = os.path.dirname(os.path.dirname(QtCore.__file__))
-qt_plugins_path = os.path.join(qt_path, "Qt5", "plugins")
-qt_platforms_path = os.path.join(qt_plugins_path, "platforms")
-qt_lib_path = qt_path
-
-# 查找所有Qt库文件
-qt_libs = glob.glob(os.path.join(qt_path, "**", "*.so"), recursive=True)
-qt_libs += glob.glob(os.path.join(qt_path, "**", "*.dylib"), recursive=True)
+# 为环境变量设置QT插件路径
+import PyQt5
+os.environ['QT_PLUGIN_PATH'] = os.path.join(os.path.dirname(PyQt5.__file__), "Qt5", "plugins")
+os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = os.path.join(os.path.dirname(PyQt5.__file__), "Qt5", "plugins", "platforms")
+# 添加Mac上下文菜单支持
+os.environ['QT_MAC_WANTS_LAYER'] = '1'
 
 APP = ['sharehtml.py']
+DATA_FILES = ['icon.png']  # 使用icon.png替代logo.png作为数据文件
 OPTIONS = {
-    'argv_emulation': False,  # 设置为False以避免Carbon.framework依赖问题
+    'argv_emulation': False,  # 禁用argv_emulation，避免Carbon框架依赖
     'packages': ['PyQt5'],
-    'includes': ['sip'],
-    'excludes': ['tkinter', 'matplotlib'],
-    # 确保包含所有Qt平台插件
-    'qt_plugins': ['platforms', 'styles', 'imageformats', 'printsupport'],
-    'include_plugins': [qt_plugins_path],
-    # 使用绝对路径引用系统Python
-    'matplotlib_backends': [],
-    # 包含Python框架
-    'frameworks': ['/opt/homebrew/opt/python@3.13/Frameworks/Python.framework'],
-    # 确保包含所有Qt库
-    'dylib_excludes': ['libqcocoa.dylib'],  # 排除，因为我们会单独处理
+    'includes': ['sip', 'PyQt5.QtCore', 'PyQt5.QtGui', 'PyQt5.QtWidgets'],
+    'excludes': ['matplotlib', 'numpy', 'pandas', 'scipy', 'tkinter'],
+    'iconfile': 'AppIcon.icns',  # 使用AppIcon.icns作为图标（支持半透明）
+    'qt_plugins': ['platforms', 'imageformats', 'styles'],
+    'frameworks': [],
     'resources': [],
-    'iconfile': 'appicon.icns' if os.path.exists('appicon.icns') else None,
     'plist': {
-        'CFBundleName': '快捷分享HTML',
-        'CFBundleDisplayName': '快捷分享HTML',
-        'CFBundleGetInfoString': "快速分享HTML文件到服务器",
-        'CFBundleIdentifier': "net.xiaobu.sharehtml",
-        'CFBundleVersion': "1.0.0",
-        'CFBundleShortVersionString': "1.0.0",
-        'NSHumanReadableCopyright': "Copyright © 2023, 小布, All Rights Reserved",
+        'CFBundleName': 'ShareHTML',
+        'CFBundleDisplayName': 'ShareHTML',
+        'CFBundleGetInfoString': "分享HTML到网站",
+        'CFBundleIdentifier': "net.xiaobu.ShareHTML",
+        'CFBundleVersion': "0.1.0",
+        'CFBundleShortVersionString': "0.1.0",
+        'NSHumanReadableCopyright': u"Copyright © 2024, XiaoBu, All Rights Reserved",
+        'NSPrincipalClass': 'NSApplication',
+        'NSHighResolutionCapable': True,
+        'CFBundleDocumentTypes': [],
         'LSEnvironment': {
-            'QT_PLUGIN_PATH': '@executable_path/../PlugIns',
-            'QT_QPA_PLATFORM_PLUGIN_PATH': '@executable_path/../PlugIns/platforms'
-        },
-        'CFBundleDocumentTypes': [
-            {
-                'CFBundleTypeName': 'HTML Document',
-                'CFBundleTypeExtensions': ['html', 'htm'],
-                'CFBundleTypeRole': 'Viewer',
-            },
-        ],
+            'QT_PLUGIN_PATH': '@executable_path/../Resources/lib/python3.13/PyQt5/Qt5/plugins',
+            'QT_QPA_PLATFORM_PLUGIN_PATH': '@executable_path/../Resources/lib/python3.13/PyQt5/Qt5/plugins/platforms',
+            'QT_MAC_WANTS_LAYER': '1'
+        }
     }
 }
 
 setup(
     app=APP,
-    name='快捷分享HTML',
+    name='ShareHTML',
+    data_files=DATA_FILES,
     options={'py2app': OPTIONS},
     setup_requires=['py2app'],
-) 
+)
