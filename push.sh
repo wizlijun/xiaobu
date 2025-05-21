@@ -1,6 +1,6 @@
 #!/bin/bash
 
-python genindex.py ~/git/xiaobu/ai https://www.xiaobu.net/ai/
+python3 genindex.py ~/git/xiaobu/ai https://www.xiaobu.net/ai/
 
 git add .
 
