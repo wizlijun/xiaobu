@@ -20,7 +20,7 @@ def generate_grouped_entries(file_infos, preurl):
     groups = defaultdict(list)
     for info in file_infos:
         title, date_str, filename = info
-        year_month = date_str[:7]
+        year_month = date_str[:7]  # 仍然按年月分组，但时间显示精确到分钟
         link = f'<li><a href="{preurl}{filename}">{title}</a>（{date_str}）</li>'
         groups[year_month].append(link)
 
@@ -48,7 +48,7 @@ def main(path_str, preurl):
         try:
             stat = file.stat()
             created = datetime.datetime.fromtimestamp(stat.st_ctime)
-            date_str = created.strftime('%Y-%m-%d')
+            date_str = created.strftime('%Y-%m-%d %H:%M')  # 修改时间格式精确到分钟
             title = extract_title(file)
             file_infos.append((title, date_str, file.name))
         except Exception as e:
