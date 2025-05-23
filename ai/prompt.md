@@ -5,3 +5,4 @@
 
 
 
+请在ai目录下每个 html、htm 文件顶部增加 yaml header，参考 template.html 顶部yaml header的样子。title=文档标题，datetime=文件的创建日期，tags为文章最核心的标记，不要超过3个，description是全文的摘要，限于20字以内
