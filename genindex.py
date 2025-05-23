@@ -24,7 +24,7 @@ def generate_grouped_entries(file_infos, preurl):
         date_obj = datetime.datetime.strptime(date_str, '%Y-%m-%d %H:%M')
         # 获取年份和周数
         year, week, _ = date_obj.isocalendar()
-        year_week = f'{year}年第{week}周'
+        year_week = f'{year}.W{week:02d}'  # 修改为 YYYY.WXX 格式，周数补零为两位
         link = f'<li><a href="{preurl}{filename}">{title}</a>（{date_str}）</li>'
         groups[year_week].append((date_str, link))  # 保存日期用于排序
 
