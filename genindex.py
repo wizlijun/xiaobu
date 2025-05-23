@@ -347,7 +347,7 @@ def main(path_str, preurl):
     for group in sorted(tag_groups):
         # 使用配置的显示名称
         display_name = group_display_names.get(group, group)
-        tag_groups_html += f'<span class="tag active" data-tag="{group}">{display_name}</span>\n'
+        tag_groups_html += f'<span class="tag" data-tag="{group}">{display_name}</span>\n'
     tag_groups_html += '</div>'
     
     # 替换标签组部分
