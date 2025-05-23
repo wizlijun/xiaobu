@@ -2,8 +2,55 @@ import os
 import sys
 import datetime
 import re
+import yaml
 from collections import defaultdict
 from pathlib import Path
+
+def load_tags_yaml(tags_yaml_path):
+    """加载tags.yaml文件并返回标签组信息"""
+    try:
+        with open(tags_yaml_path, 'r', encoding='utf-8') as f:
+            tags_data = yaml.safe_load(f)
+            
+        # 创建从标签到组的映射
+        tag_to_group = {}
+        for group_name, tags in tags_data.get('tag_groups', {}).items():
+            for tag in tags:
+                tag_to_group[tag] = group_name
+                
+        # 获取文件标题映射
+        file_titles = tags_data.get('file_titles', {})
+                
+        return tag_to_group, file_titles
+    except Exception as e:
+        print(f"读取tags.yaml文件出错: {e}")
+        return {}, {}
+
+def extract_yaml_tags(yaml_content):
+    """从YAML内容中提取tags字段"""
+    if not yaml_content:
+        return []
+    
+    # 尝试多种tags字段格式
+    tags_patterns = [
+        r'tags\s*:\s*\[(.*?)\]',              # 数组格式: tags: [tag1, tag2]
+        r'tags\s*:\s*\n\s*-\s*(.*?)(?:\n|$)', # YAML列表格式: tags:\n  - tag1\n  - tag2
+        r'tags\s*:\s*([\w\s,]+)',              # 简单格式: tags: tag1, tag2
+    ]
+    
+    for pattern in tags_patterns:
+        tags_match = re.search(pattern, yaml_content, re.IGNORECASE | re.DOTALL)
+        if tags_match:
+            tags_str = tags_match.group(1).strip()
+            # 处理不同格式的标签
+            if ',' in tags_str:  # 逗号分隔的格式
+                return [tag.strip() for tag in tags_str.split(',')]
+            elif '\n' in tags_str:  # 多行YAML列表
+                return [line.strip().lstrip('- ') for line in tags_str.split('\n') if line.strip()]
+            else:  # 单个标签或空格分隔
+                return [tag.strip() for tag in tags_str.split() if tag.strip()]
+    
+    return []
 
 def extract_yaml_datetime(file_path):
     """从HTML文件的YAML header中提取datetime字段"""
@@ -36,6 +83,9 @@ def extract_yaml_datetime(file_path):
                     break
             
             if yaml_content:
+                # 提取tags信息
+                tags = extract_yaml_tags(yaml_content)
+                
                 # 尝试多种datetime字段格式
                 datetime_patterns = [
                     r'datetime\s*:\s*([\d\-: \.TZ+]+)',  # 标准格式: datetime: 2023-01-01 12:00
@@ -50,15 +100,16 @@ def extract_yaml_datetime(file_path):
                     if datetime_match:
                         yaml_datetime = datetime_match.group(1).strip()
                         print(f"找到日期字段: {yaml_datetime} (使用模式: {pattern})")
-                        return yaml_datetime
+                        return yaml_datetime, tags, yaml_content
                 
                 print(f"YAML中没有找到任何日期相关字段")
+                return None, tags, yaml_content
             else:
                 print(f"文件中没有找到YAML header")
-        return None
+        return None, [], None
     except Exception as e:
         print(f"提取YAML日期时出错: {e}")
-        return None
+        return None, [], None
 
 def extract_title(file_path):
     """从 HTML 文件中提取 <title> 内容"""
@@ -70,11 +121,20 @@ def extract_title(file_path):
     except Exception as e:
         return '读取失败'
 
-def generate_grouped_entries(file_infos, preurl):
-    """按年周分组生成 HTML 列表"""
+def generate_grouped_entries(file_infos, preurl, tag_to_group):
+    """按年周分组生成 HTML 列表，包含标签信息"""
     groups = defaultdict(list)
+    
     for info in file_infos:
-        title, date_str, filename = info
+        title, date_str, filename, file_tags = info
+        
+        # 确定group_tag
+        group_tag = "others"  # 默认分组
+        for tag in file_tags:
+            if tag in tag_to_group:
+                group_tag = tag_to_group[tag]
+                break
+        
         # 解析不同格式的日期字符串
         try:
             # 尝试解析ISO 8601格式
@@ -109,13 +169,14 @@ def generate_grouped_entries(file_infos, preurl):
         year, week, _ = date_obj.isocalendar()
         year_week = f'{year}.W{week:02d}'  # 修改为 YYYY.WXX 格式，周数补零为两位
         
-        # 使用格式化后的日期显示
-        link = f'<li><a href="{preurl}{filename}">{title}</a>（{display_date}）</li>'
+        # 使用格式化后的日期显示和标签
+        link = f'<li data-tags="{group_tag}"><a href="{preurl}{filename}">[{group_tag}]{title}</a>（{display_date}）</li>'
         groups[year_week].append((date_str, link))  # 保存原始日期用于排序
 
     # 排序输出（按年周倒序）
     output = []
-    # 首先对年周键进行排序
+    
+    # 对年周键进行排序
     for year_week in sorted(groups.keys(), reverse=True):
         output.append(f'<h2>{year_week}</h2>\n<ul>')
         # 对每个周内的条目按日期时间倒序排序
@@ -131,6 +192,16 @@ def main(path_str, preurl):
         print(f"错误：路径不存在或不是目录：{path}")
         sys.exit(1)
 
+    # 加载tags.yaml文件
+    tags_yaml_path = Path('ai/tags.yaml')
+    if not tags_yaml_path.exists():
+        print(f"警告：找不到tags.yaml文件：{tags_yaml_path}")
+        tag_to_group = {}
+        file_titles = {}
+    else:
+        tag_to_group, file_titles = load_tags_yaml(tags_yaml_path)
+        print(f"已加载 {len(tag_to_group)} 个标签映射")
+
     html_files = [
         f for f in path.glob('*.htm*')
         if f.name not in {'index.html', 'template.html'}
@@ -142,8 +213,10 @@ def main(path_str, preurl):
     for file in html_files:
         try:
             print(f"\n处理文件: {file.name}")
-            # 优先从YAML header中获取日期
-            yaml_datetime = extract_yaml_datetime(file)
+            # 优先从YAML header中获取日期和标签
+            yaml_datetime, tags, yaml_content = extract_yaml_datetime(file)
+            
+            print(f"提取到的标签: {tags}")
             
             if yaml_datetime:
                 # 如果能从YAML中获取到日期，使用它
@@ -212,7 +285,7 @@ def main(path_str, preurl):
                 
             title = extract_title(file)
             print(f"文件标题: {title}")
-            file_infos.append((title, date_str, file.name))
+            file_infos.append((title, date_str, file.name, tags))
         except Exception as e:
             print(f"跳过文件 {file}: {e}")
 
@@ -228,13 +301,48 @@ def main(path_str, preurl):
     with open(template_path, 'r', encoding='utf-8') as f:
         template = f.read()
 
-    content_html = generate_grouped_entries(file_infos, preurl)
+    content_html = generate_grouped_entries(file_infos, preurl, tag_to_group)
 
     # 替换 <content> 标签内容
     new_index = re.sub(
         r'<content>(.*?)</content>',
         f'<content>\n{content_html}\n</content>',
         template,
+        flags=re.DOTALL | re.IGNORECASE
+    )
+    
+    # 更新标签组部分
+    # 获取所有可用的tag groups
+    tag_groups = set()
+    for info in file_infos:
+        _, _, _, file_tags = info
+        for tag in file_tags:
+            if tag in tag_to_group:
+                tag_groups.add(tag_to_group[tag])
+            else:
+                tag_groups.add('others')
+    
+    # 生成标签组HTML
+    tag_groups_html = '<div class="tags">\n'
+    tag_groups_html += '<span class="tag active" data-tag="all">全部</span>\n'
+    for group in sorted(tag_groups):
+        # 翻译标签组名称为中文（如果需要）
+        group_name_map = {
+            'ai': 'AI',
+            'bushcraft': '丛林技能',
+            'mind': '思维方法',
+            'se': '软件工程',
+            'others': '其他'
+        }
+        display_name = group_name_map.get(group, group)
+        tag_groups_html += f'<span class="tag active" data-tag="{group}">{display_name}</span>\n'
+    tag_groups_html += '</div>'
+    
+    # 替换标签组部分
+    new_index = re.sub(
+        r'<div class="tags">.*?</div>',
+        tag_groups_html,
+        new_index,
         flags=re.DOTALL | re.IGNORECASE
     )
 
