@@ -42,7 +42,7 @@ DIRECT_TAG_MAPPING = {
     'life': 'mind',
     'evolution': 'mind',
     'taxonomy': 'mind',
-    'atlassian': 'ai',
+    'atlassian': 'se',
     'meta': 'ai',
     'microsoft': 'ai',
     'altman': 'ai',
