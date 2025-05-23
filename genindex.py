@@ -124,6 +124,40 @@ def extract_title(file_path):
     except Exception as e:
         return '读取失败'
 
+def extract_datetime_from_filename(filename):
+    """尝试从文件名中提取日期时间信息"""
+    # 常见的日期格式模式
+    patterns = [
+        r'(\d{4})[_\-]?(\d{2})[_\-]?(\d{2})[_\-]?(\d{2})[_\-]?(\d{2})',  # 20230101_1200 或 2023-01-01-12-00
+        r'(\d{4})[_\-]?(\d{2})[_\-]?(\d{2})',                            # 20230101 或 2023-01-01
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, filename)
+        if match:
+            groups = match.groups()
+            if len(groups) == 5:  # 带时间
+                year, month, day, hour, minute = groups
+                try:
+                    dt = datetime.datetime(int(year), int(month), int(day), int(hour), int(minute))
+                    # 添加本地时区
+                    local_tz = datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
+                    dt = dt.replace(tzinfo=local_tz)
+                    return dt.isoformat()
+                except ValueError:
+                    pass
+            elif len(groups) == 3:  # 只有日期
+                year, month, day = groups
+                try:
+                    dt = datetime.datetime(int(year), int(month), int(day))
+                    # 添加本地时区
+                    local_tz = datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
+                    dt = dt.replace(tzinfo=local_tz)
+                    return dt.isoformat()
+                except ValueError:
+                    pass
+    return None
+
 def generate_grouped_entries(file_infos, preurl, tag_to_group):
     """按年周分组生成 HTML 列表，包含标签信息"""
     groups = defaultdict(list)
@@ -152,33 +186,42 @@ def generate_grouped_entries(file_infos, preurl, tag_to_group):
         
         # 解析不同格式的日期字符串
         try:
-            # 尝试解析ISO 8601格式
+            # 统一将所有日期转换为datetime对象，不论格式如何
             if 'T' in date_str:
-                # 处理带时区的ISO格式
-                if '+' in date_str or 'Z' in date_str:
-                    if 'Z' in date_str:  # UTC时间
+                # ISO 8601格式
+                if '+' in date_str or '-' in date_str.split('T')[1] or 'Z' in date_str:
+                    # 带时区信息的ISO格式
+                    if 'Z' in date_str:
                         date_str = date_str.replace('Z', '+00:00')
-                    # 统一处理带时区的格式
+                    # 处理时区格式没有冒号的情况（例如+0800）
+                    if '+' in date_str or '-' in date_str.split('T')[1]:
+                        for char in ['+', '-']:
+                            if char in date_str.split('T')[1]:
+                                parts = date_str.split(char)
+                                if len(parts) > 1:
+                                    offset = parts[1]
+                                    if len(offset) == 4 and ':' not in offset:  # 如+0800
+                                        date_str = f"{parts[0]}{char}{offset[:2]}:{offset[2:]}"
                     date_obj = datetime.datetime.fromisoformat(date_str)
                 else:
-                    # 处理不带时区的ISO格式
+                    # 不带时区的ISO格式，假定为本地时区
                     date_obj = datetime.datetime.fromisoformat(date_str)
-                
-                # 保持兼容的日期显示格式
-                display_date = date_obj.strftime('%Y-%m-%d %H:%M')
+                    local_tz = datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
+                    date_obj = date_obj.replace(tzinfo=local_tz)
             else:
-                # 处理旧的 %Y-%m-%d %H:%M 格式
+                # 旧格式 YYYY-MM-DD HH:MM
                 date_obj = datetime.datetime.strptime(date_str, '%Y-%m-%d %H:%M')
-                display_date = date_str
-        except ValueError:
-            # 如果无法解析，尝试最后一种通用方法
-            try:
-                date_obj = datetime.datetime.fromisoformat(date_str.replace('Z', '+00:00'))
-                display_date = date_obj.strftime('%Y-%m-%d %H:%M')
-            except:
-                print(f"警告: 无法解析日期 '{date_str}'，使用当前时间")
-                date_obj = datetime.datetime.now()
-                display_date = date_obj.strftime('%Y-%m-%d %H:%M')
+                # 添加本地时区
+                local_tz = datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
+                date_obj = date_obj.replace(tzinfo=local_tz)
+            
+            # 统一显示格式
+            display_date = date_obj.strftime('%Y-%m-%d %H:%M')
+        except Exception as e:
+            # 任何解析错误，使用当前时间
+            print(f"日期解析错误 '{date_str}': {e}，使用当前时间")
+            date_obj = datetime.datetime.now().astimezone()  # 带时区的当前时间
+            display_date = date_obj.strftime('%Y-%m-%d %H:%M')
         
         # 获取年份和周数
         year, week, _ = date_obj.isocalendar()
@@ -296,11 +339,22 @@ def main(path_str, preurl):
                         if len(offset) == 4:  # 无冒号格式
                             date_str = f"{parts[0]}{offset_char}{offset[:2]}:{offset[2:]}"
             else:
-                # 如果YAML中没有日期，使用文件创建日期
-                stat = file.stat()
-                created = datetime.datetime.fromtimestamp(stat.st_ctime)
-                date_str = created.strftime('%Y-%m-%d %H:%M')
-                print(f"未找到YAML日期，使用文件创建日期: {date_str}")
+                # 如果YAML中没有日期，尝试从文件名提取
+                filename_date = extract_datetime_from_filename(file.name)
+                if filename_date:
+                    date_str = filename_date
+                    print(f"从文件名提取到日期: {date_str}")
+                else:
+                    # 如果文件名中没有日期，使用文件修改时间
+                    stat = file.stat()
+                    modified = datetime.datetime.fromtimestamp(stat.st_mtime)
+                    
+                    # 添加系统时区信息
+                    local_tz = datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
+                    modified_with_tz = modified.replace(tzinfo=local_tz)
+                    date_str = modified_with_tz.isoformat()
+                    
+                    print(f"使用文件修改时间: {date_str}")
                 
             title = extract_title(file)
             print(f"文件标题: {title}")
@@ -308,8 +362,8 @@ def main(path_str, preurl):
         except Exception as e:
             print(f"跳过文件 {file}: {e}")
 
-    # 按创建时间降序排列
-    file_infos.sort(key=lambda x: x[1], reverse=True)
+    # 按创建时间降序排列，如果时间相同则按文件名排序（确保排序稳定性）
+    file_infos.sort(key=lambda x: (x[1], x[2]), reverse=True)
 
     # 读取模板
     template_path = path / 'template.html'
