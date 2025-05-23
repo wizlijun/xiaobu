@@ -20,11 +20,14 @@ def load_tags_yaml(tags_yaml_path):
                 
         # 获取文件标题映射
         file_titles = tags_data.get('file_titles', {})
+        
+        # 获取标签组显示名称
+        group_display_names = tags_data.get('group_display_names', {})
                 
-        return tag_to_group, file_titles
+        return tag_to_group, file_titles, group_display_names
     except Exception as e:
         print(f"读取tags.yaml文件出错: {e}")
-        return {}, {}
+        return {}, {}, {}
 
 def extract_yaml_tags(yaml_content):
     """从YAML内容中提取tags字段"""
@@ -198,9 +201,10 @@ def main(path_str, preurl):
         print(f"警告：找不到tags.yaml文件：{tags_yaml_path}")
         tag_to_group = {}
         file_titles = {}
+        group_display_names = {}
     else:
-        tag_to_group, file_titles = load_tags_yaml(tags_yaml_path)
-        print(f"已加载 {len(tag_to_group)} 个标签映射")
+        tag_to_group, file_titles, group_display_names = load_tags_yaml(tags_yaml_path)
+        print(f"已加载 {len(tag_to_group)} 个标签映射和 {len(group_display_names)} 个标签组显示名称")
 
     html_files = [
         f for f in path.glob('*.htm*')
@@ -326,15 +330,8 @@ def main(path_str, preurl):
     tag_groups_html = '<div class="tags">\n'
     tag_groups_html += '<span class="tag active" data-tag="all">全部</span>\n'
     for group in sorted(tag_groups):
-        # 翻译标签组名称为中文（如果需要）
-        group_name_map = {
-            'ai': 'AI',
-            'bushcraft': '丛林技能',
-            'mind': '思维方法',
-            'se': '软件工程',
-            'others': '其他'
-        }
-        display_name = group_name_map.get(group, group)
+        # 使用配置的显示名称
+        display_name = group_display_names.get(group, group)
         tag_groups_html += f'<span class="tag active" data-tag="{group}">{display_name}</span>\n'
     tag_groups_html += '</div>'
     
