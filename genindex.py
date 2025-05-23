@@ -266,7 +266,7 @@ def main(path_str, preurl):
 
     html_files = [
         f for f in path.glob('*.htm*')
-        if f.name not in {'index.html', 'template.html'}
+        if f.name not in {'index.html', 'template.html', 'tags.html'}
     ]
     
     print(f"找到 {len(html_files)} 个HTML文件进行处理")
