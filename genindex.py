@@ -131,12 +131,24 @@ def generate_grouped_entries(file_infos, preurl, tag_to_group):
     for info in file_infos:
         title, date_str, filename, file_tags = info
         
-        # 确定group_tag
-        group_tag = "others"  # 默认分组
+        # 收集文件标签对应的所有标签组
+        group_tags = set()
         for tag in file_tags:
             if tag in tag_to_group:
-                group_tag = tag_to_group[tag]
-                break
+                group_tags.add(tag_to_group[tag])
+        
+        # 如果没有找到任何标签组，使用默认分组
+        if not group_tags:
+            group_tags.add("others")
+        
+        # 按字母顺序排序标签组
+        sorted_group_tags = sorted(group_tags)
+        
+        # 生成标签组标记，如 [ai][se]
+        group_tags_str = "".join(f"[{tag}]" for tag in sorted_group_tags)
+        
+        # 用于筛选的data-tags属性值
+        data_tags_attr = " ".join(sorted_group_tags)
         
         # 解析不同格式的日期字符串
         try:
@@ -172,8 +184,11 @@ def generate_grouped_entries(file_infos, preurl, tag_to_group):
         year, week, _ = date_obj.isocalendar()
         year_week = f'{year}.W{week:02d}'  # 修改为 YYYY.WXX 格式，周数补零为两位
         
+        # 构建相对路径链接（不使用斜杠开头的绝对路径）
+        href = f"{filename}" if not preurl else f"{preurl.lstrip('/')}{filename}"
+        
         # 使用格式化后的日期显示和标签
-        link = f'<li data-tags="{group_tag}"><a href="{preurl}{filename}">[{group_tag}]{title}</a>（{display_date}）</li>'
+        link = f'<li data-tags="{data_tags_attr}"><a href="{href}">{group_tags_str}{title}</a>（{display_date}）</li>'
         groups[year_week].append((date_str, link))  # 保存原始日期用于排序
 
     # 排序输出（按年周倒序）
