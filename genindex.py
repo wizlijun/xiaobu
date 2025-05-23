@@ -364,6 +364,79 @@ def main(path_str, preurl):
         flags=re.DOTALL | re.IGNORECASE
     )
 
+    # 修复JavaScript标签筛选功能
+    js_fix = """
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tags = document.querySelectorAll('.tag');
+        const listItems = document.querySelectorAll('li[data-tags]');
+        
+        // 当前选中的标签
+        let activeTag = 'all';
+        
+        // 更新可见性
+        function updateVisibility() {
+            if (activeTag === 'all') {
+                // 显示所有项目
+                listItems.forEach(item => {
+                    item.style.display = '';
+                });
+            } else {
+                // 根据标签筛选
+                listItems.forEach(item => {
+                    const itemTags = item.getAttribute('data-tags').split(' ');
+                    if (itemTags.includes(activeTag)) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            }
+            
+            // 更新年周标题可见性
+            document.querySelectorAll('h2').forEach(heading => {
+                const nextElement = heading.nextElementSibling;
+                if (nextElement && nextElement.tagName === 'UL') {
+                    const visibleItems = Array.from(nextElement.querySelectorAll('li')).filter(li => 
+                        li.style.display !== 'none'
+                    );
+                    heading.style.display = visibleItems.length > 0 ? '' : 'none';
+                    nextElement.style.display = visibleItems.length > 0 ? '' : 'none';
+                }
+            });
+        }
+        
+        // 标签点击事件
+        tags.forEach(tag => {
+            tag.addEventListener('click', function() {
+                // 移除所有标签激活状态
+                tags.forEach(t => t.classList.remove('active'));
+                
+                // 设置当前标签为激活状态
+                this.classList.add('active');
+                
+                // 更新当前活跃标签
+                activeTag = this.getAttribute('data-tag');
+                
+                // 更新可见性
+                updateVisibility();
+            });
+        });
+        
+        // 初始化显示
+        updateVisibility();
+    });
+    </script>
+    """
+
+    # 替换JavaScript部分
+    new_index = re.sub(
+        r'<script>.*?</script>',
+        js_fix,
+        new_index,
+        flags=re.DOTALL | re.IGNORECASE
+    )
+
     # 写入 index.html
     index_path = path / 'index.html'
     with open(index_path, 'w', encoding='utf-8') as f:
