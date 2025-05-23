@@ -344,7 +344,13 @@ def main(path_str, preurl):
     # 生成标签组HTML
     tag_groups_html = '<div class="tags">\n'
     tag_groups_html += '<span class="tag active" data-tag="all">全部</span>\n'
-    for group in sorted(tag_groups):
+
+    # 确保others标签组显示在最后
+    sorted_groups = sorted([g for g in tag_groups if g != 'others'])
+    if 'others' in tag_groups:
+        sorted_groups.append('others')
+
+    for group in sorted_groups:
         # 使用配置的显示名称
         display_name = group_display_names.get(group, group)
         tag_groups_html += f'<span class="tag" data-tag="{group}">{display_name}</span>\n'
