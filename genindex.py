@@ -121,49 +121,58 @@ def main(path_str, preurl):
                 print(f"使用YAML日期: {date_str}")
                 # 确保日期格式统一，如果YAML中的日期格式不是'%Y-%m-%d %H:%M'，可能需要转换
                 try:
-                    # 尝试解析并重新格式化为统一格式
-                    parsed_date = datetime.datetime.strptime(date_str, '%Y-%m-%d %H:%M')
-                    date_str = parsed_date.strftime('%Y-%m-%d %H:%M')
-                    print(f"YAML日期解析成功: {date_str}")
-                except ValueError as e:
-                    print(f"尝试解析标准格式失败: {e}")
-                    # 尝试解析多种常见日期格式
+                    # 使用标准ISO 8601格式解析
                     date_formats = [
-                        '%Y-%m-%d',             # 2023-01-01
-                        '%Y/%m/%d %H:%M:%S',    # 2023-01-01 12:00:00
-                        '%Y-%m-%d %H:%M',       # 2023-01-01 12:00
-                        '%Y-%m-%dT%H:%M:%S',    # 2023-01-01T12:00:00
-                        '%Y-%m-%dT%H:%M:%SZ',   # 2023-01-01T12:00:00Z
                         '%Y-%m-%dT%H:%M:%S%z',  # 2023-01-01T12:00:00+0800
-                        '%d/%m/%Y %H:%M:%S',    # 01/01/2023 12:00:00
-                        '%d-%m-%Y %H:%M:%S',    # 01-01-2023 12:00:00
-                        '%Y.%m.%d %H:%M:%S'     # 2023.01.01 12:00:00
+                        '%Y-%m-%dT%H:%M:%SZ',   # 2023-01-01T12:00:00Z (UTC)
+                        '%Y-%m-%dT%H:%M:%S'     # 2023-01-01T12:00:00 (无时区信息)
                     ]
                     
                     parsed = False
                     for fmt in date_formats:
                         try:
                             parsed_date = datetime.datetime.strptime(date_str, fmt)
-                            date_str = parsed_date.strftime('%Y-%m-%d %H:%M')
-                            print(f"使用格式 '{fmt}' 解析成功: {date_str}")
+                            # 统一转换为带时区的ISO 8601格式
+                            if fmt == '%Y-%m-%dT%H:%M:%S':
+                                # 如果原始格式没有时区信息，假定为本地时区
+                                local_tz = datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
+                                parsed_date = parsed_date.replace(tzinfo=local_tz)
+                            
+                            date_str = parsed_date.strftime('%Y-%m-%dT%H:%M:%S%z')
+                            # 将+0800格式转换为+08:00格式
+                            if '+' in date_str or '-' in date_str:
+                                offset_char = '+' if '+' in date_str else '-'
+                                parts = date_str.split(offset_char)
+                                offset = parts[1]
+                                if len(offset) == 4:  # 无冒号格式
+                                    date_str = f"{parts[0]}{offset_char}{offset[:2]}:{offset[2:]}"
+                            
+                            print(f"ISO 8601日期解析成功: {date_str}")
                             parsed = True
                             break
                         except ValueError:
                             continue
                     
                     if not parsed:
-                        try:
-                            # 尝试ISO格式解析
-                            parsed_date = datetime.datetime.fromisoformat(date_str.replace('Z', '+00:00'))
-                            date_str = parsed_date.strftime('%Y-%m-%d %H:%M')
-                            print(f"使用ISO格式解析成功: {date_str}")
-                        except Exception as e:
-                            print(f"所有日期格式解析都失败: {e}")
-                            # 如果无法解析，回退到使用文件创建日期
-                            stat = file.stat()
-                            created = datetime.datetime.fromtimestamp(stat.st_ctime)
-                            date_str = created.strftime('%Y-%m-%d %H:%M')
-                            print(f"回退到文件创建日期: {date_str}")
+                        print(f"无法解析为ISO 8601格式: {date_str}，使用当前时间")
+                        date_str = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S%z')
+                        # 添加冒号到时区偏移
+                        if '+' in date_str or '-' in date_str:
+                            offset_char = '+' if '+' in date_str else '-'
+                            parts = date_str.split(offset_char)
+                            offset = parts[1]
+                            if len(offset) == 4:  # 无冒号格式
+                                date_str = f"{parts[0]}{offset_char}{offset[:2]}:{offset[2:]}"
+                except Exception as e:
+                    print(f"日期解析发生异常: {e}，使用当前时间")
+                    date_str = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S%z')
+                    # 添加冒号到时区偏移
+                    if '+' in date_str or '-' in date_str:
+                        offset_char = '+' if '+' in date_str else '-'
+                        parts = date_str.split(offset_char)
+                        offset = parts[1]
+                        if len(offset) == 4:  # 无冒号格式
+                            date_str = f"{parts[0]}{offset_char}{offset[:2]}:{offset[2:]}"
             else:
                 # 如果YAML中没有日期，使用文件创建日期
                 stat = file.stat()
