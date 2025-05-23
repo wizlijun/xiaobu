@@ -436,6 +436,17 @@ def main(path_str, preurl):
                 // 更新当前活跃标签
                 activeTag = tagName;
                 
+                // 更新URL
+                if (tagName === 'all') {
+                    // 如果选择"全部"标签，则移除URL参数部分
+                    const urlWithoutParams = window.location.pathname;
+                    history.pushState(null, document.title, urlWithoutParams);
+                } else {
+                    // 如果选择特定标签，则更新URL参数
+                    const urlWithParams = window.location.pathname + '?taggroup=' + tagName;
+                    history.pushState(null, document.title, urlWithParams);
+                }
+                
                 // 更新可见性
                 updateVisibility();
                 
