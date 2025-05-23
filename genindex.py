@@ -75,13 +75,43 @@ def generate_grouped_entries(file_infos, preurl):
     groups = defaultdict(list)
     for info in file_infos:
         title, date_str, filename = info
-        # 将日期字符串转换为 datetime 对象
-        date_obj = datetime.datetime.strptime(date_str, '%Y-%m-%d %H:%M')
+        # 解析不同格式的日期字符串
+        try:
+            # 尝试解析ISO 8601格式
+            if 'T' in date_str:
+                # 处理带时区的ISO格式
+                if '+' in date_str or 'Z' in date_str:
+                    if 'Z' in date_str:  # UTC时间
+                        date_str = date_str.replace('Z', '+00:00')
+                    # 统一处理带时区的格式
+                    date_obj = datetime.datetime.fromisoformat(date_str)
+                else:
+                    # 处理不带时区的ISO格式
+                    date_obj = datetime.datetime.fromisoformat(date_str)
+                
+                # 保持兼容的日期显示格式
+                display_date = date_obj.strftime('%Y-%m-%d %H:%M')
+            else:
+                # 处理旧的 %Y-%m-%d %H:%M 格式
+                date_obj = datetime.datetime.strptime(date_str, '%Y-%m-%d %H:%M')
+                display_date = date_str
+        except ValueError:
+            # 如果无法解析，尝试最后一种通用方法
+            try:
+                date_obj = datetime.datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                display_date = date_obj.strftime('%Y-%m-%d %H:%M')
+            except:
+                print(f"警告: 无法解析日期 '{date_str}'，使用当前时间")
+                date_obj = datetime.datetime.now()
+                display_date = date_obj.strftime('%Y-%m-%d %H:%M')
+        
         # 获取年份和周数
         year, week, _ = date_obj.isocalendar()
         year_week = f'{year}.W{week:02d}'  # 修改为 YYYY.WXX 格式，周数补零为两位
-        link = f'<li><a href="{preurl}{filename}">{title}</a>（{date_str}）</li>'
-        groups[year_week].append((date_str, link))  # 保存日期用于排序
+        
+        # 使用格式化后的日期显示
+        link = f'<li><a href="{preurl}{filename}">{title}</a>（{display_date}）</li>'
+        groups[year_week].append((date_str, link))  # 保存原始日期用于排序
 
     # 排序输出（按年周倒序）
     output = []
