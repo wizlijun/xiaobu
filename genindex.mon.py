@@ -16,27 +16,19 @@ def extract_title(file_path):
         return '读取失败'
 
 def generate_grouped_entries(file_infos, preurl):
-    """按年周分组生成 HTML 列表"""
+    """按月份分组生成 HTML 列表"""
     groups = defaultdict(list)
     for info in file_infos:
         title, date_str, filename = info
-        # 将日期字符串转换为 datetime 对象
-        date_obj = datetime.datetime.strptime(date_str, '%Y-%m-%d %H:%M')
-        # 获取年份和周数
-        year, week, _ = date_obj.isocalendar()
-        year_week = f'{year}年第{week}周'
+        year_month = date_str[:7]  # 仍然按年月分组，但时间显示精确到分钟
         link = f'<li><a href="{preurl}{filename}">{title}</a>（{date_str}）</li>'
-        groups[year_week].append((date_str, link))  # 保存日期用于排序
+        groups[year_month].append(link)
 
-    # 排序输出（按年周倒序）
+    # 排序输出（按年月倒序）
     output = []
-    # 首先对年周键进行排序
-    for year_week in sorted(groups.keys(), reverse=True):
-        output.append(f'<h2>{year_week}</h2>\n<ul>')
-        # 对每个周内的条目按日期时间倒序排序
-        sorted_entries = sorted(groups[year_week], key=lambda x: x[0], reverse=True)
-        # 只输出链接部分
-        output.extend(entry[1] for entry in sorted_entries)
+    for month in sorted(groups.keys(), reverse=True):
+        output.append(f'<h2>{month}</h2>\n<ul>')
+        output.extend(groups[month])
         output.append('</ul>')
     return '\n'.join(output)
 
