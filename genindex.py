@@ -443,7 +443,7 @@ def main(path_str, preurl):
                     history.pushState(null, document.title, urlWithoutParams);
                 } else {
                     // 如果选择特定标签，则更新URL参数
-                    const urlWithParams = window.location.pathname + '?taggroup=' + tagName;
+                    const urlWithParams = window.location.pathname + '?' + tagName;
                     history.pushState(null, document.title, urlWithParams);
                 }
                 
