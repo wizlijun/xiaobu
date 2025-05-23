@@ -8,16 +8,53 @@ from pathlib import Path
 def extract_yaml_datetime(file_path):
     """从HTML文件的YAML header中提取datetime字段"""
     try:
+        print(f"尝试从 {file_path} 提取YAML日期")
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
-            # 查找YAML header（在文件开头由---包围的部分）
-            yaml_match = re.search(r'^---\s*\n(.*?)\n---', content, re.DOTALL)
-            if yaml_match:
-                yaml_content = yaml_match.group(1)
-                # 在YAML内容中查找datetime字段
-                datetime_match = re.search(r'datetime\s*:\s*([\d\-: ]+)', yaml_content)
-                if datetime_match:
-                    return datetime_match.group(1).strip()
+            # 检查文件内容前30行，查看实际格式
+            first_lines = '\n'.join(content.split('\n')[:30])
+            print(f"文件前几行内容样本:\n{first_lines[:300]}...")
+            
+            # 尝试多种YAML header格式
+            yaml_patterns = [
+                # 标准的YAML格式，以三个短横线开始和结束
+                r'^---\s*\n(.*?)\n---',
+                # 也可能是HTML注释中的YAML
+                r'<!--\s*---\s*\n(.*?)\n---\s*-->',
+                # Jekyll风格的YAML front matter
+                r'^---\s*\n(.*?)\n---\s*\n',
+                # 简单的键值对格式（非严格YAML）
+                r'<!--\s*((?:[\w-]+\s*:\s*.*\n)+)\s*-->'
+            ]
+            
+            yaml_content = None
+            for pattern in yaml_patterns:
+                yaml_match = re.search(pattern, content, re.DOTALL)
+                if yaml_match:
+                    yaml_content = yaml_match.group(1)
+                    print(f"使用模式 '{pattern}' 找到YAML header: {yaml_content[:100]}...")
+                    break
+            
+            if yaml_content:
+                # 尝试多种datetime字段格式
+                datetime_patterns = [
+                    r'datetime\s*:\s*([\d\-: \.TZ+]+)',  # 标准格式: datetime: 2023-01-01 12:00
+                    r'date\s*:\s*([\d\-: \.TZ+]+)',      # 或者使用date字段
+                    r'time\s*:\s*([\d\-: \.TZ+]+)',      # 或者使用time字段
+                    r'published\s*:\s*([\d\-: \.TZ+]+)', # 或者使用published字段
+                    r'created\s*:\s*([\d\-: \.TZ+]+)'    # 或者使用created字段
+                ]
+                
+                for pattern in datetime_patterns:
+                    datetime_match = re.search(pattern, yaml_content, re.IGNORECASE)
+                    if datetime_match:
+                        yaml_datetime = datetime_match.group(1).strip()
+                        print(f"找到日期字段: {yaml_datetime} (使用模式: {pattern})")
+                        return yaml_datetime
+                
+                print(f"YAML中没有找到任何日期相关字段")
+            else:
+                print(f"文件中没有找到YAML header")
         return None
     except Exception as e:
         print(f"提取YAML日期时出错: {e}")
@@ -68,38 +105,74 @@ def main(path_str, preurl):
         f for f in path.glob('*.htm*')
         if f.name not in {'index.html', 'template.html'}
     ]
+    
+    print(f"找到 {len(html_files)} 个HTML文件进行处理")
 
     file_infos = []
     for file in html_files:
         try:
+            print(f"\n处理文件: {file.name}")
             # 优先从YAML header中获取日期
             yaml_datetime = extract_yaml_datetime(file)
             
             if yaml_datetime:
                 # 如果能从YAML中获取到日期，使用它
                 date_str = yaml_datetime
+                print(f"使用YAML日期: {date_str}")
                 # 确保日期格式统一，如果YAML中的日期格式不是'%Y-%m-%d %H:%M'，可能需要转换
                 try:
                     # 尝试解析并重新格式化为统一格式
                     parsed_date = datetime.datetime.strptime(date_str, '%Y-%m-%d %H:%M')
                     date_str = parsed_date.strftime('%Y-%m-%d %H:%M')
-                except ValueError:
-                    # 如果格式不匹配，尝试其他常见格式
-                    try:
-                        parsed_date = datetime.datetime.fromisoformat(date_str)
-                        date_str = parsed_date.strftime('%Y-%m-%d %H:%M')
-                    except:
-                        # 如果无法解析，回退到使用文件创建日期
-                        stat = file.stat()
-                        created = datetime.datetime.fromtimestamp(stat.st_ctime)
-                        date_str = created.strftime('%Y-%m-%d %H:%M')
+                    print(f"YAML日期解析成功: {date_str}")
+                except ValueError as e:
+                    print(f"尝试解析标准格式失败: {e}")
+                    # 尝试解析多种常见日期格式
+                    date_formats = [
+                        '%Y-%m-%d',             # 2023-01-01
+                        '%Y/%m/%d %H:%M:%S',    # 2023-01-01 12:00:00
+                        '%Y-%m-%d %H:%M',       # 2023-01-01 12:00
+                        '%Y-%m-%dT%H:%M:%S',    # 2023-01-01T12:00:00
+                        '%Y-%m-%dT%H:%M:%SZ',   # 2023-01-01T12:00:00Z
+                        '%Y-%m-%dT%H:%M:%S%z',  # 2023-01-01T12:00:00+0800
+                        '%d/%m/%Y %H:%M:%S',    # 01/01/2023 12:00:00
+                        '%d-%m-%Y %H:%M:%S',    # 01-01-2023 12:00:00
+                        '%Y.%m.%d %H:%M:%S'     # 2023.01.01 12:00:00
+                    ]
+                    
+                    parsed = False
+                    for fmt in date_formats:
+                        try:
+                            parsed_date = datetime.datetime.strptime(date_str, fmt)
+                            date_str = parsed_date.strftime('%Y-%m-%d %H:%M')
+                            print(f"使用格式 '{fmt}' 解析成功: {date_str}")
+                            parsed = True
+                            break
+                        except ValueError:
+                            continue
+                    
+                    if not parsed:
+                        try:
+                            # 尝试ISO格式解析
+                            parsed_date = datetime.datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                            date_str = parsed_date.strftime('%Y-%m-%d %H:%M')
+                            print(f"使用ISO格式解析成功: {date_str}")
+                        except Exception as e:
+                            print(f"所有日期格式解析都失败: {e}")
+                            # 如果无法解析，回退到使用文件创建日期
+                            stat = file.stat()
+                            created = datetime.datetime.fromtimestamp(stat.st_ctime)
+                            date_str = created.strftime('%Y-%m-%d %H:%M')
+                            print(f"回退到文件创建日期: {date_str}")
             else:
                 # 如果YAML中没有日期，使用文件创建日期
                 stat = file.stat()
                 created = datetime.datetime.fromtimestamp(stat.st_ctime)
                 date_str = created.strftime('%Y-%m-%d %H:%M')
+                print(f"未找到YAML日期，使用文件创建日期: {date_str}")
                 
             title = extract_title(file)
+            print(f"文件标题: {title}")
             file_infos.append((title, date_str, file.name))
         except Exception as e:
             print(f"跳过文件 {file}: {e}")
