@@ -14,25 +14,36 @@ def load_tags_yaml(tags_yaml_path):
             
         # 创建从标签到组的映射
         tag_to_group = {}
-        for group_name, tags in tags_data.get('tag_groups', {}).items():
-            for tag in tags:
-                tag_to_group[tag] = group_name
-                
-        # 获取文件标题映射
-        file_titles = tags_data.get('file_titles', {})
+        group_display_names = {}
         
-        # 获取标签组显示名称
-        group_display_names = tags_data.get('group_display_names', {})
+        # 遍历所有分组（除了ignored_tags）
+        for group_name, group_info in tags_data.items():
+            if group_name == 'ignored_tags':
+                continue
                 
-        return tag_to_group, file_titles, group_display_names
+            if isinstance(group_info, dict) and 'tags' in group_info:
+                # 获取分组的显示名称
+                group_display_names[group_name] = group_info.get('name', group_name)
+                
+                # 将该分组下的所有标签映射到分组名
+                for tag in group_info['tags']:
+                    tag_to_group[tag] = group_name
+        
+        # 获取忽略的标签列表
+        ignored_tags = set(tags_data.get('ignored_tags', []))
+                
+        return tag_to_group, {}, group_display_names, ignored_tags
     except Exception as e:
         print(f"读取tags.yaml文件出错: {e}")
-        return {}, {}, {}
+        return {}, {}, {}, set()
 
-def extract_yaml_tags(yaml_content):
-    """从YAML内容中提取tags字段"""
+def extract_yaml_tags(yaml_content, ignored_tags=None):
+    """从YAML内容中提取tags字段，并过滤掉被忽略的标签"""
     if not yaml_content:
         return []
+    
+    if ignored_tags is None:
+        ignored_tags = set()
     
     # 尝试多种tags字段格式
     tags_patterns = [
@@ -47,15 +58,19 @@ def extract_yaml_tags(yaml_content):
             tags_str = tags_match.group(1).strip()
             # 处理不同格式的标签
             if ',' in tags_str:  # 逗号分隔的格式
-                return [tag.strip() for tag in tags_str.split(',')]
+                raw_tags = [tag.strip().strip('"\'') for tag in tags_str.split(',')]
             elif '\n' in tags_str:  # 多行YAML列表
-                return [line.strip().lstrip('- ') for line in tags_str.split('\n') if line.strip()]
+                raw_tags = [line.strip().lstrip('- ').strip('"\'') for line in tags_str.split('\n') if line.strip()]
             else:  # 单个标签或空格分隔
-                return [tag.strip() for tag in tags_str.split() if tag.strip()]
+                raw_tags = [tag.strip().strip('"\'') for tag in tags_str.split() if tag.strip()]
+            
+            # 过滤掉被忽略的标签
+            filtered_tags = [tag for tag in raw_tags if tag and tag not in ignored_tags]
+            return filtered_tags
     
     return []
 
-def extract_yaml_datetime(file_path):
+def extract_yaml_datetime(file_path, ignored_tags=None):
     """从HTML文件的YAML header中提取datetime字段"""
     try:
         print(f"尝试从 {file_path} 提取YAML日期")
@@ -86,8 +101,8 @@ def extract_yaml_datetime(file_path):
                     break
             
             if yaml_content:
-                # 提取tags信息
-                tags = extract_yaml_tags(yaml_content)
+                # 提取tags信息，传递ignored_tags参数
+                tags = extract_yaml_tags(yaml_content, ignored_tags)
                 
                 # 尝试多种datetime字段格式
                 datetime_patterns = [
@@ -260,9 +275,10 @@ def main(path_str, preurl):
         tag_to_group = {}
         file_titles = {}
         group_display_names = {}
+        ignored_tags = set()
     else:
-        tag_to_group, file_titles, group_display_names = load_tags_yaml(tags_yaml_path)
-        print(f"已加载 {len(tag_to_group)} 个标签映射和 {len(group_display_names)} 个标签组显示名称")
+        tag_to_group, file_titles, group_display_names, ignored_tags = load_tags_yaml(tags_yaml_path)
+        print(f"已加载 {len(tag_to_group)} 个标签映射、{len(group_display_names)} 个标签组显示名称和 {len(ignored_tags)} 个忽略标签")
 
     html_files = [
         f for f in path.glob('*.htm*')
@@ -276,7 +292,7 @@ def main(path_str, preurl):
         try:
             print(f"\n处理文件: {file.name}")
             # 优先从YAML header中获取日期和标签
-            yaml_datetime, tags, yaml_content = extract_yaml_datetime(file)
+            yaml_datetime, tags, yaml_content = extract_yaml_datetime(file, ignored_tags)
             
             print(f"提取到的标签: {tags}")
             
