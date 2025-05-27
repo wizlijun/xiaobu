@@ -15,6 +15,7 @@ def load_tags_yaml(tags_yaml_path):
         # 创建从标签到组的映射
         tag_to_group = {}
         group_display_names = {}
+        group_articles = {}
         
         # 遍历所有分组（除了ignored_tags）
         for group_name, group_info in tags_data.items():
@@ -25,6 +26,9 @@ def load_tags_yaml(tags_yaml_path):
                 # 获取分组的显示名称
                 group_display_names[group_name] = group_info.get('name', group_name)
                 
+                # 获取分组的文章列表
+                group_articles[group_name] = group_info.get('articles', [])
+                
                 # 将该分组下的所有标签映射到分组名
                 for tag in group_info['tags']:
                     tag_to_group[tag] = group_name
@@ -32,7 +36,7 @@ def load_tags_yaml(tags_yaml_path):
         # 获取忽略的标签列表
         ignored_tags = set(tags_data.get('ignored_tags', []))
                 
-        return tag_to_group, {}, group_display_names, ignored_tags
+        return tag_to_group, group_display_names, group_articles, ignored_tags
     except Exception as e:
         print(f"读取tags.yaml文件出错: {e}")
         return {}, {}, {}, set()
@@ -273,12 +277,12 @@ def main(path_str, preurl):
     if not tags_yaml_path.exists():
         print(f"警告：找不到tags.yaml文件：{tags_yaml_path}")
         tag_to_group = {}
-        file_titles = {}
         group_display_names = {}
+        group_articles = {}
         ignored_tags = set()
     else:
-        tag_to_group, file_titles, group_display_names, ignored_tags = load_tags_yaml(tags_yaml_path)
-        print(f"已加载 {len(tag_to_group)} 个标签映射、{len(group_display_names)} 个标签组显示名称和 {len(ignored_tags)} 个忽略标签")
+        tag_to_group, group_display_names, group_articles, ignored_tags = load_tags_yaml(tags_yaml_path)
+        print(f"已加载 {len(tag_to_group)} 个标签映射、{len(group_display_names)} 个标签组显示名称、{len(group_articles)} 个分组文章列表和 {len(ignored_tags)} 个忽略标签")
 
     html_files = [
         f for f in path.glob('*.htm*')
