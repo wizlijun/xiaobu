@@ -14,3 +14,4 @@
 按5个关键词将tag分组： bushcraft（野外生活技艺）, ai, mind,se(软件工程),others
 忽略掉没有意义的标签，例如 tag1 tag2 sample 等
 自动生成 ai/tags.html 交互 文件
+更新 ai/tags.html tags.yaml，不要生成py程序，直接给我结果。
