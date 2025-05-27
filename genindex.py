@@ -449,7 +449,7 @@ def main(path_str, preurl):
         
         # 如果没有任何标签组，添加others
         if not any(tag in tag_to_group for tag in file_tags) and not is_blog_file:
-            tag_groups.add('others')
+                tag_groups.add('others')
     
     # 生成标签组HTML
     tag_groups_html = '<div class="tags">\n'
