@@ -182,13 +182,17 @@ def generate_grouped_entries(file_infos, preurl, tag_to_group):
     groups = defaultdict(list)
     
     for info in file_infos:
-        title, date_str, filename, file_tags = info
+        title, date_str, filename, file_tags, is_blog_file = info
         
         # 收集文件标签对应的所有标签组
         group_tags = set()
         for tag in file_tags:
             if tag in tag_to_group:
                 group_tags.add(tag_to_group[tag])
+        
+        # 如果是blog文件，自动添加blog标签组
+        if is_blog_file:
+            group_tags.add("blog")
         
         # 如果没有找到任何标签组，使用默认分组
         if not group_tags:
@@ -284,19 +288,38 @@ def main(path_str, preurl):
         tag_to_group, group_display_names, group_articles, ignored_tags = load_tags_yaml(tags_yaml_path)
         print(f"已加载 {len(tag_to_group)} 个标签映射、{len(group_display_names)} 个标签组显示名称、{len(group_articles)} 个分组文章列表和 {len(ignored_tags)} 个忽略标签")
 
+    # 添加blog标签组到映射
+    group_display_names['blog'] = 'Blog'
+    
+    # 收集HTML文件：主目录和blog目录
     html_files = [
         f for f in path.glob('*.htm*')
         if f.name not in {'index.html', 'template.html', 'tags.html'}
     ]
+    
+    # 添加blog目录下的HTML文件
+    blog_path = path / 'blog'
+    if blog_path.is_dir():
+        blog_files = [
+            f for f in blog_path.glob('*.htm*')
+            if f.name not in {'index.html', 'template.html', 'tags.html'}
+        ]
+        html_files.extend(blog_files)
+        print(f"在blog目录中找到 {len(blog_files)} 个HTML文件")
     
     print(f"找到 {len(html_files)} 个HTML文件进行处理")
 
     file_infos = []
     for file in html_files:
         try:
-            print(f"\n处理文件: {file.name}")
+            print(f"\n处理文件: {file}")
             # 优先从YAML header中获取日期和标签
             yaml_datetime, tags, yaml_content = extract_yaml_datetime(file, ignored_tags)
+            
+            # 检查文件是否在blog目录中，如果是则自动添加blog标签组
+            is_blog_file = 'blog' in file.parts
+            if is_blog_file:
+                print(f"检测到blog目录文件，自动归入blog标签组")
             
             print(f"提取到的标签: {tags}")
             
@@ -378,7 +401,14 @@ def main(path_str, preurl):
                 
             title = extract_title(file)
             print(f"文件标题: {title}")
-            file_infos.append((title, date_str, file.name, tags))
+            
+            # 对于blog目录下的文件，生成正确的相对路径
+            if is_blog_file:
+                relative_path = f"blog/{file.name}"
+            else:
+                relative_path = file.name
+                
+            file_infos.append((title, date_str, relative_path, tags, is_blog_file))
         except Exception as e:
             print(f"跳过文件 {file}: {e}")
 
@@ -408,12 +438,18 @@ def main(path_str, preurl):
     # 获取所有可用的tag groups
     tag_groups = set()
     for info in file_infos:
-        _, _, _, file_tags = info
+        _, _, _, file_tags, is_blog_file = info
         for tag in file_tags:
             if tag in tag_to_group:
                 tag_groups.add(tag_to_group[tag])
-            else:
-                tag_groups.add('others')
+        
+        # 如果是blog文件，添加blog标签组
+        if is_blog_file:
+            tag_groups.add('blog')
+        
+        # 如果没有任何标签组，添加others
+        if not any(tag in tag_to_group for tag in file_tags) and not is_blog_file:
+            tag_groups.add('others')
     
     # 生成标签组HTML
     tag_groups_html = '<div class="tags">\n'
