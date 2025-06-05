@@ -348,11 +348,6 @@ class ShareHtmlApp(QMainWindow):
             self.log_text.append(f"正在复制文件到 {target_path}")
             shutil.copy2(source_file, target_path)
             
-            # 同时复制文件为用户指定的文件名
-            target_share_path = os.path.join(target_folder, share_filename)
-            self.log_text.append(f"正在复制文件到 {target_share_path}")
-            shutil.copy2(source_file, target_share_path)
-            
             # 2. 创建meta.yaml文件
             self.log_text.append("正在创建meta.yaml文件...")
             html_title = self.extract_html_title(source_file)
