@@ -13,6 +13,9 @@ os.environ['QT_MAC_WANTS_LAYER'] = '1'
 
 import shutil
 import subprocess
+import yaml
+import re
+from datetime import datetime
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                             QHBoxLayout, QLabel, QLineEdit, QPushButton, 
                             QTextEdit, QFileDialog, QMessageBox, QMenu, QAction)
@@ -132,7 +135,19 @@ class ShareHtmlApp(QMainWindow):
         filename_layout.addWidget(self.share_filename_input)
         main_layout.addLayout(filename_layout)
         
-        # 4. 分享脚本路径
+        # 4. 原始URL
+        source_layout = QHBoxLayout()
+        source_label = QLabel("原始URL：")
+        self.source_url_input = QLineEdit()
+        self.source_url_input.setText(self.settings.value("source_url", ""))
+        self.source_url_input.textChanged.connect(lambda: self.settings.setValue("source_url", self.source_url_input.text()))
+        # 启用文本输入框的上下文菜单
+        self.source_url_input.setContextMenuPolicy(Qt.DefaultContextMenu)
+        source_layout.addWidget(source_label)
+        source_layout.addWidget(self.source_url_input)
+        main_layout.addLayout(source_layout)
+        
+        # 5. 分享脚本路径
         script_layout = QHBoxLayout()
         script_label = QLabel("分享脚本路径：")
         self.script_path_input = QLineEdit()
@@ -147,7 +162,7 @@ class ShareHtmlApp(QMainWindow):
         script_layout.addWidget(select_script_btn)
         main_layout.addLayout(script_layout)
         
-        # 5. 网站地址
+        # 6. 网站地址
         website_layout = QHBoxLayout()
         website_label = QLabel("网站地址：")
         self.website_input = QLineEdit()
@@ -222,6 +237,25 @@ class ShareHtmlApp(QMainWindow):
             # 显示上下文菜单
             context_menu.exec_(self.mapToGlobal(pos))
 
+    def extract_html_title(self, html_file_path):
+        """从HTML文件中提取title标签的内容"""
+        try:
+            with open(html_file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            # 使用正则表达式查找title标签
+            title_match = re.search(r'<title[^>]*>(.*?)</title>', content, re.IGNORECASE | re.DOTALL)
+            if title_match:
+                title = title_match.group(1).strip()
+                # 清理HTML实体和多余的空白字符
+                title = re.sub(r'\s+', ' ', title)
+                return title
+            else:
+                return "Untitled"
+        except Exception as e:
+            self.log_text.append(f"提取HTML标题时出错: {str(e)}")
+            return "Untitled"
+
     def select_file(self):
         file_path, _ = QFileDialog.getOpenFileName(
             self, "选择HTML文件", "", "HTML Files (*.html *.htm)"
@@ -264,7 +298,10 @@ class ShareHtmlApp(QMainWindow):
         if not website.endswith("/"):
             website += "/"
         
-        full_url = website + filename
+        # 去掉文件扩展名，创建文件夹名称
+        basename = os.path.splitext(filename)[0]
+        folder_name = f"{basename}_files"
+        full_url = f"{website}{folder_name}/capsule.html"
         clipboard = QApplication.clipboard()
         clipboard.setText(full_url)
         self.statusBar().showMessage(f"已复制链接: {full_url}", 3000)
@@ -299,11 +336,67 @@ class ShareHtmlApp(QMainWindow):
         
         try:
             # 1. 复制文件到Git仓库
-            target_path = os.path.join(git_path, share_filename)
+            # 去掉文件扩展名，创建文件夹名称
+            basename = os.path.splitext(share_filename)[0]
+            folder_name = f"{basename}_files"
+            target_folder = os.path.join(git_path, folder_name)
+            target_path = os.path.join(target_folder, "capsule.html")
+            
+            # 创建目标文件夹
+            self.log_text.append(f"正在创建文件夹 {target_folder}")
+            os.makedirs(target_folder, exist_ok=True)
+            
+            # 复制文件
             self.log_text.append(f"正在复制文件到 {target_path}")
             shutil.copy2(source_file, target_path)
             
-            # 2. 执行分享脚本
+            # 2. 创建meta.yaml文件
+            self.log_text.append("正在创建meta.yaml文件...")
+            html_title = self.extract_html_title(source_file)
+            current_time = datetime.now().isoformat()
+            source_url = self.source_url_input.text()
+            
+            meta_data = {
+                'title': html_title,
+                'datetime': current_time,
+                'source': f"()[{source_url}]"
+            }
+            
+            meta_file_path = os.path.join(target_folder, "meta.yaml")
+            with open(meta_file_path, 'w', encoding='utf-8') as meta_file:
+                yaml.dump(meta_data, meta_file, allow_unicode=True, default_flow_style=False)
+            
+            self.log_text.append(f"已创建meta.yaml文件: {meta_file_path}")
+            
+            # 3. 调用gencapsule.py脚本
+            gencapsule_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gencapsule.py")
+            if os.path.exists(gencapsule_script):
+                self.log_text.append(f"正在调用gencapsule.py脚本，参数: {basename}")
+                gencapsule_process = subprocess.Popen(
+                    ["python3", gencapsule_script, basename],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    cwd=os.path.dirname(gencapsule_script)
+                )
+                gencapsule_stdout, gencapsule_stderr = gencapsule_process.communicate()
+                
+                if gencapsule_stdout:
+                    self.log_text.append("gencapsule.py输出：")
+                    self.log_text.append(gencapsule_stdout)
+                
+                if gencapsule_stderr:
+                    self.log_text.append("gencapsule.py错误输出：")
+                    self.log_text.append(gencapsule_stderr)
+                
+                if gencapsule_process.returncode == 0:
+                    self.log_text.append("gencapsule.py执行成功")
+                else:
+                    self.log_text.append(f"gencapsule.py执行失败，返回码: {gencapsule_process.returncode}")
+            else:
+                self.log_text.append(f"警告: 未找到gencapsule.py脚本 ({gencapsule_script})")
+            
+            # 4. 执行分享脚本
             self.log_text.append(f"正在执行分享脚本 {script_path}")
             process = subprocess.Popen(
                 [script_path], 
