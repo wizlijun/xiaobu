@@ -5,12 +5,12 @@ a = Analysis(
     ['sharehtml.py'],
     pathex=[],
     binaries=[],
-    datas=[],
-    hiddenimports=[],
+    datas=[('gencapsule.py', '.')],
+    hiddenimports=['yaml', 'PyYAML'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=['tkinter', 'matplotlib', 'numpy', 'pandas', 'scipy'],
     noarchive=False,
     optimize=0,
 )
@@ -52,6 +52,10 @@ app = BUNDLE(
                 'LSHandlerRank': 'Alternate',
             }
         ],
-        'NSHumanReadableCopyright': 'Copyright © 2023 小布',
+        'NSHumanReadableCopyright': 'Copyright © 2024 小布',
+        'CFBundleVersion': '1.0.0',
+        'CFBundleShortVersionString': '1.0.0',
+        'CFBundleDisplayName': '快捷分享HTML',
+        'NSHighResolutionCapable': True,
     },
 )
