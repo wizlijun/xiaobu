@@ -373,12 +373,15 @@ class ShareHtmlApp(QMainWindow):
             self.log_text.append(f"已创建meta.yaml文件: {meta_file_path}")
             
             # 3. 调用gencapsule.py脚本
-            gencapsule_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gencapsule.py")
+            # 在分享脚本路径的同目录下查找gencapsule.py
+            share_script_dir = os.path.dirname(os.path.abspath(script_path))
+            gencapsule_script = os.path.join(share_script_dir, "gencapsule.py")
+            
             if os.path.exists(gencapsule_script):
                 self.log_text.append(f"正在调用gencapsule.py脚本，参数: {basename}")
                 
                 # 获取脚本所在目录和Git仓库路径
-                script_dir = os.path.dirname(gencapsule_script)
+                script_dir = share_script_dir
                 git_path_abs = os.path.abspath(git_path)
                 
                 # 检查必要的目录是否存在
@@ -391,10 +394,10 @@ class ShareHtmlApp(QMainWindow):
                 
                 self.log_text.append(f"Git目录: {git_path_abs}")
                 self.log_text.append(f"脚本目录: {script_dir}")
+                self.log_text.append(f"gencapsule.py路径: {gencapsule_script}")
                 
                 # 创建一个修改版的gencapsule调用，传递Git路径作为基础目录
-                # 我们需要修改gencapsule.py以支持自定义基础目录，或者创建软链接
-                # 这里先尝试在脚本目录运行，并将Git路径作为环境变量传递
+                # 在分享脚本的同目录下运行gencapsule.py
                 
                 env = dict(os.environ)
                 env['GENCAPSULE_BASE_DIR'] = git_path_abs
@@ -405,7 +408,7 @@ class ShareHtmlApp(QMainWindow):
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,
-                    cwd=script_dir,  # 在脚本目录运行
+                    cwd=script_dir,  # 在分享脚本的同目录下运行
                     env=env
                 )
                 gencapsule_stdout, gencapsule_stderr = gencapsule_process.communicate()
