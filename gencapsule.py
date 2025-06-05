@@ -170,13 +170,20 @@ def inject_floatbox(html_content, floatbox_content):
 
 def main():
     """主函数"""
-    if len(sys.argv) != 2:
-        error_exit("使用方法: python gencapsule.py <name>")
+    if len(sys.argv) < 2 or len(sys.argv) > 3:
+        error_exit("使用方法: python gencapsule.py <name> [base_dir]")
     
     name = sys.argv[1]
     
+    # 支持自定义基础目录
+    if len(sys.argv) == 3:
+        base_dir = Path(sys.argv[2])
+    else:
+        # 默认使用'ai'目录或环境变量指定的目录
+        base_dir_env = os.environ.get('GENCAPSULE_BASE_DIR', 'ai')
+        base_dir = Path(base_dir_env)
+    
     # 定义路径
-    base_dir = Path('ai')
     input_dir = base_dir / f"{name}_files"
     output_file = base_dir / f"{name}.html"
     template_dir = Path('template')
