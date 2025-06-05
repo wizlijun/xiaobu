@@ -242,7 +242,7 @@ def main():
         floatbox_content += '\n</div>'
         
         # 添加切换按钮和JavaScript代码
-        toggle_button = '\n<button class="float-toggle" id="float-toggle" title="打开附件面板">⬅</button>'
+        toggle_button = '\n<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>'
         
         javascript_code = """
 <script>
@@ -258,7 +258,7 @@ document.addEventListener('DOMContentLoaded', function() {
         panel.classList.toggle('expanded');
         // 更新按钮图标
         const isExpanded = panel.classList.contains('expanded');
-        toggleBtn.textContent = isExpanded ? '▶️' : '◀️';
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
         toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
         
         // 动态调整按钮位置
@@ -287,7 +287,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!isClickOnPanel && !isClickOnToggle) {
             panel.classList.remove('expanded');
-            toggleBtn.textContent = '⬅';
+            toggleBtn.textContent = '◁';
             toggleBtn.title = '打开附件面板';
             toggleBtn.style.right = '10px'; // 重置按钮位置
         }
@@ -297,7 +297,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && panel.classList.contains('expanded')) {
             panel.classList.remove('expanded');
-            toggleBtn.textContent = '⬅';
+            toggleBtn.textContent = '◁';
             toggleBtn.title = '打开附件面板';
             toggleBtn.style.right = '10px'; // 重置按钮位置
         }
