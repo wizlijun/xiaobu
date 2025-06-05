@@ -301,7 +301,7 @@ class ShareHtmlApp(QMainWindow):
         # 去掉文件扩展名，创建文件夹名称
         basename = os.path.splitext(filename)[0]
         folder_name = f"{basename}_files"
-        full_url = f"{website}{folder_name}/capsule.html"
+        full_url = f"{website}{folder_name}/{filename}"
         clipboard = QApplication.clipboard()
         clipboard.setText(full_url)
         self.statusBar().showMessage(f"已复制链接: {full_url}", 3000)
@@ -340,20 +340,26 @@ class ShareHtmlApp(QMainWindow):
             basename = os.path.splitext(share_filename)[0]
             folder_name = f"{basename}_files"
             target_folder = os.path.join(git_path, folder_name)
-            target_path = os.path.join(target_folder, "capsule.html")
             
             # 创建目标文件夹
             self.log_text.append(f"正在创建文件夹 {target_folder}")
             os.makedirs(target_folder, exist_ok=True)
             
-            # 复制文件
+            # 复制文件为capsule.html
+            target_path = os.path.join(target_folder, "capsule.html")
             self.log_text.append(f"正在复制文件到 {target_path}")
             shutil.copy2(source_file, target_path)
+            
+            # 同时复制文件为用户指定的文件名
+            target_share_path = os.path.join(target_folder, share_filename)
+            self.log_text.append(f"正在复制文件到 {target_share_path}")
+            shutil.copy2(source_file, target_share_path)
             
             # 2. 创建meta.yaml文件
             self.log_text.append("正在创建meta.yaml文件...")
             html_title = self.extract_html_title(source_file)
-            current_time = datetime.now().isoformat()
+            # 使用标准ISO 8601格式，包含时区信息
+            current_time = datetime.now().astimezone().isoformat()
             source_url = self.source_url_input.text()
             
             meta_data = {
@@ -372,12 +378,37 @@ class ShareHtmlApp(QMainWindow):
             gencapsule_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gencapsule.py")
             if os.path.exists(gencapsule_script):
                 self.log_text.append(f"正在调用gencapsule.py脚本，参数: {basename}")
+                
+                # 获取脚本所在目录和Git仓库路径
+                script_dir = os.path.dirname(gencapsule_script)
+                git_path_abs = os.path.abspath(git_path)
+                
+                # 检查必要的目录是否存在
+                template_dir = os.path.join(script_dir, "template")
+                
+                if not os.path.exists(git_path_abs):
+                    self.log_text.append(f"警告: Git目录不存在 ({git_path_abs})")
+                if not os.path.exists(template_dir):
+                    self.log_text.append(f"警告: template目录不存在 ({template_dir})")
+                
+                self.log_text.append(f"Git目录: {git_path_abs}")
+                self.log_text.append(f"脚本目录: {script_dir}")
+                
+                # 创建一个修改版的gencapsule调用，传递Git路径作为基础目录
+                # 我们需要修改gencapsule.py以支持自定义基础目录，或者创建软链接
+                # 这里先尝试在脚本目录运行，并将Git路径作为环境变量传递
+                
+                env = dict(os.environ)
+                env['GENCAPSULE_BASE_DIR'] = git_path_abs
+                env['PYTHONPATH'] = script_dir
+                
                 gencapsule_process = subprocess.Popen(
-                    ["python3", gencapsule_script, basename],
+                    ["python3", gencapsule_script, basename, git_path_abs],  # 添加Git路径作为第二个参数
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,
-                    cwd=os.path.dirname(gencapsule_script)
+                    cwd=script_dir,  # 在脚本目录运行
+                    env=env
                 )
                 gencapsule_stdout, gencapsule_stderr = gencapsule_process.communicate()
                 
