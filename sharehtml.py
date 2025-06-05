@@ -298,10 +298,8 @@ class ShareHtmlApp(QMainWindow):
         if not website.endswith("/"):
             website += "/"
         
-        # 去掉文件扩展名，创建文件夹名称
-        basename = os.path.splitext(filename)[0]
-        folder_name = f"{basename}_files"
-        full_url = f"{website}{folder_name}/{filename}"
+        # gencapsule.py生成的最终文件在name_files的同目录级
+        full_url = f"{website}{filename}"
         clipboard = QApplication.clipboard()
         clipboard.setText(full_url)
         self.statusBar().showMessage(f"已复制链接: {full_url}", 3000)
