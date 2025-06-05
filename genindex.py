@@ -371,18 +371,12 @@ def main(path_str, preurl):
             # 优先从meta.yaml文件中获取信息
             meta_title, meta_datetime, meta_tags = load_meta_yaml(file, ignored_tags)
             
-            # 如果meta.yaml没有提供完整信息，从HTML文件的YAML header中获取
-            if not meta_datetime or not meta_tags:
+            # 如果meta.yaml没有提供标签信息，从HTML文件的YAML header中获取标签
+            if not meta_tags:
                 yaml_datetime, yaml_tags, yaml_content = extract_yaml_datetime(file, ignored_tags)
-                
-                # 使用meta.yaml的信息优先，回退到YAML header的信息
-                datetime_value = meta_datetime or yaml_datetime
-                tags = meta_tags if meta_tags else yaml_tags
-                title = meta_title
+                tags = yaml_tags
             else:
-                datetime_value = meta_datetime
                 tags = meta_tags
-                title = meta_title
             
             # 检查文件是否在blog目录中，如果是则自动添加blog标签组
             is_blog_file = 'blog' in file.parts
@@ -391,83 +385,56 @@ def main(path_str, preurl):
             
             print(f"提取到的标签: {tags}")
             
-            if datetime_value:
-                # 如果能从meta.yaml或YAML header中获取到日期，使用它
-                date_str = datetime_value
-                print(f"使用日期: {date_str}")
-                # 确保日期格式统一，如果日期格式不是'%Y-%m-%d %H:%M'，可能需要转换
-                try:
-                    # 使用标准ISO 8601格式解析
-                    date_formats = [
-                        '%Y-%m-%dT%H:%M:%S%z',  # 2023-01-01T12:00:00+0800
-                        '%Y-%m-%dT%H:%M:%SZ',   # 2023-01-01T12:00:00Z (UTC)
-                        '%Y-%m-%dT%H:%M:%S'     # 2023-01-01T12:00:00 (无时区信息)
-                    ]
-                    
-                    parsed = False
-                    for fmt in date_formats:
-                        try:
-                            parsed_date = datetime.datetime.strptime(date_str, fmt)
-                            # 统一转换为带时区的ISO 8601格式
-                            if fmt == '%Y-%m-%dT%H:%M:%S':
-                                # 如果原始格式没有时区信息，假定为本地时区
-                                local_tz = datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
-                                parsed_date = parsed_date.replace(tzinfo=local_tz)
-                            
-                            date_str = parsed_date.strftime('%Y-%m-%dT%H:%M:%S%z')
-                            # 将+0800格式转换为+08:00格式
-                            if '+' in date_str or '-' in date_str:
-                                offset_char = '+' if '+' in date_str else '-'
-                                parts = date_str.split(offset_char)
-                                offset = parts[1]
-                                if len(offset) == 4:  # 无冒号格式
-                                    date_str = f"{parts[0]}{offset_char}{offset[:2]}:{offset[2:]}"
-                            
-                            print(f"ISO 8601日期解析成功: {date_str}")
-                            parsed = True
-                            break
-                        except ValueError:
-                            continue
-                    
-                    if not parsed:
-                        print(f"无法解析为ISO 8601格式: {date_str}，使用当前时间")
-                        date_str = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S%z')
-                        # 添加冒号到时区偏移
-                        if '+' in date_str or '-' in date_str:
-                            offset_char = '+' if '+' in date_str else '-'
-                            parts = date_str.split(offset_char)
-                            offset = parts[1]
-                            if len(offset) == 4:  # 无冒号格式
-                                date_str = f"{parts[0]}{offset_char}{offset[:2]}:{offset[2:]}"
-                except Exception as e:
-                    print(f"日期解析发生异常: {e}，使用当前时间")
-                    date_str = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S%z')
-                    # 添加冒号到时区偏移
-                    if '+' in date_str or '-' in date_str:
-                        offset_char = '+' if '+' in date_str else '-'
-                        parts = date_str.split(offset_char)
-                        offset = parts[1]
-                        if len(offset) == 4:  # 无冒号格式
-                            date_str = f"{parts[0]}{offset_char}{offset[:2]}:{offset[2:]}"
-            else:
-                # 如果meta.yaml和YAML header中都没有日期，尝试从文件名提取
-                filename_date = extract_datetime_from_filename(file.name)
-                if filename_date:
-                    date_str = filename_date
-                    print(f"从文件名提取到日期: {date_str}")
-                else:
-                    # 如果文件名中没有日期，使用文件修改时间
-                    stat = file.stat()
-                    modified = datetime.datetime.fromtimestamp(stat.st_mtime)
-                    
-                    # 添加系统时区信息
-                    local_tz = datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
-                    modified_with_tz = modified.replace(tzinfo=local_tz)
-                    date_str = modified_with_tz.isoformat()
-                    
-                    print(f"使用文件修改时间: {date_str}")
+            # 时间处理：优先使用meta.yaml中的datetime，否则使用当前时间
+            if meta_datetime:
+                date_str = str(meta_datetime)
+                print(f"使用meta.yaml中的日期: {date_str}")
                 
-            title = title or extract_title(file)
+                # 确保日期格式正确
+                try:
+                    # 如果是字符串，尝试转换为ISO 8601格式
+                    if isinstance(meta_datetime, str):
+                        # 尝试不同的日期格式
+                        date_formats = [
+                            '%Y-%m-%dT%H:%M:%S%z',     # 2023-01-01T12:00:00+0800
+                            '%Y-%m-%dT%H:%M:%S',       # 2023-01-01T12:00:00
+                            '%Y-%m-%d %H:%M:%S',       # 2023-01-01 12:00:00
+                            '%Y-%m-%d %H:%M',          # 2023-01-01 12:00
+                            '%Y-%m-%d',                # 2023-01-01
+                        ]
+                        
+                        parsed = False
+                        for fmt in date_formats:
+                            try:
+                                parsed_date = datetime.datetime.strptime(date_str, fmt)
+                                # 如果没有时区信息，添加本地时区
+                                if fmt in ['%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%d']:
+                                    local_tz = datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
+                                    parsed_date = parsed_date.replace(tzinfo=local_tz)
+                                
+                                date_str = parsed_date.isoformat()
+                                print(f"成功解析meta.yaml日期: {date_str}")
+                                parsed = True
+                                break
+                            except ValueError:
+                                continue
+                        
+                        if not parsed:
+                            print(f"无法解析meta.yaml中的日期格式: {date_str}，使用当前时间")
+                            raise ValueError("日期格式无法解析")
+                    
+                except Exception as e:
+                    print(f"meta.yaml日期处理异常: {e}，使用当前时间")
+                    current_time = datetime.datetime.now().astimezone()
+                    date_str = current_time.isoformat()
+                    print(f"使用当前时间: {date_str}")
+            else:
+                # 没有meta.yaml中的datetime，直接使用当前时间
+                current_time = datetime.datetime.now().astimezone()
+                date_str = current_time.isoformat()
+                print(f"meta.yaml中没有datetime，使用当前时间: {date_str}")
+                
+            title = meta_title or extract_title(file)
             print(f"文件标题: {title}")
             
             # 对于blog目录下的文件，生成正确的相对路径
