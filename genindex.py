@@ -270,6 +270,61 @@ def generate_grouped_entries(file_infos, preurl, tag_to_group):
         output.append('</ul>')
     return '\n'.join(output)
 
+def load_meta_yaml(html_file_path, ignored_tags=None):
+    """从对应的meta.yaml文件中读取信息"""
+    if ignored_tags is None:
+        ignored_tags = set()
+        
+    try:
+        # 获取HTML文件的文件名（不含扩展名）
+        html_file = Path(html_file_path)
+        name_without_ext = html_file.stem
+        
+        # 构建meta.yaml文件路径：name_files/meta.yaml
+        meta_yaml_path = html_file.parent / f"{name_without_ext}_files" / "meta.yaml"
+        
+        print(f"尝试读取meta.yaml文件: {meta_yaml_path}")
+        
+        if not meta_yaml_path.exists():
+            print(f"meta.yaml文件不存在: {meta_yaml_path}")
+            return None, None, None
+        
+        with open(meta_yaml_path, 'r', encoding='utf-8') as f:
+            meta_data = yaml.safe_load(f)
+        
+        if not meta_data:
+            print(f"meta.yaml文件为空或格式错误")
+            return None, None, None
+        
+        # 提取标题
+        title = meta_data.get('title') or meta_data.get('name')
+        
+        # 提取日期时间
+        datetime_value = (meta_data.get('datetime') or 
+                         meta_data.get('date') or 
+                         meta_data.get('time') or 
+                         meta_data.get('published') or 
+                         meta_data.get('created'))
+        
+        # 提取标签
+        raw_tags = meta_data.get('tags', [])
+        if isinstance(raw_tags, str):
+            # 如果tags是字符串，按逗号分割
+            raw_tags = [tag.strip() for tag in raw_tags.split(',') if tag.strip()]
+        elif not isinstance(raw_tags, list):
+            raw_tags = []
+        
+        # 过滤掉被忽略的标签
+        tags = [tag for tag in raw_tags if tag and tag not in ignored_tags]
+        
+        print(f"从meta.yaml读取到 - 标题: {title}, 日期: {datetime_value}, 原始标签: {raw_tags}, 过滤后标签: {tags}")
+        
+        return title, datetime_value, tags
+        
+    except Exception as e:
+        print(f"读取meta.yaml文件时出错: {e}")
+        return None, None, None
+
 def main(path_str, preurl):
     path = Path(path_str)
     if not path.is_dir():
@@ -313,8 +368,21 @@ def main(path_str, preurl):
     for file in html_files:
         try:
             print(f"\n处理文件: {file}")
-            # 优先从YAML header中获取日期和标签
-            yaml_datetime, tags, yaml_content = extract_yaml_datetime(file, ignored_tags)
+            # 优先从meta.yaml文件中获取信息
+            meta_title, meta_datetime, meta_tags = load_meta_yaml(file, ignored_tags)
+            
+            # 如果meta.yaml没有提供完整信息，从HTML文件的YAML header中获取
+            if not meta_datetime or not meta_tags:
+                yaml_datetime, yaml_tags, yaml_content = extract_yaml_datetime(file, ignored_tags)
+                
+                # 使用meta.yaml的信息优先，回退到YAML header的信息
+                datetime_value = meta_datetime or yaml_datetime
+                tags = meta_tags if meta_tags else yaml_tags
+                title = meta_title
+            else:
+                datetime_value = meta_datetime
+                tags = meta_tags
+                title = meta_title
             
             # 检查文件是否在blog目录中，如果是则自动添加blog标签组
             is_blog_file = 'blog' in file.parts
@@ -323,11 +391,11 @@ def main(path_str, preurl):
             
             print(f"提取到的标签: {tags}")
             
-            if yaml_datetime:
-                # 如果能从YAML中获取到日期，使用它
-                date_str = yaml_datetime
-                print(f"使用YAML日期: {date_str}")
-                # 确保日期格式统一，如果YAML中的日期格式不是'%Y-%m-%d %H:%M'，可能需要转换
+            if datetime_value:
+                # 如果能从meta.yaml或YAML header中获取到日期，使用它
+                date_str = datetime_value
+                print(f"使用日期: {date_str}")
+                # 确保日期格式统一，如果日期格式不是'%Y-%m-%d %H:%M'，可能需要转换
                 try:
                     # 使用标准ISO 8601格式解析
                     date_formats = [
@@ -382,7 +450,7 @@ def main(path_str, preurl):
                         if len(offset) == 4:  # 无冒号格式
                             date_str = f"{parts[0]}{offset_char}{offset[:2]}:{offset[2:]}"
             else:
-                # 如果YAML中没有日期，尝试从文件名提取
+                # 如果meta.yaml和YAML header中都没有日期，尝试从文件名提取
                 filename_date = extract_datetime_from_filename(file.name)
                 if filename_date:
                     date_str = filename_date
@@ -399,7 +467,7 @@ def main(path_str, preurl):
                     
                     print(f"使用文件修改时间: {date_str}")
                 
-            title = extract_title(file)
+            title = title or extract_title(file)
             print(f"文件标题: {title}")
             
             # 对于blog目录下的文件，生成正确的相对路径
