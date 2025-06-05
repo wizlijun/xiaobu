@@ -258,7 +258,7 @@ document.addEventListener('DOMContentLoaded', function() {
         panel.classList.toggle('expanded');
         // 更新按钮图标
         const isExpanded = panel.classList.contains('expanded');
-        toggleBtn.textContent = isExpanded ? '➡' : '⬅';
+        toggleBtn.textContent = isExpanded ? '▶️' : '◀️';
         toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
         
         // 动态调整按钮位置
