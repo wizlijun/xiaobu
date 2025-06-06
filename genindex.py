@@ -371,12 +371,14 @@ def main(path_str, preurl):
             # 优先从meta.yaml文件中获取信息
             meta_title, meta_datetime, meta_tags = load_meta_yaml(file, ignored_tags)
             
-            # 如果meta.yaml没有提供标签信息，从HTML文件的YAML header中获取标签
-            if not meta_tags:
-                yaml_datetime, yaml_tags, yaml_content = extract_yaml_datetime(file, ignored_tags)
-                tags = yaml_tags
-            else:
+            # 从HTML文件的YAML header中获取信息（用于补充meta.yaml中缺失的信息）
+            yaml_datetime, yaml_tags, yaml_content = extract_yaml_datetime(file, ignored_tags)
+            
+            # 标签处理：优先使用meta.yaml，否则使用HTML YAML header
+            if meta_tags:
                 tags = meta_tags
+            else:
+                tags = yaml_tags
             
             # 检查文件是否在blog目录中，如果是则自动添加blog标签组
             is_blog_file = 'blog' in file.parts
@@ -385,7 +387,7 @@ def main(path_str, preurl):
             
             print(f"提取到的标签: {tags}")
             
-            # 时间处理：优先使用meta.yaml中的datetime，否则使用当前时间
+            # 时间处理：优先级 meta.yaml datetime > HTML YAML header datetime > 当前时间
             if meta_datetime:
                 date_str = str(meta_datetime)
                 print(f"使用meta.yaml中的日期: {date_str}")
@@ -424,15 +426,24 @@ def main(path_str, preurl):
                             raise ValueError("日期格式无法解析")
                     
                 except Exception as e:
-                    print(f"meta.yaml日期处理异常: {e}，使用当前时间")
-                    current_time = datetime.datetime.now().astimezone()
-                    date_str = current_time.isoformat()
-                    print(f"使用当前时间: {date_str}")
+                    print(f"meta.yaml日期处理异常: {e}，尝试使用HTML YAML header中的日期")
+                    # 如果meta.yaml中的日期解析失败，尝试使用HTML YAML header中的日期
+                    if yaml_datetime:
+                        date_str = yaml_datetime
+                        print(f"使用HTML YAML header中的日期: {date_str}")
+                    else:
+                        current_time = datetime.datetime.now().astimezone()
+                        date_str = current_time.isoformat()
+                        print(f"使用当前时间: {date_str}")
+            elif yaml_datetime:
+                # 没有meta.yaml中的datetime，但有HTML YAML header中的datetime
+                date_str = yaml_datetime
+                print(f"使用HTML YAML header中的日期: {date_str}")
             else:
-                # 没有meta.yaml中的datetime，直接使用当前时间
+                # 两个地方都没有datetime，使用当前时间
                 current_time = datetime.datetime.now().astimezone()
                 date_str = current_time.isoformat()
-                print(f"meta.yaml中没有datetime，使用当前时间: {date_str}")
+                print(f"meta.yaml和HTML YAML header中都没有datetime，使用当前时间: {date_str}")
                 
             title = meta_title or extract_title(file)
             print(f"文件标题: {title}")
