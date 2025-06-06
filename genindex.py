@@ -41,97 +41,7 @@ def load_tags_yaml(tags_yaml_path):
         print(f"读取tags.yaml文件出错: {e}")
         return {}, {}, {}, set()
 
-def extract_yaml_tags(yaml_content, ignored_tags=None):
-    """从YAML内容中提取tags字段，并过滤掉被忽略的标签"""
-    if not yaml_content:
-        return []
-    
-    if ignored_tags is None:
-        ignored_tags = set()
-    
-    # 尝试多种tags字段格式
-    tags_patterns = [
-        r'tags\s*:\s*\[(.*?)\]',              # 数组格式: tags: [tag1, tag2]
-        r'tags\s*:\s*\n\s*-\s*(.*?)(?:\n|$)', # YAML列表格式: tags:\n  - tag1\n  - tag2
-        r'tags\s*:\s*([\w\s,]+)',              # 简单格式: tags: tag1, tag2
-    ]
-    
-    for pattern in tags_patterns:
-        tags_match = re.search(pattern, yaml_content, re.IGNORECASE | re.DOTALL)
-        if tags_match:
-            tags_str = tags_match.group(1).strip()
-            # 处理不同格式的标签
-            if ',' in tags_str:  # 逗号分隔的格式
-                raw_tags = [tag.strip().strip('"\'') for tag in tags_str.split(',')]
-            elif '\n' in tags_str:  # 多行YAML列表
-                raw_tags = [line.strip().lstrip('- ').strip('"\'') for line in tags_str.split('\n') if line.strip()]
-            else:  # 单个标签或空格分隔
-                raw_tags = [tag.strip().strip('"\'') for tag in tags_str.split() if tag.strip()]
-            
-            # 过滤掉被忽略的标签
-            filtered_tags = [tag for tag in raw_tags if tag and tag not in ignored_tags]
-            return filtered_tags
-    
-    return []
 
-def extract_yaml_datetime(file_path, ignored_tags=None):
-    """从HTML文件的YAML header中提取datetime字段"""
-    try:
-        print(f"尝试从 {file_path} 提取YAML日期")
-        with open(file_path, 'r', encoding='utf-8') as f:
-            content = f.read()
-            # 检查文件内容前30行，查看实际格式
-            first_lines = '\n'.join(content.split('\n')[:30])
-            print(f"文件前几行内容样本:\n{first_lines[:300]}...")
-            
-            # 尝试多种YAML header格式
-            yaml_patterns = [
-                # 标准的YAML格式，以三个短横线开始和结束
-                r'^---\s*\n(.*?)\n---',
-                # 也可能是HTML注释中的YAML
-                r'<!--\s*---\s*\n(.*?)\n---\s*-->',
-                # Jekyll风格的YAML front matter
-                r'^---\s*\n(.*?)\n---\s*\n',
-                # 简单的键值对格式（非严格YAML）
-                r'<!--\s*((?:[\w-]+\s*:\s*.*\n)+)\s*-->'
-            ]
-            
-            yaml_content = None
-            for pattern in yaml_patterns:
-                yaml_match = re.search(pattern, content, re.DOTALL)
-                if yaml_match:
-                    yaml_content = yaml_match.group(1)
-                    print(f"使用模式 '{pattern}' 找到YAML header: {yaml_content[:100]}...")
-                    break
-            
-            if yaml_content:
-                # 提取tags信息，传递ignored_tags参数
-                tags = extract_yaml_tags(yaml_content, ignored_tags)
-                
-                # 尝试多种datetime字段格式
-                datetime_patterns = [
-                    r'datetime\s*:\s*([\d\-: \.TZ+]+)',  # 标准格式: datetime: 2023-01-01 12:00
-                    r'date\s*:\s*([\d\-: \.TZ+]+)',      # 或者使用date字段
-                    r'time\s*:\s*([\d\-: \.TZ+]+)',      # 或者使用time字段
-                    r'published\s*:\s*([\d\-: \.TZ+]+)', # 或者使用published字段
-                    r'created\s*:\s*([\d\-: \.TZ+]+)'    # 或者使用created字段
-                ]
-                
-                for pattern in datetime_patterns:
-                    datetime_match = re.search(pattern, yaml_content, re.IGNORECASE)
-                    if datetime_match:
-                        yaml_datetime = datetime_match.group(1).strip()
-                        print(f"找到日期字段: {yaml_datetime} (使用模式: {pattern})")
-                        return yaml_datetime, tags, yaml_content
-                
-                print(f"YAML中没有找到任何日期相关字段")
-                return None, tags, yaml_content
-            else:
-                print(f"文件中没有找到YAML header")
-        return None, [], None
-    except Exception as e:
-        print(f"提取YAML日期时出错: {e}")
-        return None, [], None
 
 def extract_title(file_path):
     """从 HTML 文件中提取 <title> 内容"""
@@ -143,39 +53,7 @@ def extract_title(file_path):
     except Exception as e:
         return '读取失败'
 
-def extract_datetime_from_filename(filename):
-    """尝试从文件名中提取日期时间信息"""
-    # 常见的日期格式模式
-    patterns = [
-        r'(\d{4})[_\-]?(\d{2})[_\-]?(\d{2})[_\-]?(\d{2})[_\-]?(\d{2})',  # 20230101_1200 或 2023-01-01-12-00
-        r'(\d{4})[_\-]?(\d{2})[_\-]?(\d{2})',                            # 20230101 或 2023-01-01
-    ]
-    
-    for pattern in patterns:
-        match = re.search(pattern, filename)
-        if match:
-            groups = match.groups()
-            if len(groups) == 5:  # 带时间
-                year, month, day, hour, minute = groups
-                try:
-                    dt = datetime.datetime(int(year), int(month), int(day), int(hour), int(minute))
-                    # 添加本地时区
-                    local_tz = datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
-                    dt = dt.replace(tzinfo=local_tz)
-                    return dt.isoformat()
-                except ValueError:
-                    pass
-            elif len(groups) == 3:  # 只有日期
-                year, month, day = groups
-                try:
-                    dt = datetime.datetime(int(year), int(month), int(day))
-                    # 添加本地时区
-                    local_tz = datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
-                    dt = dt.replace(tzinfo=local_tz)
-                    return dt.isoformat()
-                except ValueError:
-                    pass
-    return None
+
 
 def generate_grouped_entries(file_infos, preurl, tag_to_group):
     """按年周分组生成 HTML 列表，包含标签信息"""
@@ -368,17 +246,11 @@ def main(path_str, preurl):
     for file in html_files:
         try:
             print(f"\n处理文件: {file}")
-            # 优先从meta.yaml文件中获取信息
+            # 严格只从meta.yaml文件中获取信息
             meta_title, meta_datetime, meta_tags = load_meta_yaml(file, ignored_tags)
             
-            # 从HTML文件的YAML header中获取信息（用于补充meta.yaml中缺失的信息）
-            yaml_datetime, yaml_tags, yaml_content = extract_yaml_datetime(file, ignored_tags)
-            
-            # 标签处理：优先使用meta.yaml，否则使用HTML YAML header
-            if meta_tags:
-                tags = meta_tags
-            else:
-                tags = yaml_tags
+            # 使用meta.yaml中的标签信息
+            tags = meta_tags or []
             
             # 检查文件是否在blog目录中，如果是则自动添加blog标签组
             is_blog_file = 'blog' in file.parts
@@ -387,7 +259,7 @@ def main(path_str, preurl):
             
             print(f"提取到的标签: {tags}")
             
-            # 时间处理：优先级 meta.yaml datetime > HTML YAML header datetime > 当前时间
+            # 时间处理：严格使用meta.yaml中的datetime
             if meta_datetime:
                 date_str = str(meta_datetime)
                 print(f"使用meta.yaml中的日期: {date_str}")
@@ -426,24 +298,15 @@ def main(path_str, preurl):
                             raise ValueError("日期格式无法解析")
                     
                 except Exception as e:
-                    print(f"meta.yaml日期处理异常: {e}，尝试使用HTML YAML header中的日期")
-                    # 如果meta.yaml中的日期解析失败，尝试使用HTML YAML header中的日期
-                    if yaml_datetime:
-                        date_str = yaml_datetime
-                        print(f"使用HTML YAML header中的日期: {date_str}")
-                    else:
-                        current_time = datetime.datetime.now().astimezone()
-                        date_str = current_time.isoformat()
-                        print(f"使用当前时间: {date_str}")
-            elif yaml_datetime:
-                # 没有meta.yaml中的datetime，但有HTML YAML header中的datetime
-                date_str = yaml_datetime
-                print(f"使用HTML YAML header中的日期: {date_str}")
+                    print(f"meta.yaml日期处理异常: {e}，使用当前时间")
+                    current_time = datetime.datetime.now().astimezone()
+                    date_str = current_time.isoformat()
+                    print(f"使用当前时间: {date_str}")
             else:
-                # 两个地方都没有datetime，使用当前时间
+                # meta.yaml中没有datetime，使用当前时间
                 current_time = datetime.datetime.now().astimezone()
                 date_str = current_time.isoformat()
-                print(f"meta.yaml和HTML YAML header中都没有datetime，使用当前时间: {date_str}")
+                print(f"meta.yaml中没有datetime，使用当前时间: {date_str}")
                 
             title = meta_title or extract_title(file)
             print(f"文件标题: {title}")
