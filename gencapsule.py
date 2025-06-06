@@ -6,7 +6,10 @@ gencapsule.py - 自动生成胶囊化阅读页面
 用于将大模型摘要后的交互式阅读页面自动生成为完整的HTML文件，
 包含样式、交互功能和元数据信息。
 
-使用方法: python gencapsule.py <name>
+使用方法: 
+    python gencapsule.py <name>              # 处理ai目录下的文件
+    python gencapsule.py blog/<name>         # 处理ai/blog目录下的文件
+    python gencapsule.py <name> <base_dir>   # 自定义基础目录
 """
 
 import sys
@@ -97,7 +100,7 @@ def get_file_size_info(file_path):
         return "未知大小"
 
 
-def generate_attachments_html(attachments, name):
+def generate_attachments_html(attachments, name, base_dir=None):
     """生成附件列表的HTML"""
     if not attachments:
         return ""
@@ -112,8 +115,13 @@ def generate_attachments_html(attachments, name):
         if title and filename:
             # 附件文件路径相对于_files目录
             file_path = f"{name}_files/{filename}"
+            
             # 获取实际文件路径用于大小检测
-            actual_file_path = Path('ai') / file_path
+            if base_dir:
+                actual_file_path = base_dir / file_path
+            else:
+                actual_file_path = Path('ai') / file_path
+            
             file_size = get_file_size_info(actual_file_path)
             
             html.append(f'    <div class="attachment-item">')
@@ -171,21 +179,29 @@ def inject_floatbox(html_content, floatbox_content):
 def main():
     """主函数"""
     if len(sys.argv) < 2 or len(sys.argv) > 3:
-        error_exit("使用方法: python gencapsule.py <name> [base_dir]")
+        error_exit("使用方法: python gencapsule.py <name> [base_dir]\n       或: python gencapsule.py blog/<name>")
     
     name = sys.argv[1]
     
-    # 支持自定义基础目录
-    if len(sys.argv) == 3:
+    # 检查是否为 blog/name 格式
+    if name.startswith('blog/'):
+        # 提取实际的 name 部分
+        actual_name = name[5:]  # 去掉 "blog/" 前缀
+        base_dir = Path('ai/blog')
+        print(f"检测到blog格式参数，处理blog目录下的文件: {actual_name}")
+    elif len(sys.argv) == 3:
+        # 支持自定义基础目录
+        actual_name = name
         base_dir = Path(sys.argv[2])
     else:
         # 默认使用'ai'目录或环境变量指定的目录
+        actual_name = name
         base_dir_env = os.environ.get('GENCAPSULE_BASE_DIR', 'ai')
         base_dir = Path(base_dir_env)
     
     # 定义路径
-    input_dir = base_dir / f"{name}_files"
-    output_file = base_dir / f"{name}.html"
+    input_dir = base_dir / f"{actual_name}_files"
+    output_file = base_dir / f"{actual_name}.html"
     template_dir = Path('template')
     
     capsule_html_path = input_dir / "capsule.html"
@@ -201,7 +217,8 @@ def main():
     if not template_dir.exists():
         error_exit(f"模板目录不存在: {template_dir}")
     
-    print(f"开始处理: {name}")
+    print(f"开始处理: {actual_name}")
+    print(f"基础目录: {base_dir}")
     print(f"输入目录: {input_dir}")
     print(f"输出文件: {output_file}")
     
@@ -216,7 +233,7 @@ def main():
     print("处理元数据...")
     source_html = generate_source_html(meta_data.get('source'))
     links_html = generate_links_html(meta_data.get('links'))
-    attachments_html = generate_attachments_html(meta_data.get('attachments'), name)
+    attachments_html = generate_attachments_html(meta_data.get('attachments'), actual_name, base_dir)
     
     # 检查是否有任何内容需要显示在浮动框中
     has_floatbox_content = bool(source_html or links_html or attachments_html)

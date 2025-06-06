@@ -3,7 +3,7 @@
 """
 processoldhtml.py - 批处理旧HTML文件，提取YAML信息
 
-用于处理ai目录下包含YAML头部信息的HTML文件：
+用于处理ai/blog目录下包含YAML头部信息的HTML文件：
 1. 检测HTML文件头部的YAML信息
 2. 创建对应的_files目录和meta.yaml文件
 3. 从HTML中移除YAML部分并保存
@@ -180,14 +180,14 @@ def process_html_file(html_path):
 
 def main():
     """主函数"""
-    ai_dir = Path('ai')
+    ai_dir = Path('ai/blog')
     
-    # 检查ai目录是否存在
+    # 检查ai/blog目录是否存在
     if not ai_dir.exists():
-        print(f"错误: ai目录不存在: {ai_dir}")
+        print(f"错误: ai/blog目录不存在: {ai_dir}")
         return
     
-    print(f"开始处理ai目录: {ai_dir}")
+    print(f"开始处理ai/blog目录: {ai_dir}")
     print("=" * 50)
     
     # 查找所有HTML文件
