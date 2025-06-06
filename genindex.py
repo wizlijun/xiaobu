@@ -264,44 +264,48 @@ def main(path_str, preurl):
                 date_str = str(meta_datetime)
                 print(f"使用meta.yaml中的日期: {date_str}")
                 
-                # 确保日期格式正确
-                try:
-                    # 如果是字符串，尝试转换为ISO 8601格式
-                    if isinstance(meta_datetime, str):
-                        # 尝试不同的日期格式
-                        date_formats = [
-                            '%Y-%m-%dT%H:%M:%S%z',     # 2023-01-01T12:00:00+0800
-                            '%Y-%m-%dT%H:%M:%S',       # 2023-01-01T12:00:00
-                            '%Y-%m-%d %H:%M:%S',       # 2023-01-01 12:00:00
-                            '%Y-%m-%d %H:%M',          # 2023-01-01 12:00
-                            '%Y-%m-%d',                # 2023-01-01
-                        ]
-                        
-                        parsed = False
-                        for fmt in date_formats:
-                            try:
-                                parsed_date = datetime.datetime.strptime(date_str, fmt)
-                                # 如果没有时区信息，添加本地时区
-                                if fmt in ['%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%d']:
-                                    local_tz = datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
-                                    parsed_date = parsed_date.replace(tzinfo=local_tz)
-                                
-                                date_str = parsed_date.isoformat()
-                                print(f"成功解析meta.yaml日期: {date_str}")
-                                parsed = True
-                                break
-                            except ValueError:
-                                continue
-                        
-                        if not parsed:
-                            print(f"无法解析meta.yaml中的日期格式: {date_str}，使用当前时间")
-                            raise ValueError("日期格式无法解析")
+                # 在处理日期字符串之前，先预处理一下格式
+                if isinstance(meta_datetime, str):
+                    # 预处理：处理带冒号的时区格式 (+08:00 -> +0800)
+                    if '+' in date_str or '-' in date_str:
+                        # 匹配时区部分，如 +08:00 或 -05:00
+                        tz_pattern = r'([+-]\d{2}):(\d{2})$'
+                        match = re.search(tz_pattern, date_str)
+                        if match:
+                            # 移除时区中的冒号
+                            date_str = re.sub(tz_pattern, r'\1\2', date_str)
                     
-                except Exception as e:
-                    print(f"meta.yaml日期处理异常: {e}，使用当前时间")
-                    current_time = datetime.datetime.now().astimezone()
-                    date_str = current_time.isoformat()
-                    print(f"使用当前时间: {date_str}")
+                    # 尝试不同的日期格式
+                    date_formats = [
+                        '%Y-%m-%dT%H:%M:%S.%f%z',  # 2025-06-06T09:42:10.757250+0800 (带微秒和时区)
+                        '%Y-%m-%dT%H:%M:%S%z',     # 2023-01-01T12:00:00+0800 (带时区)
+                        '%Y-%m-%dT%H:%M:%S.%f',    # 2025-06-06T09:42:10.757250 (带微秒，无时区)
+                        '%Y-%m-%dT%H:%M:%S',       # 2023-01-01T12:00:00 (标准ISO格式)
+                        '%Y-%m-%d %H:%M:%S',       # 2023-01-01 12:00:00 (空格分隔)
+                        '%Y-%m-%d %H:%M',          # 2023-01-01 12:00 (无秒)
+                        '%Y-%m-%d',                # 2023-01-01 (仅日期)
+                    ]
+                    
+                    parsed = False
+                    for fmt in date_formats:
+                        try:
+                            parsed_date = datetime.datetime.strptime(date_str, fmt)
+                            # 如果没有时区信息，添加本地时区
+                            if fmt in ['%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%d']:
+                                local_tz = datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
+                                parsed_date = parsed_date.replace(tzinfo=local_tz)
+                            
+                            date_str = parsed_date.isoformat()
+                            print(f"成功解析meta.yaml日期: {date_str}")
+                            parsed = True
+                            break
+                        except ValueError:
+                            continue
+                    
+                    if not parsed:
+                        print(f"无法解析meta.yaml中的日期格式: {date_str}，使用当前时间")
+                        raise ValueError("日期格式无法解析")
+                
             else:
                 # meta.yaml中没有datetime，使用当前时间
                 current_time = datetime.datetime.now().astimezone()
