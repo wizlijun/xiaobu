@@ -94,15 +94,23 @@ def generate_grouped_entries(file_infos, preurl, tag_to_group):
                     # 带时区信息的ISO格式
                     if 'Z' in date_str:
                         date_str = date_str.replace('Z', '+00:00')
-                    # 处理时区格式没有冒号的情况（例如+0800）
+                    # 处理时区格式 - 统一转换为 Python 可解析的格式
                     if '+' in date_str or '-' in date_str.split('T')[1]:
-                        for char in ['+', '-']:
-                            if char in date_str.split('T')[1]:
-                                parts = date_str.split(char)
-                                if len(parts) > 1:
-                                    offset = parts[1]
-                                    if len(offset) == 4 and ':' not in offset:  # 如+0800
-                                        date_str = f"{parts[0]}{char}{offset[:2]}:{offset[2:]}"
+                        # 处理 +08:00 格式转换为 +0800 格式
+                        tz_pattern = r'([+-]\d{2}):(\d{2})$'
+                        match = re.search(tz_pattern, date_str)
+                        if match:
+                            # 移除时区中的冒号
+                            date_str = re.sub(tz_pattern, r'\1\2', date_str)
+                        else:
+                            # 处理没有冒号的时区格式（例如+0800 -> +08:00）
+                            for char in ['+', '-']:
+                                if char in date_str.split('T')[1]:
+                                    parts = date_str.split(char)
+                                    if len(parts) > 1:
+                                        offset = parts[1]
+                                        if len(offset) == 4 and ':' not in offset:  # 如+0800
+                                            date_str = f"{parts[0]}{char}{offset[:2]}:{offset[2:]}"
                     date_obj = datetime.datetime.fromisoformat(date_str)
                 else:
                     # 不带时区的ISO格式，假定为本地时区
