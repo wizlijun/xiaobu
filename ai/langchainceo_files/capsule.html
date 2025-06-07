@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LangChain Interrupt 大会产品主题演讲摘要 (淡蓝版)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap');
+
+        :root {
+            --bg-color: #E3F2FD; /* 淡蓝色背景 */
+            --primary-text-color: #263238; /* 深蓝灰色文字 */
+            --secondary-text-color: #546E7A;
+            --accent-color: #03A9F4; /* 主题蓝色 */
+            --accent-glow: rgba(3, 169, 244, 0.3);
+            --fact-color: #009688; /* 事实 - 青色 */
+            --view-color: #FF9800; /* 观点 - 橙色 */
+            --card-bg: #FFFFFF; /* 卡片背景 - 白色 */
+            --border-color: #CFD8DC; /* 边框颜色 */
+            --header-bg: rgba(3, 169, 244, 0.05); /* 头部淡蓝背景 */
+        }
+
+        body {
+            font-family: 'Noto Sans SC', 'Roboto Mono', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-text-color);
+            margin: 0;
+            padding: 20px;
+            background-image: 
+                linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+            background-size: 30px 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            color: var(--primary-text-color);
+            margin: 0;
+            font-size: 2.5em;
+        }
+
+        header .subtitle {
+            font-size: 1.2em;
+            color: var(--accent-color);
+            margin-top: 5px;
+            font-family: 'Roboto Mono', monospace;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .nav-button {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--primary-text-color);
+            padding: 10px 15px;
+            font-family: inherit;
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover, .nav-button.active {
+            background-color: var(--accent-color);
+            color: white;
+            box-shadow: 0 0 15px var(--accent-glow);
+            transform: translateY(-2px);
+            border-color: var(--accent-color);
+        }
+
+        .content-section {
+            display: none;
+            padding: 20px 0;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .point {
+            background: var(--card-bg);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--accent-color);
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .point h3 {
+            margin-top: 0;
+            color: var(--primary-text-color);
+        }
+        
+        .point p {
+            margin-bottom: 0;
+            line-height: 1.7;
+            color: var(--secondary-text-color);
+        }
+
+        .belief-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .belief-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .belief-card:hover {
+             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+             transform: scale(1.02);
+        }
+
+        .belief-header {
+            padding: 15px;
+            background-color: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .belief-header h4 {
+            margin: 0;
+            color: var(--primary-text-color);
+            font-size: 1.1em;
+        }
+
+        .belief-content {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, opacity 0.5s ease-out, padding 0.5s ease-out;
+            padding: 0 15px;
+            color: var(--secondary-text-color);
+        }
+        
+        .belief-card.open .belief-content {
+            max-height: 500px;
+            opacity: 1;
+            padding: 15px;
+        }
+        
+        .fact-view-container {
+            margin-top: 10px;
+        }
+        
+        .fact-view-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            line-height: 1.6;
+        }
+
+        .fact-view-item.viewpoint {
+            border-left: 3px solid var(--view-color);
+            background-color: rgba(255, 152, 0, 0.08);
+        }
+        
+        .fact-view-item.fact {
+            border-left: 3px solid var(--fact-color);
+            background-color: rgba(0, 150, 136, 0.08);
+        }
+        
+        .fact-view-item .icon {
+            font-size: 1.2em;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .fact-view-item.viewpoint .icon { color: var(--view-color); }
+        .fact-view-item.fact .icon { color: var(--fact-color); }
+
+        .fact-view-item p { margin: 0; color: var(--secondary-text-color);}
+        .fact-view-item strong { display: block; margin-bottom: 5px; color: var(--primary-text-color); font-weight: 700;}
+        
+        strong, b {
+            color: var(--accent-color);
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Interrupt 大会产品演讲摘要</h1>
+            <p class="subtitle">演讲者: Harrison Chase (LangChain CEO)</p>
+        </header>
+
+        <div class="navigation">
+            <button class="nav-button active" data-target="origin">1. 缘起</button>
+            <button class="nav-button" data-target="challenge">2. 核心挑战</button>
+            <button class="nav-button" data-target="mission">3. 使命与新角色</button>
+            <button class="nav-button" data-target="philosophy">4. 产品哲学与发布</button>
+        </div>
+
+        <div id="origin" class="content-section active">
+            <div class="point">
+                <h3>LangChain的诞生</h3>
+                <p>LangChain始于一个开源项目（2022年10月），诞生在ChatGPT发布前一个月。它源于与AI开发者的交流，旨在解决他们构建LLM应用的普遍痛点，并随着ChatGPT的引爆而迅速发展。</p>
+            </div>
+        </div>
+
+        <div id="challenge" class="content-section">
+            <div class="point">
+                <h3>从原型到生产的鸿沟</h3>
+                <p>构建一个LLM应用原型相对容易，能快速获得惊艳效果。但将其转化为一个<b>稳定、可靠、可用于生产环境</b>的应用则极其困难。这正是 LangChain 公司成立并致力解决的核心挑战。</p>
+            </div>
+        </div>
+
+        <div id="mission" class="content-section">
+            <div class="point">
+                <h3>使命：让智能体无处不在</h3>
+                <p>LangChain公司的使命是<b>"让智能体(Intelligent Agents)无处不在"</b>。为实现这一目标，他们识别并服务于一个新兴角色：<b>智能体工程师 (Agent Engineer)</b>。</p>
+            </div>
+            <div class="point">
+                <h3>智能体工程师的技能版图</h3>
+                <p>智能体工程师需要融合四个领域的技能：<b>提示(Prompting)</b>、<b>工程(Engineering)</b>、<b>产品(Product)</b> 和 <b>机器学习(Machine Learning)</b>。LangChain致力于为这类工程师提供全方位支持。</p>
+            </div>
+        </div>
+
+        <div id="philosophy" class="content-section">
+            <p style="text-align:center; color: var(--secondary-text-color); margin-bottom: 20px;">LangChain基于对行业发展的6个核心信念来构建产品。点击卡片展开详情：</p>
+            <div class="belief-grid">
+                <!-- Belief 1 -->
+                <div class="belief-card">
+                    <div class="belief-header"><h4>信念 #1: 依赖多种模型</h4></div>
+                    <div class="belief-content">
+                        <div class="fact-view-item viewpoint">
+                            <span class="icon">💡</span>
+                            <div>
+                                <p><strong>观点:</strong> 智能体将依赖多种不同的LLM，因为不同模型在成本、速度、推理能力上各有优势。</p>
+                            </div>
+                        </div>
+                        <div class="fact-view-item fact">
+                            <span class="icon">⚙️</span>
+                            <div>
+                                <p><strong>产品/事实:</strong> <strong>LangChain</strong>（开源库）已成为模型集成的标准，提供跨模型的可移植性。其Python月度下载量（超7000万）已超过OpenAI SDK。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Belief 2 -->
+                <div class="belief-card">
+                    <div class="belief-header"><h4>信念 #2: 上下文是关键</h4></div>
+                    <div class="belief-content">
+                         <div class="fact-view-item viewpoint">
+                             <span class="icon">💡</span>
+                             <div>
+                                <p><strong>观点:</strong> 可靠的智能体始于正确的上下文。构建高质量的Prompt至关重要。</p>
+                             </div>
+                        </div>
+                        <div class="fact-view-item fact">
+                            <span class="icon">⚙️</span>
+                            <div>
+                                <p><strong>产品/事实:</strong> <strong>LangGraph</strong>。一个低阶、无主见的智能体编排框架，让开发者能完全控制应用的认知架构，从而构建正确的上下文。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Belief 3 -->
+                <div class="belief-card">
+                    <div class="belief-header"><h4>信念 #3: 团队运动</h4></div>
+                    <div class="belief-content">
+                        <div class="fact-view-item viewpoint">
+                            <span class="icon">💡</span>
+                            <div>
+                                <p><strong>观点:</strong> 构建智能体是一项涉及多种角色的团队运动（产品、工程、ML等）。</p>
+                            </div>
+                        </div>
+                        <div class="fact-view-item fact">
+                            <span class="icon">⚙️</span>
+                            <div>
+                                <p><strong>产品/事实:</strong> <strong>LangSmith</strong>。一个协作平台，整合了可观测性、评估(Evals)和提示工程，让团队能共同工作。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Belief 4 -->
+                <div class="belief-card">
+                    <div class="belief-header"><h4>信念 #4: AI可观测性不同</h4></div>
+                    <div class="belief-content">
+                        <div class="fact-view-item viewpoint">
+                            <span class="icon">💡</span>
+                            <div>
+                                <p><strong>观点:</strong> AI的可观测性不同于传统软件，因为它处理的是大型、非结构化、多模态的数据，且用户是智能体工程师，而非传统SRE。</p>
+                            </div>
+                        </div>
+                        <div class="fact-view-item fact">
+                            <span class="icon">⚙️</span>
+                            <div>
+                                <p><strong>产品/事实:</strong> <strong>LangSmith</strong>中推出新的<strong>智能体指标(Agent Metrics)</strong>，如工具调用(Tool Calls)和轨迹(Trajectory)分析，专为AI应用设计。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Belief 5 -->
+                <div class="belief-card">
+                    <div class="belief-header"><h4>信念 #5: 人人都是构建者</h4></div>
+                    <div class="belief-content">
+                        <div class="fact-view-item viewpoint">
+                            <span class="icon">💡</span>
+                            <div>
+                                <p><strong>观点:</strong> 未来，每个人，包括非开发者，都将成为智能体构建者。</p>
+                            </div>
+                        </div>
+                        <div class="fact-view-item fact">
+                            <span class="icon">⚙️</span>
+                            <div>
+                                <p><strong>产品/事实:</strong> 推出开源的<strong>LangGraph Prebuilts</strong>和<strong>Open Agent Platform</strong>，提供智能体模板，支持低代码/无代码构建，赋能更广泛的用户群体。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Belief 6 -->
+                <div class="belief-card">
+                    <div class="belief-header"><h4>信念 #6: 部署是下一个难关</h4></div>
+                    <div class="belief-content">
+                        <div class="fact-view-item viewpoint">
+                            <span class="icon">💡</span>
+                            <div>
+                                <p><strong>观点:</strong> 智能体因其长时运行、突发性和高状态性的特点，部署是下一个重大挑战。</p>
+                            </div>
+                        </div>
+                        <div class="fact-view-item fact">
+                            <span class="icon">⚙️</span>
+                            <div>
+                                <p><strong>产品/事实:</strong> <strong>LangGraph Platform</strong>正式发布(GA)。它是一个专为智能体设计的部署和管理平台，支持SaaS、混合云和完全自托管部署。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navButtons = document.querySelectorAll('.nav-button');
+            const contentSections = document.querySelectorAll('.content-section');
+            const beliefCards = document.querySelectorAll('.belief-card');
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    navButtons.forEach(btn => btn.classList.remove('active'));
+                    contentSections.forEach(section => section.classList.remove('active'));
+
+                    button.classList.add('active');
+                    const targetId = button.getAttribute('data-target');
+                    document.getElementById(targetId).classList.add('active');
+                });
+            });
+            
+            beliefCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    card.classList.toggle('open');
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
