@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>压力与情绪管理：互动摘要</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+            line-height: 1.8;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 20px 30px;
+        }
+        h1 {
+            text-align: center;
+            color: #1a73e8;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        details {
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            overflow: hidden;
+            transition: box-shadow 0.3s ease;
+        }
+        details[open] {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        summary {
+            font-size: 1.2em;
+            font-weight: bold;
+            padding: 15px 20px;
+            cursor: pointer;
+            background-color: #f5f5f5;
+            list-style: none; /* 移除默认箭头 */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s ease;
+        }
+        summary:hover {
+            background-color: #e9e9e9;
+        }
+        summary::after {
+            content: '＋'; /* 自定义展开图标 */
+            font-size: 1.4em;
+            color: #1a73e8;
+            transition: transform 0.3s ease;
+        }
+        details[open] > summary::after {
+            transform: rotate(45deg); /* 展开时图标旋转 */
+        }
+        .content {
+            padding: 10px 25px 20px 25px;
+            border-top: 1px solid #ddd;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        li {
+            margin-bottom: 12px;
+            padding-left: 25px;
+            position: relative;
+        }
+        .fact::before, .opinion::before {
+            position: absolute;
+            left: 0;
+            top: 5px;
+            font-size: 1.2em;
+        }
+        .fact::before {
+            content: '🧠'; /* 事实/科学概念图标 */
+        }
+        .opinion::before {
+            content: '💡'; /* 观点/实用建议图标 */
+        }
+        .takeaway {
+            background-color: #e8f0fe;
+            border-left: 4px solid #1a73e8;
+            padding: 10px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        strong {
+            color: #d93025;
+        }
+        .conclusion {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+            text-align: center;
+            font-style: italic;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>压力与情绪管理：互动摘要</h1>
+
+        <!-- Section 01 -->
+        <details>
+            <summary>01 什么是压力？</summary>
+            <div class="content">
+                <div class="takeaway">
+                    <strong>核心摘要：</strong>压力是一种身心一体的综合反应，包含生理、认知、情绪和行为四个维度。我们感受到的“压力感”主要由主观认知决定，而非“压力源”本身。
+                </div>
+                <ul>
+                    <li class="fact"><strong>压力的四个维度：</strong>判断是否存在压力，需从四个方面分析：
+                        <ul>
+                            <li><strong>生理反应：</strong>如失眠、吃不下饭。这是由大脑“下丘脑-垂体-肾上腺”三轴系统分泌压力激素导致的过度兴奋。</li>
+                            <li><strong>认知评估：</strong>你如何看待和解释事件。认为自己没压力，但身体仍可能有反应。</li>
+                            <li><strong>情绪反应：</strong>如紧张、焦虑、注意力不集中。</li>
+                            <li><strong>行为变化：</strong>如朋友说你“不像自己了”，做事反常。</li>
+                        </ul>
+                    </li>
+                    <li class="fact"><strong>压力源 vs. 压力感：</strong>心理学区分“压力源”（客观事件，如高考）和“压力感”（主观感受）。压力感的大小与你的想法直接相关。</li>
+                    <li class="opinion"><strong>压力感的两大认知误区：</strong>
+                        <ul>
+                            <li><strong>灾难化后果：</strong>把事情想得过于严重（“考不上好大学就完了”）。</li>
+                            <li><strong>高估威胁/低估能力：</strong>觉得自己无法应对（“这个问题太难了”）。</li>
+                        </ul>
+                    </li>
+                    <li class="opinion"><strong>自我检测线索：</strong>连续多日失眠、吃不下饭、易怒、烦躁、注意力不集中、灾难性思维、人际关系紧张等，都是压力过度的信号。</li>
+                </ul>
+            </div>
+        </details>
+
+        <!-- Section 02 -->
+        <details>
+            <summary>02 如何实用有效地缓解压力？</summary>
+            <div class="content">
+                <div class="takeaway">
+                    <strong>核心摘要：</strong>通过调整生活基本要素（吃、睡、运动）和做好心理准备，可以有效缓解压力。身体的记忆和积极的心理暗示非常关键。
+                </div>
+                <ul>
+                    <li class="opinion"><strong>彭凯平的五项实在建议：</strong>
+                        <ol>
+                            <li><strong>吃好饭：</strong>保证营养均衡，避免高糖高脂食物增加身体负担。</li>
+                            <li><strong>睡好觉：</strong>睡前放松，避免过度兴奋。可用呼吸练习或积极的语言暗示（如发音类似“睡”的词）助眠。</li>
+                            <li><strong>打好包：</strong>提前准备好重要物品（如准考证），避免紧张时出错。心理上的“打包”（如励志话语、护身符）能提供信念支持。</li>
+                            <li><strong>调好心情：</strong>考试中紧张时，可通过深呼吸、冥想等方式快速调节情绪。</li>
+                            <li><strong>处理好家庭关系：</strong>高压时期家人要相互理解，避免追问和指责，共同创造从容的氛围。</li>
+                        </ol>
+                    </li>
+                    <li class="opinion"><strong>赵昱鲲的补充——“运好动”：</strong>
+                        <ul>
+                            <li>运动时的生理反应（心跳加快、呼吸急促）与压力反应类似。</li>
+                            <li>经常运动能让大脑形成“坚持一下就能过去”的身体记忆，从而有效提升抗压能力。</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </details>
+
+        <!-- Section 03 -->
+        <details>
+            <summary>03 如何激发积极情绪，主动创造心理能量？</summary>
+            <div class="content">
+                <div class="takeaway">
+                    <strong>核心摘要：</strong>积极情绪由多种神经化学物质共同作用产生。我们可以通过做擅长的事、提升自我价值感来主动激活大脑的“奖励回路”。
+                </div>
+                <ul>
+                    <li class="fact"><strong>积极情绪的化学基础：</strong>不只是多巴胺，还包括催产素、内啡肽、血清素等。它们共同构建大脑的“奖励、学习、行动”回路。</li>
+                    <li class="opinion"><strong>如何激活奖励回路（多巴胺）：</strong>
+                        <ul>
+                            <li><strong>做擅长的事：</strong>持续的进步和成就感是比“吃苦”更可靠的成功路径（“成功是成功之母”）。</li>
+                            <li><strong>提升自我价值感：</strong>感受爱情的甜蜜、事业的成功、运动的兴奋等，都能提升多巴胺水平。</li>
+                        </ul>
+                    </li>
+                    <li class="opinion"><strong>积极情绪的培养策略：</strong>有意识地挖掘积极体验，采用“多元、低剂量、重复刺激”的方式，综合提升情绪系统。</li>
+                </ul>
+            </div>
+        </details>
+        
+        <!-- Section 04 -->
+        <details>
+            <summary>04 情绪是被动产生，还是主动构建的？</summary>
+            <div class="content">
+                <div class="takeaway">
+                    <strong>核心摘要：</strong>情绪既有先天成分，也受后天影响，但更重要的是我们有能力“主动构建”。通过改变认知和诠释，我们可以调节情绪体验。
+                </div>
+                <ul>
+                    <li class="opinion"><strong>情绪是主动构建的：</strong>我们并非完全被动地受外界影响。环境对所有人一样，但情绪反应不同，是因为内在心理构造不同（“相由心生，境由心造”）。相信情绪可控，更有利于心理健康。</li>
+                    <li class="fact"><strong>认知诠释改变行为：</strong>一个哈佛实验证明，将紧张的生理反应（心跳加快）诠释为“我很兴奋”的人，比诠释为“我很焦虑”的人表现更好。这表明认知对行为有直接影响。</li>
+                    <li class="opinion"><strong>给家长的建议：</strong>不要对孩子说“别紧张”，这会强化焦虑。可以换成“你现在有点兴奋，这很好”，帮助孩子将能量导向积极方向。</li>
+                    <li class="fact"><strong>先天与后天的关系：</strong>情绪的遗传因素约占30%-40%，剩下60%-70%来自后天环境和有意识的锻炼。“3岁看老”在现代社会已不完全适用，后天可塑性非常大。</li>
+                </ul>
+            </div>
+        </details>
+
+        <!-- Section 05 -->
+        <details>
+            <summary>05 愤怒的价值与管理</summary>
+            <div class="content">
+                <div class="takeaway">
+                    <strong>核心摘要：</strong>愤怒并非完全是坏情绪。它有保护我们、反抗不公的积极作用，但失控的愤怒会削弱理智。关键在于何时、对谁愤怒。
+                </div>
+                <ul>
+                    <li class="opinion"><strong>愤怒的积极价值：</strong>愤怒能激发斗争意识，帮助我们反抗不公和伤害（如被PUA时，愤怒是摆脱控制的力量）。</li>
+                    <li class="fact"><strong>愤怒的负面影响：</strong>愤怒时，大脑前额叶（理智控制区）功能会下降，导致人失去理智，做出冲动行为（“变得愚蠢”）。</li>
+                    <li class="opinion"><strong>正面与负面情绪：</strong>心理学上更准确的说法是“正面情绪”（感觉良好）和“负面情绪”（感觉不适）。负面情绪不等于“坏”情绪，它们都有其存在的价值。</li>
+                    <li class="opinion"><strong>儒家观点：</strong>孔子认为真正的仁者“能好人，能恶人”，懂得何时该愤怒，并鄙视没有原则的“乡愿”（老好人）。</li>
+                </ul>
+            </div>
+        </details>
+        
+        <!-- Section 06 -->
+        <details>
+            <summary>06 如何管理愤怒？情绪调节的五步法</summary>
+            <div class="content">
+                <div class="takeaway">
+                    <strong>核心摘要：</strong>通过“觉知-调节-行为-认知-求助”五步法，可以有效管理愤怒，避免因情绪失控而后悔。成为情绪的主人，而不是奴隶。
+                </div>
+                <ul>
+                    <li class="opinion"><strong>愤怒管理五步法：</strong>
+                        <ol>
+                            <li><strong>觉知：</strong>识别愤怒的生理信号（心跳加速、呼吸急促）。</li>
+                            <li><strong>调节：</strong>使用快速技巧平复情绪，如深呼吸、抚摸膻中穴。</li>
+                            <li><strong>行为：</strong>暂时离开现场，或通过安全方式（如打沙袋）释放能量。</li>
+                            <li><strong>认知重评：</strong>反思“这件事真的值得我这么生气吗？”，尝试换个角度看问题。</li>
+                            <li><strong>求助：</strong>当自己无法解决时，向朋友、老师或专业人士求助。</li>
+                        </ol>
+                    </li>
+                    <li class="opinion"><strong>提升情绪颗粒度：</strong>学会细致地感知和描述自己的情绪，能清楚说出情绪的来龙去脉，是掌控情绪的关键。</li>
+                </ul>
+            </div>
+        </details>
+
+        <!-- Section 07 -->
+        <details>
+            <summary>07 人生的弹性与“坚毅力”</summary>
+            <div class="content">
+                <div class="takeaway">
+                    <strong>核心摘要：</strong>一次的成败（如高考）不决定整个人生。持续努力、不怕失败的“坚毅力”（Grit）比一时的成绩更重要。人生是长跑，任何时候开始都不晚。
+                </div>
+                <ul>
+                    <li class="opinion"><strong>高考不是终点：</strong>未来的成功由持续的努力决定，而非当前就读的学校。不好高骛远，设定现实的目标，持续努力，同样能取得巨大成就。</li>
+                    <li class="opinion"><strong>“坚毅力”的重要性：</strong>复读等经历能锻炼“不认输、不怕失败”的坚毅品质，这种心理素质在未来人生中价值巨大。</li>
+                    <li class="opinion"><strong>人生有无限可能：</strong>即使走了弯路，只要保持对理想的热情和执着，三十多岁转行也能找到真正想做的事。人生很长，不要着急。</li>
+                </ul>
+            </div>
+        </details>
+
+        <!-- Section 08 -->
+        <details>
+            <summary>08 如何进入“福流”状态？</summary>
+            <div class="content">
+                <div class="takeaway">
+                    <strong>核心摘要：</strong>“福流”（Flow）是一种全情投入的沉浸式体验，可通过创造“明确目标、及时反馈、技能与挑战匹配”的条件来进入。
+                </div>
+                <ul>
+                    <li class="opinion"><strong>进入“福流”的三个核心条件：</strong>
+                        <ol>
+                            <li><strong>目标明确：</strong>知道自己要做什么，以及为什么做。这是它与刷短视频等无目的快乐的根本区别。</li>
+                            <li><strong>反馈及时：</strong>能立刻知道自己做得怎么样，感受到进步或认可。</li>
+                            <li><strong>技能与挑战匹配：</strong>任务难度略高于自身能力，需要“跳一跳才够得着”。太简单会无聊，太难会挫败。</li>
+                        </ol>
+                    </li>
+                </ul>
+            </div>
+        </details>
+
+        <div class="conclusion">
+            <p><strong>结语：</strong>情绪是我们理解世界与自我的通道。每一次失眠、焦虑或愤怒，都是内在系统发出的信号。学会正视和把握自己的情绪，才能真正成为情绪的主人，拥有选择的自由。</p>
+        </div>
+
+    </div>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="()[https://mp.weixin.qq.com/s/n1RZYl5jGoX65UEDbomGzA]" target="_blank">()[https://mp.weixin.qq.com/s/n1RZYl5jGoX65UEDbomGzA]</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
