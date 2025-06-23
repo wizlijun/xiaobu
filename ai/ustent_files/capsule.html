@@ -42,6 +42,7 @@
             border-radius: 50%;
             background-color: #D1C4B7;
             border: 2px solid #F8F5F2;
+            z-index: 10;
         }
         .timeline-item-content {
             max-height: 0;
@@ -311,13 +312,14 @@
         
         const renderTimeline = () => {
             const container = document.querySelector('#timeline .relative');
-            container.innerHTML = AppData.timeline.map(item => `
-                <div class="timeline-item mb-8">
-                    <div class="timeline-marker cursor-pointer">
+            container.innerHTML = AppData.timeline.map((item, index) => `
+                <div class="timeline-item mb-8 relative">
+                    <div class="timeline-marker cursor-pointer hover:bg-white/50 p-4 rounded-lg transition-all duration-300">
                         <h3 class="text-xl font-bold text-[#587D71]">${item.era}</h3>
                         <h4 class="text-2xl font-semibold">${item.title}</h4>
+                        <div class="text-sm text-[#6B5E54] mt-2">点击展开详情 ▼</div>
                     </div>
-                    <div class="timeline-item-content mt-4 pl-4 border-l-2 border-[#C7825E]">
+                    <div class="timeline-item-content mt-4 pl-4 border-l-2 border-[#C7825E] bg-white/30 rounded-lg p-4">
                         <p class="mb-3 text-base">${item.summary}</p>
                         <ul class="list-disc list-inside space-y-1 text-sm text-[#6B5E54]">
                             ${item.points.map(point => `<li>${point}</li>`).join('')}
@@ -330,7 +332,15 @@
                 const marker = e.target.closest('.timeline-marker');
                 if(marker){
                     const content = marker.nextElementSibling;
-                    content.classList.toggle('open');
+                    const arrow = marker.querySelector('div:last-child');
+                    
+                    if(content.classList.contains('open')){
+                        content.classList.remove('open');
+                        arrow.textContent = '点击展开详情 ▼';
+                    } else {
+                        content.classList.add('open');
+                        arrow.textContent = '点击收起详情 ▲';
+                    }
                 }
             });
         };
@@ -469,36 +479,68 @@
             const container = document.getElementById('legacy-chart');
             const { nodes, connections, stories } = AppData.legacy;
             
-            container.innerHTML = nodes.map(node => `
-                <div id="${node.id}" class="legacy-box absolute p-3 bg-white rounded-lg shadow-lg text-center" style="top: ${node.pos.top}; left: ${node.pos.left}; transform: translateX(-50%);" data-nodeid="${node.id}">
+            // Clear existing content
+            container.innerHTML = '';
+            
+            // Render nodes
+            nodes.forEach(node => {
+                const nodeDiv = document.createElement('div');
+                nodeDiv.id = node.id;
+                nodeDiv.className = 'legacy-box absolute p-3 bg-white rounded-lg shadow-lg text-center cursor-pointer hover:shadow-xl transition-all duration-300';
+                nodeDiv.style.top = node.pos.top;
+                nodeDiv.style.left = node.pos.left;
+                nodeDiv.style.transform = 'translateX(-50%)';
+                nodeDiv.setAttribute('data-nodeid', node.id);
+                nodeDiv.innerHTML = `
                     <p class="font-bold text-base md:text-lg">${node.name}</p>
                     <p class="text-xs md:text-sm text-[#6B5E54]">${node.year}</p>
-                </div>
-            `).join('');
-
-            connections.forEach(conn => {
-                const fromNode = document.getElementById(conn.from);
-                const toNode = document.getElementById(conn.to);
-
-                const fromRect = fromNode.getBoundingClientRect();
-                const toRect = toNode.getBoundingClientRect();
-                const containerRect = container.getBoundingClientRect();
-
-                const x1 = fromRect.left + fromRect.width / 2 - containerRect.left;
-                const y1 = fromRect.top + fromRect.height - containerRect.top;
-                const x2 = toRect.left + toRect.width / 2 - containerRect.left;
-                const y2 = toRect.top - containerRect.top;
-
-                const connector = document.createElement('div');
-                connector.className = 'legacy-connector';
-                connector.style.left = `${x1}px`;
-                connector.style.top = `${y1}px`;
-                connector.style.width = '2px';
-                connector.style.height = `${y2 - y1}px`;
-                connector.dataset.from = conn.from;
-                connector.dataset.to = conn.to;
-                container.appendChild(connector);
+                `;
+                container.appendChild(nodeDiv);
             });
+
+            // Render connections after nodes are in DOM
+            setTimeout(() => {
+                connections.forEach(conn => {
+                    const fromNode = document.getElementById(conn.from);
+                    const toNode = document.getElementById(conn.to);
+                    
+                    if (!fromNode || !toNode) return;
+
+                    const containerRect = container.getBoundingClientRect();
+                    const fromRect = fromNode.getBoundingClientRect();
+                    const toRect = toNode.getBoundingClientRect();
+
+                    const x1 = fromRect.left + fromRect.width / 2 - containerRect.left;
+                    const y1 = fromRect.bottom - containerRect.top;
+                    const x2 = toRect.left + toRect.width / 2 - containerRect.left;
+                    const y2 = toRect.top - containerRect.top;
+
+                    const connector = document.createElement('div');
+                    connector.className = 'legacy-connector absolute';
+                    connector.style.left = `${Math.min(x1, x2)}px`;
+                    connector.style.top = `${y1}px`;
+                    connector.style.width = `${Math.abs(x2 - x1) || 2}px`;
+                    connector.style.height = `${y2 - y1}px`;
+                    connector.style.backgroundColor = '#D1C4B7';
+                    connector.style.zIndex = '1';
+                    connector.setAttribute('data-from', conn.from);
+                    connector.setAttribute('data-to', conn.to);
+                    
+                    // If it's a straight vertical line
+                    if (Math.abs(x2 - x1) < 5) {
+                        connector.style.width = '2px';
+                        connector.style.left = `${x1 - 1}px`;
+                    } else {
+                        // For diagonal connections, use a border approach
+                        connector.style.width = '0px';
+                        connector.style.height = '0px';
+                        connector.style.borderLeft = `${Math.abs(x2 - x1)}px solid transparent`;
+                        connector.style.borderBottom = `${y2 - y1}px solid #D1C4B7`;
+                    }
+                    
+                    container.appendChild(connector);
+                });
+            }, 50);
             
             const infoTitle = document.getElementById('legacy-info-title');
             const infoText = document.getElementById('legacy-info-text');
@@ -508,52 +550,70 @@
                 if (box) {
                     const nodeId = box.dataset.nodeid;
                     const node = nodes.find(n => n.id === nodeId);
-                    infoTitle.textContent = node.name;
-                    infoText.textContent = stories[nodeId];
+                    if (node) {
+                        infoTitle.textContent = node.name;
+                        infoText.textContent = stories[nodeId] || '暂无详细信息';
 
-                    const allBoxes = container.querySelectorAll('.legacy-box');
-                    const allConnectors = container.querySelectorAll('.legacy-connector');
+                        const allBoxes = container.querySelectorAll('.legacy-box');
+                        const allConnectors = container.querySelectorAll('.legacy-connector');
 
-                    const pathNodes = new Set([nodeId]);
-                    const pathConns = new Set();
-                    
-                    let current = nodeId;
-                    while(true) {
-                        const conn = connections.find(c => c.to === current);
-                        if(!conn) break;
-                        pathNodes.add(conn.from);
-                        pathConns.add(`${conn.from}-${conn.to}`);
-                        current = conn.from;
-                    }
-
-                    current = nodeId;
-                     while(true) {
-                        const conn = connections.find(c => c.from === current);
-                        if(!conn) break;
-                        pathNodes.add(conn.to);
-                        pathConns.add(`${conn.from}-${conn.to}`);
-                        current = conn.to;
-                    }
-
-                    allBoxes.forEach(b => {
-                        if (pathNodes.has(b.dataset.nodeid)) {
+                        // Reset all elements
+                        allBoxes.forEach(b => {
                             b.classList.remove('dimmed');
-                            b.style.borderColor = '#587D71';
-                        } else {
-                            b.classList.add('dimmed');
-                            b.style.borderColor = 'transparent';
-                        }
-                    });
-                     allConnectors.forEach(c => {
-                        const key = `${c.dataset.from}-${c.dataset.to}`;
-                        if (pathConns.has(key)) {
-                            c.classList.add('highlight');
-                            c.style.zIndex = '10';
-                        } else {
+                            b.style.border = '2px solid transparent';
+                            b.style.zIndex = '2';
+                        });
+                        allConnectors.forEach(c => {
                             c.classList.remove('highlight');
-                             c.style.zIndex = '0';
+                            c.style.backgroundColor = '#D1C4B7';
+                            c.style.zIndex = '1';
+                        });
+
+                        // Find connected nodes
+                        const pathNodes = new Set([nodeId]);
+                        const pathConns = new Set();
+                        
+                        // Find upstream connections
+                        let current = nodeId;
+                        while(true) {
+                            const conn = connections.find(c => c.to === current);
+                            if(!conn) break;
+                            pathNodes.add(conn.from);
+                            pathConns.add(`${conn.from}-${conn.to}`);
+                            current = conn.from;
                         }
-                    });
+
+                        // Find downstream connections
+                        current = nodeId;
+                        while(true) {
+                            const conn = connections.find(c => c.from === current);
+                            if(!conn) break;
+                            pathNodes.add(conn.to);
+                            pathConns.add(`${conn.from}-${conn.to}`);
+                            current = conn.to;
+                        }
+
+                        // Highlight connected path
+                        allBoxes.forEach(b => {
+                            if (pathNodes.has(b.dataset.nodeid)) {
+                                b.style.border = '2px solid #587D71';
+                                b.style.backgroundColor = '#fff';
+                                b.style.zIndex = '10';
+                            } else {
+                                b.classList.add('dimmed');
+                                b.style.zIndex = '1';
+                            }
+                        });
+                        
+                        allConnectors.forEach(c => {
+                            const key = `${c.getAttribute('data-from')}-${c.getAttribute('data-to')}`;
+                            if (pathConns.has(key)) {
+                                c.classList.add('highlight');
+                                c.style.backgroundColor = '#587D71';
+                                c.style.zIndex = '5';
+                            }
+                        });
+                    }
                 }
             });
         };
@@ -564,8 +624,15 @@
             renderBrands();
             renderTech();
             // Use timeout to ensure elements are rendered for position calculation
-            setTimeout(renderLegacyChart, 100); 
+            setTimeout(renderLegacyChart, 200); 
         };
+
+        // Add window resize handler for legacy chart
+        window.addEventListener('resize', () => {
+            if (document.getElementById('legacy').classList.contains('active')) {
+                setTimeout(renderLegacyChart, 200);
+            }
+        });
 
         init();
     });
