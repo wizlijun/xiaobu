@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美国帐篷史：一部互动编年史</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link.active {
+            color: #C7825E;
+            border-bottom-color: #C7825E;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.8s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            top: 12px;
+            left: -21px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #D1C4B7;
+            border: 2px solid #F8F5F2;
+        }
+        .timeline-item-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
+            opacity: 0;
+        }
+        .timeline-item-content.open {
+            max-height: 1000px;
+            opacity: 1;
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            width: 100%;
+            max-width: 400px;
+            height: 250px;
+        }
+        .legacy-box {
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+        }
+        .legacy-box.dimmed {
+            opacity: 0.3;
+            transform: scale(0.98);
+        }
+        .legacy-connector {
+            position: absolute;
+            background-color: #D1C4B7;
+            transition: all 0.3s ease-in-out;
+        }
+         .legacy-connector.highlight {
+            background-color: #587D71;
+        }
+    </style>
+</head>
+<body class="bg-[#F8F5F2] text-[#433830]">
+    
+<!-- Chosen Palette: Warm Earth Tones -->
+<!-- Application Structure Plan: A single-page application with four thematic, non-linear sections: 1. An interactive timeline ('历史年表') as the main narrative spine. 2. A brand gallery ('品牌殿堂') for deep dives into key players. 3. A technology overview ('技术革命') to explain key innovations. 4. An interactive flowchart ('传承之路') to visually decode the complex M&A history of Moss/MSR. This structure promotes user-driven exploration and synthesizes the report's dense information into digestible, engaging modules, superior to a linear presentation. -->
+<!-- Visualization & Content Choices: 1. Timeline (HTML/CSS/JS): Goal: Show chronology. Method: Click-to-expand vertical timeline. Justification: Intuitive & clean. 2. Brand Gallery (HTML/CSS + Chart.js): Goal: Compare players. Method: Grid of cards opening a modal with a "Brand DNA" radar chart. Justification: Visually engaging comparison. 3. Tech Revolutions (HTML/CSS): Goal: Explain concepts. Method: Thematic groups with icons. Justification: Clear, organized learning. 4. Legacy Path (HTML/CSS/JS): Goal: Clarify relationships. Method: Interactive flowchart. Justification: Transforms the most complex data point (the Moss->MSR M&A) into an intuitive, interactive "wow" feature. -->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <div id="app" class="min-h-screen flex flex-col">
+        <header class="sticky top-0 bg-[#F8F5F2]/80 backdrop-blur-sm shadow-sm z-50">
+            <div class="container mx-auto px-4">
+                <div class="flex justify-between items-center py-4">
+                    <h1 class="text-xl md:text-2xl font-bold text-[#433830]">美国帐篷史</h1>
+                    <nav id="main-nav" class="hidden md:flex space-x-6 lg:space-x-8">
+                        <a href="#timeline" class="nav-link text-lg font-medium hover:text-[#C7825E]">历史年表</a>
+                        <a href="#brands" class="nav-link text-lg font-medium hover:text-[#C7825E]">品牌殿堂</a>
+                        <a href="#tech" class="nav-link text-lg font-medium hover:text-[#C7825E]">技术革命</a>
+                        <a href="#legacy" class="nav-link text-lg font-medium hover:text-[#C7825E]">传承之路</a>
+                    </nav>
+                     <button id="mobile-menu-button" class="md:hidden text-2xl">☰</button>
+                </div>
+            </div>
+            <div id="mobile-menu" class="hidden md:hidden bg-[#F8F5F2] py-4">
+                <nav class="flex flex-col items-center space-y-4">
+                    <a href="#timeline" class="nav-link text-lg font-medium">历史年表</a>
+                    <a href="#brands" class="nav-link text-lg font-medium">品牌殿堂</a>
+                    <a href="#tech" class="nav-link text-lg font-medium">技术革命</a>
+                    <a href="#legacy" class="nav-link text-lg font-medium">传承之路</a>
+                </nav>
+            </div>
+        </header>
+
+        <main class="container mx-auto px-4 py-8 md:py-12 flex-grow">
+            <!-- Section 1: Timeline -->
+            <section id="timeline" class="content-section">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4">一部进化的史诗</h2>
+                    <p class="max-w-3xl mx-auto text-lg text-[#6B5E54]">从笨重的帆布到轻如蝉翼的新材料，美国帐篷的百年历史是技术、艺术与户外精神交织的画卷。点击下方各个时代，探索这段波澜壮阔的旅程。</p>
+                </div>
+                <div class="relative max-w-3xl mx-auto border-l-2 border-dashed border-[#D1C4B7] pl-8">
+                    <!-- Timeline items will be injected here by JS -->
+                </div>
+            </section>
+
+            <!-- Section 2: Brands -->
+            <section id="brands" class="content-section">
+                 <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4">群星闪耀时</h2>
+                    <p class="max-w-3xl mx-auto text-lg text-[#6B5E54]">每一个伟大的品牌都代表着一种独特的哲学和创新路径。点击品牌卡片，深入了解它们的创始故事、核心技术以及它们如何塑造了整个户外产业。</p>
+                </div>
+                <div id="brands-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                     <!-- Brand cards will be injected here by JS -->
+                </div>
+            </section>
+
+            <!-- Section 3: Tech -->
+            <section id="tech" class="content-section">
+                 <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4">重塑荒野的基石</h2>
+                    <p class="max-w-3xl mx-auto text-lg text-[#6B5E54]">帐篷的每一次飞跃，都源于材料与结构的革命性突破。这里展示了那些从根本上改变了户外体验的关键技术，从面料的演进到结构的创新。</p>
+                </div>
+                <div class="space-y-12">
+                    <!-- Tech sections will be injected here by JS -->
+                </div>
+            </section>
+
+            <!-- Section 4: Legacy -->
+            <section id="legacy" class="content-section">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4">莫斯遗产的曲折之旅</h2>
+                    <p class="max-w-3xl mx-auto text-lg text-[#6B5E54]">比尔·莫斯的艺术设计基因如何在一系列复杂的并购中得以传承？这是一个关于品牌、资本与设计哲学融合的传奇故事。点击图表中的任意品牌，追踪它的传承路径。</p>
+                </div>
+                <div class="flex flex-col lg:flex-row gap-8 items-start">
+                    <div id="legacy-chart" class="w-full lg:w-2/3 relative h-[600px]">
+                        <!-- Legacy chart will be built here by JS -->
+                    </div>
+                    <div class="w-full lg:w-1/3 p-6 bg-white/50 rounded-lg shadow-md min-h-[300px]">
+                        <h3 id="legacy-info-title" class="text-2xl font-bold text-[#587D71] mb-4">传承路径详情</h3>
+                        <p id="legacy-info-text" class="text-base text-[#433830] leading-relaxed">请点击左侧图表中的品牌，查看其详细信息和在传承故事中所扮演的角色。</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Brand Modal -->
+    <div id="brand-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 hidden">
+        <div id="brand-modal-content" class="bg-[#F8F5F2] rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 md:p-8 relative">
+            <button id="close-modal" class="absolute top-4 right-4 text-3xl text-[#6B5E54] hover:text-[#C7825E]">&times;</button>
+            <!-- Modal content will be injected here by JS -->
+        </div>
+    </div>
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const AppData = {
+            timeline: [
+                {
+                    era: "1850-1950s: 帆布时代",
+                    title: "实用主义的黎明",
+                    summary: "现代帐篷的起源，植根于军事需求的实用主义和原住民的智慧。坚固但笨重的帆布是这个时代的主角，伴随着休闲露营的兴起，像 Eureka! 这样的先驱品牌开始崭露头角。",
+                    points: ["军事需求催生了便携、耐用的基本概念。", "Tipi等原住民设计提供了与自然和谐的灵感。", "Eureka! 成立于1895年，从军用生产转向民用休闲市场。"]
+                },
+                {
+                    era: "1950-1970s: 合成材料革命",
+                    title: "伟大的飞跃",
+                    summary: "尼龙、铝合金等新材料的出现，彻底颠覆了帐篷行业。帐篷变得更轻、更强、更防水。The North Face 和 Eureka! 分别以精英化和大众化的路径，引领了结构创新的浪潮。",
+                    points: ["The North Face 于1975年推出受富勒启发的测地线穹顶帐篷 Oval Intention。", "Eureka! 于1973年推出经典的自立式A形帐篷 Timberline。", "Sierra Designs 等西海岸品牌强调基于实践经验的创新。"]
+                },
+                {
+                    era: "1975-1994: 艺术与功能",
+                    title: "比尔·莫斯的远见",
+                    summary: "艺术家比尔·莫斯将帐篷设计提升至美学高度。他视帐篷为“功能性雕塑”，其作品如 Stargazer 以优美的曲线和对张力织物的精湛运用，成为行业传奇。",
+                    points: ["Moss Tent Works 成立于1975年。", "Stargazer 帐篷让露营者可以仰望星空，完美诠释了“连接自然”的理念。", "Parawing 天幕运用悬链线切割技术，实现极致的优雅与高效。"]
+                },
+                {
+                    era: "1994-2001: 整合时代",
+                    title: "遗产的传承",
+                    summary: "户外产业进入资本运作时代。比尔·莫斯的艺术遗产经历了一段复杂的传承之路，其帐篷业务被 REI 收购，与 Walrus 等品牌一同并入 MSR，最终归于 Cascade Designs 旗下。",
+                    points: ["1994年，Moss 帐篷业务出售给 REI。", "2000年，Moss 和 Walrus 的设计并入 MSR 产品线。", "2001年，MSR 被 Cascade Designs 收购。"]
+                },
+                {
+                    era: "2001-至今: 现代图景",
+                    title: "舒适与责任",
+                    summary: "市场重心向“宜居性”和“可持续性”偏移。Big Agnes 以“舒适之母”的理念崛起，而小众“车库品牌”则不断推动超轻量化的极限。环保材料和工艺成为新的创新方向。",
+                    points: ["Big Agnes 成立于2001年，以 Copper Spur 等产品普及了超轻帐篷。", "DCF 等尖端材料从小众走向主流。", "再生面料、无氟防水剂等可持续技术成为行业趋势。"]
+                }
+            ],
+            brands: [
+                { id: 'eureka', name: 'Eureka!', founded: 1895, tagline: '百年传承，大众之选', story: '作为行业最古老的品牌之一，Eureka! 的历史是美国帐篷史的缩影。从军用帆布到经典的 Timberline，它始终致力于为广大户外爱好者提供可靠、易用且价格合理的装备，是降低露营门槛的重要推动者。', dna: { '耐用性': 8, '易用性': 9, '性价比': 9, '轻量化': 5, '创新性': 6 }, innovations: ['Timberline A形帐篷', 'Draw-Tite 自立帐'] },
+                { id: 'tnf', name: 'The North Face', founded: 1966, tagline: '探索永不停止', story: '诞生于探索精神高涨的年代，TNF 将巴克敏斯特·富勒的建筑理论引入帐篷设计，创造出革命性的测地线穹顶帐篷，为高海拔和极地探险设定了新的性能标杆。', dna: { '耐用性': 10, '易用性': 6, '性价比': 5, '轻量化': 7, '创新性': 10 }, innovations: ['Oval Intention 测地线帐', 'VE-24 探险帐'] },
+                { id: 'sierra', name: 'Sierra Designs', founded: 1965, tagline: '源于山径的智慧', story: '由两位经验丰富的户外爱好者创立，Sierra Designs 是“伯克利学派”的代表。他们将真实的山径体验转化为产品功能，在轻量化和易用性方面做出了开创性的贡献。', dna: { '耐用性': 7, '易用性': 8, '性价比': 7, '轻量化': 9, '创新性': 8 }, innovations: ['Flashlight 超轻帐', 'Swift-Clips 挂钩系统'] },
+                { id: 'moss', name: 'Moss Tents', founded: 1975, tagline: '功能性雕塑', story: '比尔·莫斯是一位艺术家，他的帐篷是其艺术哲学的延伸。通过对张力织物和有机曲线的精湛运用，他创造出既美观又坚固的“可居住的艺术品”，成为行业中独一无二的传奇。', dna: { '耐用性': 9, '易用性': 7, '性价比': 4, '轻量化': 7, '创新性': 10 }, innovations: ['Stargazer 观星帐', 'Parawing 天幕'] },
+                { id: 'msr', name: 'MSR', founded: 1969, tagline: '精密工程，可靠探险', story: 'MSR (Mountain Safety Research) 最初以登山安全研究和炉具闻名，其基因是严谨的工程思维。在整合了 Moss 和 Walrus 的设计DNA后，MSR 成为融合了艺术美学与工程性能的顶级帐篷品牌。', dna: { '耐用性': 10, '易用性': 8, '性价比': 6, '轻量化': 9, '创新性': 9 }, innovations: ['Hubba Hubba 系列', 'Access 四季帐'] },
+                { id: 'bigagnes', name: 'Big Agnes', founded: 2001, tagline: '舒适之母', story: '在所有品牌都追求极致性能时，Big Agnes 独辟蹊径，将“舒适性”作为核心。从一体化睡眠系统到在重量、空间和易用性间取得完美平衡的 Copper Spur，它重新定义了现代休闲露营的体验。', dna: { '耐用性': 7, '易用性': 9, '性价比': 7, '轻量化': 10, '创新性': 8 }, innovations: ['Copper Spur 系列', '一体化睡眠系统', '将DCF材料主流化'] }
+            ],
+            tech: [
+                 { 
+                    category: '面料革命：从沉重到轻盈',
+                    icon: '⛶',
+                    items: [
+                        { name: '帆布 (Canvas)', era: '~1950s', desc: '优点：坚固、耐用、透气。缺点：笨重、吸水后更重、易发霉。' },
+                        { name: '尼龙/聚酯 (Nylon/Polyester)', era: '1960s+', desc: '革命性材料。优点：轻便、高强度、防水、不易霉变。是现代帐篷的基础。' },
+                        { name: '涂层技术 (PU/Silicone)', era: '1970s+', desc: 'PU涂层提供基础防水，硅涂层（Silnylon）提供更优异的防水和撕裂强度。' },
+                        { name: 'Dyneema复合面料 (DCF)', era: '2000s+', desc: '曾用名Cuben Fiber。非编织复合材料，拥有极致的强度重量比，完全防水，是超轻量化的顶峰。' },
+                    ]
+                },
+                { 
+                    category: '结构创新：形态的解放',
+                    icon: '△',
+                    items: [
+                        { name: 'A形结构 (A-Frame)', era: '传统~1970s', desc: '经典结构，稳定但空间利用率低。Eureka!的Timberline是其自立式版本的巅峰之作。' },
+                        { name: '测地线穹顶 (Geodesic Dome)', era: '1975+', desc: '由The North Face引入。通过多杆交叉形成三角形网络，拥有无与伦比的强度和抗风性。' },
+                        { name: '张力织物结构 (Tensioned Fabric)', era: '1975+', desc: '比尔·莫斯的标志。通过精确计算使织物处于完美张力下，形成优美而稳固的曲面。' },
+                        { name: '帐杆枢纽系统 (Hubbed Poles)', era: '2000s+', desc: '将多根帐杆通过一个或多个枢纽连接成一体，极大简化了搭建过程，并优化了内部空间。' }
+                    ]
+                }
+            ],
+            legacy: {
+                nodes: [
+                    { id: 'moss_inc', name: 'Moss Inc.', year: '1975-1994', pos: { top: '5%', left: '35%' } },
+                    { id: 'rei', name: 'REI', year: '零售巨头', pos: { top: '25%', left: '35%' } },
+                    { id: 'walrus', name: 'Walrus Tents', year: '~1980s-2000', pos: { top: '25%', left: '5%' } },
+                    { id: 'edgeworks', name: 'Edgeworks', year: '1990s-2000', pos: { top: '45%', left: '20%' } },
+                    { id: 'msr_rei', name: 'MSR (REI旗下)', year: '2000-2001', pos: { top: '65%', left: '35%' } },
+                    { id: 'cascade', name: 'Cascade Designs', year: '收购方', pos: { top: '85%', left: '35%' } }
+                ],
+                connections: [
+                    { from: 'moss_inc', to: 'rei' },
+                    { from: 'rei', to: 'edgeworks' },
+                    { from: 'walrus', to: 'edgeworks' },
+                    { from: 'edgeworks', to: 'msr_rei' },
+                    { from: 'msr_rei', to: 'cascade' },
+                ],
+                stories: {
+                    moss_inc: "艺术家比尔·莫斯创立的公司。1994年，其帐篷业务被出售，公司主体转型专注于商业展会。",
+                    rei: "美国最大的户外零售商之一。1994年收购了Moss帐篷业务，并在2000年将其与MSR合并，是整个传承过程中的关键操作者。",
+                    walrus: "由Sierra Designs联合创始人创立的品牌，以创新设计著称。后被REI收购，与Moss一同并入Edgeworks管理。",
+                    edgeworks: "REI为管理其收购的帐篷品牌（Moss, Walrus等）而成立的子公司，是设计与生产的整合平台。",
+                    msr_rei: "2000年，REI将Edgeworks并入当时旗下的MSR，Moss和Walrus的设计DNA正式融入MSR产品线。",
+                    cascade: "旗下拥有Therm-a-Rest等硬核品牌的巨头。2001年从REI手中收购MSR，成为比尔·莫斯设计遗产的最终归宿。"
+                }
+            }
+        };
+
+        const mainNav = document.getElementById('main-nav');
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const contentSections = document.querySelectorAll('.content-section');
+        let brandChart = null;
+        
+        const navigateTo = (hash) => {
+            const targetId = hash.substring(1);
+            
+            contentSections.forEach(section => {
+                section.classList.remove('active');
+                if (section.id === targetId) {
+                    section.classList.add('active');
+                }
+            });
+
+            const allNavLinks = document.querySelectorAll('.nav-link');
+            allNavLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === hash) {
+                    link.classList.add('active');
+                }
+            });
+            mobileMenu.classList.add('hidden');
+            window.scrollTo(0, 0);
+        };
+
+        const setupNavigation = () => {
+            const navContainer = document.querySelector('body');
+            navContainer.addEventListener('click', (e) => {
+                if(e.target.matches('.nav-link')) {
+                    e.preventDefault();
+                    const hash = e.target.getAttribute('href');
+                    navigateTo(hash);
+                }
+            });
+
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            const initialHash = window.location.hash || '#timeline';
+            navigateTo(initialHash);
+        };
+        
+        const renderTimeline = () => {
+            const container = document.querySelector('#timeline .relative');
+            container.innerHTML = AppData.timeline.map(item => `
+                <div class="timeline-item mb-8">
+                    <div class="timeline-marker cursor-pointer">
+                        <h3 class="text-xl font-bold text-[#587D71]">${item.era}</h3>
+                        <h4 class="text-2xl font-semibold">${item.title}</h4>
+                    </div>
+                    <div class="timeline-item-content mt-4 pl-4 border-l-2 border-[#C7825E]">
+                        <p class="mb-3 text-base">${item.summary}</p>
+                        <ul class="list-disc list-inside space-y-1 text-sm text-[#6B5E54]">
+                            ${item.points.map(point => `<li>${point}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `).join('');
+
+            container.addEventListener('click', (e) => {
+                const marker = e.target.closest('.timeline-marker');
+                if(marker){
+                    const content = marker.nextElementSibling;
+                    content.classList.toggle('open');
+                }
+            });
+        };
+
+        const renderBrands = () => {
+            const grid = document.getElementById('brands-grid');
+            grid.innerHTML = AppData.brands.map(brand => `
+                <div class="brand-card bg-white/50 rounded-lg p-6 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer" data-brandid="${brand.id}">
+                    <h3 class="text-2xl font-bold text-[#587D71]">${brand.name}</h3>
+                    <p class="text-sm text-[#C7825E] font-medium mb-2">成立于 ${brand.founded}</p>
+                    <p class="text-lg font-light">${brand.tagline}</p>
+                </div>
+            `).join('');
+
+            grid.addEventListener('click', (e) => {
+                const card = e.target.closest('.brand-card');
+                if(card) {
+                    const brandId = card.dataset.brandid;
+                    openBrandModal(brandId);
+                }
+            });
+        };
+
+        const openBrandModal = (brandId) => {
+            const brand = AppData.brands.find(b => b.id === brandId);
+            const modal = document.getElementById('brand-modal');
+            const modalContent = document.getElementById('brand-modal-content');
+
+            modalContent.innerHTML = `
+                <button id="close-modal-inner" class="absolute top-4 right-4 text-3xl text-[#6B5E54] hover:text-[#C7825E]">&times;</button>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <h2 class="text-4xl font-bold text-[#587D71]">${brand.name}</h2>
+                        <p class="text-md text-[#C7825E] font-medium mt-1 mb-4">成立于 ${brand.founded} - "${brand.tagline}"</p>
+                        <p class="text-base leading-relaxed mb-6">${brand.story}</p>
+                        <h4 class="text-xl font-semibold mb-2">关键创新:</h4>
+                        <ul class="list-disc list-inside space-y-1 text-base text-[#433830]">
+                            ${brand.innovations.map(inv => `<li>${inv}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-semibold mb-2 text-center">品牌基因</h4>
+                        <div class="chart-container">
+                            <canvas id="brand-dna-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+
+            const dnaData = {
+                labels: Object.keys(brand.dna),
+                datasets: [{
+                    label: brand.name + ' 基因',
+                    data: Object.values(brand.dna),
+                    fill: true,
+                    backgroundColor: 'rgba(88, 125, 113, 0.2)',
+                    borderColor: '#587D71',
+                    pointBackgroundColor: '#587D71',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#587D71'
+                }]
+            };
+
+            const chartCtx = document.getElementById('brand-dna-chart').getContext('2d');
+            if(brandChart) {
+                brandChart.destroy();
+            }
+            brandChart = new Chart(chartCtx, {
+                type: 'radar',
+                data: dnaData,
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(67, 56, 48, 0.2)' },
+                            grid: { color: 'rgba(67, 56, 48, 0.2)' },
+                            pointLabels: {
+                                font: { size: 12 },
+                                color: '#433830'
+                            },
+                            ticks: {
+                                backdropColor: '#F8F5F2',
+                                color: '#6B5E54',
+                                stepSize: 2
+                            },
+                            min: 0,
+                            max: 10
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            document.getElementById('close-modal-inner').addEventListener('click', closeBrandModal);
+        };
+        
+        const closeBrandModal = () => {
+            const modal = document.getElementById('brand-modal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        };
+
+        document.getElementById('brand-modal').addEventListener('click', (e) => {
+            if(e.target.id === 'brand-modal' || e.target.id === 'close-modal') {
+                closeBrandModal();
+            }
+        });
+
+        const renderTech = () => {
+            const container = document.querySelector('#tech .space-y-12');
+            container.innerHTML = AppData.tech.map(cat => `
+                <div class="bg-white/50 p-6 rounded-lg shadow-md">
+                    <h3 class="text-2xl font-bold mb-6 text-center"><span class="text-3xl mr-2">${cat.icon}</span>${cat.category}</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        ${cat.items.map(item => `
+                            <div class="border-l-4 border-[#C7825E] pl-4">
+                                <p class="font-bold text-lg">${item.name}</p>
+                                <p class="text-sm text-[#587D71] font-medium mb-1">${item.era}</p>
+                                <p class="text-sm text-[#6B5E54]">${item.desc}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        };
+        
+        const renderLegacyChart = () => {
+            const container = document.getElementById('legacy-chart');
+            const { nodes, connections, stories } = AppData.legacy;
+            
+            container.innerHTML = nodes.map(node => `
+                <div id="${node.id}" class="legacy-box absolute p-3 bg-white rounded-lg shadow-lg text-center" style="top: ${node.pos.top}; left: ${node.pos.left}; transform: translateX(-50%);" data-nodeid="${node.id}">
+                    <p class="font-bold text-base md:text-lg">${node.name}</p>
+                    <p class="text-xs md:text-sm text-[#6B5E54]">${node.year}</p>
+                </div>
+            `).join('');
+
+            connections.forEach(conn => {
+                const fromNode = document.getElementById(conn.from);
+                const toNode = document.getElementById(conn.to);
+
+                const fromRect = fromNode.getBoundingClientRect();
+                const toRect = toNode.getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+
+                const x1 = fromRect.left + fromRect.width / 2 - containerRect.left;
+                const y1 = fromRect.top + fromRect.height - containerRect.top;
+                const x2 = toRect.left + toRect.width / 2 - containerRect.left;
+                const y2 = toRect.top - containerRect.top;
+
+                const connector = document.createElement('div');
+                connector.className = 'legacy-connector';
+                connector.style.left = `${x1}px`;
+                connector.style.top = `${y1}px`;
+                connector.style.width = '2px';
+                connector.style.height = `${y2 - y1}px`;
+                connector.dataset.from = conn.from;
+                connector.dataset.to = conn.to;
+                container.appendChild(connector);
+            });
+            
+            const infoTitle = document.getElementById('legacy-info-title');
+            const infoText = document.getElementById('legacy-info-text');
+
+            container.addEventListener('click', (e) => {
+                const box = e.target.closest('.legacy-box');
+                if (box) {
+                    const nodeId = box.dataset.nodeid;
+                    const node = nodes.find(n => n.id === nodeId);
+                    infoTitle.textContent = node.name;
+                    infoText.textContent = stories[nodeId];
+
+                    const allBoxes = container.querySelectorAll('.legacy-box');
+                    const allConnectors = container.querySelectorAll('.legacy-connector');
+
+                    const pathNodes = new Set([nodeId]);
+                    const pathConns = new Set();
+                    
+                    let current = nodeId;
+                    while(true) {
+                        const conn = connections.find(c => c.to === current);
+                        if(!conn) break;
+                        pathNodes.add(conn.from);
+                        pathConns.add(`${conn.from}-${conn.to}`);
+                        current = conn.from;
+                    }
+
+                    current = nodeId;
+                     while(true) {
+                        const conn = connections.find(c => c.from === current);
+                        if(!conn) break;
+                        pathNodes.add(conn.to);
+                        pathConns.add(`${conn.from}-${conn.to}`);
+                        current = conn.to;
+                    }
+
+                    allBoxes.forEach(b => {
+                        if (pathNodes.has(b.dataset.nodeid)) {
+                            b.classList.remove('dimmed');
+                            b.style.borderColor = '#587D71';
+                        } else {
+                            b.classList.add('dimmed');
+                            b.style.borderColor = 'transparent';
+                        }
+                    });
+                     allConnectors.forEach(c => {
+                        const key = `${c.dataset.from}-${c.dataset.to}`;
+                        if (pathConns.has(key)) {
+                            c.classList.add('highlight');
+                            c.style.zIndex = '10';
+                        } else {
+                            c.classList.remove('highlight');
+                             c.style.zIndex = '0';
+                        }
+                    });
+                }
+            });
+        };
+        
+        const init = () => {
+            setupNavigation();
+            renderTimeline();
+            renderBrands();
+            renderTech();
+            // Use timeout to ensure elements are rendered for position calculation
+            setTimeout(renderLegacyChart, 100); 
+        };
+
+        init();
+    });
+    </script>
+</body>
+</html>
