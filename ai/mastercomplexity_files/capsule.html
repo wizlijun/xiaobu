@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互动报告：驾驭复杂项目管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony (Warm Neutrals + Professional Blue Accent) -->
+    <!-- Application Structure Plan: 本应用采用单页仪表盘式布局。顶部是粘性导航栏，方便用户在六大核心策略间快速跳转。每个策略作为一个独立的主题区域进行展示，将报告中的静态表格和列表转化为动态、可交互的组件。例如，“匹配开发模式”模块允许用户通过点击项目特征来探索合适的模型，“闭环风险管理”则通过交互式图表来可视化风险矩阵。这种结构旨在将线性的阅读体验转变为非线性的探索式学习，通过互动加深用户对复杂概念的理解和记忆，比传统的报告格式更具吸引力和可用性。 -->
+    <!-- Visualization & Content Choices: 报告中的表格信息被转化为交互式UI元素。例如，“匹配开发模式”表格变为点击切换内容的选项卡，目标是引导用户决策，互动方式为点击，这比静态表格更具参与感。风险矩阵通过Chart.js的散点图实现可视化，目标是展示风险优先级，互动方式为悬停提示，比纯文本更直观。PDCA循环等流程图用HTML/CSS构建，目标是展示周期性，互动方式为点击切换，强化了循环的概念。所有可视化均未使用SVG或Mermaid，确保了技术的统一性并符合要求。 -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans SC', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+            color: #1e293b; /* slate-800 */
+        }
+        .nav-link {
+            transition: color 0.3s ease, border-bottom-color 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #2563eb; /* blue-600 */
+            border-bottom-color: #2563eb; /* blue-600 */
+        }
+        .section-title {
+            font-weight: 800;
+            color: #1e293b; /* slate-800 */
+            letter-spacing: -0.025em;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .interactive-tab {
+            transition: all 0.3s ease;
+        }
+        .interactive-tab.active {
+            background-color: #2563eb; /* blue-600 */
+            color: white;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header id="main-header" class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <a href="#hero" class="text-2xl font-bold text-slate-800">驾驭混沌</a>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#strategy-1" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">思维模式</a>
+                        <a href="#strategy-2" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">开发模式</a>
+                        <a href="#strategy-3" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">风险管理</a>
+                        <a href="#strategy-4" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">团队势能</a>
+                        <a href="#strategy-5" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">工具协同</a>
+                        <a href="#strategy-6" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-700">持续改进</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero" class="py-20 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 tracking-tight">
+                    <span class="block">驾驭混沌，韧性增长</span>
+                    <span class="block text-blue-600 mt-2">复杂项目管理互动方法论</span>
+                </h1>
+                <p class="mt-6 max-w-3xl mx-auto text-lg text-slate-600">
+                    在瞬息万变的环境中，传统项目管理已力不从心。本报告将六大核心策略转化为一个互动体验，助您重构管理逻辑，推动项目在混沌中实现“韧性生长-精准交付-价值跃迁”的螺旋式进化。
+                </p>
+            </div>
+        </section>
+
+        <section id="strategy-1" class="py-16 md:py-24">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl section-title">第一招：转变思维模式</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-500">成功的基石是从“严格按计划”转向“拥抱变化”。本节将对比两种思维模式的核心差异，帮助您理解为何接纳不确定性是通往确定性成果的必经之路。</p>
+                </div>
+                <div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
+                    <div class="bg-white p-8 rounded-xl shadow-lg border border-slate-200">
+                        <h3 class="text-2xl font-bold text-slate-800 flex items-center">
+                            <span class="text-3xl mr-3">⛓️</span> 传统思维：严格控制
+                        </h3>
+                        <ul class="mt-6 space-y-4 text-slate-600">
+                            <li class="flex items-start"><span class="text-blue-500 font-bold mr-2">✓</span> 试图精确预测未来，制定详尽计划。</li>
+                            <li class="flex items-start"><span class="text-blue-500 font-bold mr-2">✓</span> 将变化视为风险和威胁，尽力避免。</li>
+                            <li class="flex items-start"><span class="text-blue-500 font-bold mr-2">✓</span> 追求“精确的错误”，死守过时计划。</li>
+                            <li class="flex items-start"><span class="text-blue-500 font-bold mr-2">✓</span> 目标是按计划完成，而非最大化价值。</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-8 rounded-xl shadow-lg border border-blue-500">
+                        <h3 class="text-2xl font-bold text-slate-800 flex items-center">
+                            <span class="text-3xl mr-3">🧠</span> 复杂项目思维：拥抱变化
+                        </h3>
+                        <ul class="mt-6 space-y-4 text-slate-600">
+                            <li class="flex items-start"><span class="text-blue-500 font-bold mr-2">✓</span> 承认环境的不可预测性，接纳不确定。</li>
+                            <li class="flex items-start"><span class="text-blue-500 font-bold mr-2">✓</span> 通过快速试错和迭代，将风险转为机会。</li>
+                            <li class="flex items-start"><span class="text-blue-500 font-bold mr-2">✓</span> 接受“模糊的正确”，在变化中动态调整。</li>
+                            <li class="flex items-start"><span class="text-blue-500 font-bold mr-2">✓</span> 目标是在变化中创造确定性成果和价值。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="strategy-2" class="py-16 md:py-24 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl section-title">第二招：匹配开发模式</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-500">没有万能的开发模型。“一刀切”是项目失败的常见原因。请点击下面的项目特征，探索最适合您团队的开发模式，实现风险与价值的平衡。</p>
+                </div>
+                <div class="max-w-5xl mx-auto">
+                    <div class="flex flex-wrap justify-center gap-2 md:gap-4 mb-8" id="dev-model-tabs">
+                    </div>
+                    <div id="dev-model-content" class="card p-8 min-h-[300px]">
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="strategy-3" class="py-16 md:py-24">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl section-title">第三招：闭环风险管理</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-500">从被动救火到主动防御，系统化的风险管理是项目韧性的核心。本节将通过交互式图表展示如何评估风险，并通过PDCA循环实现“预见-应对-优化”的闭环。</p>
+                </div>
+                <div class="grid lg:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <h3 class="text-2xl font-bold text-slate-800 mb-4">风险矩阵可视化</h3>
+                        <p class="text-slate-600 mb-6">这是一个典型的风险矩阵，将风险按其发生的概率和造成的影响进行分类。高概率、高影响的风险（右上方）需要优先关注。将鼠标悬停在数据点上查看风险详情。</p>
+                        <div class="chart-container">
+                            <canvas id="riskMatrixChart"></canvas>
+                        </div>
+                    </div>
+                    <div id="pdca-cycle">
+                        <h3 class="text-2xl font-bold text-slate-800 mb-4">PDCA持续优化循环</h3>
+                        <p class="text-slate-600 mb-6">PDCA (Plan-Do-Check-Act) 是实现风险管理闭环的强大工具。点击循环的每个阶段，查看其核心任务和策略。</p>
+                        <div class="relative w-80 h-80 mx-auto">
+                             <div class="absolute inset-0 flex items-center justify-center">
+                                <div id="pdca-content" class="text-center p-4"></div>
+                            </div>
+                            <div class="pdca-segment cursor-pointer absolute w-1/2 h-1/2 top-0 left-0 flex items-center justify-center" data-step="P">
+                                <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center text-blue-800 font-bold text-2xl">P</div>
+                            </div>
+                             <div class="pdca-segment cursor-pointer absolute w-1/2 h-1/2 top-0 right-0 flex items-center justify-center" data-step="D">
+                                <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center text-green-800 font-bold text-2xl">D</div>
+                            </div>
+                             <div class="pdca-segment cursor-pointer absolute w-1/2 h-1/2 bottom-0 left-0 flex items-center justify-center" data-step="A">
+                                <div class="w-24 h-24 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-800 font-bold text-2xl">A</div>
+                            </div>
+                             <div class="pdca-segment cursor-pointer absolute w-1/2 h-1/2 bottom-0 right-0 flex items-center justify-center" data-step="C">
+                                <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center text-red-800 font-bold text-2xl">C</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="strategy-4" class="py-16 md:py-24 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl section-title">第四招：锻造团队势能</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-500">人是项目最核心的资产。一个高势能的团队能将知识盲区转化为创新动力。本节将展示组建高效团队的三大支柱，点击卡片了解详情。</p>
+                </div>
+                <div class="grid md:grid-cols-3 gap-8 text-center">
+                    <div class="card p-8 team-card cursor-pointer" data-content="team-content-1">
+                        <div class="text-5xl mb-4">🤝</div>
+                        <h3 class="text-xl font-bold text-slate-800">组建跨职能团队</h3>
+                        <p class="mt-2 text-slate-500">打破部门壁垒，整合多元背景成员，以共享目标驱动协作。</p>
+                    </div>
+                    <div class="card p-8 team-card cursor-pointer" data-content="team-content-2">
+                        <div class="text-5xl mb-4">❤️</div>
+                        <h3 class="text-xl font-bold text-slate-800">培养协作精神</h3>
+                        <p class="mt-2 text-slate-500">建立信任，破除本位主义，将冲突转化为创新的催化剂。</p>
+                    </div>
+                    <div class="card p-8 team-card cursor-pointer" data-content="team-content-3">
+                        <div class="text-5xl mb-4">📚</div>
+                        <h3 class="text-xl font-bold text-slate-800">持续学习和培训</h3>
+                        <p class="mt-2 text-slate-500">建立知识共享机制，在实战中迭代经验，为挑战提供可持续方案。</p>
+                    </div>
+                </div>
+                 <div id="team-content-display" class="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200 hidden"></div>
+            </div>
+        </section>
+        
+        <section id="strategy-5" class="py-16 md:py-24">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl section-title">第五招：智联工具协同</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-500">智能工具是团队的“数字神经系统”，能打破信息孤岛，实现无缝协作。以下是三类核心工具，它们共同为项目成功保驾护航。</p>
+                </div>
+                <div class="grid lg:grid-cols-3 gap-8">
+                    <div class="card p-8">
+                        <h3 class="text-xl font-bold text-slate-800">项目管理软件</h3>
+                        <p class="text-sm text-slate-400 mt-1">如: Jira, Trello</p>
+                        <p class="mt-4 text-slate-600"><strong>解决问题：</strong>任务分配混乱、进度跟踪模糊、资源管理低效。通过精准规划任务节点、实时追踪进度，确保各环节紧密衔接。</p>
+                    </div>
+                    <div class="card p-8">
+                        <h3 class="text-xl font-bold text-slate-800">协作平台</h3>
+                        <p class="text-sm text-slate-400 mt-1">如: 钉钉, 飞书</p>
+                        <p class="mt-4 text-slate-600"><strong>解决问题：</strong>沟通低效、文件版本混乱、跨地域协作障碍。打破部门壁垒，实现文件共享与即时沟通。</p>
+                    </div>
+                    <div class="card p-8">
+                        <h3 class="text-xl font-bold text-slate-800">数据分析与可视化</h3>
+                        <p class="text-sm text-slate-400 mt-1">如: Tableau, Power BI</p>
+                        <p class="mt-4 text-slate-600"><strong>解决问题：</strong>数据孤岛、决策依赖直觉、报告制作耗时。将庞杂信息转化为直观图表，助力决策者快速识别趋势与风险。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="strategy-6" class="py-16 md:py-24 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                 <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl section-title">第六招：精进持续改进</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-slate-500">持续改进是驱动项目自我迭代的引擎。通过复盘、试错和共享，团队能将个体经验沉淀为集体智慧，形成良性循环。</p>
+                </div>
+                <div class="max-w-4xl mx-auto">
+                    <div class="space-y-6">
+                        <div class="card p-6">
+                            <h3 class="text-lg font-bold">1. 阶段性的复盘总结</h3>
+                            <p class="mt-2 text-slate-600">定期召开复盘会议，使用标准模板梳理成果与问题，并输出可执行的优化路线图，为后续行动提供清晰指引。</p>
+                        </div>
+                         <div class="card p-6">
+                            <h3 class="text-lg font-bold">2. 营造包容试错的氛围</h3>
+                            <p class="mt-2 text-slate-600">设立“无责反思”机制，区分失误与责任。鼓励失败案例分享和创新提案，将创意转化为实际解决方案。</p>
+                        </div>
+                         <div class="card p-6">
+                            <h3 class="text-lg font-bold">3. 建立知识共享机制</h3>
+                            <p class="mt-2 text-slate-600">搭建内部知识库（案例库、FAQ），实行“老带新”制度，并开展定期内部技能培训，让个体经验成为团队资产。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer class="bg-slate-800 text-white">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center">
+            <p>&copy; 2025 复杂项目管理互动报告. 版权所有.</p>
+            <p class="text-sm text-slate-400 mt-2">本报告旨在提供一种探索复杂项目管理理论的互动式体验。</p>
+        </div>
+    </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    const devModelData = [
+        { 
+            feature: '需求模糊、变化快', 
+            model: '敏捷 (Scrum/Kanban)', 
+            value: '快速响应变更，降低交付风险',
+            points: '<strong>Scrum:</strong> 通过短期迭代持续交付可验证的产品增量，结合每日站会和评审会快速调整优先级。<br><strong>Kanban:</strong> 可视化工作流，限制在制品数量，适应突发任务插入。'
+        },
+        { 
+            feature: '技术风险高、需逐步验证', 
+            model: '螺旋模型/迭代开发', 
+            value: '分阶段消除不确定性，避免资源浪费',
+            points: '<strong>螺旋模型:</strong> 通过“风险评估-原型开发-客户验证-计划优化”循环，逐步降低技术不确定性。<br><strong>迭代开发:</strong> 每个迭代周期完成部分功能并验证核心假设 (如算法性能)。'
+        },
+        { 
+            feature: '需求稳定、合规性强', 
+            model: '瀑布模型/V模型', 
+            value: '确保流程可控性与文档完整性',
+            points: '<strong>瀑布模型:</strong> 按阶段顺序推进 (需求→设计→开发→测试→部署)，确保文档完整性与流程可控性。<br><strong>V模型:</strong> 测试与开发的同步设计，适用于高可靠性要求的系统。'
+        },
+        { 
+            feature: '多团队协作、复杂依赖', 
+            model: '混合模型/SAFe框架', 
+            value: '协调跨团队目标，减少接口冲突',
+            points: '<strong>混合模型:</strong> 前期用瀑布明确架构与接口，开发阶段分团队采用Scrum。<br><strong>SAFe:</strong> 通过PI (Program Increment) 规划对齐跨团队目标，整合敏捷与系统工程。'
+        },
+        { 
+            feature: '快速验证市场', 
+            model: 'MVP/快速原型', 
+            value: '低成本试错，精准定位用户需求',
+            points: '<strong>MVP (最小可行产品):</strong> 优先开发核心功能，快速投放市场收集反馈。<br><strong>快速原型:</strong> 通过低保真原型验证用户体验，减少开发浪费。'
+        }
+    ];
+
+    const pdcaData = {
+        P: { title: 'Plan (计划)', description: '制定计划和应对策略。通过SWOT、德尔菲法等识别风险，并使用RACI矩阵明确责任。' },
+        D: { title: 'Do (执行)', description: '执行风险应对措施。将计划付诸行动，例如采取规避、减轻、转移或接受策略。' },
+        C: { title: 'Check (检查)', description: '检查执行效果，评估措施的有效性。使用Jira看板、Power BI热力图等工具动态追踪。' },
+        A: { title: 'Act (处置)', description: '总结经验，优化流程。根据检查结果，更新风险登记册，将经验教训固化为团队知识。' }
+    };
+    
+    const teamData = {
+        'team-content-1': {
+            title: '组建跨职能团队的策略',
+            content: '1. 按"项目团队车轮图"模型组建团队，以项目经理为核心，成员涵盖开发、设计、测试、市场等职能代表。<br>2. 明确各角色职责。<br>3. 采用敏捷方法，通过短周期迭代快速验证方案，同步调整优先级。'
+        },
+        'team-content-2': {
+            title: '培养团队协作精神的策略',
+            content: '1. 组织非正式活动，通过共同目标促进协作。<br>2. 在绩效考核中增加"跨职能协作"指标，设立团队奖项，认可集体成果而非个人英雄主义。'
+        },
+        'team-content-3': {
+            title: '提供持续学习和培训的策略',
+            content: '1. 搭建内部Wiki，分类归档技术文档、项目复盘报告、客户案例库。<br>2. 通过技能测评与业务目标对齐，定制技术和软技能课程。<br>3. 每月举办内部分享会。'
+        }
+    };
+
+    function setupDevModelTabs() {
+        const tabsContainer = document.getElementById('dev-model-tabs');
+        const contentContainer = document.getElementById('dev-model-content');
+        
+        devModelData.forEach((item, index) => {
+            const tab = document.createElement('button');
+            tab.className = 'interactive-tab px-4 py-2 rounded-md text-sm font-medium border border-slate-300 bg-white text-slate-700';
+            tab.textContent = item.feature;
+            tab.dataset.index = index;
+            tabsContainer.appendChild(tab);
+        });
+
+        tabsContainer.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                const allTabs = tabsContainer.querySelectorAll('button');
+                allTabs.forEach(t => t.classList.remove('active'));
+                e.target.classList.add('active');
+                updateDevModelContent(e.target.dataset.index);
+            }
+        });
+
+        tabsContainer.querySelector('button').click();
+    }
+    
+    function updateDevModelContent(index) {
+        const contentContainer = document.getElementById('dev-model-content');
+        const data = devModelData[index];
+        contentContainer.innerHTML = `
+            <h3 class="text-2xl font-bold text-blue-600">${data.model}</h3>
+            <p class="mt-2 text-lg text-slate-700 font-medium">${data.value}</p>
+            <div class="mt-6 border-t border-slate-200 pt-6 text-slate-600 space-y-2">
+                <h4 class="font-bold text-slate-800">操作要点：</h4>
+                <p>${data.points}</p>
+            </div>
+        `;
+    }
+
+    function renderRiskMatrixChart() {
+        const ctx = document.getElementById('riskMatrixChart').getContext('2d');
+        const data = {
+            datasets: [{
+                label: '风险识别遗漏',
+                data: [{x: 0.8, y: 0.9, r: 15}],
+                backgroundColor: 'rgba(239, 68, 68, 0.7)'
+            }, {
+                label: '局部视角',
+                data: [{x: 0.6, y: 0.8, r: 12}],
+                backgroundColor: 'rgba(249, 115, 22, 0.7)'
+            }, {
+                label: '责任模糊',
+                data: [{x: 0.7, y: 0.6, r: 10}],
+                backgroundColor: 'rgba(249, 115, 22, 0.7)'
+            }, {
+                label: '策略僵化',
+                data: [{x: 0.5, y: 0.5, r: 8}],
+                backgroundColor: 'rgba(234, 179, 8, 0.7)'
+            }, {
+                label: '信息滞后',
+                data: [{x: 0.9, y: 0.4, r: 10}],
+                backgroundColor: 'rgba(249, 115, 22, 0.7)'
+            }, {
+                label: '响应迟缓',
+                data: [{x: 0.4, y: 0.7, r: 9}],
+                backgroundColor: 'rgba(234, 179, 8, 0.7)'
+            }]
+        };
+
+        new Chart(ctx, {
+            type: 'bubble',
+            data: data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': (概率: ' + context.parsed.x + ', 影响: ' + context.parsed.y + ')';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: '发生概率', font: { size: 14 } },
+                        min: 0,
+                        max: 1
+                    },
+                    y: {
+                        title: { display: true, text: '影响程度', font: { size: 14 } },
+                        min: 0,
+                        max: 1
+                    }
+                }
+            }
+        });
+    }
+
+    function setupPDCACycle() {
+        const segments = document.querySelectorAll('.pdca-segment');
+        const contentDiv = document.getElementById('pdca-content');
+        
+        segments.forEach(segment => {
+            segment.addEventListener('click', () => {
+                const step = segment.dataset.step;
+                const data = pdcaData[step];
+                contentDiv.innerHTML = `<h4 class="font-bold text-lg">${data.title}</h4><p class="text-sm text-slate-600 mt-1">${data.description}</p>`;
+                
+                segments.forEach(s => s.firstElementChild.classList.remove('ring-4', 'ring-offset-2', 'ring-blue-500'));
+                segment.firstElementChild.classList.add('ring-4', 'ring-offset-2', 'ring-blue-500');
+            });
+        });
+
+        document.querySelector('.pdca-segment[data-step="P"]').click();
+    }
+    
+    function setupTeamCards() {
+        const cards = document.querySelectorAll('.team-card');
+        const displayDiv = document.getElementById('team-content-display');
+        
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                const contentKey = card.dataset.content;
+                const data = teamData[contentKey];
+                
+                displayDiv.innerHTML = `<h4 class="font-bold text-lg text-slate-800">${data.title}</h4><div class="mt-2 text-slate-600">${data.content}</div>`;
+                displayDiv.classList.remove('hidden');
+                
+                cards.forEach(c => c.classList.remove('ring-2', 'ring-blue-500'));
+                card.classList.add('ring-2', 'ring-blue-500');
+            });
+        });
+    }
+
+    function setupSmoothScrolling() {
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    const headerOffset = document.getElementById('main-header').offsetHeight;
+                    const elementPosition = targetElement.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+      
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: "smooth"
+                    });
+                }
+            });
+        });
+    }
+    
+    function setupActiveNav() {
+        const sections = document.querySelectorAll('main section');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            const headerHeight = document.getElementById('main-header').offsetHeight;
+
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - headerHeight - 20;
+                if (pageYOffset >= sectionTop) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    }
+
+    setupDevModelTabs();
+    renderRiskMatrixChart();
+    setupPDCACycle();
+    setupTeamCards();
+    setupSmoothScrolling();
+    setupActiveNav();
+});
+</script>
+
+</body>
+</html>
