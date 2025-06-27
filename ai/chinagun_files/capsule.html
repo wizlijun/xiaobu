@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《枪械手册》核心摘要 (1986版)</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --primary-color: #4a69bd;
+            --secondary-color: #78e08f;
+            --header-color: #2c3e50;
+            --fact-bg: #eaf2f8; /* Light blue for facts */
+            --viewpoint-bg: #e9f7ef; /* Light green for viewpoints */
+            --border-color: #dee2e6;
+            --shadow: 0 4px 8px rgba(0,0,0,0.1);
+            --font-main: 'Noto Sans SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .main-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .main-header h1 {
+            color: var(--header-color);
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+        }
+
+        .main-header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .summary-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+
+        .summary-card .icon {
+            font-size: 48px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        
+        .summary-card h2 {
+            margin: 0 0 10px 0;
+            color: var(--header-color);
+            font-size: 1.5rem;
+        }
+
+        .summary-card p {
+            margin: 0;
+            color: #555;
+            flex-grow: 1;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-content {
+            background-color: var(--bg-color);
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 1100px;
+            animation: slideIn 0.3s;
+            position: relative;
+        }
+        
+        .close-btn {
+            color: #aaa;
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover,
+        .close-btn:focus {
+            color: #333;
+        }
+
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+
+        @keyframes slideIn {
+            from {transform: translateY(-50px);}
+            to {transform: translateY(0);}
+        }
+
+        /* Timeline Styles */
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--primary-color);
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 40px;
+        }
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+        .timeline-item-content {
+            position: relative;
+            width: 45%;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+        .timeline-item:nth-child(odd) .timeline-item-content {
+            left: 0;
+            text-align: right;
+        }
+        .timeline-item:nth-child(even) .timeline-item-content {
+            left: 55%;
+        }
+        .timeline-item-content h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        .timeline-item-content p {
+            margin-bottom: 0;
+        }
+        .timeline-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            border: 4px solid var(--bg-color);
+        }
+        .timeline-item-content::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-style: solid;
+        }
+        .timeline-item:nth-child(odd) .timeline-item-content::before {
+            right: -15px;
+            border-width: 10px 0 10px 15px;
+            border-color: transparent transparent transparent var(--card-bg);
+        }
+        .timeline-item:nth-child(even) .timeline-item-content::before {
+            left: -15px;
+            border-width: 10px 15px 10px 0;
+            border-color: transparent var(--card-bg) transparent transparent;
+        }
+
+        /* Fact and Viewpoint highlighting */
+        .fact-box, .viewpoint-box {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 5px solid;
+        }
+        .fact-box {
+            background-color: var(--fact-bg);
+            border-color: var(--primary-color);
+        }
+        .viewpoint-box {
+            background-color: var(--viewpoint-bg);
+            border-color: var(--secondary-color);
+        }
+        .box-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .box-title .icon {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        /* Weapon Details Styles */
+        .weapon-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .tab-button {
+            background-color: transparent;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #555;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .tab-button.active, .tab-button:hover {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        .weapon-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+        
+        .weapon-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .weapon-header img {
+            width: 150px;
+            height: auto;
+            border-radius: 5px;
+            background-color: #eee;
+            object-fit: contain;
+        }
+        
+        .weapon-header h3 {
+            font-size: 1.8rem;
+            margin: 0;
+            color: var(--header-color);
+        }
+        
+        .specs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            background: var(--fact-bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .spec-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .spec-item svg {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+            fill: var(--primary-color);
+        }
+
+        details {
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            margin-bottom: 10px;
+            background: #f9f9f9;
+        }
+
+        summary {
+            font-weight: bold;
+            padding: 10px;
+            cursor: pointer;
+            background: #efefef;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        details[open] summary {
+             border-bottom: 1px solid var(--border-color);
+        }
+
+        .details-content {
+            padding: 15px;
+        }
+        .details-content ul {
+            padding-left: 20px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="main-header">
+            <h1>《枪械手册》核心摘要</h1>
+            <p>基于兵器工业部1986年版，以超轻认知负荷形式呈现</p>
+        </header>
+
+        <div class="grid-container">
+            <div class="summary-card" data-modal="modal-intro">
+                <span class="icon">📖</span>
+                <h2>前言与总论</h2>
+                <p>了解本书的编写背景、枪械的基本定义、分类方法以及世界枪械的宏观发展简史。</p>
+            </div>
+            <div class="summary-card" data-modal="modal-timeline">
+                <span class="icon">⏳</span>
+                <h2>中国枪械发展脉络</h2>
+                <p>通过交互式时间轴，清晰回顾从晚清到改革开放初期，中国轻武器工业的曲折发展与辉煌成就。</p>
+            </div>
+            <div class="summary-card" data-modal="modal-qc">
+                <span class="icon">🎯</span>
+                <h2>枪械设计与品控</h2>
+                <p>深入探讨决定一款枪械优劣的核心质量要求，以及80年代中国军工的质量保证体系。</p>
+            </div>
+            <div class="summary-card" data-modal="modal-pistols">
+                <span class="icon">🔫</span>
+                <h2>手枪 Pistol</h2>
+                <p>涵盖自卫、战斗、运动和特种作战的各型手枪，包括54式、64式、77式等经典型号。</p>
+            </div>
+            <div class="summary-card" data-modal="modal-smgs">
+                <span class="icon">💥</span>
+                <h2>冲锋枪 SMG</h2>
+                <p>从仿制的50式到自主设计的79式，以及作为突击步枪的56式，见证单兵火力的演进。</p>
+            </div>
+             <div class="summary-card" data-modal="modal-rifles">
+                <span class="icon">🔥</span>
+                <h2>步枪 Rifle</h2>
+                <p>步兵的基石。囊括56式半自动、63式、81式枪族、狙击步枪及对国外型号的测绘仿制。</p>
+            </div>
+            <div class="summary-card" data-modal="modal-mgs">
+                <span class="icon">💣</span>
+                <h2>机枪 Machine Gun</h2>
+                <p>班、连级支援火力的核心。涵盖53式、56式、67式两用机枪及80式通用机枪等。</p>
+            </div>
+            <div class="summary-card" data-modal="modal-hmgs">
+                <span class="icon">🚀</span>
+                <h2>大口径机枪 HMG</h2>
+                <p>威力巨大的12.7mm和14.5mm机枪，用于防空、反轻装甲和火力压制。</p>
+            </div>
+             <div class="summary-card" data-modal="modal-others">
+                <span class="icon">⚙️</span>
+                <h2>运动及其他枪械</h2>
+                <p>一窥专业比赛用的运动枪、猎枪，以及信号枪、榴弹发射器等特种枪械。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="modal-intro" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>📖 前言与总论 (第一章)</h2>
+            <div class="fact-box">
+                <div class="box-title"><span class="icon">ℹ️</span>核心事实</div>
+                <ul>
+                    <li><strong>枪械定义</strong>: 以火药为能源，在管形发射具内利用气体能量发射弹头的武器，口径通常在20毫米以下。</li>
+                    <li><strong>枪械系统</strong>: 指枪与其使用的枪弹共同构成的系统。</li>
+                    <li><strong>基本分类</strong>:
+                        <ul>
+                            <li><strong>按用途</strong>: 手枪、冲锋枪、步枪、机枪、大口径机枪、运动枪等。</li>
+                            <li><strong>按自动方式</strong>:
+                                <ol>
+                                    <li><strong>枪机后坐式 (Blowback)</strong>: 分为自由枪机式和半自由枪机式。</li>
+                                    <li><strong>枪管后坐式 (Recoil-operated)</strong>: 分为短后坐与长后坐。</li>
+                                    <li><strong>导气式 (Gas-operated)</strong>: 利用导出的火药气体推动活塞等机构。</li>
+                                </ol>
+                            </li>
+                        </ul>
+                    </li>
+                     <li><strong>世界枪械发展简史</strong>:
+                        <ul>
+                            <li><strong>步枪</strong>: 从1132年中国南宋发明的竹制“突火枪”开始，经历了火门枪、燧发枪、火帽枪、金属定装弹、弹仓等阶段，逐步实现后膛装填和自动化。</li>
+                             <li><strong>机枪</strong>: 从手摇式多管机枪（加特林），到1884年马克沁发明的利用后坐力完成自动射击的机枪，开创了自动武器的新纪元。</li>
+                             <li><strong>手枪</strong>: 从原始的火绳手枪，到1835年柯尔特发明的转轮手枪，再到19世纪末勃朗宁等人设计的自动手枪，逐步成为主流。</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="viewpoint-box">
+                <div class="box-title"><span class="icon">💡</span>核心观点</div>
+                <p>本书旨在总结建国以来我国在枪械产品研制及生产上的经验，系统介绍我国自主研制与仿制的各类枪械产品，为相关领域的从业人员提供参考。其内容体现了80年代中国军工的认知水平和技术积累。</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-timeline" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>⏳ 中国枪械发展脉络 (第一章 第三、四、五节摘要)</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-icon">📜</div>
+                    <div class="timeline-item-content">
+                        <h3>晚清至民国时期 (1949前)</h3>
+                        <p><strong>特点</strong>：品种繁多，式样陈旧，以仿制为主，缺乏统一制式。<br><strong>核心观点</strong>：技术落后，多数枪支弹药依赖国外购买，少数兵工厂进行仿制，难以满足国防需求。<br><strong>代表型号</strong>：汉阳造（仿德1888式）、中正式（仿德24式）、捷克ZB-26轻机枪、马克沁重机枪等。</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon">🛠️</div>
+                    <div class="timeline-item-content">
+                        <h3>革命根据地时期 (1931-1949)</h3>
+                        <p><strong>特点</strong>：从无到有，以修理缴获武器为主，逐步发展到小批量制造。<br><strong>核心观点</strong>：“取之于敌”，自力更生，在极其简陋的条件下为革命军队提供了宝贵的武器支持。<br><strong>代表型号</strong>：无名式步枪、五五式步枪（纪念朱德总司令）、八一式马步枪。</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon">🇷🇺</div>
+                    <div class="timeline-item-content">
+                        <h3>建国初期与全面苏援 (1950-1959)</h3>
+                        <p><strong>特点</strong>：系统引进苏联技术资料，建立正规化生产线，实现了解放军武器装备的第一次现代化换装。<br><strong>核心观点</strong>：奠定了新中国兵器工业的基础，实现了枪械产品的标准化和制式化。<br><strong>代表型号</strong>：50式冲锋枪 (仿ППШ-41)、54式手枪 (仿TT-33)、<strong>56式枪族</strong> (仿AK-47, SKS, РПД)。</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon">🇨🇳</div>
+                    <div class="timeline-item-content">
+                        <h3>自主探索与改进 (1960-1976)</h3>
+                        <p><strong>特点</strong>：在“三结合”方针指导下，开始自行设计与改进，填补装备空白，并探索新材料、新工艺。<br><strong>核心观点</strong>：这是我国枪械行业发展历史上的黄金时期之一，自主研发能力得到显著提升。<br><strong>代表型号</strong>：63式自动步枪、64式微声冲锋枪、67式轻重两用机枪。</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon">🌍</div>
+                    <div class="timeline-item-content">
+                        <h3>改革开放与追赶 (1977-1986)</h3>
+                        <p><strong>特点</strong>：科研生产恢复发展，新产品研发速度加快，同时开始测绘仿制西方先进武器，对外出口。<br><strong>核心观点</strong>：认识到与世界先进水平的差距，强调加强基础理论研究和引进先进技术，为新一代枪械研发做准备。<br><strong>代表型号</strong>：79式冲锋枪、81式枪族、仿美M16的CQ 5.56mm自动步枪。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="modal-qc" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>🎯 枪械设计与品控 (第一章 第六、七节摘要)</h2>
+            <div class="fact-box">
+                 <div class="box-title"><span class="icon">ℹ️</span>核心质量要求</div>
+                 <ul>
+                    <li><strong>可靠性 (Reliability)</strong>: 绝对安全，不允许发生炸膛、不闭锁击发等危及射手的事故。故障率低，能在各种恶劣气候和自然环境下正常工作。</li>
+                    <li><strong>准确性 (Accuracy)</strong>: 指射击精度和散布精度。不仅是衡量威力的重要指标，也是部队信任新武器的关键。</li>
+                    <li><strong>耐久性 (Durability)</strong>: 不仅指射弹寿命，还指枪械在长期存放、运输、操作中保持正常工作能力的“勤务寿命”。</li>
+                    <li><strong>稳定性 (Consistency)</strong>: 大批量生产中零部件的一致性，保证高度的互换性。</li>
+                    <li><strong>机动性 (Mobility)</strong>: 现代战争要求武器重量轻、外形紧凑，便于在各种姿态和条件下快速反应、转移火力。</li>
+                    <li><strong>经济性 (Economy)</strong>: 生产成本低，工艺性好，便于战时动员。作为商品出现在国际市场时，还要求造型、外观、包装具有竞争力。</li>
+                 </ul>
+            </div>
+             <div class="viewpoint-box">
+                <div class="box-title"><span class="icon">💡</span>质量保证体系观点</div>
+                <p>现代质量管理的根本不是检查，而是在工程管理中保证质量。书中的质量保证体系强调从<strong>论证研制 -> 小批试生产 -> 大量生产 -> 售后服务</strong>的全流程控制。</p>
+                <ul>
+                    <li><strong>新产品论证与研制</strong>是决定产品质量的关键环节，设计阶段的缺陷难以在生产中弥补。</li>
+                    <li><strong>主任设计师制度</strong>：由一位负责人贯穿产品从论证到服务的整个生命周期，解决设计与工艺的统一问题。</li>
+                    <li><strong>常驻工程师制度</strong>：设计、工艺、检验人员互相派驻，加强信息沟通和问题解决效率。</li>
+                    <li><strong>试验评价</strong>：强调工厂试验、基地试验、部队试验三级验证，确保产品贴近实战需求。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Weapon Modals -->
+    <div id="modal-pistols" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>🔫 手枪 (Pistol) 摘要</h2>
+            <div class="weapon-tabs">
+                <button class="tab-button active" onclick="openWeapon(event, 'p-54')">54式手枪</button>
+                <button class="tab-button" onclick="openWeapon(event, 'p-64')">64式手枪</button>
+                <button class="tab-button" onclick="openWeapon(event, 'p-67')">67式微声手枪</button>
+                <button class="tab-button" onclick="openWeapon(event, 'p-77')">77式手枪</button>
+                <button class="tab-button" onclick="openWeapon(event, 'p-80')">80式自动手枪</button>
+                <button class="tab-button" onclick="openWeapon(event, 'p-59')">59式手枪</button>
+            </div>
+            
+            <div id="p-54" class="tab-content active">
+                <div class="weapon-card">
+                    <div class="weapon-header">
+                        <img src="" alt="54式手枪" title="grayscale_gunfull_0032__page_0_Picture_2.jpeg">
+                        <h3>1954年式 7.62毫米手枪</h3>
+                    </div>
+                    <div class="specs-grid">
+                        <div class="spec-item"><svg viewBox="0 0 24 24"><path d="M20.56 3.34a1 1 0 00-1.12 0l-1.38 1.38A9.75 9.75 0 0012 3a10 10 0 1010 10 10.08 10.08 0 00-1.72-5.46l1.38-1.38a1 1 0 000-1.12zM12 20a8 8 0 118-8 8 8 0 01-8 8zm-2-12h4v4h-4z"></path></svg> <span><strong>口径:</strong> 7.62x25mm</span></div>
+                        <div class="spec-item"><svg viewBox="0 0 24 24"><path d="M19 11h-3.32a1 1 0 00-.95.68L12 18.1l-2.73-6.42a1 1 0 00-.95-.68H5a1 1 0 000 2h2.52l3.53 8.23a1 1 0 001.9 0L16.48 13H19a1 1 0 000-2z"></path></svg> <span><strong>自动方式:</strong> 枪管短后坐</span></div>
+                        <div class="spec-item"><svg viewBox="0 0 24 24"><path d="M21 4H3a1 1 0 00-1 1v14a1 1 0 001 1h18a1 1 0 001-1V5a1 1 0 00-1-1zm-1 14H4V6h16zM6 8h12v2H6zm0 4h12v2H6z"></path></svg> <span><strong>容量:</strong> 8发</span></div>
+                        <div class="spec-item"><svg viewBox="0 0 24 24"><path d="M19.33 13.62l-4-4a1 1 0 00-1.42 1.42l4 4a1 1 0 001.42-1.42zM12 21a1 1 0 001-1v-4a1 1 0 00-2 0v4a1 1 0 001 1zM7.09 15.04l-4 4a1 1 0 000 1.42 1 1 0 001.42 0l4-4a1 1 0 00-1.42-1.42zM12 3a1 1 0 00-1 1v4a1 1 0 002 0V4a1 1 0 00-1-1zM4.67 9.38l-4-4a1 1 0 00-1.42 1.42l4 4a1 1 0 101.42-1.42z"></path></svg> <span><strong>有效射程:</strong> 50米</span></div>
+                    </div>
+                    <details>
+                        <summary>设计渊源与背景</summary>
+                        <div class="details-content">仿制苏联TT1930/1933年式手枪，于1954年生产定型。是我军基层指挥员和公安保卫人员长期使用的自卫武器。</div>
+                    </details>
+                    <details>
+                        <summary>结构与动作原理</summary>
+                        <div class="details-content">采用枪管摆动式（起落式）闭锁，枪管和套筒首先共同后坐一小段距离，然后枪管尾端在铰链作用下下降开锁，套筒继续后坐完成抽壳、抛壳等动作。</div>
+                    </details>
+                    <details>
+                        <summary>生产与使用摘要</summary>
+                        <div class="details-content">
+                            <div class="viewpoint-box">
+                                <div class="box-title"><span class="icon">💡</span>核心评述</div>
+                                <p>作为部队的制式装备，至今（指1986年）仍然大量生产，是我国军用枪服役周期最长的产品之一。具有精度较好、安全可靠的优点。 </p>
+                            </div>
+                            <div class="fact-box">
+                                <div class="box-title"><span class="icon">ℹ️</span>常见故障</div>
+                                <ul>
+                                    <li><strong>卡壳、不抛壳</strong>：主要因弹匣口部尺寸或退壳挺问题导致。</li>
+                                    <li><strong>有弹停机</strong>：弹匣内仍有弹时，次发弹弹头误推空仓挂机杆，导致套筒被挂住。</li>
+                                    <li><strong>扳机下落</strong>：扳机簧与扳机接触面问题导致扳机不复位。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+            
+            <div id="p-64" class="tab-content">
+                <div class="weapon-card">
+                    <div class="weapon-header">
+                        <img src="" alt="64式手枪" title="grayscale_gunfull_0032__page_0_Picture_1.jpeg">
+                        <h3>1964年式 7.62毫米手枪</h3>
+                    </div>
+                    <div class="specs-grid">
+                        <div class="spec-item"><svg viewBox="0 0 24 24"><path d="M20.56 3.34a1 1 0 00-1.12 0l-1.38 1.38A9.75 9.75 0 0012 3a10 10 0 1010 10 10.08 10.08 0 00-1.72-5.46l1.38-1.38a1 1 0 000-1.12zM12 20a8 8 0 118-8 8 8 0 01-8 8zm-2-12h4v4h-4z"></path></svg> <span><strong>口径:</strong> 7.62x17mm</span></div>
+                        <div class="spec-item"><svg viewBox="0 0 24 24"><path d="M19 11h-3.32a1 1 0 00-.95.68L12 18.1l-2.73-6.42a1 1 0 00-.95-.68H5a1 1 0 000 2h2.52l3.53 8.23a1 1 0 001.9 0L16.48 13H19a1 1 0 000-2z"></path></svg> <span><strong>自动方式:</strong> 自由枪机</span></div>
+                        <div class="spec-item"><svg viewBox="0 0 24 24"><path d="M21 4H3a1 1 0 00-1 1v14a1 1 0 001 1h18a1 1 0 001-1V5a1 1 0 00-1-1zm-1 14H4V6h16zM6 8h12v2H6zm0 4h12v2H6z"></path></svg> <span><strong>容量:</strong> 7发</span></div>
+                        <div class="spec-item"><svg viewBox="0 0 24 24"><path d="M19.33 13.62l-4-4a1 1 0 00-1.42 1.42l4 4a1 1 0 001.42-1.42zM12 21a1 1 0 001-1v-4a1 1 0 00-2 0v4a1 1 0 001 1zM7.09 15.04l-4 4a1 1 0 000 1.42 1 1 0 001.42 0l4-4a1 1 0 00-1.42-1.42zM12 3a1 1 0 00-1 1v4a1 1 0 002 0V4a1 1 0 00-1-1z"></path></svg> <span><strong>有效射程:</strong> 50米</span></div>
+                    </div>
+                     <details>
+                        <summary>设计渊源与背景</summary>
+                        <div class="details-content">我国自行设计的小型自卫手枪，于1964年设计定型，1980年生产定型。主要装备指挥员、公安保卫人员。</div>
+                    </details>
+                    <details>
+                        <summary>结构与动作原理</summary>
+                        <div class="details-content">
+                            <div class="fact-box">
+                                <div class="box-title"><span class="icon">ℹ️</span>核心特点</div>
+                                <ul>
+                                    <li><strong>体积小巧</strong>：全长155毫米，重量轻（0.56kg），便于隐蔽携带。</li>
+                                    <li><strong>联动击发（双动）</strong>：膛内有弹、击锤在前方位置时，可直接扣动扳机完成压倒并释放击锤的动作，反应迅速。</li>
+                                    <li><strong>弹匣回闩</strong>：插入实弹匣后，向上拍击弹匣底盖，即可通过内部连动机构释放套筒，完成上膛。</li>
+                                    <li><strong>多重保险</strong>：设有手动保险、到位保险、自动（回跳）保险、射击保险，安全性高。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </details>
+                    <details>
+                        <summary>生产与使用摘要</summary>
+                        <div class="details-content">
+                            <div class="viewpoint-box">
+                                 <div class="box-title"><span class="icon">💡</span>核心评述</div>
+                                 <p>该枪在研制阶段解决了多个技术难题，如通过在弹膛内加工4条螺旋槽，增大抽壳阻力，有效降低了后坐速度，解决了射击时“震手”的问题。这是一个非常有创意的设计。</p>
+                            </div>
+                            <div class="fact-box">
+                                <div class="box-title"><span class="icon">ℹ️</span>常见故障</div>
+                                <ul>
+                                    <li><strong>击发无力</strong>：早期批次因手枪击发能量与弹药底火感度不匹配，导致瞎火率偏高。后通过改进击锤、击锤簧等解决了问题。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+            
+            <div id="p-67" class="tab-content">
+                 <div class="weapon-card">
+                    <div class="weapon-header">
+                        <img src="" alt="67式微声手枪" title="grayscale_gunfull_0034__page_0_Picture_4.jpeg">
+                        <h3>1967年式 7.62毫米微声手枪</h3>
+                    </div>
+                    <div class="specs-grid">
+                        <div class="spec-item"><svg viewBox="0 0 24 24"><path d="M20.56 3.34a1 1 0 00-1.12 0l-1.38 1.38A9.75 9.75 0 0012 3a10 10 0 1010 10 10.08 10.08 0 00-1.72-5.46l1.38-1.38a1 1 0 000-1.12zM12 20a8 8 0 118-8 8 8 0 01-8 8zm-2-12h4v4h-4z"></path></svg> <span><strong>口径:</strong> 7.62x17mm微声弹</span></div>
+                        <div class="spec-item"><svg viewBox="0 0 24 24"><path d="M19 11h-3.32a1 1 0 00-.95.68L12 18.1l-2.73-6.42a1 1 0 00-.95-.68H5a1 1 0 000 2h2.52l3.53 8.23a1 1 0 001.9 0L16.48 13H19a1 1 0 000-2z"></path></svg> <span><strong>自动方式:</strong> 自由枪机/手动</span></div>
+                        <div class="spec-item"><svg viewBox="0 0 24 24"><path d="M21 4H3a1 1 0 00-1 1v14a1 1 0 001 1h18a1 1 0 001-1V5a1 1 0 00-1-1zm-1 14H4V6h16zM6 8h12v2H6zm0 4h12v2H6z"></path></svg> <span><strong>容量:</strong> 9发</span></div>
+                        <div class="spec-item"><svg viewBox="0 0 24 24"><path d="M19.33 13.62l-4-4a1 1 0 00-1.42 1.42l4 4a1 1 0 001.42-1.42zM12 21a1 1 0 001-1v-4a1 1 0 00-2 0v4a1 1 0 001 1zM7.09 15.04l-4 4a1 1 0 000 1.42 1 1 0 001.42 0l4-4a1 1 0 00-1.42-1.42zM12 3a1 1 0 00-1 1v4a1 1 0 002 0V4a1 1 0 00-1-1z"></path></svg> <span><strong>有效射程:</strong> 30米</span></div>
+                    </div>
+                     <details>
+                        <summary>设计渊源与背景</summary>
+                        <div class="details-content">我国自行设计的特种手枪，1967年设计定型，供侦察人员和特工使用。</div>
+                    </details>
+                    <details>
+                        <summary>结构与动作原理</summary>
+                        <div class="details-content">
+                            <div class="fact-box">
+                                <div class="box-title"><span class="icon">ℹ️</span>核心特点</div>
+                                <ul>
+                                    <li><strong>消音原理</strong>: 采用整体式消音器，结合亚音速弹药，大幅降低枪口噪声、火焰和烟雾。</li>
+                                    <li><strong>双模式射击</strong>: 具有独特的模式转换块，可在“半自动(A)”和“手动(H)”之间切换。
+                                        <ul>
+                                            <li><strong>手动模式</strong>：枪闩旋转刚性闭锁，射击后需手动拉机柄完成抛壳和上膛。此模式能彻底消除枪管后端泄气声和自动机撞击声，达到最佳消音效果。</li>
+                                            <li><strong>半自动模式</strong>：转为自由枪机式，实现半自动射击，提高火力反应速度。</li>
+                                        </ul>
+                                    </li>
+                                     <li><strong>夜瞄装置</strong>：照门和准星上均安装有长效荧光管，便于夜间瞄准。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+            
+            <div id="p-77" class="tab-content">
+                <div class="weapon-card">
+                     <div class="weapon-header">
+                        <img src="" alt="77式手枪" title="grayscale_gunfull_0034__page_0_Picture_2.jpeg">
+                        <h3>1977年式 7.62毫米手枪</h3>
+                    </div>
+                    <div class="specs-grid">
+                        <div class="spec-item"><svg viewBox="0 0 24 24"><path d="M20.56 3.34a1 1 0 00-1.12 0l-1.38 1.38A9.75 9.75 0 0012 3a10 10 0 1010 10 10.08 10.08 0 00-1.72-5.46l1.38-1.38a1 1 0 000-1.12zM12 20a8 8 0 118-8 8 8 0 01-8 8zm-2-12h4v4h-4z"></path></svg> <span><strong>口径:</strong> 7.62x17mm</span></div>
+                        <div class="spec-item"><svg viewBox="0 0 24 24"><path d="M19 11h-3.32a1 1 0 00-.95.68L12 18.1l-2.73-6.42a1 1 0 00-.95-.68H5a1 1 0 000 2h2.52l3.53 8.23a1 1 0 001.9 0L16.48 13H19a1 1 0 000-2z"></path></svg> <span><strong>自动方式:</strong> 自由枪机</span></div>
+                        <div class="spec-item"><svg viewBox="0 0 24 24"><path d="M21 4H3a1 1 0 00-1 1v14a1 1 0 001 1h18a1 1 0 001-1V5a1 1 0 00-1-1zm-1 14H4V6h16zM6 8h12v2H6zm0 4h12v2H6z"></path></svg> <span><strong>容量:</strong> 7发</span></div>
+                        <div class="spec-item"><svg viewBox="0 0 24 24"><path d="M19.33 13.62l-4-4a1 1 0 00-1.42 1.42l4 4a1 1 0 001.42-1.42zM12 21a1 1 0 001-1v-4a1 1 0 00-2 0v4a1 1 0 001 1zM7.09 15.04l-4 4a1 1 0 000 1.42 1 1 0 001.42 0l4-4a1 1 0 00-1.42-1.42zM12 3a1 1 0 00-1 1v4a1 1 0 002 0V4a1 1 0 00-1-1z"></path></svg> <span><strong>有效射程:</strong> 50米</span></div>
+                    </div>
+                     <details>
+                        <summary>设计渊源与背景</summary>
+                        <div class="details-content">我国自行设计，1978年定型。为团以上指挥员使用的自卫武器。</div>
+                    </details>
+                     <details>
+                        <summary>结构与动作原理</summary>
+                        <div class="details-content">
+                             <div class="viewpoint-box">
+                                <div class="box-title"><span class="icon">💡</span>核心特点</div>
+                                <p><strong>单手装填机构</strong>：该枪最显著的特点是扳机护圈可以活动。在紧急情况下，射手用食指顶住活动护圈向前推，护圈通过内部的挂钩带动套筒后坐，松手后套筒复位即可完成首发上膛。这极大地提高了单手操作时的应急反应速度。 </p>
+                            </div>
+                            <div class="fact-box">
+                                <div class="box-title"><span class="icon">ℹ️</span>其他结构</div>
+                                <ul>
+                                    <li>采用击针式击发机构，而非击锤式。</li>
+                                    <li>结构非常紧凑，全长仅148.5毫米，空枪重0.5公斤，是当时最轻巧的军用手枪之一。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <div id="p-80" class="tab-content">
+                <div class="weapon-card">
+                     <div class="weapon-header">
+                        <img src="" alt="80式自动手枪" title="grayscale_gunfull_0035__page_0_Picture_0.jpeg">
+                        <h3>1980年式 7.62毫米自动手枪</h3>
+                    </div>
+                    <div class="specs-grid">
+                        <div class="spec-item"><svg viewBox="0 0 24 24"><path d="M20.56 3.34a1 1 0 00-1.12 0l-1.38 1.38A9.75 9.75 0 0012 3a10 10 0 1010 10 10.08 10.08 0 00-1.72-5.46l1.38-1.38a1 1 0 000-1.12zM12 20a8 8 0 118-8 8 8 0 01-8 8zm-2-12h4v4h-4z"></path></svg> <span><strong>口径:</strong> 7.62x25mm</span></div>
+                        <div class="spec-item"><svg viewBox="0 0 24 24"><path d="M19 11h-3.32a1 1 0 00-.95.68L12 18.1l-2.73-6.42a1 1 0 00-.95-.68H5a1 1 0 000 2h2.52l3.53 8.23a1 1 0 001.9 0L16.48 13H19a1 1 0 000-2z"></path></svg> <span><strong>自动方式:</strong> 枪管短后坐</span></div>
+                        <div class="spec-item"><svg viewBox="0 0 24 24"><path d="M21 4H3a1 1 0 00-1 1v14a1 1 0 001 1h18a1 1 0 001-1V5a1 1 0 00-1-1zm-1 14H4V6h16zM6 8h12v2H6zm0 4h12v2H6z"></path></svg> <span><strong>容量:</strong> 10/20发</span></div>
+                        <div class="spec-item"><svg viewBox="0 0 24 24"><path d="M19.33 13.62l-4-4a1 1 0 00-1.42 1.42l4 4a1 1 0 001.42-1.42zM12 21a1 1 0 001-1v-4a1 1 0 00-2 0v4a1 1 0 001 1zM7.09 15.04l-4 4a1 1 0 000 1.42 1 1 0 001.42 0l4-4a1 1 0 00-1.42-1.42zM12 3a1 1 0 00-1 1v4a1 1 0 002 0V4a1 1 0 00-1-1z"></path></svg> <span><strong>有效射程:</strong> 50米 (抵肩射击100-150米)</span></div>
+                    </div>
+                     <details>
+                        <summary>设计渊源与背景</summary>
+                        <div class="details-content">我国自行设计，1980年定型。原拟代替54式手枪，是一款多用途战斗手枪，俗称“80式冲锋手枪”。</div>
+                    </details>
+                     <details>
+                        <summary>结构与动作原理</summary>
+                        <div class="details-content">
+                             <div class="viewpoint-box">
+                                <div class="box-title"><span class="icon">💡</span>核心特点</div>
+                                <ul>
+                                    <li><strong>单/连发可选</strong>：设有快慢机，可选择单发或全自动射击，兼具手枪的便携和冲锋枪的火力。</li>
+                                    <li><strong>可配枪托</strong>：配有专用的装具枪套或匕首枪套，组合后可作为肩托进行抵肩射击，极大提高了射程和精度。</li>
+                                    <li><strong>威力大</strong>：使用51式手枪弹（同54式），初速高达470米/秒，枪口动能比54式高出约28%。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+            
+             <div id="p-59" class="tab-content">
+                <div class="weapon-card">
+                     <div class="weapon-header">
+                        <img src="" alt="59式手枪" title="grayscale_gunfull_0035__page_0_Picture_4.jpeg">
+                        <h3>1959年式 9毫米手枪</h3>
+                    </div>
+                    <div class="specs-grid">
+                        <div class="spec-item"><svg viewBox="0 0 24 24"><path d="M20.56 3.34a1 1 0 00-1.12 0l-1.38 1.38A9.75 9.75 0 0012 3a10 10 0 1010 10 10.08 10.08 0 00-1.72-5.46l1.38-1.38a1 1 0 000-1.12zM12 20a8 8 0 118-8 8 8 0 01-8 8zm-2-12h4v4h-4z"></path></svg> <span><strong>口径:</strong> 9x18mm</span></div>
+                        <div class="spec-item"><svg viewBox="0 0 24 24"><path d="M19 11h-3.32a1 1 0 00-.95.68L12 18.1l-2.73-6.42a1 1 0 00-.95-.68H5a1 1 0 000 2h2.52l3.53 8.23a1 1 0 001.9 0L16.48 13H19a1 1 0 000-2z"></path></svg> <span><strong>自动方式:</strong> 自由枪机</span></div>
+                        <div class="spec-item"><svg viewBox="0 0 24 24"><path d="M21 4H3a1 1 0 00-1 1v14a1 1 0 001 1h18a1 1 0 001-1V5a1 1 0 00-1-1zm-1 14H4V6h16zM6 8h12v2H6zm0 4h12v2H6z"></path></svg> <span><strong>容量:</strong> 8发</span></div>
+                        <div class="spec-item"><svg viewBox="0 0 24 24"><path d="M19.33 13.62l-4-4a1 1 0 00-1.42 1.42l4 4a1 1 0 001.42-1.42zM12 21a1 1 0 001-1v-4a1 1 0 00-2 0v4a1 1 0 001 1zM7.09 15.04l-4 4a1 1 0 000 1.42 1 1 0 001.42 0l4-4a1 1 0 00-1.42-1.42zM12 3a1 1 0 00-1 1v4a1 1 0 002 0V4a1 1 0 00-1-1z"></path></svg> <span><strong>有效射程:</strong> 50米</span></div>
+                    </div>
+                     <details>
+                        <summary>设计渊源与背景</summary>
+                        <div class="details-content">仿制苏联马卡洛夫手枪（ПМ），于1959年定型。</div>
+                    </details>
+                     <details>
+                        <summary>结构与动作原理</summary>
+                        <div class="details-content">
+                            <div class="fact-box">
+                                <div class="box-title"><span class="icon">ℹ️</span>核心特点</div>
+                                <ul>
+                                    <li><strong>结构简单</strong>：采用自由枪机式原理，套筒不闭锁，零件少，维护方便。</li>
+                                    <li><strong>双动击发</strong>：具备联动击发功能，可快速出枪射击。</li>
+                                    <li><strong>待击解脱保险</strong>：其手动保险杆在保险时，不仅能锁住扳机和套筒，还能安全地释放处于待击位置的击锤，安全性非常高。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    
+    <div id="modal-smgs" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>💥 冲锋枪 (SMG) 摘要</h2>
+             <div class="weapon-tabs">
+                <button class="tab-button active" onclick="openWeapon(event, 'smg-56')">56式冲锋枪</button>
+                <button class="tab-button" onclick="openWeapon(event, 'smg-64')">64式微声冲锋枪</button>
+                <button class="tab-button" onclick="openWeapon(event, 'smg-79')">79式冲锋枪</button>
+            </div>
+
+             <div id="smg-56" class="tab-content active">
+                <div class="weapon-card">
+                    <div class="weapon-header">
+                        <img src="" alt="56式冲锋枪" title="grayscale_gunfull_0161__page_0_Picture_0.jpeg">
+                        <h3>1956年式 7.62毫米冲锋枪</h3>
+                    </div>
+                    <div class="specs-grid">
+                        <div class="spec-item"><span><strong>口径:</strong> 7.62x39mm</span></div>
+                        <div class="spec-item"><span><strong>自动方式:</strong> 导气式</span></div>
+                        <div class="spec-item"><span><strong>闭锁方式:</strong> 枪机回转式</span></div>
+                        <div class="spec-item"><span><strong>容量:</strong> 30发</span></div>
+                        <div class="spec-item"><span><strong>有效射程:</strong> 400米</span></div>
+                        <div class="spec-item"><span><strong>全枪重:</strong> 4.03kg</span></div>
+                    </div>
+                     <details>
+                        <summary>设计渊源与背景</summary>
+                        <div class="details-content">
+                            <p>仿制苏联卡拉什尼科夫（AK-47）1947年式突击步枪，于1956年定型生产。尽管其在国际上被归类为突击步枪，但在我国早期习惯性地称为冲锋枪。</p>
+                            <div class="viewpoint-box">
+                                <div class="box-title"><span class="icon">💡</span>核心评述</div>
+                                <p>56式枪族（包括56冲、56半、56班机）的定型生产，是我国步兵武器的一次革命性换代，实现了班组武器弹药的通用化，极大地增强了步兵的火力、机动性和作战效能。56式冲锋枪以其动作可靠、火力猛烈、维护简单的特点，成为一代经典。</p>
+                            </div>
+                        </div>
+                    </details>
+                     <details>
+                        <summary>结构与生产摘要</summary>
+                        <div class="details-content">
+                            <ul>
+                                <li><strong>早期型号</strong>：采用与AK-47第三型类似的铣削机匣，工艺复杂，成本高。</li>
+                                <li><strong>后期改进（冲铆机匣）</strong>：为提高生产效率、降低成本，后期型号改为冲压-铆接机匣，与AKM类似。这一改进极大节约了钢材和工时，是生产工艺上的重大进步。</li>
+                                <li><strong>枪刺</strong>：早期为不可拆卸的剑形刺刀，后根据使用反馈，改进为可折叠的三棱锥形刺刀（俗称“三棱军刺”），增强了穿刺能力和刚度。</li>
+                                <li><strong>衍生型号</strong>：
+                                    <ul>
+                                        <li><strong>56-1式</strong>：采用向下折叠的金属枪托，以适应空降兵、坦克兵等特种部队的需求。</li>
+                                        <li><strong>56-2式</strong>：将56-1的下折叠枪托改为更坚固、贴腮更舒适的向右侧折叠枪托，是最终的改进型号。</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <div id="smg-64" class="tab-content">
+                <div class="weapon-card">
+                     <div class="weapon-header">
+                        <img src="" alt="64式微声冲锋枪" title="grayscale_gunfull_0163__page_0_Picture_2.jpeg">
+                        <h3>1964年式 7.62毫米微声冲锋枪</h3>
+                    </div>
+                    <div class="specs-grid">
+                        <div class="spec-item"><span><strong>口径:</strong> 7.62x25mm (专用微声弹)</span></div>
+                        <div class="spec-item"><span><strong>自动方式:</strong> 自由枪机</span></div>
+                        <div class="spec-item"><span><strong>理论射速:</strong> ≤1000发/分</span></div>
+                        <div class="spec-item"><span><strong>容量:</strong> 20/30发</span></div>
+                        <div class="spec-item"><span><strong>有效射程:</strong> 200米</span></div>
+                    </div>
+                     <details>
+                        <summary>设计渊源与背景</summary>
+                        <div class="details-content">我国自行设计，1964年定型，是供侦察分队使用的特种武器，用于在200米内隐蔽地杀伤有生目标。</div>
+                    </details>
+                     <details>
+                        <summary>结构与原理</summary>
+                        <div class="details-content">
+                            <div class="fact-box">
+                                <div class="box-title"><span class="icon">ℹ️</span>核心特点</div>
+                                <ul>
+                                    <li><strong>“三微”性能</strong>：发射配套的专用亚音速枪弹时，具有优良的微声、微光、微烟性能。</li>
+                                    <li><strong>消音原理</strong>：枪管上开有9排共36个侧排气孔，在弹丸出膛前预先泄出大部分火药气体，降低膛口压力。枪管外部套有大型整体式消音器，内部包含多个消音碗，进一步使气体膨胀、降速、降温，达到消音效果。</li>
+                                    <li><strong>开膛待击</strong>：采用自由枪机原理，枪机在待击时停在后方，扣动扳机后复进推弹击发，结构简单。</li>
+                                </ul>
+                            </div>
+                            <div class="viewpoint-box">
+                                <div class="box-title"><span class="icon">💡</span>核心评述</div>
+                                <p>该枪的设计成功解决了一系列技术难题，如通过枪管开孔、设计高效消音器来平衡消音效果与射击威力；通过增加枪机重量、延迟开锁时机来降低枪尾噪声，体现了我国在特种武器研发上的早期探索与成就。</p>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <div id="smg-79" class="tab-content">
+                <div class="weapon-card">
+                     <div class="weapon-header">
+                        <img src="" alt="79式冲锋枪" title="grayscale_gunfull_0163__page_0_Picture_4.jpeg">
+                        <h3>1979年式 7.62毫米冲锋枪</h3>
+                    </div>
+                    <div class="specs-grid">
+                        <div class="spec-item"><span><strong>口径:</strong> 7.62x25mm</span></div>
+                        <div class="spec-item"><span><strong>自动方式:</strong> 导气式 (活塞短行程)</span></div>
+                        <div class="spec-item"><span><strong>闭锁方式:</strong> 枪机回转式</span></div>
+                        <div class="spec-item"><span><strong>容量:</strong> 20发</span></div>
+                        <div class="spec-item"><span><strong>有效射程:</strong> 200米</span></div>
+                        <div class="spec-item"><span><strong>全枪重:</strong> 1.9kg</span></div>
+                    </div>
+                     <details>
+                        <summary>设计渊源与背景</summary>
+                        <div class="details-content">我国自行设计，1979年定型，1983年生产定型。其战术定位是介于突击步枪和手枪之间的轻型自动武器，装备特种部队。</div>
+                    </details>
+                     <details>
+                        <summary>结构与原理</summary>
+                        <div class="details-content">
+                            <div class="viewpoint-box">
+                                <div class="box-title"><span class="icon">💡</span>核心特点</div>
+                                <p><strong>轻量化</strong>：全枪（带空匣）仅重1.9公斤，比54式冲锋枪轻了1.4公斤，机动性极高。</p>
+                                <p><strong>独特的自动原理</strong>：在发射手枪弹的冲锋枪中，罕见地采用了通常用于步枪的“导气式原理”和“枪机回转式闭锁”。这种设计虽然结构更复杂，但可以有效降低后坐感，提高射击精度和可靠性。</p>
+                            </div>
+                             <div class="fact-box">
+                                <div class="box-title"><span class="icon">ℹ️</span>生产与使用摘要</div>
+                                <ul>
+                                    <li><strong>理论射速过高</strong>：早期射速高达1000发/分，对零件寿命和连发操控性不利。</li>
+                                    <li><strong>供弹路线问题</strong>：由于结构紧凑，供弹路线较陡，早期型号卡弹、跳弹故障较多。后通过改进弹匣、机心推弹部和上弹坡等综合措施基本解决。</li>
+                                    <li><strong>强度问题</strong>：由于追求轻量化，早期型号的枪机框、机心等零件强度不足，在寿命试验中易破损。后通过改进结构、更换材料（如采用25CrNiWA高强度合金钢）等措施解决了问题。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    
+    <div id="modal-rifles" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h2>🔥 步枪 (Rifle) 摘要</h2><p style="text-align:center;">内容待填充</p></div></div>
+    <div id="modal-mgs" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h2>💣 机枪 (Machine Gun) 摘要</h2><p style="text-align:center;">内容待填充</p></div></div>
+    <div id="modal-hmgs" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h2>🚀 大口径机枪 (HMG) 摘要</h2><p style="text-align:center;">内容待填充</p></div></div>
+    <div id="modal-others" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h2>⚙️ 运动及其他枪械 摘要</h2><p style="text-align:center;">内容待填充</p></div></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Modal handling
+        const modalTriggers = document.querySelectorAll('.summary-card');
+        const modals = document.querySelectorAll('.modal');
+        const closeButtons = document.querySelectorAll('.close-btn');
+
+        modalTriggers.forEach(trigger => {
+            trigger.addEventListener('click', () => {
+                const modalId = trigger.getAttribute('data-modal');
+                document.getElementById(modalId).style.display = 'block';
+            });
+        });
+
+        closeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                button.closest('.modal').style.display = 'none';
+            });
+        });
+
+        window.addEventListener('click', (event) => {
+            modals.forEach(modal => {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+        
+        // Weapon tab handling is done via inline onclick for simplicity in this single file.
+    });
+    
+    function openWeapon(evt, weaponId) {
+        let i, tabcontent, tablinks;
+        
+        const parentModal = evt.currentTarget.closest('.modal-content');
+
+        tabcontent = parentModal.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+
+        tablinks = parentModal.getElementsByClassName("tab-button");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+
+        document.getElementById(weaponId).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+
+</script>
+
+</body>
+</html>
