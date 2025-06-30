@@ -74,10 +74,12 @@
             transform-style: preserve-3d;
             transition: transform 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
             cursor: pointer;
+            z-index: 1;
         }
 
         .card.is-flipped {
             transform: rotateY(180deg);
+            z-index: 10; /* 翻转时提升层级，避免被其他卡片遮挡 */
         }
 
         /* --- 卡片正反面通用样式 --- */
@@ -100,37 +102,33 @@
             overflow-wrap: break-word; /* 确保长文本换行 */
         }
 
-        /* --- 卡片正面 (剖析) --- */
+        /* --- 卡片正面 (标题和图片) --- */
         .card-front {
             background-color: var(--card-bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
         }
 
         .card-front h2 {
             color: var(--primary-color);
-            font-size: 1.3rem; /* 稍微减小字体 */
+            font-size: 1.5rem;
             margin-top: 0;
-            margin-bottom: 1rem;
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 0.5rem;
-            line-height: 1.3;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px rgba(83, 127, 231, 0.5);
+            font-weight: 700;
         }
 
-        .card-front h3 {
-            color: #c9d6f0;
-            font-size: 1.05rem; /* 稍微减小字体 */
-            margin-bottom: 0.5rem;
-            margin-top: 1rem;
-        }
-
-        .card-front p, .card-front li {
-            font-size: 0.9rem; /* 稍微减小字体 */
-            margin-bottom: 0.7rem; /* 减小间距 */
-            line-height: 1.5;
-        }
-
-        .card-front ul {
-            margin-bottom: 0.5rem;
-            padding-left: 1.2rem;
+        .card-front img {
+            max-width: 100%;
+            height: auto;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            margin-bottom: 1.5rem;
         }
 
         .highlight {
@@ -149,33 +147,55 @@
             flex-shrink: 0; /* 防止被压缩 */
         }
 
-        /* --- 卡片反面 (生存小贴士) --- */
+        /* --- 卡片反面 (现象剖析和生存小贴士) --- */
         .card-back {
             background-color: var(--card-back-bg);
             transform: rotateY(180deg);
         }
 
         .card-back h2 {
-            color: var(--tip-color);
-            font-size: 1.4rem;
-            text-align: center;
+            color: var(--primary-color);
+            font-size: 1.3rem;
             margin-top: 0;
-            margin-bottom: 1.5rem;
-            text-shadow: 0 0 8px rgba(162, 255, 134, 0.5);
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .card-back h3 {
+            color: var(--tip-color);
+            font-size: 1.1rem;
+            margin-bottom: 0.8rem;
+            margin-top: 1.5rem;
+            text-shadow: 0 0 5px rgba(162, 255, 134, 0.3);
+        }
+
+        .card-back p {
+            font-size: 0.9rem;
+            margin-bottom: 0.8rem;
+            line-height: 1.5;
         }
 
         .card-back ul {
             list-style-type: '💡';
             padding-left: 1.5rem;
-            flex-grow: 1;
-            margin: 0;
+            margin-bottom: 1rem;
         }
 
         .card-back li {
-            margin-bottom: 1rem; /* 减小间距 */
+            margin-bottom: 0.8rem;
             padding-left: 0.8rem;
-            font-size: 0.95rem; /* 稍微减小字体 */
+            font-size: 0.9rem;
             line-height: 1.5;
+        }
+
+        .card-back .analysis {
+            margin-bottom: 1.5rem;
+        }
+
+        .card-back .tips {
+            margin-top: 1.5rem;
         }
         
         /* --- 结语和宣言样式 --- */
@@ -422,280 +442,346 @@
 
     <main class="cards-grid">
         <!-- 卡片 1: 信息茧房 -->
-        <article class="card-container" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+        <article class="card-container" onclick="handleCardClick(this)">
             <div class="card">
                 <section class="card-face card-front">
                     <h2>信息茧房：算法织就的蚕茧</h2>
-                    <h3>现象剖析</h3>
-                    <p><strong>观点:</strong> 我们正被无形地困在"信息茧房"里，只接触自己感兴趣的同类信息，导致视野变窄。</p>
-                    <p><strong>事实:</strong> 平台算法是主要推手。它精准记录你的偏好，持续投喂相似内容，让你停留在舒适圈。这伴随着：</p>
-                    <ul>
-                        <li><span class="highlight">回声室效应 (Echo Chamber)</span>: 反复听到相似观点，使其被强化，可能走向偏激。</li>
-                        <li><span class="highlight">过滤气泡 (Filter Bubble)</span>: 算法过滤掉你不感兴趣的信息，让你错失新观点。</li>
-                    </ul>
-                    <p><strong>风险:</strong> 认知片面，欲望被不断加深（如游戏、消费），丧失发现新兴趣的机会。</p>
-                    <p class="flip-indicator">点击卡片查看生存小贴士</p>
+                    <img src="survivesns_files/sns1.png" alt="信息茧房示意图">
+                    <p class="flip-indicator">点击卡片查看详细内容</p>
                 </section>
                 <section class="card-face card-back">
-                    <h2>生存小贴士</h2>
-                    <ul>
-                        <li><strong>有意"破茧"</strong>: 主动订阅或浏览不同领域的内容（科普、艺术等），给信息源透气。</li>
-                        <li><strong>求证与思辨</strong>: 遇到反复出现的观点时，主动搜索相反意见，锻炼批判性思维。</li>
-                        <li><strong>跨圈交流</strong>: 多与圈外朋友聊天，了解他们的关注点，拓宽视野，避免偏听偏信。</li>
-                    </ul>
+                    <h2>信息茧房：算法织就的蚕茧</h2>
+                    <div class="analysis">
+                        <h3>现象剖析</h3>
+                        <p><strong>观点:</strong> 我们正被无形地困在"信息茧房"里，只接触自己感兴趣的同类信息，导致视野变窄。</p>
+                        <p><strong>事实:</strong> 平台算法是主要推手。它精准记录你的偏好，持续投喂相似内容，让你停留在舒适圈。这伴随着：</p>
+                        <ul>
+                            <li><span class="highlight">回声室效应 (Echo Chamber)</span>: 反复听到相似观点，使其被强化，可能走向偏激。</li>
+                            <li><span class="highlight">过滤气泡 (Filter Bubble)</span>: 算法过滤掉你不感兴趣的信息，让你错失新观点。</li>
+                        </ul>
+                        <p><strong>风险:</strong> 认知片面，欲望被不断加深（如游戏、消费），丧失发现新兴趣的机会。</p>
+                    </div>
+                    <div class="tips">
+                        <h3>生存小贴士</h3>
+                        <ul>
+                            <li><strong>有意"破茧"</strong>: 主动订阅或浏览不同领域的内容（科普、艺术等），给信息源透气。</li>
+                            <li><strong>求证与思辨</strong>: 遇到反复出现的观点时，主动搜索相反意见，锻炼批判性思维。</li>
+                            <li><strong>跨圈交流</strong>: 多与圈外朋友聊天，了解他们的关注点，拓宽视野，避免偏听偏信。</li>
+                        </ul>
+                    </div>
                 </section>
             </div>
         </article>
 
         <!-- 卡片 2: 多巴胺循环 -->
-        <article class="card-container" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+        <article class="card-container" onclick="handleCardClick(this)">
             <div class="card">
                 <section class="card-face card-front">
                     <h2>多巴胺循环：停不下的快感</h2>
-                    <h3>现象剖析</h3>
-                    <p><strong>事实:</strong> 刷短视频的"上瘾"感源于大脑的<span class="highlight">多巴胺奖赏机制</span>。快速、新奇的内容不断刺激大脑分泌多巴胺，产生愉悦感。</p>
-                    <p><strong>观点:</strong> 我们掉入了"期待-满足-再期待"的陷阱，被牢牢吸住注意力和时间。</p>
-                    <p><strong>风险:</strong> 多巴胺带来的快乐短暂且"不耐用"。一旦停止，多巴胺水平骤降，进入<span class="highlight">"多巴胺赤字"状态</span>，导致空虚、烦躁和情绪失控，形成"爽-空虚"的恶性循环。</p>
-                    <p class="flip-indicator">点击卡片查看生存小贴士</p>
+                    <img src="survivesns_files/sns2.png" alt="多巴胺循环示意图">
+                    <p class="flip-indicator">点击卡片查看详细内容</p>
                 </section>
                 <section class="card-face card-back">
-                    <h2>生存小贴士</h2>
-                    <ul>
-                        <li><strong>觉察使用模式</strong>: 记录并设定刷视频的时长上限，循序渐进地减少，用现实奖励强化自控力。</li>
-                        <li><strong>创造"慢体验"</strong>: 参与阅读、手工、绘画等需要耐心的活动，培养大脑对持续性乐趣的适应力。</li>
-                        <li><strong>适可而止</strong>: 在情绪高点主动停止，避免"刷到空虚"。记住，适度的无聊对大脑有益。</li>
-                    </ul>
+                    <h2>多巴胺循环：停不下的快感</h2>
+                    <div class="analysis">
+                        <h3>现象剖析</h3>
+                        <p><strong>事实:</strong> 刷短视频的"上瘾"感源于大脑的<span class="highlight">多巴胺奖赏机制</span>。快速、新奇的内容不断刺激大脑分泌多巴胺，产生愉悦感。</p>
+                        <p><strong>观点:</strong> 我们掉入了"期待-满足-再期待"的陷阱，被牢牢吸住注意力和时间。</p>
+                        <p><strong>风险:</strong> 多巴胺带来的快乐短暂且"不耐用"。一旦停止，多巴胺水平骤降，进入<span class="highlight">"多巴胺赤字"状态</span>，导致空虚、烦躁和情绪失控，形成"爽-空虚"的恶性循环。</p>
+                    </div>
+                    <div class="tips">
+                        <h3>生存小贴士</h3>
+                        <ul>
+                            <li><strong>觉察使用模式</strong>: 记录并设定刷视频的时长上限，循序渐进地减少，用现实奖励强化自控力。</li>
+                            <li><strong>创造"慢体验"</strong>: 参与阅读、手工、绘画等需要耐心的活动，培养大脑对持续性乐趣的适应力。</li>
+                            <li><strong>适可而止</strong>: 在情绪高点主动停止，避免"刷到空虚"。记住，适度的无聊对大脑有益。</li>
+                        </ul>
+                    </div>
                 </section>
             </div>
         </article>
         
         <!-- 卡片 3: 顿挫感 -->
-        <article class="card-container" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+        <article class="card-container" onclick="handleCardClick(this)">
             <div class="card">
                 <section class="card-face card-front">
                     <h2>顿挫感：面对冷场与负评</h2>
-                    <h3>现象剖析</h3>
-                    <p><strong>观点:</strong> 在网络上分享自我是一种脆弱的开放行为，得不到回应或遭遇负评，容易产生<span class="highlight">情绪顿挫</span>，导致不敢表达。</p>
-                    <p><strong>事实:</strong> 这是成长中必须训练的核心能力：<span class="highlight">心理韧性 (Resilience)</span> 或"表达免疫力"。你需要理解：</p>
-                    <ul>
-                        <li>点赞数 ≠ 你的价值。</li>
-                        <li>网络反馈是偏态的，沉默的大多数不代表否定。</li>
-                        <li>负评通常只针对内容，而非你个人。</li>
-                    </ul>
-                    <p><strong>风险:</strong> 长期压抑表达欲望，自我怀疑，丧失自信。</p>
-                    <p class="flip-indicator">点击卡片查看生存小贴士</p>
+                    <img src="survivesns_files/sns3.png" alt="顿挫感示意图">
+                    <p class="flip-indicator">点击卡片查看详细内容</p>
                 </section>
                 <section class="card-face card-back">
-                    <h2>生存小贴士</h2>
-                    <ul>
-                        <li><strong>区分反馈与判决</strong>: 将网络反馈视为"参考"，而非对你价值的"判决书"。</li>
-                        <li><strong>为过程而表达</strong>: 享受创作和分享本身，而非为了期待回应。</li>
-                        <li><strong>建立安全区</strong>: 先在信任的小圈子分享，获取正面反馈，再公开发布。</li>
-                        <li><strong>自我剥离</strong>: 时刻提醒自己："我不等于我的内容"。一次表达的失败不等于你这个人的失败。</li>
-                    </ul>
+                    <h2>顿挫感：面对冷场与负评</h2>
+                    <div class="analysis">
+                        <h3>现象剖析</h3>
+                        <p><strong>观点:</strong> 在网络上分享自我是一种脆弱的开放行为，得不到回应或遭遇负评，容易产生<span class="highlight">情绪顿挫</span>，导致不敢表达。</p>
+                        <p><strong>事实:</strong> 这是成长中必须训练的核心能力：<span class="highlight">心理韧性 (Resilience)</span> 或"表达免疫力"。你需要理解：</p>
+                        <ul>
+                            <li>点赞数 ≠ 你的价值。</li>
+                            <li>网络反馈是偏态的，沉默的大多数不代表否定。</li>
+                            <li>负评通常只针对内容，而非你个人。</li>
+                        </ul>
+                        <p><strong>风险:</strong> 长期压抑表达欲望，自我怀疑，丧失自信。</p>
+                    </div>
+                    <div class="tips">
+                        <h3>生存小贴士</h3>
+                        <ul>
+                            <li><strong>区分反馈与判决</strong>: 将网络反馈视为"参考"，而非对你价值的"判决书"。</li>
+                            <li><strong>为过程而表达</strong>: 享受创作和分享本身，而非为了期待回应。</li>
+                            <li><strong>建立安全区</strong>: 先在信任的小圈子分享，获取正面反馈，再公开发布。</li>
+                            <li><strong>自我剥离</strong>: 时刻提醒自己："我不等于我的内容"。一次表达的失败不等于你这个人的失败。</li>
+                        </ul>
+                    </div>
                 </section>
             </div>
         </article>
 
         <!-- 卡片 4: 回声室效应 -->
-        <article class="card-container" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+        <article class="card-container" onclick="handleCardClick(this)">
             <div class="card">
                 <section class="card-face card-front">
                     <h2>回声室效应：只听见自己</h2>
-                    <h3>现象剖析</h3>
-                    <p><strong>事实:</strong> 在<span class="highlight">"回声室"</span>中，我们反复听到相同观点的回声，使观点被极端强化，误以为"大家都这么想"。</p>
-                    <p><strong>观点:</strong> 社交网络通过关注和算法推荐，极大地加剧了此效应，让我们对不同意见充满敌意。</p>
-                    <p><strong>风险:</strong></p>
-                    <ul>
-                        <li><strong>思想僵化:</strong> 丧失倾听和理性思考能力，陷入非黑即白的思维。</li>
-                        <li><strong>欲望加深:</strong> 对青少年的影响不止于观点，更可能加深对物质、外貌等不健康欲望的追求。</li>
-                    </ul>
-                    <p class="flip-indicator">点击卡片查看生存小贴士</p>
+                    <img src="survivesns_files/sns4.png" alt="回声室效应示意图">
+                    <p class="flip-indicator">点击卡片查看详细内容</p>
                 </section>
                 <section class="card-face card-back">
-                    <h2>生存小贴士</h2>
-                    <ul>
-                        <li><strong>定期"换台"</strong>: 有意识地浏览不同立场、不同社群的内容，即使不赞同也要了解其论据。</li>
-                        <li><strong>培养同理心</strong>: 遇到异见，先尝试理解对方的立场和出发点，而不是立刻反驳。</li>
-                        <li><strong>警惕情绪操纵</strong>: 回声室内容常伴随强烈情绪。越被煽动，越要冷静判断其客观性。</li>
-                    </ul>
+                    <h2>回声室效应：只听见自己</h2>
+                    <div class="analysis">
+                        <h3>现象剖析</h3>
+                        <p><strong>事实:</strong> 在<span class="highlight">"回声室"</span>中，我们反复听到相同观点的回声，使观点被极端强化，误以为"大家都这么想"。</p>
+                        <p><strong>观点:</strong> 社交网络通过关注和算法推荐，极大地加剧了此效应，让我们对不同意见充满敌意。</p>
+                        <p><strong>风险:</strong></p>
+                        <ul>
+                            <li><strong>思想僵化:</strong> 丧失倾听和理性思考能力，陷入非黑即白的思维。</li>
+                            <li><strong>欲望加深:</strong> 对青少年的影响不止于观点，更可能加深对物质、外貌等不健康欲望的追求。</li>
+                        </ul>
+                    </div>
+                    <div class="tips">
+                        <h3>生存小贴士</h3>
+                        <ul>
+                            <li><strong>定期"换台"</strong>: 有意识地浏览不同立场、不同社群的内容，即使不赞同也要了解其论据。</li>
+                            <li><strong>培养同理心</strong>: 遇到异见，先尝试理解对方的立场和出发点，而不是立刻反驳。</li>
+                            <li><strong>警惕情绪操纵</strong>: 回声室内容常伴随强烈情绪。越被煽动，越要冷静判断其客观性。</li>
+                        </ul>
+                    </div>
                 </section>
             </div>
         </article>
 
         <!-- 卡片 5: 拟社会关系 -->
-        <article class="card-container" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+        <article class="card-container" onclick="handleCardClick(this)">
             <div class="card">
                 <section class="card-face card-front">
                     <h2>拟社会关系：亲密的错觉</h2>
-                    <h3>现象剖析</h3>
-                    <p><strong>事实:</strong> 这是粉丝对主播、偶像等媒介人物形成的单向"亲密"关系，是一种<span class="highlight">心理上的幻觉体验</span>。</p>
-                    <p><strong>观点:</strong> 社交媒体通过营造"亲民"形象和互动感，强化了这种关系，为缺乏陪伴的青少年提供情感寄托。</p>
-                    <p><strong>风险:</strong></p>
-                    <ul>
-                        <li><strong>情感脆弱:</strong> 关系本质是单向投射，一旦偶像形象崩塌或互动中断，粉丝易受巨大打击。</li>
-                        <li><strong>现实疏离:</strong> 过度寄情于虚拟关系，可能导致现实社交能力的退化和对家人的忽略。</li>
-                    </ul>
-                    <p class="flip-indicator">点击卡片查看生存小贴士</p>
+                    <img src="survivesns_files/sns5.png" alt="拟社会关系示意图">
+                    <p class="flip-indicator">点击卡片查看详细内容</p>
                 </section>
                 <section class="card-face card-back">
-                    <h2>生存小贴士</h2>
-                    <ul>
-                        <li><strong>保持界线意识</strong>: 提醒自己这并非真实双向友谊，对方的关心是面向大众的"职业"行为。</li>
-                        <li><strong>丰富现实社交</strong>: 积极与现实中的朋友家人相处，建立稳固的真实情感支持系统。</li>
-                        <li><strong>理性追星/追播</strong>: 避免过度消费和越界行为，为自己的投入设定限度，不影响正常生活。</li>
-                    </ul>
+                    <h2>拟社会关系：亲密的错觉</h2>
+                    <div class="analysis">
+                        <h3>现象剖析</h3>
+                        <p><strong>事实:</strong> 这是粉丝对主播、偶像等媒介人物形成的单向"亲密"关系，是一种<span class="highlight">心理上的幻觉体验</span>。</p>
+                        <p><strong>观点:</strong> 社交媒体通过营造"亲民"形象和互动感，强化了这种关系，为缺乏陪伴的青少年提供情感寄托。</p>
+                        <p><strong>风险:</strong></p>
+                        <ul>
+                            <li><strong>情感脆弱:</strong> 关系本质是单向投射，一旦偶像形象崩塌或互动中断，粉丝易受巨大打击。</li>
+                            <li><strong>现实疏离:</strong> 过度寄情于虚拟关系，可能导致现实社交能力的退化和对家人的忽略。</li>
+                        </ul>
+                    </div>
+                    <div class="tips">
+                        <h3>生存小贴士</h3>
+                        <ul>
+                            <li><strong>保持界线意识</strong>: 提醒自己这并非真实双向友谊，对方的关心是面向大众的"职业"行为。</li>
+                            <li><strong>丰富现实社交</strong>: 积极与现实中的朋友家人相处，建立稳固的真实情感支持系统。</li>
+                            <li><strong>理性追星/追播</strong>: 避免过度消费和越界行为，为自己的投入设定限度，不影响正常生活。</li>
+                        </ul>
+                    </div>
                 </section>
             </div>
         </article>
 
         <!-- 卡片 6: 社交比较 -->
-        <article class="card-container" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+        <article class="card-container" onclick="handleCardClick(this)">
             <div class="card">
                 <section class="card-face card-front">
                     <h2>社交比较：滤镜下的完美</h2>
-                    <h3>现象剖析</h3>
-                    <p><strong>事实:</strong> 我们在社交媒体上看到的多是他人精心筛选的"高光时刻"，形成一种被美化的<span class="highlight">"完美幻象"</span>。</p>
-                    <p><strong>观点:</strong> 将自己的"幕后"日常与他人的"舞台"表演进行比较，极易产生自卑、失落等负面情绪。</p>
-                    <p><strong>风险:</strong></p>
-                    <ul>
-                        <li><strong>低自尊:</strong> 长期比较导致对自身容貌、生活不满。</li>
-                        <li><strong>错失焦虑 (FOMO):</strong> 总感觉别人过得更精彩，自己被排除在外，产生持续的心理压力。</li>
-                    </ul>
-                    <p class="flip-indicator">点击卡片查看生存小贴士</p>
+                    <img src="survivesns_files/sns6.png" alt="社交比较示意图">
+                    <p class="flip-indicator">点击卡片查看详细内容</p>
                 </section>
                 <section class="card-face card-back">
-                    <h2>生存小贴士</h2>
-                    <ul>
-                        <li><strong>摘下"美颜滤镜"</strong>: 提醒自己看到的是精华片段，而非全部真相。</li>
-                        <li><strong>练习自我接纳</strong>: 关注并记录自己生活中的小确幸，培养欣赏自己的眼光。</li>
-                        <li><strong>限时浏览</strong>: 如果浏览后感到沮丧，就设定使用时限，下线专注自己的事。</li>
-                        <li><strong>寻求真实连接</strong>: 主动在线下创造美好回忆，充实的现实生活是最好的解药。</li>
-                    </ul>
+                    <h2>社交比较：滤镜下的完美</h2>
+                    <div class="analysis">
+                        <h3>现象剖析</h3>
+                        <p><strong>事实:</strong> 我们在社交媒体上看到的多是他人精心筛选的"高光时刻"，形成一种被美化的<span class="highlight">"完美幻象"</span>。</p>
+                        <p><strong>观点:</strong> 将自己的"幕后"日常与他人的"舞台"表演进行比较，极易产生自卑、失落等负面情绪。</p>
+                        <p><strong>风险:</strong></p>
+                        <ul>
+                            <li><strong>低自尊:</strong> 长期比较导致对自身容貌、生活不满。</li>
+                            <li><strong>错失焦虑 (FOMO):</strong> 总感觉别人过得更精彩，自己被排除在外，产生持续的心理压力。</li>
+                        </ul>
+                    </div>
+                    <div class="tips">
+                        <h3>生存小贴士</h3>
+                        <ul>
+                            <li><strong>摘下"美颜滤镜"</strong>: 提醒自己看到的是精华片段，而非全部真相。</li>
+                            <li><strong>练习自我接纳</strong>: 关注并记录自己生活中的小确幸，培养欣赏自己的眼光。</li>
+                            <li><strong>限时浏览</strong>: 如果浏览后感到沮丧，就设定使用时限，下线专注自己的事。</li>
+                            <li><strong>寻求真实连接</strong>: 主动在线下创造美好回忆，充实的现实生活是最好的解药。</li>
+                        </ul>
+                    </div>
                 </section>
             </div>
         </article>
         
         <!-- 卡片 7: 元宇宙与数字身份 -->
-        <article class="card-container" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+        <article class="card-container" onclick="handleCardClick(this)">
             <div class="card">
                 <section class="card-face card-front">
                     <h2>元宇宙：当现实与虚拟交错</h2>
-                    <h3>现象剖析</h3>
-                    <p><strong>事实:</strong> 在元宇宙中，我们可以通过<span class="highlight">虚拟化身(Avatar)</span>构建一个全新的、理想化的数字身份。</p>
-                    <p><strong>观点:</strong> 这既是自我表达的机会，也带来了<span class="highlight">身份认知混淆</span>的风险。当虚拟身份比现实更"精彩"时，人可能逃避现实。</p>
-                    <p><strong>风险:</strong></p>
-                    <ul>
-                        <li><strong>现实疏离:</strong> 沉迷虚拟世界，导致现实人际交往能力退化。</li>
-                        <li><strong>界限模糊:</strong> 高度沉浸感让人难分真幻，将虚拟情感与现实混淆。</li>
-                    </ul>
-                    <p class="flip-indicator">点击卡片查看生存小贴士</p>
+                    <img src="survivesns_files/sns7.png" alt="元宇宙示意图">
+                    <p class="flip-indicator">点击卡片查看详细内容</p>
                 </section>
                 <section class="card-face card-back">
-                    <h2>生存小贴士</h2>
-                    <ul>
-                        <li><strong>虚实平衡</strong>: 给虚拟探索设定时限，保证现实生活不受侵蚀，定期过"纯现实日"。</li>
-                        <li><strong>锚定真实自我</strong>: 无论线上形象多酷，核心价值观和人格应锚定在现实中。</li>
-                        <li><strong>警惕身份迷失</strong>: 如果开始分不清虚拟与现实感受，需要暂时"数字解毒"，与师长沟通。</li>
-                        <li><strong>加强隐私保护</strong>: 像保护真实身份一样保护数字身份，防止信息泄露和诈骗。</li>
-                    </ul>
+                    <h2>元宇宙：当现实与虚拟交错</h2>
+                    <div class="analysis">
+                        <h3>现象剖析</h3>
+                        <p><strong>事实:</strong> 在元宇宙中，我们可以通过<span class="highlight">虚拟化身(Avatar)</span>构建一个全新的、理想化的数字身份。</p>
+                        <p><strong>观点:</strong> 这既是自我表达的机会，也带来了<span class="highlight">身份认知混淆</span>的风险。当虚拟身份比现实更"精彩"时，人可能逃避现实。</p>
+                        <p><strong>风险:</strong></p>
+                        <ul>
+                            <li><strong>现实疏离:</strong> 沉迷虚拟世界，导致现实人际交往能力退化。</li>
+                            <li><strong>界限模糊:</strong> 高度沉浸感让人难分真幻，将虚拟情感与现实混淆。</li>
+                        </ul>
+                    </div>
+                    <div class="tips">
+                        <h3>生存小贴士</h3>
+                        <ul>
+                            <li><strong>虚实平衡</strong>: 给虚拟探索设定时限，保证现实生活不受侵蚀，定期过"纯现实日"。</li>
+                            <li><strong>锚定真实自我</strong>: 无论线上形象多酷，核心价值观和人格应锚定在现实中。</li>
+                            <li><strong>警惕身份迷失</strong>: 如果开始分不清虚拟与现实感受，需要暂时"数字解毒"，与师长沟通。</li>
+                            <li><strong>加强隐私保护</strong>: 像保护真实身份一样保护数字身份，防止信息泄露和诈骗。</li>
+                        </ul>
+                    </div>
                 </section>
             </div>
         </article>
 
         <!-- 卡片 8: 算法推荐机制 -->
-        <article class="card-container" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+        <article class="card-container" onclick="handleCardClick(this)">
             <div class="card">
                 <section class="card-face card-front">
                     <h2>算法推荐：无形操盘手</h2>
-                    <h3>现象剖析</h3>
-                    <p><strong>事实:</strong> 算法通过分析你的行为来定制信息流，其首要目标是<span class="highlight">"留住用户，榨干注意力"</span>以实现商业变现。</p>
-                    <p><strong>观点:</strong> 算法并不关心内容是否有益，常优先推送耸动、刺激的内容，导致<span class="highlight">"算法偏见"</span>，影响我们对世界的认知。</p>
-                    <p><strong>风险:</strong></p>
-                    <ul>
-                        <li><strong>认知扭曲:</strong> 如持续看到负面新闻，会误以为社会很糟糕。</li>
-                        <li><strong>沉浸式陷阱:</strong> 无缝播放、无尽滚动等设计，都在削弱我们的自制力，绑架注意力。</li>
-                    </ul>
-                    <p class="flip-indicator">点击卡片查看生存小贴士</p>
+                    <img src="survivesns_files/sns8.png" alt="算法推荐机制示意图">
+                    <p class="flip-indicator">点击卡片查看详细内容</p>
                 </section>
                 <section class="card-face card-back">
-                    <h2>生存小贴士</h2>
-                    <ul>
-                        <li><strong>善用"不感兴趣"</strong>: 主动训练算法，告诉它你不喜欢什么，进行纠偏。</li>
-                        <li><strong>定期清理信息流</strong>: 像整理房间一样，定期取关无营养、让你情绪不适的账号。</li>
-                        <li><strong>设定"信息静默区"</strong>: 规定睡前、晨起等固定时间不看手机，夺回自主权。</li>
-                        <li><strong>质疑与查证</strong>: 警惕算法的"倾向性剪裁"，对扎堆出现的极端内容保持怀疑。</li>
-                    </ul>
+                    <h2>算法推荐：无形操盘手</h2>
+                    <div class="analysis">
+                        <h3>现象剖析</h3>
+                        <p><strong>事实:</strong> 算法通过分析你的行为来定制信息流，其首要目标是<span class="highlight">"留住用户，榨干注意力"</span>以实现商业变现。</p>
+                        <p><strong>观点:</strong> 算法并不关心内容是否有益，常优先推送耸动、刺激的内容，导致<span class="highlight">"算法偏见"</span>，影响我们对世界的认知。</p>
+                        <p><strong>风险:</strong></p>
+                        <ul>
+                            <li><strong>认知扭曲:</strong> 如持续看到负面新闻，会误以为社会很糟糕。</li>
+                            <li><strong>沉浸式陷阱:</strong> 无缝播放、无尽滚动等设计，都在削弱我们的自制力，绑架注意力。</li>
+                        </ul>
+                    </div>
+                    <div class="tips">
+                        <h3>生存小贴士</h3>
+                        <ul>
+                            <li><strong>善用"不感兴趣"</strong>: 主动训练算法，告诉它你不喜欢什么，进行纠偏。</li>
+                            <li><strong>定期清理信息流</strong>: 像整理房间一样，定期取关无营养、让你情绪不适的账号。</li>
+                            <li><strong>设定"信息静默区"</strong>: 规定睡前、晨起等固定时间不看手机，夺回自主权。</li>
+                            <li><strong>质疑与查证</strong>: 警惕算法的"倾向性剪裁"，对扎堆出现的极端内容保持怀疑。</li>
+                        </ul>
+                    </div>
                 </section>
             </div>
         </article>
 
         <!-- 卡片 9: 网络霸凌 -->
-        <article class="card-container" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+        <article class="card-container" onclick="handleCardClick(this)">
             <div class="card">
                 <section class="card-face card-front">
                     <h2>网络霸凌：隐秘的伤害</h2>
-                    <h3>现象剖析</h3>
-                    <p><strong>事实:</strong> <span class="highlight">网络霸凌 (Cyberbullying)</span> 是通过网络进行的言语侮辱、造谣、排挤等行为，其伤害不亚于现实欺凌。</p>
-                    <p><strong>特点:</strong> 具有<span class="highlight">匿名性、24小时无死角、传播快</span>等特点，让受害者无处可逃，易产生焦虑、抑郁等心理问题。</p>
-                    <p><strong>观点:</strong> 施暴者的距离感和旁观者的冷漠，是网络霸凌猖獗的重要原因。</p>
-                    <p class="flip-indicator">点击卡片查看生存小贴士</p>
+                    <img src="survivesns_files/sns9.png" alt="网络霸凌示意图">
+                    <p class="flip-indicator">点击卡片查看详细内容</p>
                 </section>
                 <section class="card-face card-back">
-                    <h2>生存小贴士</h2>
-                    <ul>
-                        <li><strong>勇敢求助</strong>: 一定要告诉信任的成年人（父母、老师），你不是一个人在战斗。</li>
-                        <li><strong>保留证据，果断举报</strong>: 截屏保存攻击内容，通过平台或向网警举报，并拉黑施暴者。</li>
-                        <li><strong>心理减压</strong>: 提醒自己侮辱不等于事实，你的价值不由他人定义。通过倾诉和爱好来疗愈。</li>
-                        <li><strong>做友善的旁观者</strong>: 你的仗义执言和举报，是对受害者最大的支持。</li>
-                    </ul>
+                    <h2>网络霸凌：隐秘的伤害</h2>
+                    <div class="analysis">
+                        <h3>现象剖析</h3>
+                        <p><strong>事实:</strong> <span class="highlight">网络霸凌 (Cyberbullying)</span> 是通过网络进行的言语侮辱、造谣、排挤等行为，其伤害不亚于现实欺凌。</p>
+                        <p><strong>特点:</strong> 具有<span class="highlight">匿名性、24小时无死角、传播快</span>等特点，让受害者无处可逃，易产生焦虑、抑郁等心理问题。</p>
+                        <p><strong>观点:</strong> 施暴者的距离感和旁观者的冷漠，是网络霸凌猖獗的重要原因。</p>
+                    </div>
+                    <div class="tips">
+                        <h3>生存小贴士</h3>
+                        <ul>
+                            <li><strong>勇敢求助</strong>: 一定要告诉信任的成年人（父母、老师），你不是一个人在战斗。</li>
+                            <li><strong>保留证据，果断举报</strong>: 截屏保存攻击内容，通过平台或向网警举报，并拉黑施暴者。</li>
+                            <li><strong>心理减压</strong>: 提醒自己侮辱不等于事实，你的价值不由他人定义。通过倾诉和爱好来疗愈。</li>
+                            <li><strong>做友善的旁观者</strong>: 你的仗义执言和举报，是对受害者最大的支持。</li>
+                        </ul>
+                    </div>
                 </section>
             </div>
         </article>
 
         <!-- 卡片 10: FOMO与JOMO -->
-        <article class="card-container" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+        <article class="card-container" onclick="handleCardClick(this)">
             <div class="card">
                 <section class="card-face card-front">
                     <h2>FOMO vs JOMO：错过之战</h2>
-                    <h3>现象剖析</h3>
-                    <p><strong>事实:</strong> <span class="highlight">FOMO (Fear of Missing Out)</span>，即"错失恐惧症"，是一种害怕错过热点、活动，感觉自己被排除在外的持续焦虑。</p>
-                    <p><strong>观点:</strong> 社交媒体放大了FOMO，因为它让我们随时能看到别人"精彩"的生活。</p>
-                    <p><strong>解药:</strong> <span class="highlight">JOMO (Joy of Missing Out)</span>，即"错失的乐趣"。这是一种主动选择，享受远离喧嚣、专注当下的自由与平静。</p>
-                    <p class="flip-indicator">点击卡片查看生存小贴士</p>
+                    <img src="survivesns_files/sns10.png" alt="FOMO vs JOMO示意图">
+                    <p class="flip-indicator">点击卡片查看详细内容</p>
                 </section>
                 <section class="card-face card-back">
-                    <h2>生存小贴士</h2>
-                    <ul>
-                        <li><strong>给FOMO画边界</strong>: 承认无法参与所有事，一次错过不代表自我否定。</li>
-                        <li><strong>实践JOMO</strong>: 每周设定"数字小憩"时间，关掉网络，品尝宁静之乐。</li>
-                        <li><strong>专注当下</strong>: 与人相处时放下手机，全身心投入此刻的真实互动。</li>
-                        <li><strong>调整关注列表</strong>: 取关那些总让你产生焦虑和嫉妒的账号。</li>
-                    </ul>
+                    <h2>FOMO vs JOMO：错过之战</h2>
+                    <div class="analysis">
+                        <h3>现象剖析</h3>
+                        <p><strong>事实:</strong> <span class="highlight">FOMO (Fear of Missing Out)</span>，即"错失恐惧症"，是一种害怕错过热点、活动，感觉自己被排除在外的持续焦虑。</p>
+                        <p><strong>观点:</strong> 社交媒体放大了FOMO，因为它让我们随时能看到别人"精彩"的生活。</p>
+                        <p><strong>解药:</strong> <span class="highlight">JOMO (Joy of Missing Out)</span>，即"错失的乐趣"。这是一种主动选择，享受远离喧嚣、专注当下的自由与平静。</p>
+                    </div>
+                    <div class="tips">
+                        <h3>生存小贴士</h3>
+                        <ul>
+                            <li><strong>给FOMO画边界</strong>: 承认无法参与所有事，一次错过不代表自我否定。</li>
+                            <li><strong>实践JOMO</strong>: 每周设定"数字小憩"时间，关掉网络，品尝宁静之乐。</li>
+                            <li><strong>专注当下</strong>: 与人相处时放下手机，全身心投入此刻的真实互动。</li>
+                            <li><strong>调整关注列表</strong>: 取关那些总让你产生焦虑和嫉妒的账号。</li>
+                        </ul>
+                    </div>
                 </section>
             </div>
         </article>
 
         <!-- 卡片 11: 数字解毒 -->
-        <article class="card-container" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+        <article class="card-container" onclick="handleCardClick(this)">
             <div class="card">
                 <section class="card-face card-front">
                     <h2>数字解毒：重拾掌控权</h2>
-                    <h3>现象剖析</h3>
-                    <p><strong>事实:</strong> <span class="highlight">数字解毒 (Digital Detox)</span> 是有意识地暂时远离智能设备和网络，以戒除过度依赖。</p>
-                    <p><strong>观点:</strong> 这并非抵制科技，而是倡导建立健康的数字生活习惯，重获对时间和注意力的掌控权。</p>
-                    <p><strong>原理:</strong> 旨在打破"检查手机-获得奖励"的恶性循环，重新训练大脑适应没有持续刺激的状态，找回专注力与平静感。</p>
-                    <p class="flip-indicator">点击卡片查看生存小贴士</p>
+                    <img src="survivesns_files/sns11.png" alt="数字解毒示意图">
+                    <p class="flip-indicator">点击卡片查看详细内容</p>
                 </section>
                 <section class="card-face card-back">
-                    <h2>生存小贴士</h2>
-                    <ul>
-                        <li><strong>制定计划</strong>: 从小处着手，如"睡前1小时无手机"，逐步延长。</li>
-                        <li><strong>寻找替代活动</strong>: 提前安排好解毒期间要做的事，如运动、阅读、整理房间。</li>
-                        <li><strong>借助工具</strong>: 使用功能机或自控类App来辅助自己。</li>
-                        <li><strong>结伴而行</strong>: 与朋友家人一起挑战，互相监督和鼓励。</li>
-                        <li><strong>反思收获</strong>: 每次解毒后记录积极感受，强化坚持的信心。</li>
-                    </ul>
+                    <h2>数字解毒：重拾掌控权</h2>
+                    <div class="analysis">
+                        <h3>现象剖析</h3>
+                        <p><strong>事实:</strong> <span class="highlight">数字解毒 (Digital Detox)</span> 是有意识地暂时远离智能设备和网络，以戒除过度依赖。</p>
+                        <p><strong>观点:</strong> 这并非抵制科技，而是倡导建立健康的数字生活习惯，重获对时间和注意力的掌控权。</p>
+                        <p><strong>原理:</strong> 旨在打破"检查手机-获得奖励"的恶性循环，重新训练大脑适应没有持续刺激的状态，找回专注力与平静感。</p>
+                    </div>
+                    <div class="tips">
+                        <h3>生存小贴士</h3>
+                        <ul>
+                            <li><strong>制定计划</strong>: 从小处着手，如"睡前1小时无手机"，逐步延长。</li>
+                            <li><strong>寻找替代活动</strong>: 提前安排好解毒期间要做的事，如运动、阅读、整理房间。</li>
+                            <li><strong>借助工具</strong>: 使用功能机或自控类App来辅助自己。</li>
+                            <li><strong>结伴而行</strong>: 与朋友家人一起挑战，互相监督和鼓励。</li>
+                            <li><strong>反思收获</strong>: 每次解毒后记录积极感受，强化坚持的信心。</li>
+                        </ul>
+                    </div>
                 </section>
             </div>
         </article>
@@ -718,17 +804,35 @@
     </footer>
 
     <script>
-        // JavaScript代码非常简单，仅用于切换卡片的翻转状态
-        // 代码已通过onclick内联方式实现，为保持文件简洁，此处留空
-        // 如果需要更复杂的逻辑，可以写在这里。例如：
-        /*
-        const cards = document.querySelectorAll('.card-container');
-        cards.forEach(card => {
-            card.addEventListener('click', () => {
-                card.querySelector('.card').classList.toggle('is-flipped');
+        let currentZIndex = 1;
+
+        function handleCardClick(cardContainer) {
+            // 获取卡片元素
+            const card = cardContainer.querySelector('.card');
+            
+            // 切换翻转状态
+            card.classList.toggle('is-flipped');
+            
+            // 重置所有卡片的z-index
+            resetAllCardsZIndex();
+            
+            // 将当前点击的卡片提升到最高层
+            currentZIndex++;
+            cardContainer.style.zIndex = currentZIndex;
+        }
+
+        function resetAllCardsZIndex() {
+            const allCards = document.querySelectorAll('.card-container');
+            allCards.forEach(container => {
+                container.style.zIndex = '1';
             });
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 确保所有卡片初始z-index为1
+            resetAllCardsZIndex();
         });
-        */
     </script>
 
 
