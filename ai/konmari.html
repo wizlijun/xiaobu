@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《怦然心动的人生整理魔法》- 交互式精华摘要</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700&display=swap');
+
+        :root {
+            --primary-color: #d9534f; /* 封面红色 */
+            --secondary-color: #8ab0ab; /* 封面蓝色调 */
+            --background-color: #f8f9fa;
+            --text-color: #333;
+            --light-text-color: #555;
+            --border-color: #ddd;
+            --fact-color: #4CAF50; /* 绿色代表方法/事实 */
+            --opinion-color: #2196F3; /* 蓝色代表观点/理念 */
+        }
+
+        body {
+            font-family: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.8;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            padding: 20px 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+        }
+
+        .book-header {
+            text-align: center;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .book-header h1 {
+            color: var(--primary-color);
+            font-size: 2.5em;
+            margin: 0;
+        }
+
+        .book-header h2 {
+            font-size: 1.2em;
+            color: var(--secondary-color);
+            font-weight: 300;
+            margin-top: 5px;
+        }
+
+        .core-principles {
+            background-color: #fff9f0;
+            border: 2px dashed var(--primary-color);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .core-principles h3 {
+            text-align: center;
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.5em;
+        }
+
+        .core-principles ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .core-principles li {
+            font-size: 1.1em;
+            padding: 8px 0;
+            border-bottom: 1px solid #fde4c7;
+        }
+        .core-principles li:last-child {
+            border-bottom: none;
+        }
+
+        .core-principles strong {
+            color: var(--primary-color);
+        }
+
+        .accordion-item {
+            border-bottom: 1px solid var(--border-color);
+        }
+        .accordion-item:last-child {
+            border-bottom: none;
+        }
+
+        .accordion-header {
+            background-color: transparent;
+            color: var(--text-color);
+            cursor: pointer;
+            padding: 18px 10px;
+            width: 100%;
+            text-align: left;
+            border: none;
+            outline: none;
+            font-size: 1.3em;
+            font-weight: 700;
+            transition: background-color 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .accordion-header:hover, .accordion-header.active {
+            color: var(--primary-color);
+        }
+
+        .accordion-header .icon {
+            transition: transform 0.3s ease;
+            font-size: 1.5em;
+        }
+
+        .accordion-header.active .icon {
+            transform: rotate(45deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+            background-color: #fafafa;
+            padding: 0 20px;
+        }
+
+        .content-inner {
+            padding: 20px 0;
+        }
+
+        ul.point-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        li.point {
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border-left: 5px solid;
+            position: relative;
+            padding-left: 50px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        li.point::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            background-repeat: no-repeat;
+            background-size: contain;
+        }
+
+        li.fact {
+            border-color: var(--fact-color);
+        }
+        li.fact::before {
+             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234CAF50"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>');
+        }
+
+        li.opinion {
+            border-color: var(--opinion-color);
+        }
+        li.opinion::before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%232196F3"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>');
+        }
+        
+        .point strong {
+            color: #000;
+        }
+
+        .point .detail {
+            font-size: 0.9em;
+            color: var(--light-text-color);
+            margin-top: 5px;
+            display: block;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9em;
+            color: #aaa;
+        }
+
+        /* 嵌套列表样式 */
+        .nested-list {
+            list-style-type: none;
+            padding-left: 20px;
+            margin-top: 10px;
+        }
+        .nested-list li {
+            padding: 5px 0;
+            font-size: 0.95em;
+        }
+
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="book-header">
+            <h1>怦然心动的人生整理魔法</h1>
+            <h2>The Life-Changing Magic of Tidying Up</h2>
+        </header>
+
+        <section class="core-principles">
+            <h3>✨ KonMari 核心整理大法：四大黄金原则 ✨</h3>
+            <ul>
+                <li><strong>一次到位：</strong>整理是“节庆活动”，不是每天的例行公事。必须一鼓作气，在短时间内彻底完成。</li>
+                <li><strong>先丢再收：</strong>整理的顺序至关重要。必须先完成“丢弃”这个动作，才能开始进行“收纳”。</li>
+                <li><strong>按“物品”分类：</strong>绝对不能按“场所”整理（如“今天整理卧室”）。必须以“物品类别”为单位进行整理（如“今天整理所有衣服”）。</li>
+                <li><strong>心动标准：</strong>判断物品去留的唯一标准是——触摸它时，是否感到“怦然心动”？</li>
+            </ul>
+        </section>
+
+        <div class="accordion">
+            <!-- 第 1 节 -->
+            <div class="accordion-item">
+                <button class="accordion-header">第一章：为什么整理总是“打回原形”？ (心态篇)<span class="icon">+</span></button>
+                <div class="accordion-content">
+                    <div class="content-inner">
+                        <ul class="point-list">
+                            <li class="opinion point"><strong>整理是需要学习的技能。</strong><span class="detail">大部分人从未系统学习过整理，所以整理失败不是你的错，只是因为没学对方法。</span></li>
+                            <li class="fact point"><strong>破除“一点点整理”的迷信。</strong><span class="detail">“每天丢一件东西”或“每天整理15分钟”会让你陷入永远整理不完的循环。</span></li>
+                            <li class="fact point"><strong>整理的反弹是错误的信号。</strong><span class="detail">所谓“反弹”，是因为你从未体验过真正彻底整理后的状态，只是进行了不彻底的分类和移动。</span></li>
+                            <li class="opinion point"><strong>收纳专家其实是“囤积专家”。</strong><span class="detail">过分追求收纳技巧，只是把问题藏起来，而不是解决它。“把东西收起来”会制造 clutter problem has been solved 的错觉。</span></li>
+                            <li class="fact point"><strong>不要按性格改变方法。</strong><span class="detail">整理方法不因人而异。“懒人”、“忙人”都适用同一种核心方法，因为问题的根源是“舍不得丢”和“不知物归原处”。</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第 2 节 -->
+            <div class="accordion-item">
+                <button class="accordion-header">第二章：从“丢弃”开始，一次到位 (实践准备篇)<span class="icon">+</span></button>
+                <div class="accordion-content">
+                     <div class="content-inner">
+                        <ul class="point-list">
+                            <li class="fact point"><strong>先思考“理想的生活”。</strong><span class="detail">在丢东西前，先具体想象你希望在整洁的家中过着什么样的生活。这是你坚持下去的动力。</span></li>
+                            <li class="opinion point"><strong>“心动感”是唯一评判标准。</strong><span class="detail">不要想“这个还能用”或“丢了好浪费”。拿起每件物品，问自己：“它是否让我怦然心动？”。这是与物品的对话。</span></li>
+                            <li class="fact point"><strong>按正确顺序丢弃。</strong><span class="detail">丢弃物品有难易之分。错误的顺序会导致中途放弃。正确的顺序是：衣服 → 书籍 → 文件 → 小件物品(Komono) → 纪念品。</span></li>
+                             <li class="fact point"><strong>不要让家人看到丢弃过程。</strong><span class="detail">家人（尤其是母亲）看到大量被丢弃的物品会产生负罪感和焦虑，并可能“回收”你的垃圾，增加他们的负担。这是体贴，而非隐瞒。</span></li>
+                             <li class="opinion point"><strong>无法丢弃，是因为执着于“过去”或担忧“未来”。</strong><span class="detail">通过直面物品，你可以看清自己的价值观，从而放下执念，活在当下。</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第 3 节 -->
+            <div class="accordion-item">
+                <button class="accordion-header">第三章：按“类别”整理，魔法自现 (分类实践篇)<span class="icon">+</span></button>
+                <div class="accordion-content">
+                    <div class="content-inner">
+                        <ul class="point-list">
+                            <li class="fact point"><strong>把同类物品全部集中。</strong><span class="detail">整理某一类别时，必须把全家所有该类别的物品（无论在哪）都找出来，堆在一起。这能让你直观感受自己拥有多少东西。</span></li>
+                            <li class="fact point"><strong>正确的整理顺序：</strong>
+                                <ul class="nested-list">
+                                    <li><strong>1. 衣服 (Clothes):</strong> 从非当季的衣服开始，因为情感依赖较低，更容易判断。不要把不穿的衣服降级为“家居服”。</li>
+                                    <li><strong>2. 书籍 (Books):</strong> 全部从书架上取下。对于还没读的书，问自己是否“现在”就想读。“总有一天”意味着“永远不会”。</li>
+                                    <li><strong>3. 文件 (Papers):</strong> 基本原则是“全部丢掉”。只保留三类：正在使用、短期需要、必须永久保存（如合同）。</li>
+                                    <li><strong>4. 小件物品 (Komono):</strong> 包括CD、化妆品、文具、厨房用品等。按“心动”而非“因为有用”来筛选。</li>
+                                    <li><strong>5. 纪念品 (Sentimental Items):</strong> 照片、信件、礼物等。因为情感价值最高，必须放在最后处理，此时你的判断力已经得到锻炼。</li>
+                                </ul>
+                            </li>
+                             <li class="opinion point"><strong>感谢不再心动的物品。</strong><span class="detail">对于要丢弃的物品，表达感谢之情：“谢谢你当初带给我的快乐”或“谢谢你教会我不适合什么”。这能减轻负罪感，让物品体面地离开。</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 第 4 节 -->
+            <div class="accordion-item">
+                <button class="accordion-header">第四章：让物品闪耀的“收纳术” (收纳技巧篇)<span class="icon">+</span></button>
+                <div class="accordion-content">
+                    <div class="content-inner">
+                        <ul class="point-list">
+                             <li class="fact point"><strong>为每件物品指定“固定住所”。</strong><span class="detail">所有留下的物品都必须有其唯一的、固定的位置。这是防止复乱的根本。</span></li>
+                             <li class="fact point"><strong>追求极致的“简化”。</strong><span class="detail">收纳的核心是简单。不要使用复杂的收纳工具。一个鞋盒可能就是最好的抽屉分隔器。</span></li>
+                             <li class="fact point"><strong>“直立收纳”是王道。</strong><span class="detail">无论是衣服、文件还是食物，尽量竖着放。这不仅节省空间，还能让你对所有物品一目了然，避免压在底下的东西被遗忘。</span></li>
+                             <li class="fact point"><strong>不要分散收纳空间。</strong><span class="detail">同类物品收纳在同一个地方。把所有收纳集中在一处，能让你更容易管理和维持整洁。</span></li>
+                             <li class="fact point"><strong>每天清空你的包。</strong><span class="detail">包是物品的“临时旅馆”。每天回家后清空包包，让包和里面的物品得到休息，也能避免遗忘东西。</span></li>
+                             <li class="opinion point"><strong>装饰你的“秘密乐园”。</strong><span class="detail">可以在衣柜内部等私密空间，贴上你喜欢的偶像海报或装饰品，把它变成只属于你的、能带来愉悦感的个人空间。</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第 5 节 -->
+            <div class="accordion-item">
+                <button class="accordion-header">第五章：整理如何“改变人生” (哲学升华篇)<span class="icon">+</span></button>
+                <div class="accordion-content">
+                    <div class="content-inner">
+                        <ul class="point-list">
+                            <li class="opinion point"><strong>整理让你了解自己。</strong><span class="detail">通过选择心动的物品，你会清晰地看到自己的价值观和真正喜欢的东西，从而发现自己真正想做的事。</span></li>
+                             <li class="opinion point"><strong>提升决策力与自信。</strong><span class="detail">成百上千次“判断-决定”的练习，会极大地锻炼你的决策能力，让你在生活的其他方面也变得更自信、更果断。</span></li>
+                             <li class="opinion point"><strong>告别过去，活在当下。</strong><span class="detail">整理物品的过程，也是整理自己人生经历和情感的过程。你会学会放下，更专注于现在和未来。</span></li>
+                             <li class="opinion point"><strong>你的居住空间会影响你的身体。</strong><span class="detail">当你的家变得整洁清爽（排毒），你的身体也会有类似排毒的反应，比如皮肤变好、体重减轻。</span></li>
+                             <li class="opinion point"><strong>与你的家和物品建立连结。</strong><span class="detail">回家时对房子说“我回来了”，感谢物品的陪伴。当你开始珍惜它们，它们会以更好的状态回报你。</span></li>
+                             <li class="opinion point"><strong>真正的人生，从整理之后开始。</strong><span class="detail">整理不是目的，而是让你的人生步入正轨的手段。把时间和热情，投入到那些真正让你心动的事情和使命上。</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>基于 Marie Kondo 的《The Life-Changing Magic of Tidying Up》制作的交互式摘要。</p>
+        </footer>
+    </div>
+
+    <script>
+        const accordionItems = document.querySelectorAll('.accordion-item');
+
+        accordionItems.forEach(item => {
+            const header = item.querySelector('.accordion-header');
+            header.addEventListener('click', () => {
+                const content = item.querySelector('.accordion-content');
+                const isActive = header.classList.contains('active');
+
+                // 可选：关闭其他所有项
+                /*
+                accordionItems.forEach(otherItem => {
+                    otherItem.querySelector('.accordion-header').classList.remove('active');
+                    otherItem.querySelector('.accordion-content').style.maxHeight = null;
+                    otherItem.querySelector('.icon').textContent = '+';
+                });
+                */
+                
+                if (isActive) {
+                    header.classList.remove('active');
+                    content.style.maxHeight = null;
+                    header.querySelector('.icon').textContent = '+';
+                } else {
+                    header.classList.add('active');
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    header.querySelector('.icon').textContent = '×';
+                }
+            });
+        });
+    </script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="()[]" target="_blank">()[]</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
