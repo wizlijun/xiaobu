@@ -74,10 +74,12 @@
             transform-style: preserve-3d;
             transition: transform 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
             cursor: pointer;
+            z-index: 1;
         }
 
         .card.is-flipped {
             transform: rotateY(180deg);
+            z-index: 10; /* 翻转时提升层级，避免被其他卡片遮挡 */
         }
 
         /* --- 卡片正反面通用样式 --- */
@@ -257,7 +259,7 @@
 
     <main class="cards-grid">
         <!-- 卡片 1: 信息茧房 -->
-        <article class="card-container" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+        <article class="card-container" onclick="handleCardClick(this)">
             <div class="card">
                 <section class="card-face card-front">
                     <h2>信息茧房：算法织就的蚕茧</h2>
@@ -289,7 +291,7 @@
         </article>
 
         <!-- 卡片 2: 多巴胺循环 -->
-        <article class="card-container" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+        <article class="card-container" onclick="handleCardClick(this)">
             <div class="card">
                 <section class="card-face card-front">
                     <h2>多巴胺循环：停不下的快感</h2>
@@ -317,7 +319,7 @@
         </article>
         
         <!-- 卡片 3: 顿挫感 -->
-        <article class="card-container" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+        <article class="card-container" onclick="handleCardClick(this)">
             <div class="card">
                 <section class="card-face card-front">
                     <h2>顿挫感：面对冷场与负评</h2>
@@ -351,7 +353,7 @@
         </article>
 
         <!-- 卡片 4: 回声室效应 -->
-        <article class="card-container" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+        <article class="card-container" onclick="handleCardClick(this)">
             <div class="card">
                 <section class="card-face card-front">
                     <h2>回声室效应：只听见自己</h2>
@@ -383,7 +385,7 @@
         </article>
 
         <!-- 卡片 5: 拟社会关系 -->
-        <article class="card-container" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+        <article class="card-container" onclick="handleCardClick(this)">
             <div class="card">
                 <section class="card-face card-front">
                     <h2>拟社会关系：亲密的错觉</h2>
@@ -415,7 +417,7 @@
         </article>
 
         <!-- 卡片 6: 社交比较 -->
-        <article class="card-container" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+        <article class="card-container" onclick="handleCardClick(this)">
             <div class="card">
                 <section class="card-face card-front">
                     <h2>社交比较：滤镜下的完美</h2>
@@ -448,7 +450,7 @@
         </article>
         
         <!-- 卡片 7: 元宇宙与数字身份 -->
-        <article class="card-container" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+        <article class="card-container" onclick="handleCardClick(this)">
             <div class="card">
                 <section class="card-face card-front">
                     <h2>元宇宙：当现实与虚拟交错</h2>
@@ -481,7 +483,7 @@
         </article>
 
         <!-- 卡片 8: 算法推荐机制 -->
-        <article class="card-container" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+        <article class="card-container" onclick="handleCardClick(this)">
             <div class="card">
                 <section class="card-face card-front">
                     <h2>算法推荐：无形操盘手</h2>
@@ -514,7 +516,7 @@
         </article>
 
         <!-- 卡片 9: 网络霸凌 -->
-        <article class="card-container" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+        <article class="card-container" onclick="handleCardClick(this)">
             <div class="card">
                 <section class="card-face card-front">
                     <h2>网络霸凌：隐秘的伤害</h2>
@@ -543,7 +545,7 @@
         </article>
 
         <!-- 卡片 10: FOMO与JOMO -->
-        <article class="card-container" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+        <article class="card-container" onclick="handleCardClick(this)">
             <div class="card">
                 <section class="card-face card-front">
                     <h2>FOMO vs JOMO：错过之战</h2>
@@ -572,7 +574,7 @@
         </article>
 
         <!-- 卡片 11: 数字解毒 -->
-        <article class="card-container" onclick="this.querySelector('.card').classList.toggle('is-flipped')">
+        <article class="card-container" onclick="handleCardClick(this)">
             <div class="card">
                 <section class="card-face card-front">
                     <h2>数字解毒：重拾掌控权</h2>
@@ -619,17 +621,35 @@
     </footer>
 
     <script>
-        // JavaScript代码非常简单，仅用于切换卡片的翻转状态
-        // 代码已通过onclick内联方式实现，为保持文件简洁，此处留空
-        // 如果需要更复杂的逻辑，可以写在这里。例如：
-        /*
-        const cards = document.querySelectorAll('.card-container');
-        cards.forEach(card => {
-            card.addEventListener('click', () => {
-                card.querySelector('.card').classList.toggle('is-flipped');
+        let currentZIndex = 1;
+
+        function handleCardClick(cardContainer) {
+            // 获取卡片元素
+            const card = cardContainer.querySelector('.card');
+            
+            // 切换翻转状态
+            card.classList.toggle('is-flipped');
+            
+            // 重置所有卡片的z-index
+            resetAllCardsZIndex();
+            
+            // 将当前点击的卡片提升到最高层
+            currentZIndex++;
+            cardContainer.style.zIndex = currentZIndex;
+        }
+
+        function resetAllCardsZIndex() {
+            const allCards = document.querySelectorAll('.card-container');
+            allCards.forEach(container => {
+                container.style.zIndex = '1';
             });
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 确保所有卡片初始z-index为1
+            resetAllCardsZIndex();
         });
-        */
     </script>
 
 </body>
