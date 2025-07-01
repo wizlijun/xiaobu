@@ -176,6 +176,76 @@ def inject_floatbox(html_content, floatbox_content):
     return html_content.replace('</body>', f'\n{floatbox_content}\n</body>')
 
 
+def fix_image_paths(html_content, name):
+    """修正HTML中的图片路径
+    
+    将相对路径的图片引用修正为正确的路径，确保指向name_files目录
+    支持的图片格式：jpg, jpeg, png, gif, svg, webp, bmp
+    """
+    if not html_content:
+        return html_content
+    
+    print(f"修正图片路径，目标目录: {name}_files/")
+    
+    # 图片文件扩展名模式
+    image_extensions = r'\.(jpg|jpeg|png|gif|svg|webp|bmp)'
+    
+    # 匹配各种图片引用格式的正则表达式
+    patterns = [
+        # <img src="..." />
+        (r'<img\s+[^>]*src\s*=\s*["\']([^"\']*' + image_extensions + r')["\']', 'img_src'),
+        # <image src="..." /> (SVG)
+        (r'<image\s+[^>]*src\s*=\s*["\']([^"\']*' + image_extensions + r')["\']', 'image_src'),
+        # background-image: url(...)
+        (r'background-image\s*:\s*url\s*\(\s*["\']?([^"\']*' + image_extensions + r')["\']?\s*\)', 'css_bg'),
+        # CSS中的图片引用
+        (r'url\s*\(\s*["\']?([^"\']*' + image_extensions + r')["\']?\s*\)', 'css_url'),
+    ]
+    
+    modified_html = html_content
+    fixed_count = 0
+    
+    for pattern, pattern_type in patterns:
+        def replace_path(match):
+            nonlocal fixed_count
+            original_path = match.group(1)
+            
+            # 跳过绝对URL（http://、https://、//开头）
+            if original_path.startswith(('http://', 'https://', '//', 'data:')):
+                return match.group(0)
+            
+            # 跳过已经正确的路径（已经包含name_files/）
+            if f"{name}_files/" in original_path:
+                return match.group(0)
+            
+            # 提取文件名（去除相对路径前缀如 ./ 或 ../ ）
+            filename = original_path.split('/')[-1]
+            
+            # 构建新的路径
+            new_path = f"{name}_files/{filename}"
+            
+            # 根据模式类型替换
+            if pattern_type in ['img_src', 'image_src']:
+                # 替换img或image标签的src属性
+                replacement = match.group(0).replace(original_path, new_path)
+            else:
+                # 替换CSS中的URL
+                replacement = match.group(0).replace(original_path, new_path)
+            
+            print(f"  修正图片路径: {original_path} -> {new_path}")
+            fixed_count += 1
+            return replacement
+        
+        modified_html = re.sub(pattern, replace_path, modified_html, flags=re.IGNORECASE)
+    
+    if fixed_count > 0:
+        print(f"共修正 {fixed_count} 个图片路径")
+    else:
+        print("未发现需要修正的图片路径")
+    
+    return modified_html, fixed_count
+
+
 def main():
     """主函数"""
     if len(sys.argv) < 2 or len(sys.argv) > 3:
@@ -228,6 +298,10 @@ def main():
     meta_data = parse_yaml_safe(meta_yaml_path)
     css_content = read_file_safe(css_template_path, "CSS模板")
     floatbox_template = read_file_safe(floatbox_template_path, "浮动框模板")
+    
+    # 修正图片路径（在所有其他处理之前）
+    print("修正图片路径...")
+    capsule_html, fixed_images_count = fix_image_paths(capsule_html, actual_name)
     
     # 处理元数据
     print("处理元数据...")
@@ -348,6 +422,7 @@ document.addEventListener('DOMContentLoaded', function() {
         print(f"- 原文链接: {'有' if meta_data.get('source') else '无'}")
         print(f"- 相关链接: {len(meta_data.get('links', []))} 个")
         print(f"- 附件数量: {len(meta_data.get('attachments', []))} 个")
+        print(f"- 修正图片路径: {fixed_images_count} 个")
         
     except Exception as e:
         error_exit(f"写入输出文件时发生错误: {e}")
