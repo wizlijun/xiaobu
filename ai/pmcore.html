@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>项目管理的核心要点摘要</title>
+    <style>
+        /* --- 基础样式 --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Microsoft YaHei", "PingFang SC", sans-serif;
+            background-color: #f4f7f9;
+            color: #333;
+            line-height: 1.8;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* --- 主容器 --- */
+        .summary-container {
+            max-width: 800px;
+            width: 100%;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            padding: 25px 35px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1a237e;
+            font-size: 2em;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 15px;
+        }
+
+        /* --- 手风琴按钮样式 --- */
+        .accordion {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            cursor: pointer;
+            padding: 18px 20px;
+            width: 100%;
+            border: none;
+            border-bottom: 1px solid #e0e0e0;
+            text-align: left;
+            outline: none;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .accordion:hover, .accordion.active {
+            background-color: #e9ecef;
+        }
+        
+        .accordion:first-of-type {
+             border-top-left-radius: 8px;
+             border-top-right-radius: 8px;
+        }
+        .accordion:last-of-type {
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+             border-bottom: none;
+        }
+        .accordion.active:last-of-type {
+             border-bottom-left-radius: 0;
+             border-bottom-right-radius: 0;
+             border-bottom: 1px solid #e0e0e0;
+        }
+
+        .accordion::after {
+            content: '+';
+            font-size: 1.5em;
+            color: #3498db;
+            transition: transform 0.3s ease;
+        }
+
+        .accordion.active::after {
+            content: '−';
+            transform: rotate(180deg);
+        }
+
+        /* --- 内容面板样式 --- */
+        .panel {
+            padding: 0 20px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out, padding 0.4s ease-out;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .panel:last-of-type {
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            border-bottom: none;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 15px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        /* --- 高亮样式 --- */
+        /* 核心事实/概念 */
+        .fact {
+            background-color: #e3f2fd; /* 淡蓝色背景 */
+            color: #0d47a1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        /* 核心观点/比喻 */
+        .opinion {
+            font-style: italic;
+            color: #5e35b1; /* 紫色斜体 */
+            border-left: 3px solid #b39ddb;
+            padding-left: 10px;
+            margin: 10px 0;
+            display: block;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #777;
+        }
+
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="summary-container">
+        <h1>项目管理：从战术到战略的思维跃迁</h1>
+
+        <button class="accordion">1. 项目管理：核心是“掌控感” 🎯</button>
+        <div class="panel">
+            <p>项目管理让你清晰掌握项目的方向和节奏，不仅是执行，更是协调和引导。</p>
+            <ul>
+                <li><strong>核心定义：</strong>一种<span class="fact">掌控感</span>。它让你知道何时推进、何时刹车、哪里有风险、哪里需准备。</li>
+                <li><strong>关键任务：</strong>从立项开始，明确<span class="fact">目标、范围、资源、时间、风险</span>，并进行任务拆解、责任分配和进度跟踪。</li>
+                <li><strong>角色定位：</strong>不是监工，而是<span class="fact">“协调者”和“引导者”</span>，确保团队目标一致，高效协作。</li>
+            </ul>
+            <p class="opinion">项目管理，不是为了管人，而是为了成事。</p>
+        </div>
+
+        <button class="accordion">2. 项目集管理：核心是“全局观” 🗺️</button>
+        <div class="panel">
+            <p>当多个项目相互关联，服务于一个更大的战略目标时，就需要项目集管理来统一协调。</p>
+            <ul>
+                <li><strong>核心定义：</strong>一组<span class="fact">相互关联、服务于同一战略目标</span>的项目集合，而非简单叠加。</li>
+                <li><strong>关键任务：</strong>强调<span class="fact">协同、整合、治理</span>。建立清晰的沟通机制、决策流程和风险模型，确保资源共享、节奏一致。</li>
+                <li><strong>角色定位：</strong>如同<span class="fact">“指挥官”</span>，确保所有项目在同一战略轨道上运行，避免各自为政。</li>
+            </ul>
+            <p class="opinion">没有项目集思维，单打独斗很容易陷入混乱和低效，这在大公司尤其重要。</p>
+        </div>
+
+        <button class="accordion">3. 项目组合管理：核心是“取舍力” ⚖️</button>
+        <div class="panel">
+            <p>这是战略层面的决策，关注如何分配组织资源以实现价值最大化。</p>
+            <ul>
+                <li><strong>核心定义：</strong>从战略高度判断<span class="fact">哪些项目该做、哪些不该做</span>，以确保投资回报最大化。</li>
+                <li><strong>关键任务：</strong>进行<span class="fact">财务分析、战略评估、风险判断</span>，集中资源做真正能带来价值的事。</li>
+                <li><strong>能力考验：</strong>考验的是<span class="fact">“取舍力”</span>——能否果断放弃看似热闹但无实际意义的项目。</li>
+            </ul>
+            <p class="opinion">这不仅是对项目的选择，更是对企业未来走向的判断。</p>
+        </div>
+
+        <button class="accordion">4. 项目管理：是一种“职业素养” 🛠️</button>
+        <div class="panel">
+            <p>项目管理能力并非项目经理专属，而是现代职场人的必备素养。</p>
+            <ul>
+                <li><strong>适用人群：</strong>所有参与<span class="fact">跨部门协作、承担交付任务</span>的职场人。</li>
+                <li><strong>必备特质：</strong>
+                    <ul>
+                        <li><span class="fact">目标感强</span>：不偏离方向。</li>
+                        <li><span class="fact">沟通能力强</span>：清晰表达，准确理解。</li>
+                        <li><span class="fact">抗压能力强</span>：冷静应对突发状况。</li>
+                        <li><span class="fact">执行力强</span>：说到做到，按时完成。</li>
+                        <li><span class="fact">责任心强</span>：对结果负责，不推诿。</li>
+                    </ul>
+                </li>
+            </ul>
+             <p class="opinion">这些素养让我们在面对复杂任务时不再慌乱，在跨部门协作时不再无所适从。</p>
+        </div>
+
+        <button class="accordion">5. 项目管理：是一种“思维方式” 🧠</button>
+        <div class="panel">
+            <p>它不仅是方法论，更是一种结构化的思考方式，帮助我们应对不确定性。</p>
+            <ul>
+                <li><strong>核心作用：</strong>教会我们<span class="fact">从混沌中理清头绪</span>，在不确定性中找到确定性。</li>
+                <li><strong>四大原则：</strong>
+                    <ul>
+                        <li>做事有<span class="fact">计划</span></li>
+                        <li>执行有<span class="fact">节奏</span></li>
+                        <li>沟通有<span class="fact">重点</span></li>
+                        <li>复盘有<span class="fact">总结</span></li>
+                    </ul>
+                </li>
+            </ul>
+            <p class="opinion">在这个讲究效率和结果的时代，每个人都需要一些项目管理思维。</p>
+        </div>
+
+        <footer>
+            <p>愿你在每一次项目中都能稳住节奏，赢得信任，展现价值。</p>
+        </footer>
+    </div>
+
+    <script>
+        const accordions = document.querySelectorAll(".accordion");
+
+        accordions.forEach(accordion => {
+            accordion.addEventListener("click", function() {
+                // 切换 active class, 用于改变按钮样式和图标
+                this.classList.toggle("active");
+
+                // 获取紧邻的下一个元素，即 panel
+                const panel = this.nextElementSibling;
+
+                // 判断 panel 是否已展开
+                if (panel.style.maxHeight) {
+                    // 如果已展开，则收起
+                    panel.style.maxHeight = null;
+                    panel.style.padding = "0 20px"; // 收起时也要过渡padding
+                } else {
+                    // 如果未展开，则展开
+                    // scrollHeight 是元素内容的总高度
+                    panel.style.maxHeight = panel.scrollHeight + "px";
+                    panel.style.padding = "20px"; // 展开时添加padding
+                }
+            });
+        });
+    </script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="()[https://mp.weixin.qq.com/s/XjLVSRgSGY71GrtaTzWCKw]" target="_blank">()[https://mp.weixin.qq.com/s/XjLVSRgSGY71GrtaTzWCKw]</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
