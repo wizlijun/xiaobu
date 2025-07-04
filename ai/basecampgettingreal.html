@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《Getting Real》动态交互摘要</title>
+    <style>
+        :root {
+            --bg-color: #f9f9f9;
+            --main-text-color: #333;
+            --header-color: #1a1a1a;
+            --accent-color: #007bff;
+            --details-bg: #fff;
+            --border-color: #e0e0e0;
+            --quote-border: #ccc;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.7;
+            background-color: var(--bg-color);
+            color: var(--main-text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--details-bg);
+            padding: 20px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            color: var(--header-color);
+            margin-bottom: 0;
+        }
+
+        header p {
+            font-size: 1.1em;
+            color: #666;
+        }
+        
+        header .author {
+            font-style: italic;
+            color: #888;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            margin-top: 50px;
+            margin-bottom: 20px;
+            color: var(--header-color);
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+        }
+
+        details {
+            background-color: var(--details-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        details[open] {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        summary {
+            padding: 15px 20px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            list-style: none;
+            position: relative;
+        }
+        
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::after {
+            content: '+';
+            font-size: 1.5em;
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        details[open] summary::after {
+            transform: translateY(-50%) rotate(45deg);
+        }
+
+        .details-content {
+            padding: 0 20px 20px 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .core-idea {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-top: 15px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 10px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        li::before {
+            position: absolute;
+            left: 0;
+            top: 2px;
+            font-size: 1.2em;
+        }
+        
+        .viewpoint li::before {
+            content: '💡';
+        }
+        
+        .action li::before {
+            content: '✅';
+        }
+        
+        blockquote {
+            border-left: 4px solid var(--quote-border);
+            margin: 15px 0;
+            padding: 10px 20px;
+            background-color: #f7f7f7;
+            font-style: italic;
+        }
+        
+        blockquote footer {
+            text-align: right;
+            font-style: normal;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            header h1 {
+                font-size: 2em;
+            }
+            summary {
+                font-size: 1.1em;
+            }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Getting Real</h1>
+            <p>构建成功网络应用的更智能、更快速、更简单的方法</p>
+            <p class="author">by Basecamp</p>
+        </header>
+
+        <main>
+            <!-- Introduction Section -->
+            <h2 class="section-title">导论 (Introduction)</h2>
+            <details>
+                <summary>第 1 章：什么是 Getting Real</summary>
+                <div class="details-content">
+                    <p class="core-idea">Getting Real 是一种更小、更快、更好的软件构建方式，它关注于构建真实的产品，而非纸上谈兵。</p>
+                    <ul class="viewpoint">
+                        <li>它代表更少的东西：更少的体量、软件、功能和文书工作。本质是精简和敏捷。</li>
+                        <li>传统的功能规格说明书（Functional Spec）是虚构的，而一个真实的网页才是现实。</li>
+                    </ul>
+                    <ul class="action">
+                        <li>跳过所有代表“真实”的东西（图表、线框图等），直接构建“真实”的东西。</li>
+                        <li>从界面（用户真实体验的屏幕）开始，然后向后构建。</li>
+                        <li>拥抱迭代、启动、调整和持续改进，这是Web应用的巨大优势。</li>
+                    </ul>
+                </div>
+            </details>
+
+            <!-- The Starting Line Section -->
+            <h2 class="section-title">起跑线 (The Starting Line)</h2>
+            <details>
+                <summary>第 4 章：少做一点 (Build Less)</summary>
+                <div class="details-content">
+                    <p class="core-idea">要做得比你的竞争对手少，以此来击败他们。</p>
+                    <ul class="viewpoint">
+                        <li>“比对手多一个功能”的冷战心态是昂贵、防御性和偏执的，它让你只能跟随，无法引领。</li>
+                    </ul>
+                    <ul class="action">
+                        <li>解决简单的问题，把那些棘手、复杂的问题留给别人。</li>
+                        <li>少即是：更少的功能、更少的选项/偏好、更少的人员和结构、更少的会议和抽象、更少的承诺。</li>
+                    </ul>
+                </div>
+            </details>
+            <details>
+                <summary>第 5 章：你的问题是什么？ (What's Your Problem?)</summary>
+                <div class="details-content">
+                    <p class="core-idea">为自己构建软件，解决你自己的问题（“挠自己的痒”）。</p>
+                    <ul class="viewpoint">
+                        <li>如果你自己有这个问题，那么很可能有成千上万的人和你在一条船上，这就是你的市场。</li>
+                        <li>为自己解决问题会带来激情，这是关键。激情意味着你会真正地使用和关心你的产品。</li>
+                    </ul>
+                    <ul class="action">
+                        <li>将自己作为目标受众，你就能知道什么是重要的，什么不是。</li>
+                    </ul>
+                </div>
+            </details>
+            <details>
+                <summary>第 6 章：自己投资 (Fund Yourself)</summary>
+                <div class="details-content">
+                    <p class="core-idea">外部资金是 B 计划。约束能激发创造力。</p>
+                    <ul class="viewpoint">
+                        <li>拿了投资人的钱，你就得对他们负责，赚钱常常会压倒构建高质量产品。</li>
+                        <li>如今启动成本很低（硬件便宜、开源软件免费）。</li>
+                    </ul>
+                    <ul class="action">
+                        <li>用手头的现金做事，思考用3个人代替10个人能做什么，用3个月代替6个月能做什么。</li>
+                        <li>利用约束，它会迫使你更早地面对现实，更快地将想法推向市场。</li>
+                    </ul>
+                </div>
+            </details>
+            <details>
+                <summary>第 7 章：固定时间和预算，灵活调整范围 (Fix Time and Budget, Flex Scope)</summary>
+                <div class="details-content">
+                    <p class="core-idea">要按时按预算发布，就把时间和预算定死，然后缩减功能范围。</p>
+                    <ul class="viewpoint">
+                        <li>“按时、按预算、按范围”完成的神话几乎从不发生，且质量往往受损。</li>
+                        <li>发布一个范围虽小但很棒的产品，胜过一个功能齐全但平庸且充满漏洞的产品。</li>
+                    </ul>
+                    <ul class="action">
+                        <li>如果无法在规定时间和预算内完成所有事情，那就缩减范围。以后总有时间添加东西。</li>
+                        <li>这会迫使你做出艰难的决定，优先处理真正重要的事情。</li>
+                    </ul>
+                </div>
+            </details>
+            <details>
+                <summary>第 8 章：树立一个敌人 (Have an Enemy)</summary>
+                <div class="details-content">
+                    <p class="core-idea">明确你的应用“不应该”是什么，这能帮你找到方向。</p>
+                    <ul class="viewpoint">
+                        <li>当你决定创建一个与敌人（如 Microsoft Project）完全相反的产品时，你的方向就非常清晰了。</li>
+                        <li>冲突能激发人们的兴趣，并帮助他们通过对比来理解你的产品。</li>
+                    </ul>
+                    <ul class="action">
+                        <li>找到你的敌人（一个产品、一个理念、一种做事方式），然后把自己定位为它的对立面。</li>
+                        <li>这会带来一个非常清晰的营销信息。</li>
+                    </ul>
+                </div>
+            </details>
+
+            <!-- Stay Lean Section -->
+            <h2 class="section-title">保持精简 (Stay Lean)</h2>
+            <details>
+                <summary>第 10 章：减少体量 (Less Mass)</summary>
+                <div class="details-content">
+                    <p class="core-idea">你越精简，改变方向就越容易。</p>
+                    <ul class="viewpoint">
+                        <li>商业世界和物理世界一样，体量越大的物体，改变其方向所需的能量就越多。</li>
+                    </ul>
+                    <ul class="action">
+                        <li>通过即时思考、小团队、更少的软件、精简的界面和开放文化来减少体量。</li>
+                        <li>避免长期合同、多余员工、永久性决策和办公室政治，这些都会增加体量。</li>
+                    </ul>
+                </div>
+            </details>
+            <details>
+                <summary>第 12 章：三个火枪手 (The Three Musketeers)</summary>
+                <div class="details-content">
+                    <p class="core-idea">用一个三人团队来开发 1.0 版本。</p>
+                    <ul class="viewpoint">
+                        <li>团队效率与成员数量的平方成反比。沟通路径随着人数增加而呈指数级增长。</li>
+                    </ul>
+                    <ul class="action">
+                        <li>三人是神奇数字：一个开发者，一个设计师，一个“清道夫”（能在两者之间游走的人）。</li>
+                        <li>人力不足会迫使你更早地做出权衡，明确优先级。</li>
+                    </ul>
+                </div>
+            </details>
+             <details>
+                <summary>第 13 章：拥抱约束 (Embrace Constraints)</summary>
+                <div class="details-content">
+                    <p class="core-idea">让限制引导你走向创造性的解决方案。</p>
+                    <ul class="viewpoint">
+                        <li>约束能驱动创新并强迫你保持专注。它们是伪装的优势。</li>
+                    </ul>
+                    <ul class="action">
+                        <li>不要试图移除约束，而是利用它们。没有足够的钱、时间、人手？这是好事。</li>
+                        <li>忘掉风险投资、长发布周期和快速招聘。用你已有的东西工作。</li>
+                    </ul>
+                </div>
+            </details>
+
+            <!-- Priorities Section -->
+            <h2 class="section-title">优先级 (Priorities)</h2>
+            <details>
+                <summary>第 15 章：什么是核心思想？ (What's the Big Idea?)</summary>
+                <div class="details-content">
+                    <p class="core-idea">为你的应用明确定义一句话的愿景。</p>
+                    <ul class="viewpoint">
+                        <li>这个愿景将指导你所有的决策，让你保持在正确的道路上。</li>
+                        <li>例如，Basecamp的愿景是：“项目管理就是沟通。”</li>
+                    </ul>
+                    <ul class="action">
+                        <li>在开始设计或编码之前，想清楚你的产品为什么存在，它与其他产品有何不同。</li>
+                        <li>当遇到难题时，问自己：“我们是否忠于这个愿景？”</li>
+                    </ul>
+                </div>
+            </details>
+            <details>
+                <summary>第 16 章：早期忽略细节 (Ignore Details Early On)</summary>
+                <div class="details-content">
+                    <p class="core-idea">从大处着手，再到小处。不要过早陷入细节。</p>
+                    <ul class="viewpoint">
+                        <li>过早关注细节会导致停滞、分歧、会议和延迟，这些会扼杀士气。</li>
+                        <li>细节会在你使用产品的过程中自然浮现。</li>
+                    </ul>
+                    <ul class="action">
+                        <li>第一周不要担心标题字体大小，第二周不要纠结完美的绿色阴影。先把东西放到页面上，让它能用。</li>
+                        <li>以后有的是时间做个完美主义者。</li>
+                    </ul>
+                </div>
+            </details>
+            <details>
+                <summary>第 19 章：稍后扩展 (Scale Later)</summary>
+                <div class="details-content">
+                    <p class="core-idea">你现在还没有扩展性问题。等到问题真的发生了再说。</p>
+                    <ul class="viewpoint">
+                        <li>绝大多数Web应用永远不会达到需要大规模扩展的阶段。</li>
+                        <li>如果你真的遇到了，恭喜！这是一个好问题。届时你将有真实数据来指导你如何解决。</li>
+                    </ul>
+                    <ul class="action">
+                        <li>初期，把构建一个坚实的核心产品作为你的首要任务，而不是痴迷于可扩展性和服务器集群。</li>
+                        <li>Basecamp第一年只用了一台服务器。</li>
+                    </ul>
+                </div>
+            </details>
+
+            <!-- Feature Selection Section -->
+            <h2 class="section-title">功能选择 (Feature Selection)</h2>
+            <details>
+                <summary>第 21 章：做一半产品，而不是半成品 (Half, Not Half-Assed)</summary>
+                <div class="details-content">
+                    <p class="core-idea">构建一个出色的一半产品，而不是一个功能齐全但粗制滥造的半成品。</p>
+                    <ul class="viewpoint">
+                        <li>“厨房水槽里什么都有”的开发方式只会让你得到一个糟糕的产品版本。</li>
+                    </ul>
+                    <ul class="action">
+                        <li>坚持只做最本质的东西。把你的产品构想砍掉一半，再砍掉一半，直到只剩下最核心的功能。</li>
+                        <li>从一个精简、智能的应用开始，让它获得牵引力，然后在这个坚实的基础上添砖加瓦。</li>
+                    </ul>
+                </div>
+            </details>
+            <details>
+                <summary>第 23 章：从“不”开始 (Start With No)</summary>
+                <div class="details-content">
+                    <p class="core-idea">让每个功能都努力证明自己值得被实现。</p>
+                    <ul class="viewpoint">
+                        <li>每次你对一个功能说“是”，你就像领养了一个孩子，需要对它负责到底。</li>
+                    </ul>
+                    <ul class="action">
+                        <li>对每一个新功能请求的初始反应应该是“暂时不做”。</li>
+                        <li>只有当一个功能请求反复出现，你才应该开始认真考虑它。</li>
+                        <blockquote>
+                            <p>创新不是对所有事情都说“是”，而是对除了最关键的功能之外的所有事情说“不”。</p>
+                            <footer>— Steve Jobs</footer>
+                        </blockquote>
+                    </ul>
+                </div>
+            </details>
+            <details>
+                <summary>第 27 章：忘记功能请求 (Forget Feature Requests)</summary>
+                <div class="details-content">
+                    <p class="core-idea">让你的客户来提醒你什么是重要的。</p>
+                    <ul class="viewpoint">
+                        <li>真正重要的请求会像气泡一样不断冒出来。它们是唯一你需要记住的。</li>
+                    </ul>
+                    <ul class="action">
+                        <li>读客户的功能请求，然后把它们扔掉。不要费心去追踪和保存每一个请求。</li>
+                        <li>让你的客户成为你的记忆。如果一个东西真的值得记住，他们会一次又一次地提醒你。</li>
+                    </ul>
+                </div>
+            </details>
+
+            <!-- Process Section -->
+            <h2 class="section-title">流程 (Process)</h2>
+            <details>
+                <summary>第 29 章：奔向可运行的软件 (Race to Running Software)</summary>
+                <div class="details-content">
+                    <p class="core-idea">尽快让一些真实的东西跑起来。</p>
+                    <ul class="viewpoint">
+                        <li>可运行的软件是建立动力、团结团队和排除行不通想法的最佳方式。</li>
+                        <li>故事、线框图，甚至HTML模型都只是近似物。可运行的软件才是真实的。</li>
+                    </ul>
+                    <ul class="action">
+                        <li>可以少做、跳过细节、走捷径，只要能更快地得到可运行的软件。</li>
+                    </ul>
+                </div>
+            </details>
+            <details>
+                <summary>第 31 章：从想法到实现 (From Idea to Implementation)</summary>
+                <div class="details-content">
+                    <p class="core-idea">遵循一个从抽象到具体的过程：头脑风暴 -> 纸上草图 -> HTML屏幕 -> 编码。</p>
+                    <ul class="action">
+                        <li><strong>头脑风暴：</strong> 关注宏大问题，不是细节。</li>
+                        <li><strong>纸上草图：</strong> 快速、粗糙、廉价。将概念转化为粗略的界面设计。</li>
+                        <li><strong>创建HTML屏幕：</strong> 用HTML和CSS构建一个静态模型，让每个人都能看到真实屏幕的样子。先不要写任何程序代码。</li>
+                        <li><strong>编码：</strong> 当模型看起来不错并展示了必要功能后，再开始编写后端代码。</li>
+                    </ul>
+                </div>
+            </details>
+            <details>
+                <summary>第 32 章：避免偏好设置 (Avoid Preferences)</summary>
+                <div class="details-content">
+                    <p class="core-idea">替你的客户做决定，不要用偏好设置来逃避艰难的决策。</p>
+                    <ul class="viewpoint">
+                        <li>提供无尽的选项对客户来说是头痛，而不是福音。这是把你的责任推给了他们。</li>
+                        <li>偏好设置是魔鬼，它们会创造更多的软件、更多的代码和更多的测试工作。</li>
+                    </ul>
+                    <ul class="action">
+                        <li>做出简单的决定。比如，每页显示25条消息。就是这样，没有选项。</li>
+                        <li>如果你的决定错了，人们会抱怨，你随时可以调整。</li>
+                    </ul>
+                </div>
+            </details>
+
+            <!-- Interface Design Section -->
+            <h2 class="section-title">界面设计 (Interface Design)</h2>
+            <details>
+                <summary>第 46 章：界面先行 (Interface First)</summary>
+                <div class="details-content">
+                    <p class="core-idea">在开始编程之前设计界面。</p>
+                    <ul class="viewpoint">
+                        <li>编程是构建应用中最“重”的部分，最昂贵也最难改变。</li>
+                        <li>界面就是你的产品。人们看到的就是你卖的东西。</li>
+                    </ul>
+                    <ul class="action">
+                        <li>从界面开始，这样你可以从一开始就看到和感受到应用的样子。</li>
+                        <li>先用纸笔画草图，然后用HTML设计。这些都很轻量，易于修改或丢弃。</li>
+                    </ul>
+                </div>
+            </details>
+            <details>
+                <summary>第 47 章：震中设计 (Epicenter Design)</summary>
+                <div class="details-content">
+                    <p class="core-idea">从页面的核心开始，然后向外构建。</p>
+                    <ul class="viewpoint">
+                        <li>传统模式是“先建框架再填内容”，这是一种落后的流程。</li>
+                    </ul>
+                    <ul class="action">
+                        <li>关注页面真正的本质——震中。例如，博客文章页的震中就是文章本身，而不是导航或页脚。</li>
+                        <li>先设计最重要的内容，完成之后再考虑第二重要的元素，以此类推。</li>
+                    </ul>
+                </div>
+            </details>
+            <details>
+                <summary>第 48-49 章：三态解决方案与空白石板 (Three State & Blank Slate)</summary>
+                <div class="details-content">
+                    <p class="core-idea">为每个屏幕设计三种状态：常规、空白和错误，并特别关注首次运行的“空白”体验。</p>
+                    <ul class="viewpoint">
+                        <li>空白状态是你应用的第一印象，却常常被设计师忽略，因为他们总是在填充了数据的模板上工作。</li>
+                    </ul>
+                    <ul class="action">
+                        <li><strong>常规状态 (Regular):</strong> 应用正常工作，数据充足。</li>
+                        <li><strong>错误状态 (Error):</strong> 出现问题时。</li>
+                        <li><strong>空白状态 (Blank):</strong> 用户第一次使用，没有任何数据时。利用这个机会提供教程、帮助信息和示例，设定用户的期望。</li>
+                    </ul>
+                </div>
+            </details>
+            <details>
+                <summary>第 52 章：文案即是界面设计 (Copywriting is Interface Design)</summary>
+                <div class="details-content">
+                    <p class="core-idea">每一个字母都很重要。优秀的界面是写出来的。</p>
+                    <ul class="viewpoint">
+                        <li>如果你认为每个像素都重要，那么你也必须相信每个字母都重要。</li>
+                    </ul>
+                    <ul class="action">
+                        <li>用你用户的语言说话，避免技术术语和内部行话。</li>
+                        <li>保持简短、甜美。按钮上的文字是“提交”还是“保存”？这是文案，也是设计。</li>
+                    </ul>
+                </div>
+            </details>
+
+            <!-- Post-Launch Section -->
+            <h2 class="section-title">发布之后 (Post-Launch)</h2>
+            <details>
+                <summary>第 82 章：公开你的失误 (Publicize Your Screwups)</summary>
+                <div class="details-content">
+                    <p class="core-idea">如果出了问题，告诉大家。即使他们一开始并不知道。</p>
+                    <ul class="viewpoint">
+                        <li>一个知情的客户是你最好的客户。开放、诚实和透明会为你赢得信任。</li>
+                    </ul>
+                    <ul class="action">
+                        <li>当坏消息来临时，一次性全部公开。当好消息来临时，慢慢地、一点点地放出来。</li>
+                    </ul>
+                </div>
+            </details>
+            <details>
+                <summary>第 85 章：更好，而不是Beta版 (Better, Not Beta)</summary>
+                <div class="details-content">
+                    <p class="core-idea">不要用“Beta”作为借口。</p>
+                    <ul class="viewpoint">
+                        <li>永久的Beta阶段告诉客户，你并未真正致力于推出一个成品。它是在推卸责任。</li>
+                    </ul>
+                    <ul class="action">
+                        <li>不要等待产品完美。它永远不会完美。为你的发布负责，把它发布出去，称之为一个“发布版”。</li>
+                    </ul>
+                </div>
+            </details>
+            <details>
+                <summary>第 89 章：警惕臃肿怪物 (Beware the Bloat Monster)</summary>
+                <div class="details-content">
+                    <p class="core-idea">更成熟不意味着更复杂。</p>
+                    <ul class="viewpoint">
+                        <li>传统桌面软件为了每年卖新版本，必须不断增加功能，这就是臃肿的开始。</li>
+                        <li>基于订阅的Web软件没有这种压力，你只需提供持续的价值。</li>
+                    </ul>
+                    <ul class="action">
+                        <li>抵制臃肿。有时候，一支铅笔就够了，你不需要一支能在太空倒着写的笔。</li>
+                        <li>有时候，你应该让一个产品保持原样。</li>
+                    </ul>
+                </div>
+            </details>
+             <details>
+                <summary>第 91 章：启动你的引擎 (Start Your Engines)</summary>
+                <div class="details-content">
+                    <p class="core-idea">成功的关键在于卓越的执行和优秀的人才。</p>
+                    <ul class="viewpoint">
+                        <li>每个人都可以读书、想出点子。你和别人之间的区别在于你执行得有多好。</li>
+                        <li>Getting Real 的理念不仅适用于软件，它无处不在：特种部队、The White Stripes乐队、海明威的写作...</li>
+                    </ul>
+                    <ul class="action">
+                        <li><strong>执行：</strong> 寻求平衡。好的文案、干净的界面、可靠的代码和有效的推广，缺一不可。</li>
+                        <li><strong>人才：</strong> 找到那些对自己的手艺充满激情、关心细节、追求卓越的人。他们是你项目成败的关键。</li>
+                    </ul>
+                </div>
+            </details>
+        </main>
+    </div>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>相关链接</h3>
+        <a href="https://basecamp.com" target="_blank">Basecamp官网</a><br>
+        <a href="https://basecamp.com/gettingreal" target="_blank">Getting Real原文</a><br>
+    <h3>附件</h3>
+        <div class="attachment-item">
+            <h4>《Getting Real》 <span class="file-size">(4.9M)</span></h4>
+            <a href="basecampgettingreal_files/getting-real.pdf" class="download-btn" download>下载</a>
+        </div>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
