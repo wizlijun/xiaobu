@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章摘要：腾讯基础支付团队TAPD提效实践</title>
+    <style>
+        :root {
+            --primary-text: #333;
+            --secondary-text: #555;
+            --bg-color: #f9f9f9;
+            --card-bg: #ffffff;
+            --border-color: #e0e0e0;
+            --accent-color: #0052d9;
+            --fact-color: #007bff;
+            --strategy-color: #28a745;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            background-color: var(--bg-color);
+            color: var(--primary-text);
+            line-height: 1.8;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 25px 30px;
+        }
+        header {
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+        header h1 {
+            color: var(--accent-color);
+            margin: 0;
+            font-size: 24px;
+        }
+        header p {
+            color: var(--secondary-text);
+            margin: 5px 0 0;
+            font-size: 14px;
+        }
+        details {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            transition: box-shadow 0.3s ease;
+        }
+        details[open] {
+            box-shadow: 0 2px 8px rgba(0, 82, 217, 0.1);
+        }
+        summary {
+            font-weight: bold;
+            font-size: 18px;
+            padding: 15px 20px;
+            cursor: pointer;
+            list-style: none; /* 移除默认箭头 */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #fdfdff;
+            transition: background-color 0.2s ease;
+        }
+        summary:hover {
+            background-color: #f5f7fa;
+        }
+        summary::-webkit-details-marker {
+            display: none; /* 隐藏 Safari 的箭头 */
+        }
+        summary::after {
+            content: '＋'; /* 自定义展开图标 */
+            font-size: 24px;
+            color: var(--accent-color);
+            transition: transform 0.3s ease;
+        }
+        details[open] summary::after {
+            transform: rotate(45deg); /* 展开时图标旋转 */
+        }
+        .details-content {
+            padding: 0px 25px 20px 25px;
+            color: var(--secondary-text);
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        li {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: flex-start;
+        }
+        li::before {
+            margin-right: 10px;
+            font-weight: bold;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+        .fact::before {
+            content: 'ℹ️';
+            color: var(--fact-color);
+        }
+        .strategy::before {
+            content: '💡';
+            color: var(--strategy-color);
+        }
+        .fact, .strategy {
+            padding-left: 5px;
+            border-left: 3px solid;
+            margin-left: -5px; /* 抵消padding */
+        }
+        .fact {
+            border-color: var(--fact-color);
+            background-color: rgba(0, 123, 255, 0.05);
+        }
+        .strategy {
+            border-color: var(--strategy-color);
+             background-color: rgba(40, 167, 69, 0.05);
+        }
+        .highlight {
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+        .sub-section {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border-color);
+        }
+        .sub-section h4 {
+            margin-top: 0;
+            margin-bottom: 5px;
+            color: var(--primary-text);
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 12px;
+            color: #999;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>腾讯基础支付团队TAPD提效实践摘要</h1>
+            <p>通过动态交互，提炼核心要点，实现超轻认知负荷</p>
+        </header>
+
+        <main>
+            <details>
+                <summary>核心挑战与目标</summary>
+                <div class="details-content">
+                    <ul>
+                        <li class="fact"><strong>面临三大挑战：</strong>业务复杂（多终端）、需求并发（资源冲突）、运营突发（紧急响应）。</li>
+                        <li class="strategy"><strong>核心目标：</strong>借助TAPD工具，构建自上而下的业务需求池，<span class="highlight">提升需求全流程协作效率</span>。</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details>
+                <summary>策略演进之路 (时间线)</summary>
+                <div class="details-content">
+                    <ul>
+                        <li class="strategy"><strong>初期应对策略：</strong>按业务拆分开发小组、分层级规划（OKR/季度/双周）、滚动式发布。</li>
+                        <li class="strategy"><strong>2020-2021 (聚焦研发侧)：</strong>引入精益管理，用TAPD<span class="highlight">看板实现价值流可视化</span>，分析并减少等待耗时。</li>
+                        <li class="strategy"><strong>2021-2022 (拓展至规划侧)：</strong>增加月度规划，用TAPD<span class="highlight">需求模板</span>区分不同类型需求（产品/技术/紧急），量化分析。</li>
+                        <li class="strategy"><strong>2023至今 (聚焦高价值)：</strong>为应对大量评审，最终建立了<span class="highlight">统一的业务需求池</span>，极大提升了规划与对齐效率。</li>
+                    </ul>
+                </div>
+            </details>
+            
+            <details open>
+                <summary>TAPD全流程提效三部曲</summary>
+                <div class="details-content">
+                    <div class="sub-section">
+                        <h4>第一步：规划阶段 - 建立统一需求池</h4>
+                        <ul>
+                            <li class="fact"><strong>痛点：</strong>需求池分散，评审前需手动汇总；跨团队需求需重复建单。</li>
+                            <li class="strategy"><strong>解决方案：</strong>在原有各研发需求池之上，新建一个<span class="highlight">“统一业务需求池”</span>。</li>
+                            <li class="strategy"><strong>TAPD核心功能：</strong><span class="highlight">需求复制关联</span>。业务池需求可一键复制到多个研发池，状态自动同步。</li>
+                            <li class="strategy"><strong>效果：</strong>评审效率提升，产品同学工作量大幅降低。</li>
+                        </ul>
+                    </div>
+
+                    <div class="sub-section">
+                        <h4>第二步：执行阶段 - 信息自动同步</h4>
+                        <ul>
+                            <li class="fact"><strong>痛点：</strong>研发仅看得到局部，不了解需求全貌；产品需多头沟通才能跟进整体进度。</li>
+                            <li class="strategy"><strong>解决方案：</strong>通过关联需求，让信息在父子需求间自动流转。</li>
+                             <li class="strategy"><strong>TAPD核心功能：</strong><span class="highlight">需求关联与信息同步</span>。</li>
+                            <li class="strategy"><strong>效果：</strong>研发可随时追溯完整业务背景；产品可在一个地方<span class="highlight">实时查看</span>所有子需求的进度，减少沟通成本。</li>
+                        </ul>
+                    </div>
+
+                    <div class="sub-section">
+                        <h4>第三步：验收阶段 - 自动化闭环</h4>
+                        <ul>
+                            <li class="fact"><strong>痛点：</strong>产品无法第一时间获知发布完成；手动流转父需求状态易遗漏，无法形成闭环。</li>
+                            <li class="strategy"><strong>解决方案：</strong>配置自动化规则，实现关键节点自动通知和状态流转。</li>
+                             <li class="strategy"><strong>TAPD核心功能：</strong><span class="highlight">自动化助手</span>。</li>
+                            <li class="strategy"><strong>效果：</strong>发布后<span class="highlight">自动企微提醒</span>产品验收；子需求全部完成后，<span class="highlight">父需求状态自动流转</span>，形成完美闭环。</li>
+                        </ul>
+                    </div>
+                </div>
+            </details>
+        </main>
+
+        <footer>
+            <p>此摘要根据原文内容生成，旨在快速理解核心实践。</p>
+        </footer>
+
+    </div>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="()[https://mp.weixin.qq.com/s/mrU25IPRNK7QfbQvtCNnXg]" target="_blank">()[https://mp.weixin.qq.com/s/mrU25IPRNK7QfbQvtCNnXg]</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
