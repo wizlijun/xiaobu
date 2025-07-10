@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>调用Claude翻译一整本电子书</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            line-height: 1.6;
+            margin: 0 auto;
+            max-width: 800px;
+            padding: 20px;
+            color: #333;
+            background-color: #fff;
+        }
+        h1, h2, h3 {
+            font-weight: 600;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        h1 {
+            font-size: 2.2em;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.3em;
+        }
+        h2 {
+            font-size: 1.8em;
+        }
+        h3 {
+            font-size: 1.4em;
+        }
+        p {
+            margin: 1em 0;
+        }
+        code {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            background-color: #f6f8fa;
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            border-radius: 3px;
+        }
+        pre {
+            background-color: #f6f8fa;
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            border-radius: 6px;
+        }
+        pre code {
+            padding: 0;
+            margin: 0;
+            background-color: transparent;
+            border: 0;
+        }
+        blockquote {
+            color: #6a737d;
+            border-left: 0.25em solid #dfe2e5;
+            padding: 0 1em;
+            margin-left: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        a {
+            color: #0366d6;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .meta {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .final-statement {
+            font-style: italic;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>调用Claude翻译一整本电子书</h1>
+
+    <p>Vibe Coding 使那些过去只服务少数人、甚至只是单个用户的需求也能被高效实现。以往这类需求由于 ROI 很低，即便是企业 CEO 提出的想法，评估后也常因需要大量人力与时间而难以落地，更别说后期的迭代与维护——一旦 CEO 改变主意，前期投入便打了水漂。而现在，借助 AI 编程的能力，这类“高个性化、低经济性”的需求终于具备了可行性。</p>
+
+    <p>写代码智能了，这种方式也将极大提升非开发者，如研究人员、产品经理、项目经理、运营等岗位，甚至创客小孩子的数据处理、开源工具使用、问题批量解决等能力。</p>
+
+    <p>可以预见，未来大多数 IT 从业者只需清晰描述需求，即可借助 AI Coding 进行实现。只有那些核心产品、具备长期价值的系统，才需要人工持续参与开发与维护，也会更多以 AI 助手或 AI agent 的混合模式出现。</p>
+
+    <p>以前我就喜欢写一些自动化脚本，帮助自己批量做一些事情。现在有了 claude code，不仅能力增强很多，还能直接使用大模型能力。阅读、翻译、写作、音视频处理全部得到质的飞跃。一直开着的端侧电脑资源终于得到了利用。</p>
+
+    <p>今天我就以一个实际案例来说明——使用 Claude 翻译英文电子书。虽然过程中的 token 消耗相对较多，但对于某些值得精读的小众领域书籍来说，获得高质量中文译本是非常划算的投入。</p>
+
+    <p>借助这个例子，我想介绍一下我当前的 Vibe Coding 工作流。</p>
+
+    <p>类似这种方式，可以做 PPT翻译、字幕翻译、每日信息的摘要等，都是使用的 Claude 4 模型的质量，效果好过市面上各种收费工具。而且无需额外的 api 消耗。</p>
+
+    <p>目前国内使用 Claude code 有难度，但已经有早鸟开始做hacking转售，可以使用， 以下这个 一个月299，通过我的邀请，可以增加10000积分。每天5400积分足够使用，临时不够还可以工单免费重置1次。</p>
+
+    <p><a href="https://gaccode.com/signup?ref=R4WOQB8E">https://gaccode.com/signup?ref=R4WOQB8E</a></p>
+
+    <h2>口述需求如下</h2>
+
+    <p>尽可能详尽，使用自己看得懂、容易修改的脚本，如sh脚本、python、js</p>
+
+    <pre><code>技术要求
+1. 使用python
+2. 每一步骤一个python脚本，以便可以分阶段重做
+3. 使用常用的开源组件，如 pandoc等
+
+
+需求
+- 输入 ebook的pdf、docx、epub 格式，例如文件名为 inputbook.pdf
+- 输出翻译过的中文 html 文件 
+- 语言参数，-l 为输入文本的语言参数，默认为自动识别。 参数--olang,为输出语言，默认为zh
+- 实现方式，先创建 inputbook_temp 目录, 所有过程处理的文件放在里面。_- 
+	- 将inputbook.pdf 按页码解压到临时目录下，每一页生成一个markdown文件，如page0001.md，和对应的图片资源文件，图片资源文件名为 page0001_img001.jpg等_
+- 调用 claude 逐个md翻译，默认prompt为：请翻译page0001.md 文件为 {olang}，输出文件名为 output_page0001.md。 如果output_pagexxx.md 已经存在，则跳过
+- 逐个处理完成后，将md合并为 output.md ，每个 page之间使用"\r\n --- \r\n"来分割
+- output.md 带图片资源一起转换为 output.html，使用 template.html 作为模板
+- 为 output.html 生成toc，放在最前面
+</code></pre>
+
+    <h2>使用LLM 优化和补充需求。使用 Chatgpt 4.1 4o 或 claude 4</h2>
+    <p>prompt：将以下口述需求，整理为可ai coding的需求：{上述文档}<br>chatgpt4.1：</p>
+
+    <pre><code>项目需求文档
+
+技术要求
+	1.	开发语言：Python
+	2.	分阶段脚本：每一步为一个独立的 Python 脚本，方便分阶段执行和重做
+	3.	依赖工具：优先选用常用开源组件（如 Pandoc、pdf2image、PyMuPDF、python-docx、ebooklib、requests 等）
+
+⸻
+
+详细需求与流程
+
+输入
+	•	支持三种格式：pdf、docx、epub（如：inputbook.pdf）
+
+输出
+	•	翻译后的中文 HTML 文件（如：output.html）
+	•	支持自定义输入/输出语言参数（如 -l、--olang）
+
+⸻
+
+总体流程分解为以下步骤（每步一个独立脚本）：
+
+⸻
+
+步骤1：环境准备与参数解析
+	•	创建临时目录 inputbook_temp/
+	•	解析命令行参数（input file、-l、--olang，默认自动识别/zh）
+
+⸻
+
+步骤2：将原始文件按页（或章节）拆分为 markdown
+	•	PDF：按页拆分，每页为一个 pageXXXX.md
+	•	图片提取为单独文件 pageXXXX_imgYYY.jpg 并保存到 temp
+	•	DOCX/EPUB：拆分成每章/每页的 markdown 文件及对应图片
+	•	推荐工具：pdf2image、PyMuPDF、python-docx、ebooklib、pandoc
+
+⸻
+
+步骤3：逐页翻译 markdown
+	•	针对每个 pageXXXX.md 文件，调用 Claude API 进行翻译
+	•	默认 prompt：请翻译 pageXXXX.md 文件为 {olang}，输出文件名为 output_pageXXXX.md
+	•	跳过：如 output_pageXXXX.md 已存在，则跳过该页
+
+⸻
+
+步骤4：合并翻译后的 markdown 文件
+	•	将所有 output_pageXXXX.md 文件，按顺序合并为 output.md
+	•	各页间用 "\r\n --- \r\n" 作为分隔符
+
+⸻
+
+步骤5：markdown + 图片转为 html（基于模板）
+	•	使用 Pandoc 或 markdown-it 等，将 output.md 连同图片资源一起转换为 output.html
+	•	指定 template.html 作为 HTML 模板（需支持内容插入）
+
+⸻
+
+步骤6：为 HTML 文件生成 TOC（目录）
+	•	分析 output.html 中的标题（如 &lt;h1&gt;、&lt;h2&gt;），生成 TOC 并插入到页面最前面
+
+⸻
+
+脚本结构建议
+	1.	01_prepare_env.py：解析参数，创建临时目录
+	2.	02_split_to_md.py：文件拆分为 markdown + 提取图片
+	3.	03_translate_md.py：逐页翻译 markdown
+	4.	04_merge_md.py：合并 markdown
+	5.	05_md_to_html.py：md+img 转 html
+	6.	06_add_toc.py：生成并插入 TOC
+
+⸻
+
+额外说明
+	•	所有临时/中间文件统一放到 inputbook_temp/ 下，便于管理和清理
+	•	保证脚本可重复运行，已有中间产物时能自动跳过或提示
+	•	最终输出为 output.html，且能复用指定模板
+</code></pre>
+
+    <h2>需求直接粘贴给 claude code</h2>
+
+    <p>生成的代码一次就能运行。</p>
+    <p>然后根据结果是否满意，再不断对话调整。</p>
+    <p>claude开始工作，拆分了任务，自己实现，自己调试</p>
+
+    <p>Update Todos<br>
+      ⎿ ☐ Create 01_prepare_env.py - Parse arguments and create temp directory <br>
+         ☐ Create 02_split_to_md.py - Split files to markdown and extract images<br>
+         ☐ Create 03_translate_md.py - Translate markdown files using Claude API<br>
+         ☐ Create 04_merge_md.py - Merge translated markdown files<br>
+         ☐ Create 05_md_to_html.py - Convert markdown to HTML with template<br>
+         ☐ Create 06_add_toc.py - Generate and insert TOC into HTML<br>
+         ☐ Create requirements.txt for dependencies<br>
+         ☐ Create template.html for HTML output</p>
+
+    <p>十几分钟后，任务完成</p>
+
+    <p>Features:</p>
+    <ul>
+      <li>✅ Supports PDF, DOCX, EPUB input formats</li>
+      <li>✅ Multi-language translation (Chinese, English, Japanese, etc.)</li>
+      <li>✅ Image extraction and preservation</li>
+      <li>✅ Professional HTML template with dark mode support</li>
+      <li>✅ Automatic table of contents generation</li>
+      <li>✅ Responsive design for mobile/desktop</li>
+      <li>✅ Skip existing files for re-runs</li>
+      <li>✅ Comprehensive error handling</li>
+    </ul>
+
+    <p>The system is now ready for use!</p>
+
+
+    <h2>优化并调试</h2>
+
+    <p>prompt：</p>
+    <ul>
+        <li>template.html 模板太简单了，生成一个适合中文电子书阅读的魔板，使用仿宋体</li>
+        <li>生成一个 translatebook.sh ，将各个步骤串起来，注意参数的传递</li>
+    </ul>
+
+    <p>拿出买了很久但没有读过的电子书 bow.docx</p>
+
+    <p><code>./translatebook.sh bow.docx</code></p>
+
+    <p>坐等翻译结果</p>
+
+    <p>报错说需要claude api 的key。 改用 claude 命令行来处理</p>
+
+    <p>prompt：</p>
+    <ul>
+        <li>03_translate_md.py实现中，请使用 claude 命令行，带上prompt 实现，用户可增加 -p 'add prompt' 的方式增加prompt</li>
+    </ul>
+
+    <p><code>./translatebook.sh bow.docx -p "Bushcraft 专有词汇不做翻译；语言简洁一些；如果有英制，加上公制"</code></p>
+
+    <p>还是会有些问题，就直接在claude里输入这行命令，让他自己调试通过。</p>
+
+    <p>prompt：</p>
+    <ul>
+        <li>请调试通过： ./translatebook.sh bow.docx -p "Bushcraft 专有词汇不做翻译；语言简洁一些；如果有英制，加上公制"</li>
+    </ul>
+
+    <p>它开始自己调试自己修改，当发现我给的 bow.docx 太大时，他会创建一个小的 docx 来调试通过。</p>
+
+    <p>代码中没有使用 pandoc 导致效果不满意，知道用哪些强大的开源工具，也是一种能力。可以问一问 chatgpt，哪些开源库好用</p>
+
+    <blockquote>
+        <p>Claude 这类编程工具，解决了开发者 <strong>不知道已有知识和功能存在</strong>的问题。<br>
+            - 很多功能（feature）早就存在，<strong>其实不需要重复造轮子</strong>。例如mmpeg、pandoc、srt等<br>
+            - 对于工具的使用方法和实作技巧（know-how），AI 的掌握 <strong>往往比人类更全面、更广泛</strong>。<br>
+            - 开发者因为 <strong>不知道这些功能或知识的存在</strong>，所以就 <strong>无法使用、甚至无法意识到这些工具的价值</strong>。</p>
+    </blockquote>
+
+    <p>prompt</p>
+    <ul>
+        <li>请使用 pandoc来实现文档转换拆分合并工作</li>
+    </ul>
+    <p>....<br>
+    不少细节的调整，例如：</p>
+    <ul>
+        <li>文本段落被分页拆分到不同的 md 里了，需要他写程序优化。</li>
+        <li>图片批量压缩一下</li>
+        <li>折腾python虚拟环境，手动安装一些库，如PyMuPDF之类的</li>
+    </ul>
+
+    <p>pdf转换为分页md算法时，出现了问题，不同的库效果不一样。<br>
+    更换不同实现方式时，遗留代码很多。于是删掉大部分代码，重构</p>
+
+    <p>prompt：</p>
+    <ul>
+        <li>我已经清理了02_split_to_md.py, 请按我的要求重新实现： docx、epub 先转成pdf，pdf使用pdftohtml 默认参数 转成 html、整理转换的html的图片文件、html根据分页标识 拆分成多个 page000x.html ，再使用 pandoc 将html转换为 md</li>
+    </ul>
+
+    <p>增加断点续传、错误重试等功能，增强可靠性，出错的部分重试就可以补充完成。</p>
+
+    <p>漫长的调试对话，期间干了其他工作，吃了一顿饭</p>
+
+    <p>中间经历了一些反复，主要是 使用 Claude翻译输出时，格式不固定，经常出现错误。就让他插入了标记，根据标记解析结果来判断正确输出。</p>
+
+    <p>还有发现了 Claude code 会把大片段的翻译任务当做简单任务，用 claude-3.5-haiku 小模型来调用，效果差了不少。</p>
+
+    <p>最后在prompt中强制要求他使用 claude-4-sonnet，不确定是否每次生效。</p>
+
+    <p>翻译结果还看得过去。</p>
+
+    <p>调用大模型做翻译，虽然性价比不高，消耗时间和算力。但因为可以指定prompt，让他按专业领域的要求，甚至是自定义知识库。翻译准确度超过领域的普通专家。</p>
+
+    <p>调用命令：</p>
+    <pre><code> ./translatebook.sh bow.pdf -p "Bushcraft生僻词汇在翻译后加上(原词)"
+</code></pre>
+    <p>一本350页的书，也跑了一下午。<br>
+    结果很满意，还自动输出了 任务摘要，输出了 html、pdf、epub等格式。</p>
+
+
+    <p>最后，手动让Claude code 修正一下html中的一些排版错误</p>
+
+    <p>prompt：</p>
+    <ul>
+        <li>bow2_temp/book.html 样式有错误，请重新调整，文本框宽度的问题</li>
+    </ul>
+
+    <p>他会跟 Cursor一样，分片处理 html 中可能的样式排版错误。<br>
+    人工再调整一下。即可发布</p>
+
+    <p><a href="https://www.laobu.net/ai/primabowmaking_files/book.html">https://www.laobu.net/ai/primabowmaking_files/book.html</a></p>
+
+    <hr>
+
+    <h2>最后，说一句</h2>
+    <div class="final-statement">
+        <p>我是一位工具玩家，酷爱收集斧头。无论是复古经典款，还是风靡当下的网红工匠之作，我都如数家珍 —— 我的墙上挂满了来自世界各地的斧头，我对此着迷不已。</p>
+        <p>我也结识了许多国内顶尖的手工匠人。有的用雕刻斧打造精致的 Kuksa工艺品，有的专精锻造斧头与斧柄，还有的作为野外教练，传授劈柴、取暖、生存的本领。对他们而言，斧头不仅是创作工具，更是一种身体语言与生活方式的延伸。</p>
+        <p>相比之下，我对斧头的理解仅止于“欣赏”，缺乏作品驱动，也没有那种长期实操锤炼出的肌肉记忆。我所拥有的，不过是一墙斧头带来的情绪价值罢了，庄子所说的无用之用吧。</p>
+        <p>那么 Claude， 你准备当什么工具来使用？</p>
+    </div>
+
+</body>
+</html> 
