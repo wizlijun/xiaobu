@@ -253,7 +253,7 @@ prompt：
 人工再调整一下。即可发布
 
 
-https://www.laobu.net/ai/primabowmaking/book.html
+https://www.laobu.net/ai/primabowmaking_files/book.html
 
 
 
