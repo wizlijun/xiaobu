@@ -398,8 +398,18 @@ class ShareHtmlApp(QMainWindow):
                 env['GENCAPSULE_BASE_DIR'] = git_path_abs
                 env['PYTHONPATH'] = script_dir
                 
+                # 使用当前Python解释器
+                if getattr(sys, 'frozen', False):
+                    # 如果是打包后的应用程序，使用当前解释器
+                    venv_python = sys.executable
+                else:
+                    # 如果是开发环境，使用虚拟环境的Python
+                    venv_python = os.path.join(script_dir, "venv", "bin", "python")
+                    if not os.path.exists(venv_python):
+                        venv_python = sys.executable
+                
                 gencapsule_process = subprocess.Popen(
-                    ["python3", gencapsule_script, basename, git_path_abs],  # 添加Git路径作为第二个参数
+                    [venv_python, gencapsule_script, basename, git_path_abs],  # 使用虚拟环境的Python
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,
