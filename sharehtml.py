@@ -358,7 +358,7 @@ class ShareHtmlApp(QMainWindow):
             meta_data = {
                 'title': html_title,
                 'datetime': current_time,
-                'source': f"()[{source_url}]"
+                'source': f"(源链接)[{source_url}]"
             }
             
             meta_file_path = os.path.join(target_folder, "meta.yaml")
