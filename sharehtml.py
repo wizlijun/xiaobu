@@ -368,16 +368,9 @@ class ShareHtmlApp(QMainWindow):
             self.log_text.append(f"已创建meta.yaml文件: {meta_file_path}")
             
             # 3. 调用rungencapsule.sh脚本
-            # 查找rungencapsule.sh的位置
-            if getattr(sys, 'frozen', False):
-                # 如果是打包后的应用程序，rungencapsule.sh在临时目录中
-                import tempfile
-                rungencapsule_script = os.path.join(sys._MEIPASS, "rungencapsule.sh")
-                share_script_dir = os.path.dirname(os.path.abspath(script_path))
-            else:
-                # 如果是开发环境，在分享脚本路径的同目录下查找rungencapsule.sh
-                share_script_dir = os.path.dirname(os.path.abspath(script_path))
-                rungencapsule_script = os.path.join(share_script_dir, "rungencapsule.sh")
+            # 统一从用户输入的分享脚本路径的同目录下查找rungencapsule.sh
+            share_script_dir = os.path.dirname(os.path.abspath(script_path))
+            rungencapsule_script = os.path.join(share_script_dir, "rungencapsule.sh")
             
             if os.path.exists(rungencapsule_script):
                 self.log_text.append(f"正在调用rungencapsule.sh脚本，参数: {basename}")
