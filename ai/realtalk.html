@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamicland FAQ 交互式摘要</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            line-height: 1.7;
+            color: #333;
+            background-color: #fdfdfd;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 0.5rem;
+        }
+        .intro {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 2rem;
+        }
+        details {
+            background-color: #ffffff;
+            border: 1px solid #eaeaea;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.2s ease-in-out;
+        }
+        details[open] {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        summary {
+            font-weight: bold;
+            font-size: 1.1rem;
+            padding: 1rem;
+            cursor: pointer;
+            outline: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        summary::after {
+            content: '＋';
+            font-size: 1.5rem;
+            color: #95a5a6;
+            transition: transform 0.2s;
+        }
+        details[open] summary::after {
+            transform: rotate(45deg);
+        }
+        .content {
+            padding: 0 1.5rem 1rem 1.5rem;
+            border-top: 1px solid #eaeaea;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        li {
+            padding: 0.5rem 0;
+            margin-left: 1rem;
+            border-left: 3px solid #bdc3c7;
+            padding-left: 1rem;
+        }
+        .fact, .viewpoint {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+            margin-right: 8px;
+            font-size: 0.9em;
+        }
+        .fact {
+            background-color: #e6f7ff;
+            border: 1px solid #91d5ff;
+            color: #1d3953;
+        }
+        .viewpoint {
+            background-color: #f6f2ff;
+            border: 1px solid #d3adf7;
+            color: #432b67;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 0.5rem;
+            border: 1px dashed #ccc;
+            border-radius: 8px;
+            flex-wrap: wrap;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <h1>Dynamicland FAQ 交互式摘要</h1>
+    <p class="intro">点击下方各项，探索 Dynamicland 的核心要点。摘要提炼了关键事实与核心理念，旨在以超轻认知负荷呈现。</p>
+    
+    <div class="legend">
+        <div><span class="fact">事实陈述</span>: 客观描述、功能、历史</div>
+        <div><span class="viewpoint">理念/观点</span>: 哲学、价值观、愿景</div>
+    </div>
+
+    <details>
+        <summary>核心概念：什么是Dynamicland, Realtalk？</summary>
+        <div class="content">
+            <ul>
+                <li><span class="fact">Dynamicland 基金会</span>：一个独立的非营利研究实验室。</li>
+                <li><span class="viewpoint">使命</span>：实现“人性化动态媒介”的普及，为此发明一种新形态的计算，并建立相应的文化和社区。</li>
+                <li><span class="fact">Realtalk</span>：一套由Dynamicland发明的计算环境（操作系统、编程语言、哲学），用于构建新媒介的原型。</li>
+                <li><span class="fact">Dynamicland (场所)</span>：一个物理空间，曾位于加州奥克兰，用于培育新媒介的文化。目前正在开发新一代空间。</li>
+                <li><span class="fact">本网站</span>：完全使用Realtalk制作，网站上的所有内容（包括文字）都在物理世界真实存在。</li>
+            </ul>
+        </div>
+    </details>
+
+    <details>
+        <summary>人性化动态媒介：核心理念解读</summary>
+        <div class="content">
+            <ul>
+                <li><span class="viewpoint">媒介 (Medium)</span>：一种构思和分享思想的方式（如文字、绘画、方程），强大的媒介能催生全新的思想（如印刷术催生莎士比亚戏剧）。</li>
+                <li><span class="viewpoint">动态媒介 (Dynamic Medium)</span>：一种以计算为核心来表达思想的媒介，能让人主动探索各种可能性，对于理解当今世界的复杂系统至关重要。</li>
+                <li><span class="viewpoint">人性化动态媒介 (Humane)</span>：具备三个核心特质：
+                    <ul>
+                        <li><b>社群性 (Communal)</b>: 鼓励人们在同一物理空间面对面协作。</li>
+                        <li><b>自主性 (Agency)</b>: 每个人都有能力查看、修改和重塑他们所依赖的系统。</li>
+                        <li><b>真实世界 (Real World)</b>: 媒介中的材料是物理实体，人们可用全身感官与之互动，而非与模拟的虚拟世界互动。</li>
+                    </ul>
+                </li>
+                <li><span class="viewpoint">为何用不寻常的词？</span>：因为目标不寻常。例如，用“创作(authoring)”代替“编程(programming)”，强调这是为所有公民表达思想，而非专家开发产品。</li>
+            </ul>
+        </div>
+    </details>
+    
+    <details>
+        <summary>Realtalk 概念：价值观与运行模型</summary>
+        <div class="content">
+            <ul>
+                <li><span class="viewpoint">核心价值观</span>：可见、物理、空间感、社群性、可创作、即兴、本地化、面向现实。</li>
+                <li><span class="viewpoint">概念模型</span>：像一场桌游，人和物体都扮演角色，遵循“当你看到这个，就做那个”的规则。整个系统都是由遵循规则的物理卡片构成。</li>
+                <li><span class="viewpoint">不是“界面”</span>：旨在消除“计算机”和“界面”的概念。计算是物理材料的一种新属性，而不是盒子里的虚拟世界。</li>
+                <li><span class="fact">轻量化计算</span>：由于大部分交互通过物理操作完成，仅在需要时轻量应用计算，极大降低了系统复杂性。</li>
+                <li><span class="fact">编程模型</span>：由一群分散的物理对象组成，它们“观察”物理世界并做出“陈述”，进而影响世界。人和计算对象在同一空间协作，共同参与这个过程。</li>
+            </ul>
+        </div>
+    </details>
+
+    <details>
+        <summary>Realtalk 实践：如何使用、学习和迭代？</summary>
+        <div class="content">
+            <ul>
+                <li><span class="fact">如何获取</span>：目前仅存在于Dynamicland及其合作者的空间中，专注于培育线下实践社区。</li>
+                <li><span class="viewpoint">长期目标</span>：以“套件+游戏”的形式传播，引导社区构建自己能完全理解和控制的计算环境。</li>
+                <li><span class="fact">迭代历史</span>：已发展多个版本，从Hypercard in the World概念原型，到Realtalk-2017（首个正式系统），再到目前的Realtalk-2024（旨在更清晰地表达愿景）。</li>
+                <li><span class="fact">不仅仅是投影仪和纸张</span>：投影和纸张只是实现手段之一。系统可以集成任何传感器和执行器（如机械臂），与任何物理材料（如生物模型、试管架）协同工作。</li>
+                <li><span class="viewpoint">“粗糙”的外观</span>：项目看起来“手工感”十足，因为它们确实是为满足即时需求而现场手工制作的，这是系统易用性和灵活性的体现，而非一种美学追求。</li>
+                <li><span class="fact">处理错误</span>：大部分问题是物理问题（如纸张褶皱、光线太强），可以被直观理解和物理解决，而非面对无法理解的软件黑箱。</li>
+                <li><span class="fact">远程协作</span>：支持多站点协作。例如，你可以通过桌上的图像直接与另一个站点桌上的物体互动。</li>
+            </ul>
+        </div>
+    </details>
+
+    <details>
+        <summary>与社会的关系：开源、可及性与隐私</summary>
+        <div class="content">
+            <ul>
+                <li><span class="viewpoint">超越开源</span>：目标是让系统比现有“开源”更开放，让普通人能完全理解和修改。</li>
+                <li><span class="viewpoint">真正的可及性 (Accessibility)</span>：终极的可及性是“自主性”，即赋权所有人根据自身需求自由改造工具，而非依赖厂商提供的“辅助功能”。</li>
+                <li><span class="viewpoint">反对技术解决方案主义</span>：不试图通过发布一个“产品”来解决所有问题，而是创造一个环境，让社会能在未来百年中自我转化。</li>
+                <li><span class="viewpoint">反对大规模无知</span>：警惕超越人类认知尺度的复杂性，追求社区能自行构建和理解的简单系统，通过知识分享而非产品销售来传播。</li>
+                <li><span class="fact">隐私保护设计</span>：
+                    <ul>
+                        <li>系统不追踪人，没有“用户”概念。</li>
+                        <li>大部分交互发生在物理世界，个人信息不进入计算系统。</li>
+                        <li>系统“知道”得越少越好，只关注当下的物理状态，不记忆历史。</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </details>
+
+    <details>
+        <summary>与其他技术的关系：AI, AR/VR, 计算机</summary>
+        <div class="content">
+            <ul>
+                <li><span class="viewpoint">区别于其他“空间计算”</span>：本质是一个创作环境，整个系统自身都以物理形式存在并可被编程。为群体面对面协作设计，强调真实的物理材料而非虚拟幻象。</li>
+                <li><span class="viewpoint">为何不用AR/VR头显</span>：头显违背了其可见性、自主性、物理现实和真人协作的核心原则。</li>
+                <li><span class="viewpoint">与AI的关系</span>：当前主流AI（深度学习模型）在多个方面与其价值观不兼容：
+                    <ul>
+                        <li><b>可见性</b>：AI是黑箱，而Realtalk追求完全透明、可理解。</li>
+                        <li><b>自主性</b>：AI追求“知道一切”并自主决策，而Realtalk通过“知道得更少”来最大化人的自主性和灵活性。</li>
+                        <li><b>人际连接</b>：Realtalk旨在连接人与人，而许多AI扮演“助手”角色，可能削弱人际关系。</li>
+                        <li><b>个人成长</b>：AI产品易造成“外包理解”，让人变得依赖；而好的媒介应帮助人成长，而非代替人做事。</li>
+                    </ul>
+                </li>
+                <li><span class="viewpoint">与计算机硬件的关系</span>：当今半导体产业高度集中，限制了计算设计的多样性。Realtalk对能够实现真正自下而上设计的技术（如FPGA，甚至DNA纳米技术）感兴趣，以期未来计算基底能被本地化设计、制造和理解。</li>
+            </ul>
+        </div>
+    </details>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://dynamicland.org/2024/FAQ/#What_is_Realtalks_relationship_to_AI" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
