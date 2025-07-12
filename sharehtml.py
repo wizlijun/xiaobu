@@ -396,7 +396,8 @@ class ShareHtmlApp(QMainWindow):
                 
                 env = dict(os.environ)
                 env['GENCAPSULE_BASE_DIR'] = git_path_abs
-                env['PYTHONPATH'] = script_dir
+                # 移除PYTHONPATH设置，避免意外的模块加载
+                # env['PYTHONPATH'] = script_dir
                 
                 # 使用当前Python解释器
                 if getattr(sys, 'frozen', False):
