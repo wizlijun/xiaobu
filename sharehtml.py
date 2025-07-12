@@ -367,89 +367,53 @@ class ShareHtmlApp(QMainWindow):
             
             self.log_text.append(f"已创建meta.yaml文件: {meta_file_path}")
             
-            # 3. 调用gencapsule.py脚本
-            # 查找gencapsule.py的位置
+            # 3. 调用rungencapsule.sh脚本
+            # 查找rungencapsule.sh的位置
             if getattr(sys, 'frozen', False):
-                # 如果是打包后的应用程序，gencapsule.py在临时目录中
+                # 如果是打包后的应用程序，rungencapsule.sh在临时目录中
                 import tempfile
-                gencapsule_script = os.path.join(sys._MEIPASS, "gencapsule.py")
+                rungencapsule_script = os.path.join(sys._MEIPASS, "rungencapsule.sh")
                 share_script_dir = os.path.dirname(os.path.abspath(script_path))
             else:
-                # 如果是开发环境，在分享脚本路径的同目录下查找gencapsule.py
+                # 如果是开发环境，在分享脚本路径的同目录下查找rungencapsule.sh
                 share_script_dir = os.path.dirname(os.path.abspath(script_path))
-                gencapsule_script = os.path.join(share_script_dir, "gencapsule.py")
+                rungencapsule_script = os.path.join(share_script_dir, "rungencapsule.sh")
             
-            if os.path.exists(gencapsule_script):
-                self.log_text.append(f"正在调用gencapsule.py脚本，参数: {basename}")
+            if os.path.exists(rungencapsule_script):
+                self.log_text.append(f"正在调用rungencapsule.sh脚本，参数: {basename}")
                 
                 # 获取脚本所在目录和Git仓库路径
                 script_dir = share_script_dir
                 git_path_abs = os.path.abspath(git_path)
                 
-                # 检查必要的目录是否存在
-                if getattr(sys, 'frozen', False):
-                    # 如果是打包后的应用程序，template目录在临时目录中
-                    template_dir = os.path.join(sys._MEIPASS, "template")
-                else:
-                    # 如果是开发环境，template目录在脚本目录中
-                    template_dir = os.path.join(script_dir, "template")
-                
-                if not os.path.exists(git_path_abs):
-                    self.log_text.append(f"警告: Git目录不存在 ({git_path_abs})")
-                if not os.path.exists(template_dir):
-                    self.log_text.append(f"警告: template目录不存在 ({template_dir})")
-                
                 self.log_text.append(f"Git目录: {git_path_abs}")
                 self.log_text.append(f"脚本目录: {script_dir}")
-                self.log_text.append(f"gencapsule.py路径: {gencapsule_script}")
+                self.log_text.append(f"rungencapsule.sh路径: {rungencapsule_script}")
                 
-                # 创建一个修改版的gencapsule调用，传递Git路径作为基础目录
-                # 在分享脚本的同目录下运行gencapsule.py
-                
-                env = dict(os.environ)
-                env['GENCAPSULE_BASE_DIR'] = git_path_abs
-                # 移除PYTHONPATH设置，避免意外的模块加载
-                # env['PYTHONPATH'] = script_dir
-                
-                # 使用Python解释器
-                if getattr(sys, 'frozen', False):
-                    # 如果是打包后的应用程序，使用系统Python
-                    venv_python = "/usr/bin/python3"
-                    # 如果系统python3不存在，尝试其他路径
-                    if not os.path.exists(venv_python):
-                        venv_python = "/usr/local/bin/python3"
-                    if not os.path.exists(venv_python):
-                        venv_python = "python3"  # 使用PATH中的python3
-                else:
-                    # 如果是开发环境，使用虚拟环境的Python
-                    venv_python = os.path.join(script_dir, "venv", "bin", "python")
-                    if not os.path.exists(venv_python):
-                        venv_python = "python3"
-                
+                # 调用rungencapsule.sh脚本
                 gencapsule_process = subprocess.Popen(
-                    [venv_python, gencapsule_script, basename, git_path_abs],  # 使用虚拟环境的Python
+                    [rungencapsule_script, basename, git_path_abs],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,
-                    cwd=script_dir,  # 在分享脚本的同目录下运行
-                    env=env
+                    cwd=script_dir  # 在分享脚本的同目录下运行
                 )
                 gencapsule_stdout, gencapsule_stderr = gencapsule_process.communicate()
                 
                 if gencapsule_stdout:
-                    self.log_text.append("gencapsule.py输出：")
+                    self.log_text.append("rungencapsule.sh输出：")
                     self.log_text.append(gencapsule_stdout)
                 
                 if gencapsule_stderr:
-                    self.log_text.append("gencapsule.py错误输出：")
+                    self.log_text.append("rungencapsule.sh错误输出：")
                     self.log_text.append(gencapsule_stderr)
                 
                 if gencapsule_process.returncode == 0:
-                    self.log_text.append("gencapsule.py执行成功")
+                    self.log_text.append("rungencapsule.sh执行成功")
                 else:
-                    self.log_text.append(f"gencapsule.py执行失败，返回码: {gencapsule_process.returncode}")
+                    self.log_text.append(f"rungencapsule.sh执行失败，返回码: {gencapsule_process.returncode}")
             else:
-                self.log_text.append(f"警告: 未找到gencapsule.py脚本 ({gencapsule_script})")
+                self.log_text.append(f"警告: 未找到rungencapsule.sh脚本 ({rungencapsule_script})")
             
             # 4. 执行分享脚本
             self.log_text.append(f"正在执行分享脚本 {script_path}")
