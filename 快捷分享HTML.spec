@@ -5,7 +5,7 @@ a = Analysis(
     ['sharehtml.py'],
     pathex=[],
     binaries=[],
-    datas=[('gencapsule.py', '.')],
+    datas=[('gencapsule.py', '.'), ('template', 'template')],
     hiddenimports=['yaml'],
     hookspath=[],
     hooksconfig={},

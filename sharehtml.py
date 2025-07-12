@@ -368,9 +368,16 @@ class ShareHtmlApp(QMainWindow):
             self.log_text.append(f"已创建meta.yaml文件: {meta_file_path}")
             
             # 3. 调用gencapsule.py脚本
-            # 在分享脚本路径的同目录下查找gencapsule.py
-            share_script_dir = os.path.dirname(os.path.abspath(script_path))
-            gencapsule_script = os.path.join(share_script_dir, "gencapsule.py")
+            # 查找gencapsule.py的位置
+            if getattr(sys, 'frozen', False):
+                # 如果是打包后的应用程序，gencapsule.py在临时目录中
+                import tempfile
+                gencapsule_script = os.path.join(sys._MEIPASS, "gencapsule.py")
+                share_script_dir = os.path.dirname(os.path.abspath(script_path))
+            else:
+                # 如果是开发环境，在分享脚本路径的同目录下查找gencapsule.py
+                share_script_dir = os.path.dirname(os.path.abspath(script_path))
+                gencapsule_script = os.path.join(share_script_dir, "gencapsule.py")
             
             if os.path.exists(gencapsule_script):
                 self.log_text.append(f"正在调用gencapsule.py脚本，参数: {basename}")
@@ -380,7 +387,12 @@ class ShareHtmlApp(QMainWindow):
                 git_path_abs = os.path.abspath(git_path)
                 
                 # 检查必要的目录是否存在
-                template_dir = os.path.join(script_dir, "template")
+                if getattr(sys, 'frozen', False):
+                    # 如果是打包后的应用程序，template目录在临时目录中
+                    template_dir = os.path.join(sys._MEIPASS, "template")
+                else:
+                    # 如果是开发环境，template目录在脚本目录中
+                    template_dir = os.path.join(script_dir, "template")
                 
                 if not os.path.exists(git_path_abs):
                     self.log_text.append(f"警告: Git目录不存在 ({git_path_abs})")
@@ -399,15 +411,20 @@ class ShareHtmlApp(QMainWindow):
                 # 移除PYTHONPATH设置，避免意外的模块加载
                 # env['PYTHONPATH'] = script_dir
                 
-                # 使用当前Python解释器
+                # 使用Python解释器
                 if getattr(sys, 'frozen', False):
-                    # 如果是打包后的应用程序，使用当前解释器
-                    venv_python = sys.executable
+                    # 如果是打包后的应用程序，使用系统Python
+                    venv_python = "/usr/bin/python3"
+                    # 如果系统python3不存在，尝试其他路径
+                    if not os.path.exists(venv_python):
+                        venv_python = "/usr/local/bin/python3"
+                    if not os.path.exists(venv_python):
+                        venv_python = "python3"  # 使用PATH中的python3
                 else:
                     # 如果是开发环境，使用虚拟环境的Python
                     venv_python = os.path.join(script_dir, "venv", "bin", "python")
                     if not os.path.exists(venv_python):
-                        venv_python = sys.executable
+                        venv_python = "python3"
                 
                 gencapsule_process = subprocess.Popen(
                     [venv_python, gencapsule_script, basename, git_path_abs],  # 使用虚拟环境的Python
