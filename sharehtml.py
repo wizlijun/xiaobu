@@ -166,7 +166,7 @@ class ShareHtmlApp(QMainWindow):
         website_layout = QHBoxLayout()
         website_label = QLabel("网站地址：")
         self.website_input = QLineEdit()
-        self.website_input.setText(self.settings.value("website", "https://www.xiaobu.net/ai/"))
+        self.website_input.setText(self.settings.value("website", "https://www.laobu.net/ai/"))
         self.website_input.textChanged.connect(lambda: self.settings.setValue("website", self.website_input.text()))
         # 启用文本输入框的上下文菜单
         self.website_input.setContextMenuPolicy(Qt.DefaultContextMenu)
