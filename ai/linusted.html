@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TED摘要: Linus Torvalds - 开源背后的思想</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --card-bg: #2c2c2c;
+            --text-color: #e0e0e0;
+            --primary-color: #ff2b2b; /* TED Red */
+            --highlight-fact: #ffc107; /* Yellow for facts */
+            --highlight-opinion: #007bff; /* Blue for opinions/quotes */
+            --text-fact: #111;
+            --text-opinion: #e6f7ff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            color: #fff;
+            margin: 0;
+        }
+
+        header p {
+            font-size: 1.1em;
+            color: #b0b0b0;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            border-left: 5px solid transparent;
+        }
+
+        .card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            border-left-color: var(--primary-color);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card h2 .icon {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .card p, .card li {
+            font-size: 1em;
+            color: #ccc;
+        }
+
+        .fact {
+            background-color: var(--highlight-fact);
+            color: var(--text-fact);
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .opinion {
+            display: block;
+            background-color: rgba(0, 123, 255, 0.1);
+            border-left: 4px solid var(--highlight-opinion);
+            padding: 15px;
+            margin: 15px 0;
+            font-style: italic;
+            border-radius: 0 8px 8px 0;
+            color: var(--text-opinion);
+        }
+        
+        .opinion::before {
+            content: '“';
+            font-size: 1.5em;
+            color: var(--highlight-opinion);
+            margin-right: 5px;
+        }
+        
+        .opinion::after {
+            content: '”';
+            font-size: 1.5em;
+            color: var(--highlight-opinion);
+            margin-left: 5px;
+        }
+        
+        pre {
+            background: #111;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+        }
+        
+        .code-title {
+            font-weight: bold;
+            color: #ff6b6b;
+            margin-bottom: 5px;
+        }
+
+        .code-title.good {
+            color: #63e6be;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            color: #666;
+            font-size: 0.9em;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Linus Torvalds: 开源背后的思想</h1>
+            <p>一位特立独行的工程师，如何两次改变了科技世界</p>
+        </header>
+
+        <div class="card-grid">
+            <div class="card">
+                <h2><span class="icon">🚀</span> 1. 惊人的影响力</h2>
+                <p>Linux，这个由Linus创造的软件，其影响力是事实，而非观点：</p>
+                <ul>
+                    <li>驱动着数百万台电脑和互联网的大部分。</li>
+                    <li>是 <span class="fact">超过15亿</span> 台安卓设备的内核。</li>
+                </ul>
+            </div>
+            
+            <div class="card">
+                <h2><span class="icon">🏡</span> 2. 简陋的“世界总部”</h2>
+                <p>与人们想象的科技帝国不同，Linux的“总部”就是Linus的家：一个带跑步机的、甚至有些凌乱的家庭办公室。</p>
+                <span class="opinion">这证明了开源项目的核心在于代码和社区，而非华丽的物理空间。</span>
+            </div>
+
+            <div class="card">
+                <h2><span class="icon">🧘</span> 3. “反社交”的工作方式</h2>
+                <p>Linus坦言自己不是一个“善于交际的人”。他的理想工作环境是：</p>
+                <ul>
+                    <li><strong>绝对安静：</strong> 电脑必须完全静音，他想听到的是猫的呼噜声，而不是风扇声。</li>
+                    <li><strong>避免外部刺激：</strong> 办公室墙壁是平淡的浅绿色，据说是精神病院用来安抚情绪的颜色。</li>
+                    <li><strong>独自工作：</strong> 他喜欢穿着浴袍，独自在家中思考和编程。</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2><span class="icon">🌱</span> 4. 开源的偶然诞生</h2>
+                <p>Linux最初并非一个宏大的合作项目，而是一个个人项目。</p>
+                <span class="opinion">开源的真正启示，最初不是为了“合作”，而是为了“炫耀”并获得他人的反馈和想法。</span>
+                <p>当别人开始对他的代码产生兴趣并提出建议时，他才体会到社区的力量。</p>
+            </div>
+
+            <div class="card">
+                <h2><span class="icon">🎨</span> 5. 核心理念：“品味 (Taste)”</h2>
+                <p>Linus极其看重程序员的“品味”，这是一种对代码优雅、高效和健壮性的直觉。</p>
+                <div class="code-title">👎 品味差的代码 (处理特殊情况):</div>
+                <pre><code>// 遍历链表找到要删除的节点
+if (这是第一个节点) {
+    // 单独处理头指针
+} else {
+    // 处理中间节点
+}</code></pre>
+                <div class="code-title good">👍 品味好的代码 (消除特殊情况):</div>
+                <pre><code>// 使用一个“间接指针”
+// 无论删除哪个节点，操作都完全一样
+// 没有了 "if-else" 特殊判断
+</code></pre>
+                <span class="opinion">好的品味在于找到一种更优的视角，让特殊情况消失，代码变得通用和简洁。</span>
+            </div>
+            
+            <div class="card">
+                <h2><span class="icon">🛠️</span> 6. 我是工程师，不是梦想家</h2>
+                <p>Linus将自己比作爱迪生，而非特斯拉。</p>
+                <ul>
+                    <li><strong>特斯拉:</strong> 伟大的梦想家，充满天才般的想法。</li>
+                    <li><strong>爱迪生:</strong> 务实的执行者，信奉“1%灵感 + 99%汗水”。</li>
+                </ul>
+                <span class="opinion">我不是抬头看星星的人，我是低头看路，想在掉进去之前把眼前的坑填好的人。</span>
+            </div>
+
+            <div class="card">
+                <h2><span class="icon">🤝</span> 7. 固执与协作的悖论</h2>
+                <p>Linus承认自己很固执，有时会因技术问题与人激烈争论，甚至不顾及他人感受。</p>
+                <span class="opinion">开源的美妙之处在于，它允许不同类型的人（比如我这样的工程师和那些善于交际的人）一起工作。我们不必相互喜欢，只需在代码上达成共识。</span>
+                <p>他认为，这种固执对于维护项目的质量和“品味”至关重要。</p>
+            </div>
+            
+            <div class="card">
+                <h2><span class="icon">🌍</span> 8. 开源的未来</h2>
+                <p>Linus认为开源已经改变了世界，并且正在向更多领域扩展，例如科学（开放期刊）和知识（维基百科）。</p>
+                <p>当被问及开源的下一个大事件是什么时，他再次强调：</p>
+                <span class="opinion">我不是梦想家，该由你们去创造未来。</span>
+            </div>
+        </div>
+        
+        <footer>
+            <p>摘要由AI生成，基于Linus Torvalds在TED的访谈。</p>
+        </footer>
+    </div>
+    
+    <script>
+        // 简单的JS为未来扩展预留，目前纯CSS已实现核心交互
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('TED Summary Loaded.');
+        });
+    </script>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.youtube.com/watch?v=o8NPllzkFhE" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
