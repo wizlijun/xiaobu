@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日本2025年《防卫白皮书》交互式摘要</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --background-color: #ecf0f1;
+            --card-bg-color: #ffffff;
+            --text-color: #333;
+            --fact-bg: #e0f2f1;
+            --fact-border: #4db6ac;
+            --fact-text: #004d40;
+            --viewpoint-bg: #fff3e0;
+            --viewpoint-border: #ffb74d;
+            --viewpoint-text: #e65100;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', 'Hiragino Sans GB', 'WenQuanYi Micro Hei', 'Microsoft YaHei', sans-serif;
+            line-height: 1.7;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background-color: var(--card-bg-color);
+            padding: 25px 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 25px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+        }
+
+        .legend {
+            font-size: 0.9em;
+        }
+
+        .toggle-switches {
+            display: flex;
+            gap: 20px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input { display: none; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider { background-color: var(--accent-color); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        .toggle-label {
+            margin-left: 60px;
+            font-weight: 500;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #dee2e6;
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            padding: 12px 20px;
+            cursor: pointer;
+            border: none;
+            background-color: transparent;
+            font-size: 1em;
+            font-weight: 600;
+            color: var(--secondary-color);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-button:hover {
+            color: var(--accent-color);
+        }
+
+        .tab-button.active {
+            color: var(--accent-color);
+            border-bottom-color: var(--accent-color);
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background-color: #fdfdfd;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .card h3 {
+            color: var(--secondary-color);
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 8px;
+            margin-top: 0;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        li {
+            margin-bottom: 12px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        li::before {
+            content: '▫️';
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: var(--accent-color);
+            font-size: 1.2em;
+        }
+        
+        .fact, .viewpoint {
+            padding: 3px 8px;
+            border-radius: 5px;
+            display: block;
+            margin-top: 5px;
+        }
+        
+        .fact {
+            background-color: var(--fact-bg);
+            border-left: 4px solid var(--fact-border);
+            color: var(--fact-text);
+        }
+
+        .viewpoint {
+            background-color: var(--viewpoint-bg);
+            border-left: 4px solid var(--viewpoint-border);
+            color: var(--viewpoint-text);
+        }
+        
+        .fact::before, .viewpoint::before {
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .fact::before { content: "【事实】"; }
+        .viewpoint::before { content: "【观点/立场】"; }
+
+        .hidden {
+            display: none !important;
+        }
+
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>日本2025年《防卫白皮书》交互式摘要</h1>
+
+        <div class="controls">
+            <div class="legend">
+                <strong>图例:</strong> <span class="fact" style="padding:2px 4px;">事实陈述</span> <span class="viewpoint" style="padding:2px 4px;">观点/立场</span>
+            </div>
+            <div class="toggle-switches">
+                <label class="toggle-label">
+                    筛选事实
+                    <label class="switch">
+                        <input type="checkbox" id="fact-toggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </label>
+                <label class="toggle-label">
+                    筛选观点/立场
+                    <label class="switch">
+                        <input type="checkbox" id="viewpoint-toggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </label>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" data-tab="tab1">核心关切与战略环境</button>
+            <button class="tab-button" data-tab="tab2">日本的防卫政策</button>
+            <button class="tab-button" data-tab="tab3">三大方针与举措</button>
+            <button class="tab-button" data-tab="tab4">强化“人”的基础</button>
+            <button class="tab-button" data-tab="tab5">强化“物”的基础</button>
+        </div>
+
+        <div class="tab-content-area">
+            <!-- Tab 1: 核心关切与战略环境 -->
+            <div id="tab1" class="tab-pane active">
+                <div class="card-grid">
+                    <div class="card">
+                        <h3>总体环境认知</h3>
+                        <ul>
+                            <li><span class="viewpoint">国际社会正面临“战后最大的考验”，进入“新的危机时代”。</span></li>
+                            <li><span class="viewpoint">日本周边的安全环境是“战后最严峻、最复杂的”。</span></li>
+                            <li><span class="fact">科技发展根本性地改变了安保形态，混合战与信息战将更为普遍。</span></li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>主要挑战来源：中国</h3>
+                        <ul>
+                            <li><span class="viewpoint">被定位为“前所未有的最大战略挑战”。</span></li>
+                            <li><span class="fact">国防开支快速增长，军事力量质与量全面强化。</span></li>
+                            <li><span class="fact">在东海（含尖阁诸岛）、南海、西太平洋活动日益活跃，并与俄罗斯加强战略协作。</span></li>
+                            <li><span class="viewpoint">其在台湾周边的军事活动旨在造成“常态化”的既成事实。</span></li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>主要挑战来源：朝鲜</h3>
+                        <ul>
+                            <li><span class="viewpoint">其军事动向是“比以往更重大且紧迫的威胁”。</span></li>
+                            <li><span class="fact">已具备在弹道导弹上搭载核弹头攻击日本的能力。</span></li>
+                            <li><span class="fact">持续进行变轨弹道导弹、“高超音速导弹”等发射试验，追求攻击手段多样化。</span></li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>主要挑战来源：俄罗斯</h3>
+                        <ul>
+                            <li><span class="fact">持续侵略乌克兰，并在“北方领土”等地频繁进行军事活动。</span></li>
+                            <li><span class="viewpoint">其与中国的战略协作，对日本构成强烈的安保关切。</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: 日本的防卫政策 -->
+            <div id="tab2" class="tab-pane">
+                <div class="card-grid">
+                    <div class="card">
+                        <h3>核心理念与政策框架</h3>
+                        <ul>
+                            <li><span class="viewpoint">坚持“专守防卫”基本方针，不成为军事大国。</span></li>
+                            <li><span class="fact">基于“战略三文件”（国家安全保障战略、国家防卫战略、防卫力整备计划）推进政策。</span></li>
+                            <li><span class="fact">目标到2027财年，防卫相关预算达到GDP的2%水平。</span></li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>防卫目标与“反击能力”</h3>
+                        <ul>
+                            <li><span class="viewpoint">三大目标：创造不允许单方面改变现状的环境；与盟友合作遏制此类企图；在日本受侵时能主导应对。</span></li>
+                            <li><span class="viewpoint">拥有“反击能力”是遏制侵略的关键。</span></li>
+                            <li><span class="fact">反击能力被定义为：在遭受弹道导弹等攻击时，作为自卫的必要最小限度措施，对敌方领域进行有效反击的能力。</span></li>
+                            <li><span class="viewpoint">强调这并非“先发制人攻击”。</span></li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>七大重点强化领域</h3>
+                        <ul>
+                            <li><span class="viewpoint">**核心打击力**：防区外防卫能力、综合防空与导弹防御能力。</span></li>
+                            <li><span class="viewpoint">**新兴作战力**：无人装备防卫能力、跨领域作战能力。</span></li>
+                            <li><span class="viewpoint">**支撑体系**：指挥控制与信息功能、机动展开与国民保护、持续作战与强韧性。</span></li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>组织体制改革</h3>
+                        <ul>
+                            <li><span class="fact">2025年3月新设“统合作战司令部(JJOC)”，以实现对陆海空自卫队的统一指挥。</span></li>
+                            <li><span class="viewpoint">旨在强化日美联合作战的效率和应对各种事态的快速反应能力。</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: 三大方针与举措 -->
+            <div id="tab3" class="tab-pane">
+                <div class="card-grid">
+                    <div class="card">
+                        <h3>方针①：强化日本自身防卫体制</h3>
+                        <ul>
+                            <li><span class="fact">采购美制“战斧”导弹和国产“12式地对舰导弹能力提升型”以强化防区外防卫能力。</span></li>
+                            <li><span class="fact">建造“宙斯盾系统搭载舰”并与美国共同开发“滑翔阶段拦截弹(GPI)”强化反导能力。</span></li>
+                            <li><span class="fact">新编“自卫队海上输送群”，强化西南诸岛的机动部署能力。</span></li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>方针②：深化日美同盟</h3>
+                        <ul>
+                            <li><span class="viewpoint">日美同盟是日本安保的基石。</span></li>
+                            <li><span class="fact">通过新设的统合作战司令部(JJOC)与升级后的驻日美军司令部进行指挥控制联动。</span></li>
+                            <li><span class="fact">通过“DICAS”等框架，推进导弹共同生产、美军舰机联合维护等。</span></li>
+                            <li><span class="fact">持续进行“利剑(Keen Sword)”等大规模联合演习。</span></li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>方针③：加强与志同道合国家的合作</h3>
+                        <ul>
+                            <li><span class="viewpoint">在“自由开放的印度-太平洋(FOIP)”构想下，构建多边、多层次安保合作网络。</span></li>
+                            <li><span class="fact">与澳大利亚、英国等国签署“互惠准入协定(RAA)”，并扩大“ACSA”和“防卫装备转移协定”的伙伴范围。</span></li>
+                            <li><span class="fact">积极参加“马拉巴尔”(日美印澳)等多国联合军演。</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab 4: 强化“人”的基础 -->
+            <div id="tab4" class="tab-pane">
+                <div class="card-grid">
+                    <div class="card">
+                        <h3>待遇与工作环境改善</h3>
+                        <ul>
+                            <li><span class="fact">新设和提高超过30种津贴，以改善薪资待遇。</span></li>
+                            <li><span class="fact">推进宿舍单人房化，改善Wi-Fi等生活设施。</span></li>
+                            <li><span class="viewpoint">强调杜绝职权骚扰，改革组织文化。</span></li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>人事与职业生涯</h3>
+                        <ul>
+                            <li><span class="fact">新设“干部候补曹”制度，并改革任期制队员的任用方式。</span></li>
+                            <li><span class="viewpoint">探讨将定年年龄提高2岁左右。</span></li>
+                            <li><span class="fact">强化退役自卫官的再就业支援，扩充渠道，并提高相关给付金。</span></li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>女性活跃与工作生活平衡</h3>
+                        <ul>
+                            <li><span class="fact">设定了提高女性自卫官比例的具体数值目标。</span></li>
+                            <li><span class="fact">推进弹性工作制、远程办公，并促进男性职员休育儿假。</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 5: 强化“物”的基础 -->
+            <div id="tab5" class="tab-pane">
+                <div class="card-grid">
+                    <div class="card">
+                        <h3>防卫生产与技术基础</h3>
+                        <ul>
+                            <li><span class="viewpoint">将防卫生产与技术基础定位为“防卫力本身”。</span></li>
+                            <li><span class="fact">依据《防卫生产基础强化法》，支持企业强化供应链和生产效率。</span></li>
+                            <li><span class="fact">推进与英国、意大利的“全球作战空中计划(GCAP)”（下一代战斗机）共同开发。</span></li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>防卫装备转移</h3>
+                        <ul>
+                            <li><span class="fact">修订《防卫装备转移三原则》，在严格审查前提下放宽限制。</span></li>
+                            <li><span class="viewpoint">旨在向受侵略国提供支援，并加强与伙伴国的合作。</span></li>
+                            <li><span class="fact">已决定向美国提供日本许可生产的“爱国者”导弹。</span></li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>与社区及环境共生</h3>
+                        <ul>
+                            <li><span class="viewpoint">强调与地方社区的协调与合作。</span></li>
+                            <li><span class="fact">制定《防卫省气候变化应对战略》，并完成PFOS等有害化学物质的处理。</span></li>
+                            <li><span class="fact">通过各种活动和信息公开，增进国民的理解。</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.tab-button');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const targetId = tab.dataset.tab; // 如"tab1"
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    tabPanes.forEach(pane => {
+                        pane.classList.remove('active');
+                    });
+                    document.getElementById(targetId).classList.add('active');
+                });
+            });
+
+            const factToggle = document.getElementById('fact-toggle');
+            const viewpointToggle = document.getElementById('viewpoint-toggle');
+            const factItems = document.querySelectorAll('.fact');
+            const viewpointItems = document.querySelectorAll('.viewpoint');
+
+            function updateVisibility() {
+                factItems.forEach(item => {
+                    item.closest('li').classList.toggle('hidden', !factToggle.checked);
+                });
+                viewpointItems.forEach(item => {
+                    item.closest('li').classList.toggle('hidden', !viewpointToggle.checked);
+                });
+            }
+
+            factToggle.addEventListener('change', updateVisibility);
+            viewpointToggle.addEventListener('change', updateVisibility);
+        });
+    </script>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="japanhandbook2025_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
