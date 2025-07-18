@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>论文摘要：文件位置对代码审查的影响</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+        :root {
+            --primary-color: #005f73;
+            --secondary-color: #0a9396;
+            --accent-color: #94d2bd;
+            --background-color: #e9d8a6;
+            --text-color: #333;
+            --light-text-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            margin: 0;
+            padding: 2em;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3em;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 1.5em;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            font-size: 2.5em;
+            margin-bottom: 0.2em;
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 1.1em;
+            color: var(--secondary-color);
+            font-style: italic;
+        }
+
+        .section {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 2em;
+            margin-bottom: 2em;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .section h2 {
+            color: var(--primary-color);
+            border-left: 5px solid var(--secondary-color);
+            padding-left: 0.8em;
+            margin-top: 0;
+        }
+
+        .highlight {
+            background-color: var(--accent-color);
+            color: var(--primary-color);
+            padding: 0.2em 0.5em;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+        
+        .fact-view {
+            color: #0077b6;
+            font-weight: bold;
+        }
+
+        .opinion-view {
+            color: #d00000;
+            font-weight: bold;
+        }
+
+        .methods-container {
+            display: flex;
+            gap: 2em;
+            flex-wrap: wrap;
+        }
+
+        .method {
+            flex: 1;
+            min-width: 300px;
+            padding: 1.5em;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+        .method h3 {
+            color: var(--secondary-color);
+            margin-top: 0;
+        }
+
+        .findings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5em;
+            margin-top: 1.5em;
+        }
+
+        .finding-card {
+            background: linear-gradient(145deg, var(--secondary-color), var(--primary-color));
+            color: var(--light-text-color);
+            border-radius: 8px;
+            padding: 1.5em;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .finding-card:before {
+            content: '点击查看';
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            font-size: 0.8em;
+            color: rgba(255,255,255,0.7);
+            transition: opacity 0.3s;
+        }
+
+        .finding-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .finding-card:hover:before {
+            opacity: 0;
+        }
+
+        .finding-card h3 {
+            margin-top: 0;
+            font-size: 1.3em;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 0.5em;
+        }
+        
+        .finding-card .details {
+            display: none;
+            margin-top: 1em;
+            font-size: 0.95em;
+            animation: slideDown 0.5s;
+        }
+        
+        .finding-card.active .details {
+            display: block;
+        }
+        
+        .finding-card.active:before {
+             opacity: 0;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3em;
+            padding-top: 1em;
+            border-top: 1px solid var(--secondary-color);
+            color: var(--secondary-color);
+            font-size: 0.9em;
+        }
+        
+        .citation {
+            font-size: 0.8em;
+            color: #777;
+            font-weight: 300;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>先到先得：文件位置对代码审查的影响</h1>
+            <p>Fregnan, Braz, Çalikli, D'Ambros, Bacchelli - 2022</p>
+        </header>
+
+        <section class="section" id="problem">
+            <h2>核心问题：排序的“隐形之手”</h2>
+            <p>
+                主流代码审查工具（如 GitHub 和 Gerrit）普遍<span class="highlight">按字母顺序</span>对需要审查的文件进行排序。 [1]
+                研究者们提出了一个关键问题：这种看似无害的默认设置，或者更广泛地说，文件在列表中的<span class="fact-view">相对位置</span>，是否会<span class="opinion-view">影响代码审查的最终结果？</span> [1]
+                本研究假设，由于<span class="opinion-view">注意力衰减</span>和<span class="opinion-view">工作记忆耗尽</span>等认知因素，开发者可能会对列表中靠后的文件投入更少的精力。 [2]
+            </p>
+        </section>
+
+        <section class="section" id="methodology">
+            <h2>研究方法：双管齐下</h2>
+            <p>为了验证假设，研究采用了互补的双重证据 triangulation 方法。</p>
+            <div class="methods-container">
+                <div class="method">
+                    <h3>第一步：观察性研究</h3>
+                    <p>
+                        分析了 <span class="fact-view">138个</span> 流行的Java项目中的 <span class="fact-view">219,476个</span> 拉取请求（Pull Requests）。 [1]
+                        研究人员量化了<span class="fact-view">文件的相对位置</span>与它收到的<span class="fact-view">审查评论数量</span>之间的关系，同时控制了代码行数等混杂变量。 [6]
+                    </p>
+                </div>
+                <div class="method">
+                    <h3>第二步：受控实验</h3>
+                    <p>
+                        招募了 <span class="fact-view">106名</span> 开发者参与一个在线实验。 [1] 参与者审查一个包含5个文件的代码变更，其中研究者预先植入了两个不同的缺陷（“边角案例”和“缺失Break”）。 [4]
+                        通过<span class="fact-view">调换</span>这两个缺陷文件在列表中的位置（一个在最前，一个在最后），来衡量文件位置对<span class="fact-view">缺陷检出率</span>的影响。 [4, 5]
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="findings">
+            <h2>核心发现：位置确实重要</h2>
+            <p>研究结果为“文件位置影响审查结果”这一假说提供了有力证据。请点击下方卡片查看详细发现。</p>
+            <div class="findings-grid">
+                <div class="finding-card" id="finding1">
+                    <h3>发现 1: 评论数量递减</h3>
+                    <div class="details">
+                        <p>
+                            <span class="fact-view">事实：</span> 在拉取请求中，<span class="highlight">位置越靠后的文件，收到的审查评论越少</span>。 [6] 这种负相关关系在统计上非常显著，即使在排除了代码大小、是否为测试文件等因素的干扰后依然存在。 [7]
+                        </p>
+                    </div>
+                </div>
+                <div class="finding-card" id="finding2">
+                    <h3>发现 2: 缺陷检出率受影响</h3>
+                     <div class="details">
+                        <p>
+                            <span class="fact-view">事实：</span> 文件位置对缺陷发现有显著影响，但<span class="highlight">并非对所有类型的缺陷都有效</span>。对于“边角案例”缺陷，当其所在文件被置于列表<span class="fact-view">最后</span>时，开发者发现它的几率比文件在<span class="fact-view">最前</span>时<span class="fact-view">低了64%</span>。 [1, 8] 然而，对于“缺失Break”这个更易于模式识别的缺陷，位置效应则不明显。 [8]
+                        </p>
+                    </div>
+                </div>
+                <div class="finding-card" id="finding3">
+                    <h3>发现 3: 注意力显著差异</h3>
+                     <div class="details">
+                        <p>
+                            <span class="fact-view">事实：</span> 实验数据表明，参与者花在<span class="highlight">第一个文件</span>上的平均审查时间为 <span class="fact-view">8.58分钟</span>，而花在<span class="highlight">最后一个文件</span>上的时间仅为 <span class="fact-view">6.09分钟</span>。 [9] 这种时间投入上的差异具有统计学意义。
+                        </p>
+                    </div>
+                </div>
+                <div class="finding-card" id="finding4">
+                    <h3>发现 4: 认知与现实脱节</h3>
+                     <div class="details">
+                        <p>
+                            <span class="fact-view">事实：</span> 尽管数据显示了位置的显著影响，但超过 <span class="fact-view">72%</span> 的参与者在事后问卷中<span class="opinion-view">认为文件位置并不会影响</span>他们发现缺陷的能力。 [8] 这揭示了开发者在代码审查中对其自身认知偏见的感知与实际行为之间存在偏差。 [11]
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="implications">
+            <h2>结论与启示：重新思考审查工具设计</h2>
+            <p>
+                <span class="opinion-view">观点：</span> 当前代码审查工具普遍采用的按字母排序文件的方式存在缺陷，因为它会无意中引入认知偏差，可能导致审查不充分。 [10]
+            </p>
+            <p>
+                研究者建议，未来的工具可以采用更智能的排序策略来支持审查者，例如：
+            </p>
+            <ul>
+                <li><span class="highlight">优先展示关键文件</span>：将修改最核心、最复杂的代码文件置于顶部。 [10]</li>
+                <li><span class="highlight">允许自定义排序</span>：让审查者根据自己的策略（如先看新增文件）调整文件顺序。 [10]</li>
+                <li><span class="highlight">使用警告或提示</span>：通过UI设计引导审查者关注重要的文件，无论其位置如何。 [10]</li>
+            </ul>
+             <p class="citation">
+                注：[INDEX] 格式的引用编号对应于原始论文中的章节或发现。
+            </p>
+        </section>
+
+        <footer>
+            <p>交互式摘要生成 By Gemini</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.finding-card');
+
+            cards.forEach(card => {
+                card.addEventListener('click', function() {
+                    // 如果已经激活，则取消激活
+                    if (this.classList.contains('active')) {
+                        this.classList.remove('active');
+                    } else {
+                        // 先移除所有其他卡片的激活状态
+                        cards.forEach(c => c.classList.remove('active'));
+                        // 再激活当前点击的卡片
+                        this.classList.add('active');
+                    }
+                });
+            });
+            
+            // 点击卡片外部区域取消所有激活状态
+            document.addEventListener('click', function(event) {
+                if (!event.target.closest('.finding-card') && !event.target.closest('.findings-grid')) {
+                     cards.forEach(c => c.classList.remove('active'));
+                }
+            });
+             // 阻止网格区域的点击事件冒泡到document
+            document.querySelector('.findings-grid').addEventListener('click', function(event) {
+                event.stopPropagation();
+            });
+
+        });
+    </script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://arxiv.org/abs/2208.04259" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
