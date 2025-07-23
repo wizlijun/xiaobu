@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《露营的艺术》动态交互摘要</title>
+    <style>
+        :root {
+            --primary-color: #2c5f2d;
+            --secondary-color: #97b498;
+            --background-color: #f4f4f4;
+            --text-color: #333;
+            --highlight-bg: #e8f5e9;
+            --bushcraft-color: #8d6e63;
+            --fact-color: #1e88e5;
+            --opinion-color: #f4511e;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+            line-height: 1.7;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 25px 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 2.2em;
+        }
+
+        header p {
+            color: #666;
+            margin-top: 10px;
+        }
+
+        details {
+            background: #fff;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #e0e0e0;
+            transition: box-shadow 0.3s ease;
+        }
+
+        details[open] {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        summary {
+            font-weight: 600;
+            font-size: 1.2em;
+            padding: 20px;
+            cursor: pointer;
+            outline: none;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary:after {
+            content: '＋';
+            font-size: 1.5em;
+            transition: transform 0.3s ease;
+        }
+
+        details[open] summary:after {
+            transform: rotate(45deg);
+        }
+
+        .details-content {
+            padding: 0 20px 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        h3 {
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--secondary-color);
+            padding-bottom: 5px;
+            margin-top: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        li {
+            padding: 8px 0 8px 25px;
+            position: relative;
+            border-bottom: 1px dashed #eee;
+        }
+        
+        li:last-child {
+            border-bottom: none;
+        }
+
+        li::before {
+            content: '🏕️';
+            position: absolute;
+            left: 0;
+            top: 10px;
+        }
+        
+        .highlight-bushcraft {
+            background-color: #f1e6e2;
+            color: var(--bushcraft-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            border: 1px solid #dcd1cd;
+        }
+        
+        .tag {
+            font-size: 0.8em;
+            padding: 2px 8px;
+            border-radius: 10px;
+            color: #fff;
+            margin-right: 8px;
+            font-weight: 500;
+        }
+
+        .tag.fact { background-color: var(--fact-color); }
+        .tag.opinion { background-color: var(--opinion-color); }
+
+        blockquote {
+            background-color: var(--highlight-bg);
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-style: italic;
+        }
+        
+        .key-figure {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>《露营的艺术》动态交互摘要</h1>
+            <p>The Art of Camping: The History and Practice of Sleeping Under the Stars</p>
+            <p>点击下方主题展开，探索露营的精髓与历史。</p>
+        </header>
+
+        <main>
+            <details>
+                <summary>绪论 & 第一章：打包、扎营与露营哲学</summary>
+                <div class="details-content">
+                    <h3>核心观点</h3>
+                    <ul>
+                        <li><span class="tag opinion">观点</span> 作者通过个人在公共交通上携带大量装备的狼狈经历，引出露营的核心矛盾：精心准备与追求自由之间的张力。</li>
+                        <li><span class="tag opinion">观点</span> 露营是对现代城市文明（奖励即兴）的一种反叛，它要求人们回归“第一原则”，拥抱自然（需要规划）。</li>
+                        <li><span class="tag fact">事实</span> 现代轻量化露营的鼻祖是 <span class="key-figure">托马斯·海勒姆·霍尔丁 (Thomas Hiram Holding)</span>，他提倡“细节就是一切”，与19世纪那种搬家式露营（携带钢琴、铸铁壁炉）形成鲜明对比。</li>
+                        <li><span class="tag opinion">观点</span> 准备和打包本身就是一种乐趣和自豪感的来源，是从城市生活的被动和麻木中解脱出来的第一步。</li>
+                        <li><span class="tag fact">事实</span> 营地的选择至关重要，影响睡眠质量和整体体验。作者引用贝都因人谚语：“我们将帐篷扎得彼此远离，是为了让我们的心靠得更近。” 这强调了露营中的社交距离与和谐。</li>
+                    </ul>
+                    <h3>关键人物</h3>
+                    <ul>
+                        <li><span class="key-figure">托马斯·海勒姆·霍尔丁 (Thomas Hiram Holding)</span>：现代露营之父，倡导轻量化自行车露营。</li>
+                        <li><span class="key-figure">霍勒斯·凯普哈特 (Horace Kephart)</span>：美国林地生活专家，强调在漫长冬夜整理装备的乐趣。</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details>
+                <summary>第二章 & 第三章：营地领袖与篝火的召唤</summary>
+                <div class="details-content">
+                    <h3>核心观点</h3>
+                    <ul>
+                        <li><span class="tag fact">事实</span> 早期露营中存在“营地领袖”（Captain of the Camp）的角色，负责组织、分工、与外界交涉，是团队的核心。随着露营俱乐部的发展，这一角色逐渐被“营地管理员”取代。</li>
+                        <li><span class="tag opinion">观点</span> 露营的艺术在于“规划与自由”、“军事化与浪漫主义”、“领袖与印第安人”这些悖论之间的平衡。</li>
+                        <li><span class="tag opinion">观点</span> 篝火是人类进化的核心。理查德·兰厄姆在《生火：烹饪造就人类》中提出，熟食带来的能量富余是人类进化的关键。篝火也促进了社群的形成和宽容。</li>
+                        <li><span class="tag fact">事实</span> 美国超验主义运动（爱默生、梭罗）改变了美国人对荒野的态度，将其从“需要被征服的敌人”转变为“精神的源泉”。1858年的“哲人营”是重要事件，篝火成为思想碰撞的中心。</li>
+                        <li><span class="tag fact">事实</span> 约翰·缪尔 (John Muir) 与西奥多·罗斯福总统在优胜美地的篝火旁进行的露营会谈，直接促成了美国国家公园体系的建立和扩张，篝火成为了政治工具。</li>
+                    </ul>
+                    <h3 class="highlight-bushcraft">Bushcraft & Woodcraft 核心</h3>
+                    <ul>
+                        <li><span class="highlight-bushcraft">耐斯穆克 (Nessmuk / George W. Sears)</span>：美国露营的另一位教父，提出“去享受它，而不是去受苦”（go to smooth it, not rough it）的理念。
+                            <ul>
+                                <li><strong>轻量化先驱：</strong> 倡导“走得轻，越轻越好”，他本人体弱，因此推动了轻量化独木舟和装备的发展。</li>
+                                <li><strong>篝火大师：</strong> 批评浪费木材的巨大篝火，推崇高效、持久、燃料消耗少的印第安式篝火搭建法。这体现了早期环保意识。</li>
+                                <li><strong>与自然和谐：</strong> 他的理念源于童年时与印第安人的接触，强调只取所需，反对浪费和对自然的破坏。</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </details>
+            
+            <details open>
+                <summary>第四章 & 第五章：Woodcraft运动：激进的露营实践</summary>
+                <div class="details-content">
+                    <h3>核心观点</h3>
+                    <ul>
+                        <li><span class="tag fact">事实</span> 20世纪初，作为对主流童子军（被视为过于军事化和帝国主义）的回应，英国出现了一系列激进的、带有理想主义色彩的露营团体。</li>
+                        <li><span class="tag opinion">观点</span> 这些团体将露营视为一种教育、社会改革乃至精神重生的手段，试图通过回归自然来治愈现代文明的弊病。</li>
+                    </ul>
+                    <h3 class="highlight-bushcraft">Bushcraft & Woodcraft 核心</h3>
+                    <ul>
+                        <li><strong class="highlight-bushcraft">金德之友 (The Kindred of the Kibbo Kift)</strong>
+                            <ul>
+                                <li><strong>创始人：</strong> <span class="key-figure">约翰·哈格雷夫 (John Hargrave)</span>，一位幻灭的一战老兵和前童子军领袖。</li>
+                                <li><strong>理念：</strong> 融合了英国本土神话（罗宾汉）、古老仪式、和平主义、艺术和Woodcraft技能。他们追求身心健康，反对战争和现代工业文明。</li>
+                                <li><strong>实践：</strong> 在巨石阵、威尔明顿长人等古迹旁举行仪式性露营，穿着自制的独特服装（如绿色尖顶兜帽），实行男女平等的露营活动。</li>
+                                <li><strong>演变：</strong> 后来转向“社会信用”经济理论，并演变为更具政治性的“绿衫军”，但其Woodcraft根基深厚。</li>
+                            </ul>
+                        </li>
+                        <li><strong class="highlight-bushcraft">林地骑士团 (The Order of Woodcraft Chivalry)</strong>
+                            <ul>
+                                <li><strong>创始人：</strong> <span class="key-figure">欧内斯特·韦斯特莱克 (Ernest Westlake)</span>，一位贵格会地质学家。</li>
+                                <li><strong>基地：</strong> 新森林的“桑迪鲍尔斯” (Sandy Balls) 营地。</li>
+                                <li><strong>核心理论：</strong> 基于“复演论”（认为儿童的成长重演了人类从野蛮到文明的进化过程），将露营和Woodcraft作为关键的教育工具。</li>
+                                <li><strong>实践：</strong> 创办了激进的“森林学校”和为失业青年设立的“和平军” (Grith Fyrd) 工作营。团体内部对裸体主义、性教育等话题进行了大胆的探讨。</li>
+                                <li><strong>与德国青年运动的联系：</strong> OWC和Kibbo Kift都与德国的“候鸟运动”(Wandervogel) 和“联盟”(Bünde) 有思想交流，这些运动都强调回归自然，但德国的分支后来被纳粹主义扭曲和吸收。</li>
+                            </ul>
+                        </li>
+                        <li><strong class="highlight-bushcraft">林地人民 (The Woodcraft Folk)</strong>
+                            <ul>
+                                <li><strong>创始人：</strong> <span class="key-figure">莱斯利·保罗 (Leslie Paul)</span>，从Kibbo Kift分裂出来的成员。</li>
+                                <li><strong>理念：</strong> 继承了Woodcraft的户外精神，但更强调社会主义、合作主义和国际主义，政治色彩更明确，至今仍在活动。</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </details>
+            
+            <details>
+                <summary>第六章至第十章：完美营地、汽车露营与实用基础</summary>
+                <div class="details-content">
+                    <h3>完美营地与社会理想</h3>
+                    <ul>
+                        <li><span class="tag opinion">观点</span> 完美的营地不仅仅是地理位置，更是一种社会状态。它是一个自组织的社群，而非等级森严的罗马军营。</li>
+                        <li><span class="tag opinion">观点</span> 哲学家G. A. 科恩认为，露营是社会主义理想的缩影，人们在其中自然地分享、互助，而不是进行市场交换。</li>
+                        <li><span class="tag fact">事实</span> 英国“漫游者运动” (Ramblers' movement) 和标志性的“金德斯科特集体侵入事件” (Kinder Scout Mass Trespass) 是争取乡村土地使用权的重要斗争，为普通人露营和徒步开辟了空间。</li>
+                    </ul>
+                    <h3>汽车露营的兴起</h3>
+                    <ul>
+                         <li><span class="tag fact">事实</span> 汽车的普及催生了“汽车露营” (Autocamping)，其代表人物是“四位流浪者”：<span class="key-figure">亨利·福特、托马斯·爱迪生、哈维·费尔斯通</span> 和博物学家 <span class="key-figure">约翰·巴勒斯</span>。</li>
+                         <li><span class="tag opinion">观点</span> 他们的年度露营之旅是一次成功的公关活动，将汽车与美国精神（自由、探索、回归自然）紧密捆绑，使汽车露营成为一种文化现象。</li>
+                         <li><span class="tag opinion">观点</span> 汽车露营使旅行大众化，但也催生了“游客”而非“旅行者”，带来了对真实性的焦虑和新的阶级区分。</li>
+                    </ul>
+                    <h3>帐篷的革命</h3>
+                    <ul>
+                         <li><span class="tag fact">事实</span> 帐篷设计经历了从传统A型、墙式帐篷到框架帐篷的演变，最终迎来了革命性的<strong class="highlight-bushcraft">圆顶帐篷 (Dome Tent)</strong>。</li>
+                         <li><span class="tag opinion">观点</span> 圆顶帐篷是反文化运动的象征。其设计理念深受 <span class="key-figure">巴克敏斯特·富勒 (Buckminster Fuller)</span> 的“测地线穹顶”和“做更多用更少”哲学的影响。</li>
+                         <li><span class="tag fact">事实</span> 设计师 <span class="key-figure">比尔·莫斯 (Bill Moss)</span> 在1955年发明了现代意义上的第一顶商业圆顶帐篷（Pop-up Tent）。</li>
+                         <li><span class="tag opinion">观点</span> 《全球概览》(Whole Earth Catalog) 将富勒的思想与嬉皮士的回归土地运动连接起来，使圆顶帐篷成为技术与自然结合的典范，象征着一个去中心化、高效协作的新世界观。</li>
+                    </ul>
+                    <h3>实用基础与露营精神</h3>
+                    <ul>
+                         <li><strong>食物：</strong> <span class="highlight-bushcraft">霍勒斯·凯普哈特</span> 的《营地烹饪》是经典，强调就地取材和精湛厨艺。</li>
+                         <li><strong>睡眠：</strong> 好的睡眠是露营质量的关键，核心在于有效的隔热（防潮垫、睡袋）。</li>
+                         <li><strong>收营：</strong> “不留痕迹”(Leave No Trace) 是现代露营的核心道德。作者批评了音乐节上大量被遗弃的廉价帐篷，认为这与露营精神背道而驰。</li>
+                         <li><span class="tag opinion">观点</span> 露营的最终目的是“行动”。它将人从被动的消费者转变为主动的创造者，体验过基本生存的挑战后，人们会带着新的视角和力量回归日常生活。</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details>
+                <summary>附录：凯丝的打包清单（实用指南）</summary>
+                <div class="details-content">
+                    <h3>核心原则：最大化功用，最小化重量。</h3>
+                    <ul>
+                        <li><strong>住所：</strong> 帐篷（大小适中）、防水布 (Tarp)（用于搭建雨棚/遮阳棚）。</li>
+                        <li><strong>衣物：</strong> 防水套装（尤其是给孩子）、保暖衣物（夜晚温差大）、徒步靴/雨鞋。</li>
+                        <li><strong>烹饪：</strong>
+                            <ul>
+                                <li>燃料炉（Trangia是经典）、烤架（用于篝火）、长柄火柴。</li>
+                                <li>锅具、餐具、开瓶器、锋利小刀（Opinel是推荐）。</li>
+                                <li>便携水袋、可重复使用的水瓶。</li>
+                                <li>预先准备至少一顿饭，以应对扎营后的疲惫。</li>
+                            </ul>
+                        </li>
+                        <li><strong>睡眠：</strong> 优质睡袋、自充气防潮垫（比普通气垫保暖）、枕头（可用衣物代替）、羊皮毯（极佳的隔热材料）。</li>
+                        <li><strong>卫生与安全：</strong> 急救包（含烧伤膏）、防虫用品、厕纸、垃圾袋、太阳帽和防晒霜。</li>
+                        <li><strong>儿童用品：</strong> 背带（比推车更灵活）、让他们感到安全的玩具、睡前故事、小手电筒或荧光棒。</li>
+                    </ul>
+                </div>
+            </details>
+        </main>
+    </div>
+
+    <script>
+        // 简单的JS，实现一次只打开一个details元素，增强用户体验
+        const allDetails = document.querySelectorAll('details');
+
+        allDetails.forEach(details => {
+            details.addEventListener('toggle', event => {
+                if (details.open) {
+                    allDetails.forEach(d => {
+                        if (d !== details) {
+                            d.open = false;
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_art_of_camping_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
