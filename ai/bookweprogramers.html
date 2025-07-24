@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《我们，程序员》动态交互摘要</title>
+    <style>
+        /* --- 全局与色彩定义 --- */
+        :root {
+            --bg-main: #f4f7f9;
+            --text-main: #34495e;
+            --text-light: #7f8c8d;
+            --primary-color: #3498db;
+            --accent-green: #2ecc71;
+            --accent-purple: #9b59b6;
+            --accent-orange: #e67e22;
+            --accent-blue: #3498db;
+            --card-bg: #ffffff;
+            --timeline-line: #bdc3c7;
+            --shadow-color: rgba(52, 73, 94, 0.15);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 2rem;
+            font-size: 16px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* --- 头部 --- */
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 1s ease-out;
+        }
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            color: var(--primary-color);
+            margin: 0;
+        }
+        header p {
+            font-size: 1.1rem;
+            color: var(--text-light);
+        }
+
+        /* --- 时间线容器 --- */
+        .timeline-container {
+            position: relative;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .timeline-container::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            background-color: var(--timeline-line);
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin-left: -2px;
+            border-radius: 2px;
+        }
+
+        /* --- 时间线项目 --- */
+        .timeline-item {
+            padding: 10px 40px;
+            position: relative;
+            background-color: inherit;
+            width: 50%;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+        .timeline-item:nth-child(1) { animation-delay: 0.2s; }
+        .timeline-item:nth-child(2) { animation-delay: 0.4s; }
+        .timeline-item:nth-child(3) { animation-delay: 0.6s; }
+        .timeline-item:nth-child(4) { animation-delay: 0.8s; }
+        .timeline-item:nth-child(5) { animation-delay: 1.0s; }
+        .timeline-item:nth-child(6) { animation-delay: 1.2s; }
+        .timeline-item:nth-child(7) { animation-delay: 1.4s; }
+
+        .timeline-item.left {
+            left: 0;
+            text-align: right;
+        }
+        .timeline-item.right {
+            left: 50%;
+            text-align: left;
+        }
+
+        /* --- 时间线节点圆点 --- */
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            right: -12px;
+            background-color: var(--card-bg);
+            border: 4px solid var(--primary-color);
+            top: 28px;
+            border-radius: 50%;
+            z-index: 1;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .timeline-item.right::after {
+            left: -10px;
+        }
+        .timeline-item.active::after {
+            background-color: var(--accent-green);
+            transform: scale(1.2);
+        }
+        
+        /* --- 时间线内容 --- */
+        .timeline-content {
+            padding: 20px 30px;
+            background-color: var(--card-bg);
+            position: relative;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px var(--shadow-color);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .timeline-content:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px var(--shadow-color);
+        }
+        .timeline-content h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        .timeline-content h4 {
+             margin: 0 0 10px 0;
+             font-size: 0.9rem;
+             font-weight: 400;
+             color: var(--text-light);
+             font-style: italic;
+        }
+
+        /* --- 详情面板 (可折叠) --- */
+        .details-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.7s ease-out, padding 0.5s ease-out, margin-top 0.5s ease-out;
+            padding: 0;
+            margin-top: 0;
+        }
+        .timeline-item.active .details-panel {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        /* --- 认知卡片 --- */
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+            text-align: left;
+        }
+        .card {
+            flex: 1 1 250px;
+            padding: 15px;
+            border-left-width: 5px;
+            border-left-style: solid;
+            border-radius: 0 5px 5px 0;
+            background-color: #fdfdfd;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .card-title {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .card-title svg {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+        .card-content {
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+        .card.person { border-color: var(--accent-purple); }
+        .card.person .card-title { color: var(--accent-purple); }
+        .card.concept { border-color: var(--accent-blue); }
+        .card.concept .card-title { color: var(--accent-blue); }
+        .card.fact { border-color: var(--accent-green); }
+        .card.fact .card-title { color: var(--accent-green); }
+        .card.opinion { border-color: var(--accent-orange); }
+        .card.opinion .card-title { color: var(--accent-orange); }
+        
+        .highlight-opinion {
+            background: rgba(230, 126, 34, 0.1);
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-style: italic;
+            border-bottom: 1px dashed var(--accent-orange);
+        }
+        .highlight-fact {
+            background: rgba(46, 204, 113, 0.1);
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: 500;
+            border-bottom: 1px dashed var(--accent-green);
+        }
+        
+        /* --- 动画 --- */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- 响应式设计 --- */
+        @media screen and (max-width: 768px) {
+            body { padding: 1rem; }
+            header h1 { font-size: 2rem; }
+            .timeline-container::after {
+                left: 31px;
+            }
+            .timeline-item {
+                width: 100%;
+                padding-left: 70px;
+                padding-right: 25px;
+                text-align: left;
+            }
+            .timeline-item.left, .timeline-item.right {
+                left: 0%;
+                text-align: left;
+            }
+            .timeline-item.left::after, .timeline-item.right::after {
+                left: 20px;
+            }
+            .timeline-content {
+                padding: 15px 20px;
+            }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>《我们，程序员》</h1>
+        <p>从阿达·洛芙莱斯到人工智能的编码者编年史 - 动态交互摘要</p>
+    </header>
+
+    <main class="timeline-container">
+        
+        <!-- Part 1: Setting the Stage -->
+        <div class="timeline-item left">
+            <div class="timeline-content">
+                <h3>舞台序幕：我们是谁？</h3>
+                <h4>编程行业的本质定义</h4>
+                <div class="details-panel">
+                    <p>本书开篇即提出一个核心观点：<span class="highlight-opinion">我们程序员，是世界的细节管理者</span>。社会依赖于我们创造的机器和系统，但大多数人不愿意或无法处理实现这些系统所需的庞大细节。程序员正是那些沉浸于细节、乐于将抽象概念转化为具体实现的人。</p>
+                    <div class="card-container">
+                        <div class="card opinion">
+                            <div class="card-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+                                核心观点
+                            </div>
+                            <div class="card-content">
+                                程序员之所以不可或缺，并非因为我们更聪明，而是因为我们有一种“人格缺陷”和“超能力”——我们热爱并擅长管理海量的、错综复杂的细节，从而将其他人从这些细节中解放出来。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Part 2: The Giants -->
+        <div class="timeline-item right">
+            <div class="timeline-content">
+                <h3>1821-1843: 机械计算的黎明</h3>
+                <h4>巴贝奇与阿达·洛芙莱斯</h4>
+                <div class="details-panel">
+                    <p>在电子计算机出现前一个世纪，查尔斯·巴贝奇构想了机械计算机的宏伟蓝图。他与阿达·洛芙莱斯的合作，为后世的编程思想播下了种子。</p>
+                    <div class="card-container">
+                        <div class="card person">
+                            <div class="card-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                                关键人物
+                            </div>
+                            <div class="card-content">
+                                <strong>查尔斯·巴贝奇：</strong>第一位计算机工程师，设计了差分机和更通用的分析机。他是个充满激情但难以合作的天才。<br>
+                                <strong>阿达·洛芙莱斯：</strong>诗人拜伦之女，数学家。她不仅理解了分析机的潜力，还为其编写了算法，<span class="highlight-fact">被认为是第一位程序员</span>（尽管存在争议，巴贝奇本人也编写了程序）。
+                            </div>
+                        </div>
+                        <div class="card concept">
+                            <div class="card-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.106a.75.75 0 010 1.06l-1.591 1.59a.75.75 0 11-1.06-1.061l1.59-1.591a.75.75 0 011.062 0zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5h2.25a.75.75 0 01.75.75zM17.894 17.894a.75.75 0 01-1.062 1.06l-1.59-1.591a.75.75 0 111.06-1.06l1.591 1.59zM12 18a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM5.106 17.894a.75.75 0 011.062-1.06l1.591 1.59a.75.75 0 11-1.06 1.061l-1.59-1.591zM3 12a.75.75 0 01.75-.75h2.25a.75.75 0 010 1.5H3.75A.75.75 0 013 12zM6.106 6.106a.75.75 0 011.06-1.062l1.591 1.59a.75.75 0 01-1.06 1.061L6.106 6.106z"/></svg>
+                                核心概念
+                            </div>
+                            <div class="card-content">
+                                <strong>差分机 (Difference Engine):</strong> 专用机械计算机，通过有限差分法自动计算多项式函数表。<br>
+                                <strong>分析机 (Analytical Engine):</strong> 通用机械计算机的设想，包含“存储” (Store) 和“处理” (Mill) 单元，使用打孔卡输入指令，是现代计算机的雏形。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="timeline-item left">
+            <div class="timeline-content">
+                <h3>1928-1945: 计算的理论基石</h3>
+                <h4>希尔伯特、图灵与冯·诺依曼</h4>
+                <div class="details-panel">
+                    <p>在计算机硬件实现之前，数学家们为“可计算性”奠定了理论基础。希尔伯特提出的挑战，最终由图灵等人以意想不到的方式解答，并催生了现代计算机的体系结构。</p>
+                     <div class="card-container">
+                         <div class="card fact">
+                            <div class="card-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z" clip-rule="evenodd" /></svg>
+                                关键事件
+                            </div>
+                            <div class="card-content">
+                                <strong>希尔伯特问题：</strong>数学家大卫·希尔伯特提出数学应是完备、一致且可判定的。哥德尔和图灵证明了这是不可能的，但他们的证明过程本身定义了什么是“算法”。
+                            </div>
+                        </div>
+                        <div class="card concept">
+                            <div class="card-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.106a.75.75 0 010 1.06l-1.591 1.59a.75.75 0 11-1.06-1.061l1.59-1.591a.75.75 0 011.062 0zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5h2.25a.75.75 0 01.75.75zM17.894 17.894a.75.75 0 01-1.062 1.06l-1.59-1.591a.75.75 0 111.06-1.06l1.591 1.59zM12 18a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM5.106 17.894a.75.75 0 011.062-1.06l1.591 1.59a.75.75 0 11-1.06 1.061l-1.59-1.591zM3 12a.75.75 0 01.75-.75h2.25a.75.75 0 010 1.5H3.75A.75.75 0 013 12zM6.106 6.106a.75.75 0 011.06-1.062l1.591 1.59a.75.75 0 01-1.06 1.061L6.106 6.106z"/></svg>
+                                核心概念
+                            </div>
+                            <div class="card-content">
+                                <strong>图灵机：</strong>一个抽象的计算模型，由无限长的纸带、读写头和状态机构成，定义了所有“可计算”问题的边界。<br>
+                                <strong>冯·诺依曼架构：</strong>由约翰·冯·诺依曼提出（受图灵思想影响），核心是“存储程序”概念，即<span class="highlight-fact">指令和数据都以二进制形式存储在同一个存储器中</span>。这是现代计算机的基础。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="timeline-item right">
+            <div class="timeline-content">
+                <h3>1944-1960: 软件工程与高级语言的诞生</h3>
+                <h4>格蕾丝·霍珀与约翰·巴科斯</h4>
+                <div class="details-panel">
+                    <p>二战的计算需求催生了第一批电子计算机，也诞生了第一批真正的程序员。格蕾丝·霍珀定义了软件工程的诸多实践，而约翰·巴科斯则开创了高级编程语言的时代。</p>
+                     <div class="card-container">
+                        <div class="card person">
+                            <div class="card-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                                关键人物
+                            </div>
+                            <div class="card-content">
+                                <strong>格蕾丝·霍珀：</strong>第一位软件工程师。她在Mark I和UNIVAC上工作，<span class="highlight-fact">发明了第一个编译器（A-0）</span>，并领导开发了COBOL语言。她推广了“自动编程”思想，让编程更接近人类语言。<br>
+                                <strong>约翰·巴科斯：</strong>第一门被广泛使用的高级语言FORTRAN的创造者。他的核心目标是<span class="highlight-opinion">让编译器生成的代码效率能与手写汇编媲美</span>，从而说服程序员放弃底层编码。
+                            </div>
+                        </div>
+                        <div class="card concept">
+                            <div class="card-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.106a.75.75 0 010 1.06l-1.591 1.59a.75.75 0 11-1.06-1.061l1.59-1.591a.75.75 0 011.062 0zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5h2.25a.75.75 0 01.75.75zM17.894 17.894a.75.75 0 01-1.062 1.06l-1.59-1.591a.75.75 0 111.06-1.06l1.591 1.59zM12 18a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM5.106 17.894a.75.75 0 011.062-1.06l1.591 1.59a.75.75 0 11-1.06 1.061l-1.59-1.591zM3 12a.75.75 0 01.75-.75h2.25a.75.75 0 010 1.5H3.75A.75.75 0 013 12zM6.106 6.106a.75.75 0 011.06-1.062l1.591 1.59a.75.75 0 01-1.06 1.061L6.106 6.106z"/></svg>
+                                核心概念
+                            </div>
+                            <div class="card-content">
+                                <strong>编译器 (Compiler):</strong> 将高级语言（如COBOL, FORTRAN）翻译成机器能直接执行的低级代码的程序。<br>
+                                <strong>COBOL:</strong> 面向商业的通用语言，强调使用英语，易于非专业程序员理解。<br>
+                                <strong>FORTRAN:</strong> 公式翻译语言，专为科学和工程计算设计，注重数学表达和计算效率。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="timeline-item left">
+            <div class="timeline-content">
+                <h3>1958-1968: 结构化与面向对象的思想革命</h3>
+                <h4>戴克斯特拉、尼高与达尔</h4>
+                <div class="details-panel">
+                    <p>随着编程变得越来越复杂，“软件危机”初现端倪。戴克斯特拉倡导用科学的严谨性来构建软件，而尼高和达尔则无意中开创了影响至今的面向对象范式。</p>
+                    <div class="card-container">
+                         <div class="card person">
+                            <div class="card-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                                关键人物
+                            </div>
+                            <div class="card-content">
+                                <strong>艾兹格·戴克斯特拉：</strong>第一位计算机科学家。他认为编程应是一门严谨的数学学科，<span class="highlight-opinion">发表了《GOTO语句被认为有害》，倡导结构化编程</span>，并开发了信号量等并发概念。<br>
+                                <strong>克利斯登·尼高 & 奥利-约翰·达尔：</strong>第一门面向对象语言SIMULA的创造者。他们为解决模拟问题而发明的“活动”（后演变为“对象”和“类”）概念，意外地开启了全新的编程范式。
+                            </div>
+                        </div>
+                        <div class="card concept">
+                            <div class="card-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.106a.75.75 0 010 1.06l-1.591 1.59a.75.75 0 11-1.06-1.061l1.59-1.591a.75.75 0 011.062 0zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5h2.25a.75.75 0 01.75.75zM17.894 17.894a.75.75 0 01-1.062 1.06l-1.59-1.591a.75.75 0 111.06-1.06l1.591 1.59zM12 18a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM5.106 17.894a.75.75 0 011.062-1.06l1.591 1.59a.75.75 0 11-1.06 1.061l-1.59-1.591zM3 12a.75.75 0 01.75-.75h2.25a.75.75 0 010 1.5H3.75A.75.75 0 013 12zM6.106 6.106a.75.75 0 011.06-1.062l1.591 1.59a.75.75 0 01-1.06 1.061L6.106 6.106z"/></svg>
+                                核心概念
+                            </div>
+                            <div class="card-content">
+                                <strong>结构化编程：</strong>程序应仅由顺序、选择（if/else）和循环（while/for）三种基本结构构成，以增强代码的可读性、可维护性和可证明性。<br>
+                                <strong>面向对象编程 (OOP):</strong> 将数据和操作数据的函数封装在一起，形成“对象”。通过类、继承和多态等机制来组织软件。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="timeline-item right">
+            <div class="timeline-content">
+                <h3>1964-1978: 计算机民主化与C语言的崛起</h3>
+                <h4>凯梅尼、汤普森、里奇与克尼汉</h4>
+                <div class="details-panel">
+                    <p>这个时期，计算机开始走出象牙塔。BASIC语言和分时系统让普通人也能编程，而贝尔实验室的“三巨头”则创造了至今仍在统治软件世界的UNIX操作系统和C语言。</p>
+                    <div class="card-container">
+                        <div class="card person">
+                            <div class="card-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                                关键人物
+                            </div>
+                            <div class="card-content">
+                                <strong>约翰·凯梅尼 & 托马斯·库尔茨：</strong>在达特茅斯学院<span class="highlight-fact">发明了BASIC语言和第一个实用的分时操作系统</span>，其目标是让“每个学生都能使用计算机”。<br>
+                                <strong>肯·汤普森 & 丹尼斯·里奇 & 布莱恩·克尼汉：</strong>在贝尔实验室，汤普森和里奇为了玩游戏和方便开发，创造了UNIX和C语言。克尼汉则通过合著《C程序设计语言》(K&R)，将C语言推广开来。
+                            </div>
+                        </div>
+                        <div class="card concept">
+                            <div class="card-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.106a.75.75 0 010 1.06l-1.591 1.59a.75.75 0 11-1.06-1.061l1.59-1.591a.75.75 0 011.062 0zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5h2.25a.75.75 0 01.75.75zM17.894 17.894a.75.75 0 01-1.062 1.06l-1.59-1.591a.75.75 0 111.06-1.06l1.591 1.59zM12 18a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM5.106 17.894a.75.75 0 011.062-1.06l1.591 1.59a.75.75 0 11-1.06 1.061l-1.59-1.591zM3 12a.75.75 0 01.75-.75h2.25a.75.75 0 010 1.5H3.75A.75.75 0 013 12zM6.106 6.106a.75.75 0 011.06-1.062l1.591 1.59a.75.75 0 01-1.06 1.061L6.106 6.106z"/></svg>
+                                核心概念
+                            </div>
+                            <div class="card-content">
+                                <strong>分时系统 (Time-Sharing):</strong> 允许多个用户通过终端同时与一台计算机交互的系统，极大地提高了计算机的利用率和可访问性。<br>
+                                <strong>UNIX & C:</strong> 一对共生的操作系统和编程语言。UNIX的设计哲学是“一切皆文件”和“小而美的工具”，而C语言则是一种“高级汇编”，既有高级语言的结构，又能直接操作硬件。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Part 3: Author's Journey -->
+        <div class="timeline-item left">
+            <div class="timeline-content">
+                <h3>1964-2023: 曲线的膝部</h3>
+                <h4>作者的亲身经历与行业演进</h4>
+                <div class="details-panel">
+                    <p>这部分是作者Robert C. Martin（“鲍勃大叔”）的自传，他以个人视角回顾了从60年代至今的行业巨变，从大型机到微机，从汇编到C++，再到敏捷和软件工艺运动。</p>
+                    <div class="card-container">
+                        <div class="card fact">
+                            <div class="card-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z" clip-rule="evenodd" /></svg>
+                                关键节点
+                            </div>
+                            <div class="card-content">
+                                <strong>70年代：</strong>在小型机 (Varian 620/F, PDP-8) 上用汇编语言编写实时系统，经历打孔卡到磁带的转变。<br>
+                                <strong>80年代：</strong>接触并拥抱C语言和UNIX工具，开发嵌入式系统 (8085) 和语音应答系统，见证了PC（Apple II, Mac）的兴起。<br>
+                                <strong>90年代：</strong>转向C++和面向对象设计，参与Usenet社区，写作并成为《C++ Report》编辑，接触设计模式，创立Object Mentor公司。<br>
+                                <strong>2000-至今：</strong><span class="highlight-fact">参与创建“敏捷宣言”</span>，推动极限编程(XP)，经历互联网泡沫破裂。后续通过写作《代码整洁之道》等书籍和制作视频，倡导软件工艺和专业精神。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Part 4: The Future -->
+        <div class="timeline-item right">
+            <div class="timeline-content">
+                <h3>未来展望：高原与前路</h3>
+                <h4>对语言、AI、硬件和编程的预测</h4>
+                <div class="details-panel">
+                    <p>作者认为，软件和硬件的指数级增长时代可能已经结束，我们正进入一个“高原期”。未来的发展将更多是现有基础上的精炼和深化。</p>
+                    <div class="card-container">
+                        <div class="card opinion">
+                            <div class="card-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+                                作者观点
+                            </div>
+                            <div class="card-content">
+                                <strong>语言：</strong>编程语言的创新已趋于平缓，未来可能会趋于统一，<span class="highlight-opinion">Lisp的“代码即数据”特性使其成为最终语言的有力竞争者</span>。<br>
+                                <strong>AI：</strong>AI和LLM是强大的工具，会改变我们的工作方式，但<span class="highlight-opinion">不会取代程序员</span>，因为程序员的核心价值在于处理AI无法处理的、精确的业务细节和逻辑。<br>
+                                <strong>硬件：</strong>摩尔定律已死，计算能力的增长将更多依赖于架构创新（如多核、云计算），而非单纯的时钟频率提升。<br>
+                                <strong>编程：</strong><span class="highlight-opinion">编程的核心（if/while/赋值）不会改变</span>。未来的重点将是深化纪律、标准和职业道德，以应对软件在社会中日益关键的角色。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const timelineItems = document.querySelectorAll('.timeline-item');
+
+            timelineItems.forEach(item => {
+                const content = item.querySelector('.timeline-content');
+                const detailsPanel = item.querySelector('.details-panel');
+
+                content.addEventListener('click', () => {
+                    const wasActive = item.classList.contains('active');
+
+                    // Close all other items
+                    timelineItems.forEach(i => {
+                        if (i !== item) {
+                            i.classList.remove('active');
+                            const panel = i.querySelector('.details-panel');
+                            panel.style.maxHeight = null;
+                        }
+                    });
+                    
+                    // Toggle the clicked item
+                    item.classList.toggle('active');
+                    if (item.classList.contains('active')) {
+                        detailsPanel.style.maxHeight = detailsPanel.scrollHeight + 40 + "px";
+                    } else {
+                        detailsPanel.style.maxHeight = null;
+                    }
+                });
+            });
+        });
+    </script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="bookweprogramers_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
