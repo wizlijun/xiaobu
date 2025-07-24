@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动态交互论文摘要：IndexTTS2</title>
+    <!-- 使用 Font Awesome 提供的图标库 -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <!-- 引入思源黑体字体，提升中文显示效果 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS 变量，方便统一管理颜色、阴影等样式 */
+        :root {
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --primary-color: #007bff;
+            --fact-color: #28a745; /* 绿色代表事实 */
+            --opinion-color: #ffc107; /* 黄色代表观点 */
+            --emotion-highlight-bg: linear-gradient(135deg, #ff7e5f, #feb47b); /* 情感卡片专属渐变背景 */
+            --emotion-text-color: #fff; /* 情感卡片专属文字颜色 */
+            --shadow: 0 4px 15px rgba(0,0,0,0.08);
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.8;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 1.1em;
+            color: #6c757d;
+        }
+
+        .grid-container {
+            display: grid;
+            /* 响应式网格布局，自动调整列数 */
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+            border-top: 4px solid var(--primary-color);
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+        }
+
+        /* 情感卡片的特殊样式 */
+        .card.emotion-card {
+            border-top-color: #ff7e5f;
+            background: var(--emotion-highlight-bg);
+            color: var(--emotion-text-color);
+        }
+        
+        .card.emotion-card .card-title, .card.emotion-card .card-header i {
+             color: var(--emotion-text-color);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-header i {
+            font-size: 1.8em;
+            color: var(--primary-color);
+            margin-right: 15px;
+            width: 40px;
+            text-align: center;
+        }
+
+        .card-title {
+            font-size: 1.4em;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .card-summary {
+            font-size: 1em;
+            margin-bottom: 20px;
+        }
+
+        /* 详情内容的默认状态：收起 */
+        .card-details {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
+        }
+
+        /* 卡片被点击后，详情内容展开 */
+        .card.active .card-details {
+            max-height: 500px; /* 根据内容调整最大高度 */
+            opacity: 1;
+        }
+        
+        /* 切换“展开/收起”提示文字 */
+        .card.active .toggle-icon::before {
+            content: "收起 ▲";
+        }
+
+        .detail-item {
+            margin-bottom: 12px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .detail-item::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--fact-color);
+            font-weight: bold;
+        }
+
+        /* 高亮文本的通用样式 */
+        .highlight {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        /* 事实高亮样式 */
+        .fact {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: #1e6b2e;
+            border-bottom: 2px solid var(--fact-color);
+        }
+
+        /* 观点高亮样式 */
+        .opinion {
+            background-color: rgba(255, 193, 7, 0.15);
+            color: #856404;
+            border-bottom: 2px solid var(--opinion-color);
+        }
+        
+        /* 情感卡片内的高亮文本样式 */
+        .emotion-highlight-text {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-weight: bold;
+            border-bottom: 2px solid #fff;
+        }
+        
+        .toggle-icon {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #999;
+            font-weight: 500;
+        }
+        
+        .card.emotion-card .toggle-icon {
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .toggle-icon::before {
+            content: "展开详情 ▼";
+        }
+
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>一文读懂 IndexTTS2</h1>
+        <p>一个在<span class="opinion highlight">情感表达</span>和<span class="fact highlight">时长控制</span>上取得突破的自回归语音合成模型</p>
+    </header>
+
+    <div class="grid-container">
+        <!-- 卡片1: 核心挑战 -->
+        <div class="card" onclick="toggleDetails(this)">
+            <div class="card-header">
+                <i class="fas fa-bullseye-pointer"></i>
+                <h3 class="card-title">核心挑战</h3>
+            </div>
+            <div class="card-summary">
+                传统自回归TTS模型面临两大难题：<br>1. 时长难控； 2. 情感与音色混淆。
+                <span class="toggle-icon"></span>
+            </div>
+            <div class="card-details">
+                <div class="detail-item"><strong>时长控制难题：</strong><span class="fact highlight">自回归模型逐字生成，难以精确控制总时长</span>，这在视频配音等场景下是致命缺陷。</div>
+                <div class="detail-item"><strong>情感表达局限：</strong><span class="fact highlight">情感和说话人音色特征往往被耦合在一起</span>，无法独立控制，限制了模型的表现力。</div>
+            </div>
+        </div>
+
+        <!-- 卡片2: 解决方案 -->
+        <div class="card" onclick="toggleDetails(this)">
+            <div class="card-header">
+                <i class="fas fa-cogs"></i>
+                <h3 class="card-title">IndexTTS2 解决方案</h3>
+            </div>
+            <div class="card-summary">
+                提出新方法，实现<span class="opinion highlight">“鱼与熊掌兼得”</span>：既能精准控时长，又能自由生成。
+                <span class="toggle-icon"></span>
+            </div>
+            <div class="card-details">
+                <div class="detail-item"><strong>双模时长控制：</strong>支持两种模式。<br>
+                    - <span class="fact highlight">精确模式:</span> 可手动指定生成token数量，实现精准时长控制。<br>
+                    - <span class="fact highlight">自由模式:</span> 模型自动生成，复现参考音频的自然韵律。
+                </div>
+                <div class="detail-item"><strong>特征解耦：</strong><span class="fact highlight">成功将情感表达与说话人音色分离</span>，实现了对两者的独立控制。</div>
+            </div>
+        </div>
+        
+        <!-- 卡片3: 情感表现力突破 (高亮) -->
+        <div class="card emotion-card" onclick="toggleDetails(this)">
+            <div class="card-header">
+                <i class="fas fa-theater-masks"></i>
+                <h3 class="card-title">🌟 情感表现力大突破</h3>
+            </div>
+            <div class="card-summary">
+                这是IndexTTS2最亮眼的部分：<span class="opinion highlight">实现了前所未有的情感控制粒度和灵活性</span>。
+                <span class="toggle-icon"></span>
+            </div>
+            <div class="card-details">
+                <div class="detail-item"><strong>跨说话人情感迁移：</strong><span class="emotion-highlight-text highlight">核心亮点！</span>可以使用A说话人的音色，来表达B说话人的情感。这是对特征解耦的完美应用。</div>
+                <div class="detail-item"><strong>零样本情感复刻：</strong><span class="emotion-highlight-text highlight">无需训练</span>，模型能完美复现输入音频里蕴含的情感特征。</div>
+                <div class="detail-item"><strong>自然语言控制情感：</strong><span class="emotion-highlight-text highlight">降低使用门槛！</span>用户可以直接通过文本描述（如“用悲伤的语气说”）来引导模型生成带特定情感的语音。</div>
+                <div class="detail-item"><strong>强情感语音稳定性：</strong><span class="emotion-highlight-text highlight">提升清晰度！</span>通过引入GPT潜在表示，即使在强烈情感（如愤怒、激动）下，也能保证生成语音的稳定和清晰。</div>
+            </div>
+        </div>
+        
+        <!-- 卡片4: 实验结果 -->
+        <div class="card" onclick="toggleDetails(this)">
+            <div class="card-header">
+                <i class="fas fa-chart-bar"></i>
+                <h3 class="card-title">实验结果</h3>
+            </div>
+            <div class="card-summary">
+                <span class="opinion highlight">全面优于</span>现有SOTA模型，在多个关键指标上表现卓越。
+                <span class="toggle-icon"></span>
+            </div>
+            <div class="card-details">
+                <div class="detail-item"><strong>客观指标：</strong>在<span class="fact highlight">词错率 (WER)</span>、<span class="fact highlight">说话人相似度 (SS)</span> 上取得更优结果。</div>
+                <div class="detail-item"><strong>情感保真度 (Emotional Fidelity)：</strong><span class="fact highlight">这是关键！</span>实验证明，模型在复现和生成指定情感方面的准确度非常高。</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // JavaScript 函数，用于切换卡片的 'active' 类，从而触发 CSS 中的展开/收起动画
+    function toggleDetails(cardElement) {
+        cardElement.classList.toggle('active');
+    }
+</script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://arxiv.org/pdf/2506.21619" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
