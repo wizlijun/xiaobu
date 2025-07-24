@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章摘要：AI代理的上下文工程</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #343a40;
+            --light-text: #6c757d;
+            --border-color: #dee2e6;
+            --shadow: 0 4px 8px rgba(0,0,0,0.05);
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.5rem;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--text-color);
+            margin: 0;
+        }
+
+        .meta-info {
+            margin-top: 0.5rem;
+            color: var(--light-text);
+            font-size: 0.9rem;
+        }
+        
+        .meta-info span { margin: 0 10px; }
+
+        .introduction {
+            background-color: #e9f5ff;
+            border-left: 5px solid var(--primary-color);
+            padding: 1.5rem;
+            margin-bottom: 2.5rem;
+            border-radius: 5px;
+        }
+
+        .principle-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-header:hover {
+            background-color: #f1f3f5;
+        }
+
+        .card-header h3 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--text-color);
+        }
+        
+        .card-header .toggle-icon {
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .card-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, padding 0.5s ease-out;
+            border-top: 1px solid var(--border-color);
+            padding: 0 1.5rem;
+        }
+
+        .principle-card.expanded .card-details {
+            max-height: 1000px; /* Large enough for content */
+            padding: 1.5rem;
+        }
+        
+        .principle-card.expanded .toggle-icon {
+            transform: rotate(45deg);
+        }
+
+        .highlight {
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .highlight::before {
+            font-size: 1.2em;
+            margin-right: 0.75rem;
+            line-height: 1.5;
+        }
+
+        .fact {
+            background-color: #e7f5ff;
+            border-left: 4px solid #3498db;
+            color: #1c5c8a;
+        }
+        .fact::before {
+            content: '💡';
+        }
+
+        .opinion {
+            background-color: #e6f7ee;
+            border-left: 4px solid #2ecc71;
+            color: #155724;
+        }
+        .opinion::before {
+            content: '🎯';
+        }
+        
+        .details-section h4 {
+            color: var(--primary-color);
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 5px;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .details-section:first-child h4 {
+            margin-top: 0;
+        }
+
+        ul {
+            list-style-type: '✓ ';
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        .final-conclusion {
+            text-align: center;
+            padding: 2rem;
+            background: var(--card-bg);
+            border-radius: 8px;
+            margin-top: 2rem;
+            font-style: italic;
+            color: var(--light-text);
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>AI代理的上下文工程：构建Manus的经验教训</h1>
+        <div class="meta-info">
+            <span>作者: Yichao 'Peak' Ji</span> | <span>日期: 2025/7/18</span> | <span>分类: 技术</span>
+        </div>
+    </header>
+
+    <div class="introduction">
+        <p><strong>核心决策：</strong>放弃从头训练模型，选择基于前沿模型进行“上下文工程”。</p>
+        <p><strong>根本原因：</strong>上下文工程能以小时为单位快速迭代，并使产品与底层模型技术解耦，如同“水涨船高”中的船，而非固定的柱子。本文分享了在构建AI代理Manus过程中，通过大量实验（戏称为“随机研究生下降”）总结出的上下文工程核心原则。</p>
+    </div>
+
+    <!-- Principle 1 -->
+    <div class="principle-card">
+        <div class="card-header">
+            <h3>1. 围绕KV缓存进行设计</h3>
+            <span class="toggle-icon">+</span>
+        </div>
+        <div class="card-details">
+            <div class="details-section">
+                 <div class="opinion highlight">
+                    <strong>核心理念：</strong>KV缓存命中率是生产级AI代理最重要的单一指标，直接决定延迟和成本。
+                </div>
+                <h4>问题所在</h4>
+                <p>代理的输入（上下文）远大于输出（动作），平均Token比例可达100:1。低效的缓存利用会急剧增加成本和延迟。</p>
+                <h4>具体实践</h4>
+                 <ul>
+                    <li><span class="fact"><strong>保持提示前缀稳定：</strong>避免在系统提示开头加入时间戳等易变内容。</span></li>
+                    <li><span class="fact"><strong>确保上下文只追加：</strong>不修改历史记录，并使用确定性的序列化方式（如固定JSON键序）。</span></li>
+                    <li><span class="fact"><strong>明确标记缓存断点：</strong>在需要时手动插入缓存标记，至少包含系统提示。</span></li>
+                    <li><span class="fact"><strong>优化自托管模型：</strong>启用PagedAttention等技术，并确保请求路由一致。</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Principle 2 -->
+    <div class="principle-card">
+        <div class="card-header">
+            <h3>2. 遮蔽，而非移除</h3>
+            <span class="toggle-icon">+</span>
+        </div>
+        <div class="card-details">
+             <div class="details-section">
+                <div class="opinion highlight">
+                    <strong>核心理念：</strong>通过遮蔽（Masking）而非移除来动态管理工具集，避免破坏KV缓存和模型理解。
+                </div>
+                <h4>问题所在</h4>
+                <p>工具数量爆炸会让代理“变笨”。但动态增删工具会使KV缓存失效，并让模型对引用了已消失工具的历史记录感到困惑。</p>
+                <h4>具体实践</h4>
+                <ul>
+                    <li><span class="fact"><strong>使用Logits Masking：</strong>在解码时通过掩码阻止或强制模型选择某些动作，而不是从上下文中移除工具定义。</span></li>
+                    <li><span class="fact"><strong>利用响应预填充：</strong>使用`auto`、`required`、`specified`等模式，在不修改工具定义的前提下约束模型的选择。</span></li>
+                    <li><span class="fact"><strong>设计一致的动作名称前缀：</strong>如`browser_`、`shell_`，便于通过预填充函数名来约束模型只从特定工具组中选择。</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Principle 3 -->
+    <div class="principle-card">
+        <div class="card-header">
+            <h3>3. 使用文件系统作为上下文</h3>
+            <span class="toggle-icon">+</span>
+        </div>
+        <div class="card-details">
+            <div class="details-section">
+                <div class="opinion highlight">
+                    <strong>核心理念：</strong>将文件系统视为终极的、无限大小的上下文，使代理能按需读写，实现可恢复的信息压缩。
+                </div>
+                <h4>问题所在</h4>
+                <p>即使是128K的上下文窗口，在处理网页、PDF等大型非结构化数据时也容易耗尽、性能下降且成本高昂。不可逆的压缩会丢失关键信息。</p>
+                <h4>具体实践</h4>
+                 <ul>
+                    <li><span class="fact"><strong>可恢复的压缩策略：</strong>从上下文中移除大块内容（如网页HTML），但保留其引用（如URL或文件路径）。当需要时，代理可以自行读取文件来恢复信息。</span></li>
+                    <li><span class="fact"><strong>将文件系统作为外部记忆：</strong>训练模型不仅将文件系统用作存储，还用作结构化的外部记忆，按需写入和读取。</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Principle 4 -->
+    <div class="principle-card">
+        <div class="card-header">
+            <h3>4. 通过复述操控注意力</h3>
+            <span class="toggle-icon">+</span>
+        </div>
+        <div class="card-details">
+            <div class="details-section">
+                <div class="opinion highlight">
+                    <strong>核心理念：</strong>通过让代理不断复述和更新其目标（如 `todo.md` 文件），将全局计划始终保持在模型的近期注意力范围内。
+                </div>
+                <h4>问题所在</h4>
+                <p>在长达数十步的复杂任务中，代理容易“迷失在中间”，偏离最初的目标。</p>
+                <h4>具体实践</h4>
+                 <ul>
+                    <li><span class="fact"><strong>创建并迭代待办事项列表：</strong>代理在任务开始时创建`todo.md`，并在每一步后更新它，将完成项勾选掉。</span></li>
+                    <li><span class="fact"><strong>将复述内容置于上下文末尾：</strong>通过重写`todo.md`，这个包含全局计划的“复述”内容被推到上下文的末尾，有效对抗了模型的注意力衰减。</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Principle 5 -->
+    <div class="principle-card">
+        <div class="card-header">
+            <h3>5. 保留错误的内容</h3>
+            <span class="toggle-icon">+</span>
+        </div>
+        <div class="card-details">
+            <div class="details-section">
+                <div class="opinion highlight">
+                    <strong>核心理念：</strong>不要隐藏或擦除错误。将失败的尝试和错误信息保留在上下文中，是让模型学习和适应的最有效方法之一。
+                </div>
+                <h4>问题所在</h4>
+                <p>开发者倾向于隐藏错误、重试或重置状态，但这剥夺了模型从失败中学习的机会。</p>
+                <h4>具体实践</h4>
+                <ul>
+                    <li><span class="fact"><strong>完整记录失败：</strong>将失败的动作、返回的错误信息或堆栈跟踪完整地保留在上下文中。</span></li>
+                    <li><span class="fact"><strong>相信模型的适应能力：</strong>当模型看到“动作A -> 错误B”的序列后，它会隐式地更新其内部信念，降低重复犯错的概率。错误恢复是真正代理行为的标志。</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Principle 6 -->
+    <div class="principle-card">
+        <div class="card-header">
+            <h3>6. 不要被少样本示例所困</h3>
+            <span class="toggle-icon">+</span>
+        </div>
+        <div class="card-details">
+            <div class="details-section">
+                <div class="opinion highlight">
+                    <strong>核心理念：</strong>在代理上下文中引入受控的多样性，以防止模型因模仿历史行为而陷入次优的、重复的模式。
+                </div>
+                <h4>问题所在</h4>
+                <p>LLM是优秀的模仿者。如果上下文中充满了大量相似的“动作-观察”对（少样本示例），模型会倾向于盲目重复该模式，即使当前情况已不适用。</p>
+                <h4>具体实践</h4>
+                 <ul>
+                    <li><span class="fact"><strong>引入结构化变化：</strong>在行动和观察的序列化中，引入少量、受控的随机性，如使用不同的模板、替代性措辞或微小的格式噪音。</span></li>
+                    <li><span class="fact"><strong>打破模式单一性：</strong>上下文越单一，代理就越脆弱。增加多样性可以调整模型的注意力，防止其过度泛化或陷入幻觉。</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="final-conclusion">
+        <p><strong>结论：上下文工程是构建强大、高效、可扩展AI代理的核心。你如何塑造上下文，最终决定了你的代理将如何行为。</strong></p>
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const cards = document.querySelectorAll('.principle-card');
+
+        cards.forEach(card => {
+            const header = card.querySelector('.card-header');
+            header.addEventListener('click', () => {
+                card.classList.toggle('expanded');
+            });
+        });
+    });
+</script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://manus.im/blog/Context-Engineering-for-AI-Agents-Lessons-from-Building-Manus" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
