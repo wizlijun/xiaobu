@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>机密 // 美国AI主导协议 // USA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Roboto:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #0A3D91;
+            --accent-red: #BF0A30;
+            --background-dark: #0d1117;
+            --text-color: #c9d1d9;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --glow-color: rgba(10, 175, 255, 0.3);
+            --success-green: #2ea043;
+        }
+        body {
+            font-family: 'Roboto', 'Noto Sans SC', sans-serif;
+            background-color: var(--background-dark);
+            color: var(--text-color);
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* --- Loader Animation --- */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: var(--background-dark);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            font-family: 'Orbitron', 'Noto Sans SC', sans-serif;
+            transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+        }
+        #loader .spinner {
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--accent-red);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        #loader p {
+            margin-top: 20px;
+            letter-spacing: 2px;
+            color: var(--text-color);
+        }
+        #loader .auth-text {
+            color: var(--success-green);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* --- Main Container --- */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            opacity: 0;
+            animation: fadeInContainer 1s ease-out forwards;
+            animation-delay: 2.5s; /* Delay after loader */
+        }
+        @keyframes fadeInContainer {
+            to { opacity: 1; }
+        }
+
+        header { text-align: center; margin-bottom: 40px; }
+        header h1 {
+            font-family: 'Orbitron', 'Noto Sans SC', sans-serif;
+            font-size: 3rem;
+            color: #fff;
+            text-shadow: 0 0 10px var(--glow-color), 0 0 20px var(--accent-red);
+            margin: 0;
+            font-weight: 700;
+        }
+        .typing-cursor {
+            display: inline-block;
+            width: 1rem;
+            height: 3rem;
+            background-color: var(--accent-red);
+            animation: blink 1s step-end infinite;
+            vertical-align: bottom;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+        header p {
+            font-size: 1.1rem;
+            color: var(--text-color);
+            opacity: 0.8;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+
+        .nav-pills {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .nav-button {
+            background: transparent;
+            border: 2px solid var(--border-color);
+            color: var(--text-color);
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .nav-button:hover, .nav-button.active {
+            border-color: var(--accent-red);
+            color: #fff;
+            background-color: var(--accent-red);
+            box-shadow: 0 0 15px rgba(191, 10, 48, 0.7);
+        }
+
+        .pillar-content {
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .pillar-content.active {
+            display: flex;
+            animation: fadeInPillar 0.5s ease-out;
+        }
+        @keyframes fadeInPillar {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .action-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .action-card.open .card-header, .card-header:hover {
+            background-color: rgba(48, 54, 61, 0.5);
+        }
+        
+        .card-icon {
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+        .card-title-group { flex-grow: 1; }
+        .card-title-group h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #fff;
+            font-weight: 700;
+        }
+        .card-title-group p { margin: 5px 0 0; opacity: 0.7; font-size: 0.9rem; }
+        .toggle-icon {
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+        .action-card.open .toggle-icon { transform: rotate(180deg); }
+
+        .card-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+            padding: 0 20px;
+        }
+        .action-card.open .card-body {
+            max-height: 1000px; /* Large enough to fit content */
+            padding: 0 20px 20px 20px;
+        }
+        .card-body ul {
+            list-style: none;
+            padding: 15px 0 0 0;
+            margin: 0;
+            border-top: 1px solid var(--border-color);
+        }
+        .card-body li {
+            padding-left: 30px;
+            position: relative;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+        .card-body li::before {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 5px;
+            font-size: 1.2rem;
+        }
+        .card-body li.viewpoint::before { content: '🧠'; }
+        .card-body li.action::before { content: '⚙️'; }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            font-family: 'Orbitron', 'Noto Sans SC', sans-serif;
+            color: var(--text-color);
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loader">
+        <div class="spinner"></div>
+        <p id="loader-text">接入战略协议...</p>
+        <p class="auth-text" id="auth-text">身份已验证。授权访问。</p>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1 id="main-title"></h1><span class="typing-cursor"></span>
+            <p>指令日期: 2025年7月 // 状态: 可执行</p>
+        </header>
+
+        <nav class="nav-pills">
+            <button class="nav-button active" onclick="openPillar(event, 'pillar-0')">最高指令</button>
+            <button class="nav-button" onclick="openPillar(event, 'pillar-1')">支柱 I: 闪电式创新</button>
+            <button class="nav-button" onclick="openPillar(event, 'pillar-2')">支柱 II: 巨型基建</button>
+            <button class="nav-button" onclick="openPillar(event, 'pillar-3')">支柱 III: 全球统治</button>
+        </nav>
+
+        <main>
+            <!-- Pillar 0: Top Directive -->
+            <div id="pillar-0" class="pillar-content active">
+                <div class="action-card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon">🎯</span>
+                        <div class="card-title-group">
+                            <h3>总体愿景：赢得AI竞赛</h3>
+                            <p>确保美国无可争议的全球技术霸权。</p>
+                        </div>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li class="viewpoint">将AI竞争类比为“太空竞赛”，强调其对全球力量平衡、经济和国家安全的决定性作用，必须赢得胜利。</li>
+                            <li class="viewpoint">将AI描绘成一场同时发生的“工业革命、信息革命和文艺复兴”，是美国“不容错失”的历史机遇。</li>
+                            <li class="action">计划在特朗普总统上任第一天就废除拜登政府的AI行政命令，理由是其“危险”且“扼杀创新”。</li>
+                            <li class="viewpoint">拒绝“激进的气候教条”和官僚主义，倡导“建设，宝贝，建设！”（Build, Baby, Build!）的理念。</li>
+                        </ul>
+                    </div>
+                </div>
+                 <div class="action-card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon">📜</span>
+                        <div class="card-title-group">
+                            <h3>核心原则</h3>
+                            <p>贯穿所有行动的指导思想。</p>
+                        </div>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li class="viewpoint"><strong>美国工人优先</strong>：确保技术革命为美国工人创造高薪就业机会。</li>
+                            <li class="viewpoint"><strong>价值观中立</strong>：AI系统必须追求“客观真理”，摆脱“意识形态偏见”和“社会工程议程”。</li>
+                            <li class="viewpoint"><strong>安全可控</strong>：防止先进技术被恶意行为者滥用或窃取。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pillar 1: Innovation -->
+            <div id="pillar-1" class="pillar-content">
+                <div class="action-card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon">⚖️</span>
+                        <div class="card-title-group"><h3>全面放松监管</h3><p>为私营部门扫清一切创新障碍。</p></div>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li class="action">发起信息征询，识别并废除阻碍AI创新的联邦法规。</li>
+                            <li class="action">审查并可能撤销前任政府FTC发起的反垄断调查。</li>
+                            <li class="action">修改NIST AI风险管理框架，删除“错误信息、DEI、气候变化”等内容。</li>
+                            <li class="action">强制联邦政府采购的AI必须“客观且无意识形态偏见”。</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="action-card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon">🌐</span>
+                        <div class="card-title-group"><h3>扶持开源AI</h3><p>将开源模型打造为全球标准和地缘战略武器。</p></div>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                           <li class="viewpoint">大力支持开源/开放权重模型，认为其对创新、竞争和地缘战略至关重要。</li>
+                           <li class="action">为学术界和初创公司建立一个计算资源的“金融市场”，解决算力瓶颈。</li>
+                           <li class="action">推动小企业采用开源模型。</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="action-card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon">🧬</span>
+                        <div class="card-title-group"><h3>投资AI赋能科学</h3><p>建立战略性数据和实验优势。</p></div>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                           <li class="action">投资自动化云实验室，加速科学实验。</li>
+                           <li class="action">建立世界级的AI就绪科学数据集。</li>
+                           <li class="action">探索在联邦土地上进行全基因组测序，以训练生物学基础模型。</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="action-card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon">🛡️</span>
+                        <div class="card-title-group"><h3>攻克AI核心技术</h3><p>提升AI的可解释性、控制力和鲁棒性。</p></div>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                           <li class="action">由DARPA牵头，启动技术开发项目，用于高风险的国家安全领域。</li>
+                           <li class="action">组织AI“黑客松”，测试系统漏洞。</li>
+                           <li class="action">在司法系统中推广Deepfake检测标准。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pillar 2: Infrastructure -->
+            <div id="pillar-2" class="pillar-content">
+                <div class="action-card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon">🏗️</span>
+                        <div class="card-title-group"><h3>简化基建审批</h3><p>以极限速度建设数据中心和能源设施。</p></div>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li class="action">利用改革后的NEPA，创建新的“分类豁免”，绕过繁琐的环境评估。</li>
+                            <li class="action">扩大FAST-41流程适用范围，加速大型项目审批。</li>
+                            <li class="action">开放联邦土地用于数据中心和发电厂建设。</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="action-card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon">⚡</span>
+                        <div class="card-title-group"><h3>升级能源网络</h3><p>为AI时代提供无限动力。</p></div>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li class="action">稳定并优化现有电网，防止关键发电源过早退役。</li>
+                            <li class="action">优先并网可靠的、可调度的电源，如地热、核裂变和核聚变。</li>
+                            <li class="action">改革电力市场，激励对电网稳定性的投资。</li>
+                        </ul>
+                    </div>
+                </div>
+                 <div class="action-card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon">🏭</span>
+                        <div class="card-title-group"><h3>重振半导体制造</h3><p>夺回芯片制造的领导地位。</p></div>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                           <li class="action">通过“改造后”的CHIPS计划办公室，专注投资回报，剥离所有“无关的政策要求”和“意识形态议程”。</li>
+                           <li class="action">加速AI工具在半导体制造中的应用。</li>
+                           <li class="action">为军事和情报界建设高安全性数据中心。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pillar 3: Diplomacy & Security -->
+            <div id="pillar-3" class="pillar-content">
+                <div class="action-card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon">🌐</span>
+                        <div class="card-title-group"><h3>建立美国AI联盟</h3><p>输出技术栈，锁定盟友。</p></div>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li class="action">建立一个由商务部主导的项目，向盟友和伙伴国家出口包括硬件、模型、软件和标准在内的“全栈AI包”。</li>
+                            <li class="viewpoint">防止盟友依赖竞争对手的技术，将美国AI打造为全球黄金标准。</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="action-card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon">⚔️</span>
+                        <div class="card-title-group"><h3>对抗国际影响</h3><p>在国际舞台上推广美国价值观。</p></div>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li class="action">在联合国、G7等国际机构中，积极倡导促进创新、反映美国价值观的治理方法。</li>
+                            <li class="viewpoint">反对“繁琐的法规”和中国试图推动的监控标准。</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="action-card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon">🛑</span>
+                        <div class="card-title-group"><h3>加强技术封锁</h3><p>堵塞所有漏洞，实施精准扼喉。</p></div>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                           <li class="action">探索利用芯片上的位置验证功能，确保先进计算芯片不流入受关注国家。</li>
+                           <li class="action">对半导体制造的“子系统”和组件实施新的出口管制。</li>
+                           <li class="action">敦促盟友跟进美国的管制，若不配合，则考虑使用FDPR和次级关税等工具。</li>
+                        </ul>
+                    </div>
+                </div>
+                 <div class="action-card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon">☣️</span>
+                        <div class="card-title-group"><h3>管控前沿风险</h3><p>主动评估并防御新兴威胁。</p></div>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                           <li class="action">由政府主导，与AI开发者合作，评估前沿模型在网络攻击、生化武器（CBRNE）研发等方面的国家安全风险。</li>
+                           <li class="action">强制要求接受联邦资助的科研机构使用具有严格筛选程序的核酸合成供应商，防范生物恐怖主义。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>简报结束 // 绝密 // 泄露即叛国</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- Loader Logic ---
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('loader');
+            const loaderText = document.getElementById('loader-text');
+            const authText = document.getElementById('auth-text');
+            
+            setTimeout(() => {
+                loaderText.style.opacity = '0';
+                authText.style.opacity = '1';
+                setTimeout(() => {
+                    loader.style.opacity = '0';
+                    loader.style.visibility = 'hidden';
+                    typeWriter();
+                }, 1500);
+            }, 1000);
+        });
+
+        // --- Typing Effect ---
+        const titleText = "美国AI行动计划";
+        let i = 0;
+        function typeWriter() {
+            if (i < titleText.length) {
+                document.getElementById("main-title").innerHTML += titleText.charAt(i);
+                i++;
+                setTimeout(typeWriter, 150); // Slower for Chinese characters
+            } else {
+                document.querySelector('.typing-cursor').style.animation = 'none';
+                document.querySelector('.typing-cursor').style.display = 'none';
+            }
+        }
+        
+        // --- Pillar Navigation Logic ---
+        function openPillar(evt, pillarName) {
+            let i, pillarContent, navButtons;
+            pillarContent = document.getElementsByClassName("pillar-content");
+            for (i = 0; i < pillarContent.length; i++) {
+                pillarContent[i].classList.remove("active");
+            }
+            navButtons = document.getElementsByClassName("nav-button");
+            for (i = 0; i < navButtons.length; i++) {
+                navButtons[i].classList.remove("active");
+            }
+            document.getElementById(pillarName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+        
+        // --- Card Toggle Logic ---
+        function toggleCard(cardElement) {
+            cardElement.classList.toggle('open');
+        }
+    </script>
+</body>
+</html>
