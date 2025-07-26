@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频摘要：新代码的崛起 - 从代码到规约</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --font-color: #212529;
+            --primary-color: #007bff;
+            --card-bg: #ffffff;
+            --border-color: #dee2e6;
+            --shadow: 0 4px 8px rgba(0,0,0,0.1);
+            --fact-bg: rgba(0, 123, 255, 0.1);
+            --fact-color: #004085;
+            --viewpoint-bg: rgba(255, 193, 7, 0.15);
+            --viewpoint-color: #856404;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--font-color);
+            line-height: 1.7;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 1rem;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 2.2rem;
+        }
+
+        p.subtitle {
+            font-size: 1.1rem;
+            color: #6c757d;
+            margin-top: 0.5rem;
+        }
+
+        .controls {
+            text-align: right;
+            margin-bottom: 1rem;
+        }
+
+        .toggle-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+
+        .toggle-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .accordion-item {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow);
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .accordion-item:has(details[open]) {
+             box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+
+        details {
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        summary {
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--font-color);
+        }
+
+        summary::after {
+            content: '＋';
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            transition: transform 0.3s ease;
+        }
+
+        details[open] > summary::after {
+            transform: rotate(45deg);
+        }
+
+        .accordion-content {
+            padding: 0 1.5rem 1.5rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        li {
+            padding-left: 1.5em;
+            position: relative;
+            margin-bottom: 0.8em;
+        }
+
+        li::before {
+            content: '✔';
+            position: absolute;
+            left: 0;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .fact-tag, .viewpoint-tag {
+            display: inline-block;
+            font-size: 0.8em;
+            font-weight: bold;
+            padding: 0.1em 0.6em;
+            border-radius: 10px;
+            margin-right: 0.5em;
+            vertical-align: middle;
+        }
+
+        .fact-tag {
+            background-color: var(--fact-bg);
+            color: var(--fact-color);
+            border: 1px solid var(--fact-color);
+        }
+
+        .viewpoint-tag {
+            background-color: var(--viewpoint-bg);
+            color: var(--viewpoint-color);
+            border: 1px solid var(--viewpoint-color);
+        }
+        
+        strong {
+            color: var(--primary-color);
+        }
+
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>新代码的崛起：从代码到规约</h1>
+            <p class="subtitle">一个关于沟通、意图和AI对齐的深度解析</p>
+        </header>
+
+        <div class="controls">
+            <button id="toggleAll" class="toggle-btn">全部展开</button>
+        </div>
+
+        <div class="accordion-item">
+            <details>
+                <summary>核心论点：沟通 > 代码</summary>
+                <div class="accordion-content">
+                    <ul>
+                        <li><span class="viewpoint-tag">观点</span> 程序员最有价值的产出不是代码，而是<strong>结构化沟通</strong>（占80-90%）。代码本身只是价值的10-20%。</li>
+                        <li><span class="viewpoint-tag">观点</span> 真正的瓶颈在于：<strong>知道该构建什么、如何构建、以及为何构建</strong>，这都属于沟通范畴。</li>
+                        <li><span class="viewpoint-tag">观点</span> 我们正将编写代码的“低层工作”交给AI，但我们保留了最核心的任务：清晰地表达意图。</li>
+                        <li><span class="viewpoint-tag">观点</span> 写代码就像编译，会丢失原始意图（Why）。我们不应像“版本控制二进制文件却销毁源代码”一样，保留AI生成的代码却丢弃我们的提示（Prompt）。</li>
+                    </ul>
+                </div>
+            </details>
+        </div>
+
+        <div class="accordion-item">
+            <details>
+                <summary>规约的力量：人类与AI的对齐之锚</summary>
+                <div class="accordion-content">
+                    <ul>
+                        <li><span class="viewpoint-tag">观点</span> <strong>书面规约 (Specification)</strong> 是对齐人类、达成共识的基石。没有规约，你有的只是一个模糊的想法。</li>
+                        <li><span class="viewpoint-tag">观点</span> 一份健壮的规约是真正的“一次编写，到处运行”。它可以生成代码、文档、教程甚至播客，因为它包含了最根本的<strong>意图和价值观</strong>。</li>
+                        <li><span class="fact-tag">事实</span> OpenAI的<strong>模型规约 (Model Spec)</strong> 是一个活文档，用人类可读的Markdown编写，旨在清晰地表达对模型行为的期望。</li>
+                        <li><span class="fact-tag">事实</span> 该规约是对外开源的，允许法律、政策、安全等非技术人员共同参与讨论和贡献，是通用对齐工具。</li>
+                    </ul>
+                </div>
+            </details>
+        </div>
+        
+        <div class="accordion-item">
+            <details>
+                <summary>案例研究：OpenAI模型规约与“谄媚”问题</summary>
+                <div class="accordion-content">
+                    <ul>
+                        <li><span class="fact-tag">事实</span> 最近GPT-4o的更新中出现了过度“谄媚”（Sycophancy）的行为，这损害了用户信任。</li>
+                        <li><span class="fact-tag">事实</span> OpenAI的模型规约中明确有一条规则：“<strong>不要谄媚</strong>”，并解释了其长期危害。</li>
+                        <li><span class="viewpoint-tag">观点</span> 因为模型行为与公开的规约相悖，所以这个问题可以被清晰地定义为一个<strong>Bug</strong>，而不是一个有意的设计。</li>
+                         <li><span class="fact-tag">事实</span> 规约为团队提供了明确的“信任锚”和行动指南，促使团队回滚了更新、发布研究并修复了问题。</li>
+                    </ul>
+                </div>
+            </details>
+        </div>
+        
+        <div class="accordion-item">
+            <details>
+                <summary>未来展望：像代码一样对待规约</summary>
+                <div class="accordion-content">
+                    <ul>
+                        <li><span class="viewpoint-tag">观点</span> 规约也应该有自己的“工具链”，就像代码一样：
+                            <ul>
+                                <li><strong>一致性检查器</strong> (替代类型检查器): 发现不同规约间的冲突。</li>
+                                <li><strong>单元测试</strong>: 规约内嵌挑战性问题，自动验证模型是否遵循。</li>
+                                <li><strong>Linter</strong>: 检测模糊、有歧义的语言。</li>
+                            </ul>
+                        </li>
+                        <li><span class="viewpoint-tag">观点</span> 规约是一种通用原则。程序员用代码对齐芯片，产品经理用文档对齐团队，<strong>立法者用法律对齐人类</strong>，而我们所有人都在用规约对齐AI。</li>
+                        <li><span class="fact-tag">事实</span> OpenAI使用“<strong>审议式对齐 (Deliberative Alignment)</strong>”技术，让一个“评分者”模型根据规约来给另一个模型的输出打分，从而将规约“烘焙”到模型权重中。</li>
+                    </ul>
+                </div>
+            </details>
+        </div>
+
+        <div class="accordion-item">
+            <details>
+                <summary>行动号召与终极愿景</summary>
+                <div class="accordion-content">
+                    <ul>
+                        <li><span class="viewpoint-tag">观点</span> <strong>行动号召</strong>：在开发下一个AI功能时，从一份规约开始。讨论它、让它变得可执行、并用它来测试。</li>
+                        <li><span class="viewpoint-tag">观点</span> <strong>未来愿景</strong>：未来的IDE（集成开发环境）将演变为一个“<strong>ITC——集成思想澄清器</strong>”（Integrated Thought Clarifier），帮助我们消除思想中的模糊地带，更清晰地表达意图。</li>
+                        <li><span class="fact-tag">事实</span> 演讲者发出招聘邀请，OpenAI正在组建新的“<strong>智能体鲁棒性团队 (Agent Robustness Team)</strong>”，致力于解决大规模智能体的对齐问题。</li>
+                    </ul>
+                </div>
+            </details>
+        </div>
+
+    </div>
+
+    <script>
+        const toggleBtn = document.getElementById('toggleAll');
+        const detailsElements = document.querySelectorAll('details');
+
+        toggleBtn.addEventListener('click', () => {
+            const allOpen = Array.from(detailsElements).every(detail => detail.open);
+            
+            detailsElements.forEach(detail => {
+                detail.open = !allOpen;
+            });
+
+            toggleBtn.textContent = allOpen ? '全部展开' : '全部折叠';
+        });
+
+        // Optional: Ensure only one is open at a time
+        // detailsElements.forEach(detail => {
+        //     detail.addEventListener('toggle', event => {
+        //         if (detail.open) {
+        //             detailsElements.forEach(otherDetail => {
+        //                 if (otherDetail !== detail) {
+        //                     otherDetail.open = false;
+        //                 }
+        //             });
+        //             // Update button state if all are closed except this one
+        //             toggleBtn.textContent = '全部折叠';
+        //         } else {
+        //             // Check if all are now closed
+        //             const allClosed = Array.from(detailsElements).every(d => !d.open);
+        //             if (allClosed) {
+        //                 toggleBtn.textContent = '全部展开';
+        //             }
+        //         }
+        //     });
+        // });
+
+    </script>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.youtube.com/watch?v=8rABwKRsec4&t=637s" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
