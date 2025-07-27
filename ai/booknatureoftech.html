@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《技术的本质》- 动态交互核心摘要</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+        :root {
+            --bg-start: #eef2f3;
+            --bg-end: #dce3e4;
+            --card-bg: #ffffff;
+            --primary-text: #34495e;
+            --secondary-text: #566573;
+            --accent-color: #3498db;
+            --accent-color-dark: #2980b9;
+            --highlight-bg: rgba(52, 152, 219, 0.1);
+            --timeline-line: #bdc3c7;
+            --shadow: 0 8px 25px rgba(44, 62, 80, 0.1);
+            --border-radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+            color: var(--primary-text);
+            line-height: 1.8;
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            color: var(--accent-color-dark);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        header .subtitle {
+            font-size: 1.2rem;
+            color: var(--secondary-text);
+            font-weight: 300;
+        }
+        
+        header .intro {
+            max-width: 800px;
+            margin: 20px auto 0;
+            font-size: 1.1rem;
+            color: var(--secondary-text);
+            background: var(--highlight-bg);
+            padding: 15px 25px;
+            border-radius: var(--border-radius);
+            border-left: 5px solid var(--accent-color);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.2rem;
+            color: var(--accent-color-dark);
+            margin: 80px 0 40px 0;
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background-color: var(--accent-color);
+            border-radius: 2px;
+        }
+
+        /* 认知卡片样式 */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 25px 30px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-top: 5px solid var(--accent-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(44, 62, 80, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .card-icon {
+            font-size: 2.5rem;
+            color: var(--accent-color);
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .card h3 {
+            font-size: 1.4rem;
+            color: var(--primary-text);
+            font-weight: 500;
+        }
+
+        .card p {
+            font-size: 1rem;
+            color: var(--secondary-text);
+            flex-grow: 1;
+        }
+        
+        .card ul {
+            list-style-type: none;
+            padding-left: 0;
+            margin-top: 10px;
+        }
+        
+        .card li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
+            color: var(--secondary-text);
+        }
+        
+        .card li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        /* 时间线样式 */
+        .timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            background-color: var(--timeline-line);
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin-left: -2px;
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            padding: 10px 40px;
+            position: relative;
+            background-color: inherit;
+            width: 50%;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        
+        .timeline-item.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            right: -10px;
+            background-color: var(--card-bg);
+            border: 4px solid var(--accent-color);
+            top: 25px;
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .timeline-left {
+            left: 0;
+        }
+
+        .timeline-right {
+            left: 50%;
+        }
+
+        .timeline-left::before {
+            content: " ";
+            height: 0;
+            position: absolute;
+            top: 30px;
+            width: 0;
+            z-index: 1;
+            right: 30px;
+            border: medium solid var(--card-bg);
+            border-width: 10px 0 10px 10px;
+            border-color: transparent transparent transparent var(--card-bg);
+        }
+
+        .timeline-right::before {
+            content: " ";
+            height: 0;
+            position: absolute;
+            top: 30px;
+            width: 0;
+            z-index: 1;
+            left: 30px;
+            border: medium solid var(--card-bg);
+            border-width: 10px 10px 10px 0;
+            border-color: transparent var(--card-bg) transparent transparent;
+        }
+
+        .timeline-right::after {
+            left: -10px;
+        }
+
+        .timeline-content {
+            padding: 20px 30px;
+            background-color: var(--card-bg);
+            position: relative;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        
+        .timeline-content h4 {
+            color: var(--accent-color-dark);
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+        
+        .timeline-content p {
+            color: var(--secondary-text);
+            font-size: 0.95rem;
+        }
+        
+        /* 观点与事实 */
+        .highlights-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+        
+        .highlight-box {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        
+        .highlight-box h3 {
+            color: var(--accent-color-dark);
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+        }
+        
+        .highlight-box ul {
+            list-style-type: none;
+        }
+        
+        .highlight-box li {
+            margin-bottom: 15px;
+            padding-left: 25px;
+            position: relative;
+            color: var(--secondary-text);
+        }
+        
+        .highlight-box li::before {
+            font-family: 'Times New Roman', Times, serif;
+            position: absolute;
+            left: 0;
+            color: var(--accent-color);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .viewpoints li::before { content: '💡'; }
+        .facts li::before { content: '🔍'; }
+        
+        /* 响应式设计 */
+        @media screen and (max-width: 768px) {
+            header h1 { font-size: 2.2rem; }
+            .section-title { font-size: 1.8rem; }
+            
+            .timeline::after {
+                left: 20px;
+            }
+            .timeline-item {
+                width: 100%;
+                padding-left: 60px;
+                padding-right: 15px;
+            }
+            .timeline-item::before {
+                left: 45px;
+                border: medium solid var(--card-bg);
+                border-width: 10px 10px 10px 0;
+                border-color: transparent var(--card-bg) transparent transparent;
+            }
+            .timeline-left::after, .timeline-right::after {
+                left: 10px;
+            }
+            .timeline-right {
+                left: 0%;
+            }
+            .highlights-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>《技术的本质》</h1>
+            <p class="subtitle">W.布莱恩·阿瑟 | 核心思想动态摘要</p>
+            <p class="intro">
+                本书旨在构建一个关于技术的完整理论体系，探讨“技术是什么”以及“技术如何进化”。作者认为，技术并非孤立的发明，而是一个自我创造、不断组合、生机勃勃的生态系统。
+            </p>
+        </header>
+
+        <section id="core-concepts">
+            <h2 class="section-title">核心认知卡片</h2>
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">①</span>
+                        <h3>技术的三种定义</h3>
+                    </div>
+                    <p>作者为“技术”提供了三个层次的定义，以厘清概念：</p>
+                    <ul>
+                        <li><strong>单一技术 (A Technology)：</strong> 为实现某个特定人类目的而采用的方法、过程或设备。例如，一个柴油发动机。</li>
+                        <li><strong>技术组合 (Technology)：</strong> 多个实践和组件的集合体。例如，电子学或生物技术。</li>
+                        <li><strong>技术总和 (Technology)：</strong> 一种文化可用的所有设备与工程实践的总和，作者称之为“技术的集体 (the collective of technology)”。</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">②</span>
+                        <h3>技术的三大基本原理</h3>
+                    </div>
+                    <p>所有技术都遵循三个普适性原理：</p>
+                    <ul>
+                        <li><strong>组合性 (Combination)：</strong> 所有技术都是由现存的、更基础的组件（本身也是技术）组合而成。</li>
+                        <li><strong>递归性 (Recursiveness)：</strong> 技术的每个组成部分，本身也是一个微型的技术。技术由技术构成，层层嵌套。</li>
+                        <li><strong>利用现象 (Harnessing Phenomena)：</strong> 所有技术都捕获并利用了某种或多种自然现象。现象是技术的“基因”。</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">③</span>
+                        <h3>组合式进化 (Combinatorial Evolution)</h3>
+                    </div>
+                    <p>这是本书提出的技术进化核心机制，区别于生物学的达尔文进化论。其工作方式为：</p>
+                    <ul>
+                        <li>新技术由现有技术组合而成。</li>
+                        <li>这些新技术随即成为构建更复杂、更新技术的“积木”。</li>
+                        <li>技术由此实现了“自我创造”(Autopoiesis)，从少数简单技术“自举”到大量复杂技术。</li>
+                    </ul>
+                </div>
+                 <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">④</span>
+                        <h3>技术域 (Domains)</h3>
+                    </div>
+                    <p>技术并非散乱存在，而是聚集成“技术域”——共享相似现象、组件和实践方法的集合。例如电子学、结构工程。</p>
+                    <ul>
+                        <li><strong>技术域是种“语言”：</strong> 它提供了一套词汇（组件）和语法（组合规则），工程师在其之上进行“表达”（设计）。</li>
+                        <li><strong>技术域是“可进入的世界”：</strong> 设计师将问题带入某个技术域的世界，利用其特有的能力进行解决。</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">⑤</span>
+                        <h3>结构深化 (Structural Deepening)</h3>
+                    </div>
+                    <p>技术在成熟过程中会变得越来越复杂，其主要机制是“结构深化”。</p>
+                    <ul>
+                        <li>当一项技术被推向性能极限时，开发者会增加新的子系统来克服障碍，而不是简单替换原有部件。</li>
+                        <li>例如，为应对喷气发动机的高温，增加了复杂的叶片冷却系统。这使得技术性能提升，但也变得更加复杂。</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">⑥</span>
+                        <h3>经济是技术的表达</h3>
+                    </div>
+                    <p>作者提出了一个新颖的经济学视角：</p>
+                    <ul>
+                        <li>经济并非容纳技术的“容器”，而是由其技术所“构成”的。</li>
+                        <li>社会的生产、组织、法律、金融体系等安排，广义上都是技术。</li>
+                        <li>因此，经济的结构会随着其底层技术的进化而不断地自我重构，这是一个动态、持续的过程。</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="timeline-section">
+            <h2 class="section-title">技术进化的历史脉络</h2>
+            <div class="timeline">
+                <div class="timeline-item timeline-left">
+                    <div class="timeline-content">
+                        <h4>第一阶段：原始捕获</h4>
+                        <p>人类直接利用自然界中唾手可得的现象。例如，利用燧石的片状剥落特性制造刀具，利用树枝的弹性制造弓箭。这是技术最纯粹的起点。</p>
+                    </div>
+                </div>
+                 <div class="timeline-item timeline-right">
+                    <div class="timeline-content">
+                        <h4>第二阶段：早期组合与工艺出现</h4>
+                        <p>原始技术开始被组合起来。用纤维绳索将石斧绑在木柄上。火的利用催生了制陶、烹饪和初级金属冶炼等工艺集群。</p>
+                    </div>
+                </div>
+                 <div class="timeline-item timeline-left">
+                    <div class="timeline-content">
+                        <h4>第三阶段：机械时代</h4>
+                        <p>杠杆、滑轮、齿轮等简单机械元件的组合，形成了磨坊、灌溉系统等早期机器。围绕这些技术形成了更为复杂的实践工艺。</p>
+                    </div>
+                </div>
+                 <div class="timeline-item timeline-right">
+                    <div class="timeline-content">
+                        <h4>第四阶段：科学与系统化捕获</h4>
+                        <p>现代科学方法诞生。人类开始系统性地理解和捕获化学、光学、电学等现象，催生了热机、工业化学、电力等庞大的技术域。</p>
+                    </div>
+                </div>
+                <div class="timeline-item timeline-left">
+                    <div class="timeline-content">
+                        <h4>第五阶段：精细化与生物化</h4>
+                        <p>更深层次的现象被捕获，如量子效应和基因效应。技术开始能够操控单个原子（纳米技术），并呈现出更多生物特征（自配置、自修复）。技术正变得越来越像生物，生物也越来越能被技术化地理解。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="highlights">
+            <h2 class="section-title">观点与事实高亮</h2>
+            <div class="highlights-grid">
+                <div class="highlight-box viewpoints">
+                    <h3>核心观点</h3>
+                    <ul>
+                        <li>技术并非“应用科学”，两者是共生演化的关系。科学依赖技术工具，技术也借鉴科学认知，但技术有其自身的发展逻辑。</li>
+                        <li>技术的本质是对自然现象的“编程”。它将自然界固有的效应，通过组合与编排，来实现人类的目的。</li>
+                        <li>“创新”并非神秘的创造，而是通过新的组合来解决问题。它发生在所有层面，从日常工程的微小改进到全新技术域的诞生。</li>
+                        <li>经济正在变得“生成性”(Generative)，其重点从优化固定流程转向创造新的、可重构的组合与服务。</li>
+                        <li>技术正在变得越来越“生物化”。随着复杂性的增加，技术系统开始具备自组织、自修复、能感知、会适应等生命特征。</li>
+                    </ul>
+                </div>
+                <div class="highlight-box facts">
+                    <h3>关键事实与观察</h3>
+                    <ul>
+                        <li>任何一项新技术，都是由已经存在的技术元素组合而成的。不存在凭空而来的发明。</li>
+                        <li>一项发明的诞生，通常是“需求”与某个可利用的“现象/效应”之间的成功连接。</li>
+                        <li>技术的进化是路径依赖的。历史上的偶然事件会决定哪些技术出现，从而影响后续所有技术的形态。</li>
+                        <li>大多数技术机会（需求）并非源于基本人类需求，而是由技术本身产生的。一个解决方案会带来新的问题和需求。</li>
+                        <li>技术领先优势具有区域聚集性，因为它依赖于难以转移的“深层工艺”(deep craft)——一种共享的、隐性的实践知识。</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const timelineItems = document.querySelectorAll('.timeline-item');
+
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+
+            timelineItems.forEach(item => {
+                observer.observe(item);
+            });
+        });
+    </script>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="booknatureoftech_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
