@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频摘要：AI时代的教育革新</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --font-color: #343a40;
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --fact-color: #198754; /* 绿色系，代表事实 */
+            --opinion-color: #0d6efd; /* 蓝色系，代表观点 */
+            --card-bg: #ffffff;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--font-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            color: var(--secondary-color);
+        }
+
+        .topic-section {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .topic-header {
+            padding: 20px 25px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .topic-header:hover h2 {
+            color: var(--primary-color);
+        }
+
+        .topic-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .toggle-icon {
+            font-size: 1.5rem;
+            font-weight: bold;
+            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .topic-content {
+            display: grid;
+            gap: 20px;
+            padding: 25px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), padding 0.5s ease;
+        }
+        
+        .topic-section.open .topic-content {
+            max-height: 1000px; /* A large enough value */
+            padding: 25px;
+        }
+        
+        .topic-section.open .toggle-icon {
+            transform: rotate(45deg);
+        }
+
+        .card {
+            background-color: #fdfdfd;
+            border-left: 5px solid;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .card-icon {
+            font-size: 1.8rem;
+            flex-shrink: 0;
+            margin-top: 3px;
+        }
+
+        .card-content h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.1rem;
+        }
+
+        .card-content p {
+            margin: 0;
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        /* --- Card Types --- */
+        .fact {
+            border-color: var(--fact-color);
+        }
+        .fact .card-icon { color: var(--fact-color); }
+        .fact h3 { color: var(--fact-color); }
+
+        .opinion {
+            border-color: var(--opinion-color);
+        }
+        .opinion .card-icon { color: var(--opinion-color); }
+        .opinion h3 { color: var(--opinion-color); }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9em;
+            color: var(--secondary-color);
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 15px; }
+            header h1 { font-size: 2rem; }
+            .topic-header h2 { font-size: 1.25rem; }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>AI时代的教育革新</h1>
+            <p>斯坦福航空研究院院长 <strong>李江</strong> 的核心观点摘要</p>
+        </header>
+
+        <main>
+            <div class="topic-section">
+                <div class="topic-header">
+                    <h2>核心挑战：AI颠覆就业与教育</h2>
+                    <span class="toggle-icon">+</span>
+                </div>
+                <div class="topic-content">
+                    <div class="card fact">
+                        <span class="card-icon">⚙️</span>
+                        <div class="card-content">
+                            <h3>[事实] 成本与效率剧变</h3>
+                            <p>机器人完成工作的成本远低于人类（例：$200 vs $1000），且计算速度更快，这将导致大量现有工作岗位消失。</p>
+                        </div>
+                    </div>
+                    <div class="card opinion">
+                        <span class="card-icon">🤔</span>
+                        <div class="card-content">
+                            <h3>[观点] 教育体系严重滞后</h3>
+                            <p>当今世界信息获取方式已天翻地覆，但我们仍沿用旧方法教育下一代。我们必须努力改变这一点。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="topic-section">
+                <div class="topic-header">
+                    <h2>解决方案一：培养“人工智能思维”</h2>
+                    <span class="toggle-icon">+</span>
+                </div>
+                <div class="topic-content">
+                    <div class="card opinion">
+                        <span class="card-icon">🧠</span>
+                        <div class="card-content">
+                            <h3>[观点] 人工智能思维三大支柱</h3>
+                            <p>1. <strong>理解原理：</strong>了解AI从“规则驱动”到“数据驱动”的演进。<br>2. <strong>辨别能力：</strong>能清晰区分人类与AI各自的优势领域。<br>3. <strong>人机协作：</strong>学会与AI共事，专注于人类独有的“从0到1”的创新。</p>
+                        </div>
+                    </div>
+                    <div class="card fact">
+                        <span class="card-icon">🔬</span>
+                        <div class="card-content">
+                            <h3>[案例] AlphaFold与蛋白质结构</h3>
+                            <p>人类数十年仅解析了不到1%的蛋白质结构，而AI（AlphaFold）在两年内预测了几乎所有已知蛋白质的结构。这证明了AI在处理复杂优化问题上的绝对优势。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="topic-section">
+                <div class="topic-header">
+                    <h2>解决方案二：用“设计思维”系统化创新</h2>
+                    <span class="toggle-icon">+</span>
+                </div>
+                <div class="topic-content">
+                    <div class="card opinion">
+                        <span class="card-icon">💡</span>
+                        <div class="card-content">
+                            <h3>[观点] 创新是可教的</h3>
+                            <p>斯坦福的设计思维（Design Thinking）是一套系统性方法论，可以教会普通人如何变得比原来更有创造力。</p>
+                        </div>
+                    </div>
+                    <div class="card opinion">
+                        <span class="card-icon">🔄</span>
+                        <div class="card-content">
+                            <h3>[观点] 设计思维五步法</h3>
+                            <p><strong>共情 → 定义 → 构思 → 原型 → 测试。</strong>这是一个不断迭代循环的过程，核心在于找对真正的问题。“所有设计都是重新设计”。</p>
+                        </div>
+                    </div>
+                    <div class="card fact">
+                        <span class="card-icon">🌍</span>
+                        <div class="card-content">
+                            <h3>[案例] 尼泊尔婴儿孵化器</h3>
+                            <p>学生们实地走访（共情）后发现，问题不是缺少昂贵的孵化器，而是缺少廉价、易用、能在村庄家庭使用的保暖设备。他们重新定义了问题，最终设计出成功的解决方案。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="topic-section">
+                <div class="topic-header">
+                    <h2>迎接未来：拥抱工具与守护梦想</h2>
+                    <span class="toggle-icon">+</span>
+                </div>
+                <div class="topic-content">
+                     <div class="card fact">
+                        <span class="card-icon">🤖</span>
+                        <div class="card-content">
+                            <h3>[事实] ChatGPT是游戏规则改变者</h3>
+                            <p>AI能与人自然交流、编写代码、展现渊博知识，这让许多人感到震惊，并必将深刻改变教育模式。</p>
+                        </div>
+                    </div>
+                    <div class="card opinion">
+                        <span class="card-icon">🌊</span>
+                        <div class="card-content">
+                            <h3>[观点] 拥抱而非回避科技</h3>
+                            <p>科技进步如潮水，无法阻挡。我们不应禁止学生使用ChatGPT，而应引导他们善用工具，并与他们一同探索其影响。</p>
+                        </div>
+                    </div>
+                    <div class="card opinion">
+                        <span class="card-icon">🌟</span>
+                        <div class="card-content">
+                            <h3>[观点] 梦想的价值</h3>
+                            <p>受童年《变形金刚》启发，讲者认为在孩子成长的早期阶段激发并守护他们的梦想至关重要。这是创新的源动力。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>根据 "robot.zh.txt" 视频字幕生成 &copy; 2024</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const sections = document.querySelectorAll('.topic-section');
+
+            sections.forEach(section => {
+                const header = section.querySelector('.topic-header');
+                header.addEventListener('click', () => {
+                    // Close other open sections
+                    sections.forEach(otherSection => {
+                        if (otherSection !== section && otherSection.classList.contains('open')) {
+                            otherSection.classList.remove('open');
+                        }
+                    });
+                    
+                    // Toggle current section
+                    section.classList.toggle('open');
+                });
+            });
+
+            // Automatically open the first section for better initial user experience
+            if (sections.length > 0) {
+                sections[0].classList.add('open');
+            }
+        });
+    </script>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.youtube.com/watch?v=ZA9K0JMrbWg" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
