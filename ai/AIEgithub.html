@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Copilot 视频动态摘要</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #212529;
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --accent-color: #198754;
+            --border-color: #dee2e6;
+            --shadow: 0 4px 8px rgba(0,0,0,0.1);
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.7;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            margin: 0;
+        }
+        
+        header p {
+            color: var(--secondary-color);
+            margin-top: 5px;
+        }
+
+        .summary-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .summary-card summary {
+            padding: 15px 20px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .summary-card summary::-webkit-details-marker {
+            display: none;
+        }
+        
+        .summary-card summary:hover {
+            background-color: #f1f3f5;
+        }
+        
+        .summary-card summary .icon {
+            font-size: 1.5em;
+            color: var(--primary-color);
+        }
+
+        .summary-card summary .arrow {
+            transition: transform 0.3s;
+        }
+
+        details[open] > summary .arrow {
+            transform: rotate(90deg);
+        }
+        
+        .card-content {
+            padding: 0 20px 20px 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        
+        li {
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 10px;
+        }
+
+        li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+        
+        strong {
+            color: var(--primary-color);
+        }
+        
+        code {
+            background-color: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            color: #d63384;
+        }
+        
+        .section-title {
+            font-size: 1.5em;
+            color: var(--secondary-color);
+            margin-top: 40px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9em;
+            color: var(--secondary-color);
+        }
+
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>GitHub Copilot 视频动态摘要</h1>
+            <p>从入门到高级实践的核心要点</p>
+        </header>
+
+        <h2 class="section-title">第一部分：核心理念与上下文</h2>
+
+        <details class="summary-card">
+            <summary>
+                <span class="icon">💡</span>
+                <strong>核心定位：你的 AI 配对程序员</strong>
+                <span class="arrow">▶</span>
+            </summary>
+            <div class="card-content">
+                <p>这是理解和使用 Copilot 最重要、最有效的心智模型。</p>
+                <ul>
+                    <li>把它当作一个有优势也有弱点的<strong>协作伙伴</strong>，而不是一个只会执行命令的工具。</li>
+                    <li>你需要与它“结对编程”，共同解决问题。</li>
+                </ul>
+            </div>
+        </details>
+        
+        <details class="summary-card">
+            <summary>
+                <span class="icon">🎯</span>
+                <strong>上下文 (Context) 是成功的关键</strong>
+                <span class="arrow">▶</span>
+            </summary>
+            <div class="card-content">
+                <p>Copilot 的表现好坏，直接取决于你提供的上下文质量。上下文远不止是你的“提示词 (Prompt)”。</p>
+                <ul>
+                    <li><strong>清晰可读的代码：</strong> 避免使用晦涩的缩写和单字母变量，代码本身就是最重要的上下文。</li>
+                    <li><strong>有意义的注释：</strong> 在关键位置添加注释，能极大地帮助 Copilot 理解你的意图。</li>
+                    <li><strong>良好的项目结构：</strong> 合理的文件和目录组织，能帮助 Copilot 快速定位相关信息。</li>
+                    <li><strong>明确的意图：</strong> 不要“被动攻击式”地提问，如果你知道怎么做，或者希望它怎么做，就明确告诉它。</li>
+                </ul>
+            </div>
+        </details>
+        
+        <h2 class="section-title">第二部分：Copilot 的主要工作模式</h2>
+
+        <details class="summary-card">
+            <summary>
+                <span class="icon">⚙️</span>
+                <strong>四种核心工作负载（Workloads）</strong>
+                <span class="arrow">▶</span>
+            </summary>
+            <div class="card-content">
+                <p>根据不同场景，Copilot 提供从辅助到主导的不同工作模式。</p>
+                <ul>
+                    <li><strong>代码补全 (Completion)：</strong> 最经典的功能，在你编码时实时提供代码建议。</li>
+                    <li><strong>聊天模式 (Chat)：</strong> 用于对话式交互，如解释代码 (Ask)、修改多个文件 (Edit)。</li>
+                    <li><strong>本地 Agent 模式：</strong> Copilot 能在本地主导任务，<strong>探索项目、运行测试、甚至自我修复</strong>。</li>
+                    <li><strong>[新] 编码 Agent (Coding Agent)：</strong> 终极模式！你可以将一个 <strong>GitHub Issue 直接指派给 Copilot</strong>，它会自动完成编码、测试，并提交一个 Pull Request，实现异步协作。</li>
+                </ul>
+            </div>
+        </details>
+
+        <h2 class="section-title">第三部分：高级技巧与最佳实践 (Q&A 精华)</h2>
+
+        <details class="summary-card">
+            <summary>
+                <span class="icon">🚀</span>
+                <strong>如何提供“可复用”的指令？(指令文件)</strong>
+                <span class="arrow">▶</span>
+            </summary>
+            <div class="card-content">
+                <p>通过在项目中创建特定的 Markdown 文件，可以为 Copilot 提供持久化、可复用的高质量上下文。</p>
+                <ul>
+                    <li><strong>全局指令：</strong> <code>/.github/copilot-instructions.md</code>。此文件中的内容（如项目概览、编码规范、技术栈）会应用到该仓库所有的聊天和 Agent 任务中。</li>
+                    <li><strong>特定任务指令：</strong> <code>/docs/copilot/instructions/*.md</code>。可以为特定任务（如“创建 Flask 路由”）编写模板，并通过 <code>apply to:</code> 规则使其在编辑特定文件时自动生效。</li>
+                </ul>
+            </div>
+        </details>
+
+        <details class="summary-card">
+            <summary>
+                <span class="icon">🔒</span>
+                <strong>编码 Agent 的工作原理与安全机制</strong>
+                <span class="arrow">▶</span>
+            </summary>
+            <div class="card-content">
+                <p>编码 Agent 在设计上将安全性放在了首位。</p>
+                <ul>
+                    <li><strong>运行环境：</strong> 它在一次性的、隔离的 <strong>GitHub Actions 环境</strong>中运行，任务结束后环境即销毁。</li>
+                    <li><strong>权限限制：</strong> 对仓库只有<strong>只读</strong>权限，唯一的例外是它可以写入自己创建的那个特定分支 (<code>copilot-fix-...</code>)。</li>
+                    <li><strong>网络隔离：</strong> 默认情况下，Agent <strong>无法访问任何外部网络资源</strong>。你必须在项目设置中显式地为特定域名打开防火墙。</li>
+                    <li><strong>人工审核：</strong> Agent 创建的 Pull Request <strong>不会自动运行CI/CD工作流</strong>。必须由人类开发者审查代码后，手动点击按钮触发。</li>
+                </ul>
+            </div>
+        </details>
+
+        <details class="summary-card">
+            <summary>
+                <span class="icon">🧩</span>
+                <strong>如何处理内部库和外部数据源？</strong>
+                <span class="arrow">▶</span>
+            </summary>
+            <div class="card-content">
+                <ul>
+                    <li><strong>内部库：</strong> Copilot 是一个强大的<strong>模式匹配器</strong>。它不需要看到内部库的源码，只需要在你的项目中看到足够多<strong>如何使用这个库的示例</strong>，它就能学会如何正确地调用它。</li>
+                    <li><strong>外部数据源 (如数据库)：</strong>
+                        <ul>
+                            <li><strong>简单方式：</strong> 将数据库的 DDL (表结构定义) 放入 <code>copilot-instructions.md</code> 文件中。</li>
+                            <li><strong>高级方式：</strong> 通过 <strong>MCP (Model Context Protocol)</strong>。你可以构建一个 MCP 服务，作为 Copilot 和外部服务（如数据库、Jira API）之间的桥梁，从而扩展其能力。</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </details>
+        
+        <details class="summary-card">
+            <summary>
+                <span class="icon">❓</span>
+                <strong>常见问题速览</strong>
+                <span class="arrow">▶</span>
+            </summary>
+            <div class="card-content">
+                <ul>
+                    <li><strong>支持微调 (Fine-tuning) 吗？</strong> 答：目前不支持。因为仓库中同时存在好代码和坏代码，微调难度高。当前更推荐通过指令文件和 MCP 提供高质量上下文（一种 RAG 模式）。</li>
+                    <li><strong>支持 Jira/ADO Issues 吗？</strong> 答：编码 Agent 目前<strong>仅支持 GitHub Issues</strong>。可以考虑写脚本将 Jira Issue 同步到 GitHub。</li>
+                </ul>
+            </div>
+        </details>
+
+        <footer>
+            <p>这是一个根据视频内容生成的交互式摘要，旨在帮助您快速掌握 GitHub Copilot 的核心用法和高级技巧。</p>
+        </footer>
+    </div>
+
+    <script>
+        // Simple script to enhance UX if needed, but pure CSS is often enough.
+        // For example, to close other details when one is opened.
+        const details = document.querySelectorAll('details');
+
+        details.forEach((targetDetail) => {
+            targetDetail.addEventListener('click', () => {
+                details.forEach((detail) => {
+                    if (detail !== targetDetail) {
+                        detail.removeAttribute('open');
+                    }
+                });
+            });
+        });
+    </script>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.youtube.com/watch?v=DdaAABdAqZY" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
