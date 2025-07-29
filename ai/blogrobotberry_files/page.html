@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>《机器人手臂采摘黑莓可能比人类更出色》</title>
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'FangSong', '仿宋', 'STFangSong', '华文仿宋', serif;
+            line-height: 1.8;
+            color: #333333;
+            background-color: #fefefe;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+            font-size: 1.1rem;
+            text-align: justify;
+        }
+
+        /* 浮动目录按钮 */
+        .toc-toggle {
+            position: fixed;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1000;
+            background: rgba(96, 165, 250, 0.5);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            width: 48px;
+            height: 48px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .toc-toggle:hover {
+            background: rgba(96, 165, 250, 0.8);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        /* 浮动目录面板 */
+        .toc-sidebar {
+            position: fixed;
+            left: -320px;
+            top: 0;
+            width: 300px;
+            height: 100vh;
+            background: #ffffff;
+            border-right: 1px solid #e2e8f0;
+            box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1);
+            z-index: 999;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            padding: 2rem 1rem;
+        }
+
+        .toc-sidebar.active {
+            left: 0;
+        }
+
+        .toc-sidebar h3 {
+            font-size: 1.2rem;
+            color: #1a202c;
+            margin-bottom: 1rem;
+            text-align: center;
+            border-bottom: 2px solid #3182ce;
+            padding-bottom: 0.5rem;
+        }
+
+        /* 目录区域 - 用于插入目录内容 */
+        .toc-content {
+            /* 目录内容将插入到这里 */
+        }
+
+        /* 遮罩层 */
+        .toc-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .toc-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 简洁的目录样式 */
+        .simple-toc ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+
+        .simple-toc ul ul {
+            padding-left: 1rem;
+            margin-top: 0.25rem;
+        }
+
+        .simple-toc li {
+            margin-bottom: 0.25rem;
+        }
+
+        .simple-toc a {
+            display: block;
+            padding: 0.5rem 0.75rem;
+            color: #4a5568;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .simple-toc a:hover {
+            background-color: #edf2f7;
+            color: #3182ce;
+            transform: translateX(4px);
+        }
+
+        /* 标题样式 */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'FangSong', '仿宋', 'STFangSong', '华文仿宋', serif;
+            color: #2d3748;
+            margin-top: 2rem;
+            margin-bottom: 1.2rem;
+            line-height: 1.4;
+            font-weight: normal;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            border-bottom: 2px solid #718096;
+            padding-bottom: 0.8rem;
+            margin-top: 0;
+            margin-bottom: 2.5rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            border-bottom: 1px solid #cbd5e0;
+            padding-bottom: 0.6rem;
+            margin-top: 2.5rem;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            color: #4a5568;
+        }
+
+        h4 {
+            font-size: 1.2rem;
+            color: #4a5568;
+        }
+
+        h5 {
+            font-size: 1.1rem;
+            color: #4a5568;
+        }
+
+        h6 {
+            font-size: 1rem;
+            color: #718096;
+            font-weight: normal;
+        }
+
+        /* 段落样式 */
+        p {
+            margin-bottom: 1.5rem;
+            text-align: justify;
+            word-break: break-word;
+            text-indent: 2em;
+            font-family: 'FangSong', '仿宋', 'STFangSong', '华文仿宋', serif;
+        }
+
+        /* 链接样式 */
+        a {
+            color: #3182ce;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        a:hover {
+            color: #2c5282;
+            text-decoration: underline;
+        }
+
+        /* 图片样式 - 居中显示 */
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 2rem auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 列表样式 */
+        ul, ol {
+            margin: 1.25rem 0;
+            padding-left: 2rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        ul ul, ol ol, ul ol, ol ul {
+            margin: 0.5rem 0;
+        }
+
+        /* 代码样式 */
+        code {
+            font-family: 'Courier New', 'Monaco', 'Consolas', 'Ubuntu Mono', monospace;
+            background-color: #f8f9fa;
+            color: #d63384;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9rem;
+        }
+
+        pre {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            overflow-x: auto;
+            font-family: 'Courier New', 'Monaco', 'Consolas', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+            border-radius: 0;
+            font-size: inherit;
+        }
+
+        /* 引用样式 */
+        blockquote {
+            border-left: 4px solid #a0aec0;
+            margin: 2rem 0;
+            padding: 1.2rem 1.8rem;
+            background-color: #f7fafc;
+            color: #4a5568;
+            font-style: italic;
+            border-radius: 0 6px 6px 0;
+            font-family: 'FangSong', '仿宋', 'STFangSong', '华文仿宋', serif;
+        }
+
+        blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background-color: #ffffff;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background-color: #f7fafc;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        tr:hover {
+            background-color: #f7fafc;
+        }
+
+        /* 分隔线 */
+        hr {
+            border: none;
+            border-top: 2px solid #e2e8f0;
+            margin: 3rem 0;
+        }
+
+        /* 页面分隔器 */
+        .page-separator {
+            border-top: 2px solid #e2e8f0;
+            margin: 3rem 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .page-separator::after {
+            content: "• • •";
+            background-color: #ffffff;
+            color: #a0aec0;
+            padding: 0 1rem;
+            position: relative;
+            top: -0.75rem;
+        }
+
+        /* 强调样式 */
+        strong, b {
+            font-weight: 700;
+            color: #1a202c;
+        }
+
+        em, i {
+            font-style: italic;
+            color: #4a5568;
+        }
+
+        /* 目标标题高亮 */
+        h1:target, h2:target, h3:target, h4:target, h5:target, h6:target {
+            background-color: #fff3cd;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1.5rem 0;
+            border-left: 4px solid #ffc107;
+            animation: highlight 2s ease-in-out;
+        }
+
+        @keyframes highlight {
+            0% {
+                background-color: #fff3cd;
+                transform: scale(1.02);
+            }
+            100% {
+                background-color: transparent;
+                transform: scale(1);
+            }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                padding: 1.5rem;
+                font-size: 1rem;
+                max-width: 100%;
+            }
+
+            .toc-toggle {
+                left: 10px;
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+
+            .toc-sidebar {
+                width: 280px;
+                left: -300px;
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.6rem;
+            }
+
+            h2 {
+                font-size: 1.4rem;
+            }
+
+            h3 {
+                font-size: 1.2rem;
+            }
+
+            h4 {
+                font-size: 1.1rem;
+            }
+
+            table {
+                font-size: 0.9rem;
+            }
+
+            th, td {
+                padding: 0.6rem 0.8rem;
+            }
+
+            pre {
+                padding: 1.2rem;
+                font-size: 0.85rem;
+            }
+
+            blockquote {
+                padding: 1rem 1.2rem;
+                margin: 1.5rem 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 1.2rem;
+                font-size: 0.95rem;
+            }
+
+            .toc-sidebar {
+                width: 260px;
+                left: -280px;
+            }
+
+            h1, h2, h3, h4, h5, h6 {
+                margin-top: 1.5rem;
+            }
+
+            ul, ol {
+                padding-left: 1.5rem;
+            }
+            
+            p {
+                text-indent: 1.5em;
+            }
+        }
+
+        /* 打印样式 */
+        @media print {
+            .toc-toggle,
+            .toc-sidebar,
+            .toc-overlay {
+                display: none !important;
+            }
+
+            body {
+                max-width: none;
+                padding: 0;
+                font-size: 12pt;
+                line-height: 1.5;
+                color: #000;
+            }
+
+            h1, h2, h3, h4, h5, h6 {
+                page-break-after: avoid;
+            }
+
+            img {
+                max-width: 100% !important;
+                page-break-inside: avoid;
+            }
+
+            blockquote, pre {
+                page-break-inside: avoid;
+            }
+
+            a {
+                color: #000;
+                text-decoration: underline;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- 浮动目录按钮 -->
+<button class="toc-toggle" onclick="toggleToc()" title="打开/关闭目录">
+        ☰
+    </button>
+<!-- 浮动目录面板 -->
+<div class="toc-sidebar" id="tocSidebar">
+<h3 id="目录">目录</h3>
+<div class="toc-content simple-toc"><ul>
+<li><ul>
+<li><ul>
+<li><a href="#目录">目录</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#机器人手臂采摘黑莓可能比人类更出色">《机器人手臂采摘黑莓可能比人类更出色》</a></li>
+<li><a href="#机器人手臂可能比人类更好地采摘黑莓">机器人手臂可能比人类更好地采摘黑莓</a></li>
+<li><ul>
+<li><a href="#受自然启发">受自然启发</a></li>
+<li><a href="#比人类更好">比人类更好</a></li>
+<li><a href="#关于阿肯色大学">关于阿肯色大学</a></li>
+</ul></li>
+</ul>
+</div>
+</div>
+<!-- 遮罩层 -->
+<div class="toc-overlay" id="tocOverlay" onclick="closeToc()"></div>
+<!-- 主要内容 -->
+<header id="title-block-header">
+<h1 class="title" id="机器人手臂采摘黑莓可能比人类更出色">《机器人手臂采摘黑莓可能比人类更出色》</h1>
+</header>
+<h1 id="机器人手臂可能比人类更好地采摘黑莓">机器人手臂可能比人类更好地采摘黑莓</h1>
+<p>2025年7月21日</p>
+<p><img src="images/000000.jpg"/></p>
+<p>摄影：Chieko Hara</p>
+<p>机械工程师Anthony Gunderman手持用于采摘黑莓的机器人抓手原型。</p>
+<p>新鲜、冷冻和加工浆果在美国是一个价值数十亿美元的产业。仅在阿肯色州，新鲜市场黑莓每年就为该州经济贡献2430万美元。但超市蛤壳包装中销售的这些娇嫩黑莓必须手工采摘，而近年来农场劳动力有限。阿肯色大学开发的新型浆果采摘机器人抓手可以为种植者提供高科技替代方案来解决劳动力短缺问题。</p>
+<p>美国专利局于4月向阿肯色大学颁发了”软机器人浆果采摘抓手”发明专利。隶属于研究与创新部门的Technology
+Ventures获得了该专利。</p>
+<p>该设备由Anthony
+Gunderman开发，他当时是博士生，现在是阿肯色大学机械工程系助理教授，与Yue
+Chen（前阿肯色大学教授，现在佐治亚理工学院）和Jeremy
+Collins（当时的阿肯色大学工程本科生）合作完成。</p>
+<h2 id="受自然启发">受自然启发</h2>
+<p>机器人抓手有三个”手指”，每个都由柔软可塑的材料制成。当”肌腱”——在这种情况下是吉他弦——被拉动时，手指会收缩。</p>
+<p>用可塑材料制造机器人被称为软机器人技术，这种方法最初在20世纪60年代使用。在设计软机器人时，开发者经常向自然寻找模型，这个过程被称为仿生学(biomimicry)。对于浆果采摘手，研究人员受到郁金香设计的启发。</p>
+<p><img src="images/000001.jpg"/></p>
+<p><em>机器人抓手可以采摘娇嫩的黑莓。（插图由Ross Maute根据Anthony
+Gunderman的照片着色）</em></p>
+<p>“我受到郁金香花朵在阳光照射下开合方式的启发，”Gunderman说。</p>
+<p>每个手指尖端都有一个力传感器，确保抓手能够摘取浆果而不会压碎它。粗暴处理的黑莓可能在收获时受损或收获后变红，这种情况称为红色小核果逆转(red
+drupelet
+reversion)。这两种情况对消费者来说都是不受欢迎的特征。美国农业部也会拒绝损伤过多或红色小核果过多的新鲜黑莓。</p>
+<p>为了确定采摘黑莓而不造成损伤所需的力量，<a href="https://news.uark.edu/articles/64402/how-scientists-developed-a-robotic-hand-to-pick-blackberries-in-arkansas">工程师们</a>与当时的研究生Andrea
+Myers和阿肯色农业实验站（阿肯色大学系统全州农业部研究机构）食品科学副教授Renee
+Threlfall合作。</p>
+<p>团队在经验丰富的黑莓采摘者指尖安装传感器，测量他们在采摘浆果时施加的力量。</p>
+<p>在机器人能够部署到农场之前，仍需要开发计算机视觉和定位技术，让它能够在植物上找到并伸手够到浆果。</p>
+<p>如今，蓝莓和梨等较坚硬的水果通常由机器采摘。用于冷冻或加工的黑莓则使用较粗糙的自动化采摘机器。</p>
+<h2 id="比人类更好">比人类更好</h2>
+<p>人手可以适应许多任务。但Gunderman认为有一天机器人手可能会在采摘黑莓方面超越人类。</p>
+<p>“当我们谈论一个特定任务时，你当然可以设计出在那个特定任务上比人手更好的东西，”他说。</p>
+<p>机器人抓手也可能比人工更一致。</p>
+<p>“根据你是否有一个全新的手工采摘者或已经做了几十年的人，你会得到截然不同的浆果质量，”Gunderman说。</p>
+<p>抓手还可以用来采摘其他软果，如覆盆子。</p>
+<p>机器人抓手在一系列物体上进行了测试，从梨罐头和豆罐头等硬物品到薯片袋和T恤等软而灵活的物品。Gunderman说，软抓手也可能成为因受伤或年龄而行动不便的人的工具。</p>
+<p><img src="images/000002.jpg"/></p>
+<p><em>研究人员测量了在不造成损伤的情况下采摘黑莓所需的力量。（照片由Anthony
+Gunderman，阿肯色大学和阿肯色大学系统农业部提供）</em></p>
+<h2 id="关于阿肯色大学">关于阿肯色大学</h2>
+<p>作为阿肯色州的旗舰机构，阿肯色大学在200多个学术项目中提供具有国际竞争力的教育。</p>
+<p>成立于1871年，阿肯色大学通过教授新知识和技能、创业和就业发展、通过研究和创意活动进行发现，同时为专业学科提供培训，为阿肯色州经济贡献<a href="https://www.uark.edu/economic-impact/">超过30亿美元</a>。卡内基基金会将阿肯色大学归类为少数具有最高研究活动水平的美国学院和大学之一。《美国新闻与世界报道》将阿肯色大学列为全国顶尖公立大学之一。了解阿肯色大学如何致力于建设更美好世界，请访问<a href="https://arkansasresearch.uark.edu/">阿肯色研究与经济发展新闻</a>。</p>
+<script>
+        function toggleToc() {
+            const sidebar = document.getElementById('tocSidebar');
+            const overlay = document.getElementById('tocOverlay');
+            
+            if (sidebar.classList.contains('active')) {
+                closeToc();
+            } else {
+                openToc();
+            }
+        }
+
+        function openToc() {
+            const sidebar = document.getElementById('tocSidebar');
+            const overlay = document.getElementById('tocOverlay');
+            
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeToc() {
+            const sidebar = document.getElementById('tocSidebar');
+            const overlay = document.getElementById('tocOverlay');
+            
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // ESC键关闭目录
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeToc();
+            }
+        });
+
+        // 点击目录链接后自动关闭目录（移动端）
+        document.addEventListener('click', function(e) {
+            if (e.target.matches('.simple-toc a') && window.innerWidth <= 768) {
+                setTimeout(closeToc, 300);
+            }
+        });
+    </script>
+</body>
+</html>
