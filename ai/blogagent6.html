@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章摘要：生产级 AI Agent 的六项原则</title>
+    <style>
+        :root {
+            --bg-color: #f9fafb;
+            --card-bg: #ffffff;
+            --text-color: #374151;
+            --title-color: #111827;
+            --summary-color: #1f2937;
+            --accent-color: #4f46e5;
+            --border-color: #e5e7eb;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            margin: 0;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+        main {
+            max-width: 800px;
+            width: 100%;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        h1 {
+            color: var(--title-color);
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        h2 {
+            color: var(--text-color);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+        details {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            transition: all 0.2s ease-in-out;
+            box-shadow: var(--shadow);
+        }
+        details[open] {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+        summary {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--summary-color);
+            padding: 1.25rem 1.5rem;
+            cursor: pointer;
+            list-style: none; /* 移除默认箭头 */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        summary::-webkit-details-marker {
+            display: none; /* 兼容 Chrome/Safari */
+        }
+        summary::after {
+            content: '＋'; /* 自定义折叠图标 */
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            transition: transform 0.2s ease-in-out;
+        }
+        details[open] > summary::after {
+            transform: rotate(45deg);
+            content: '×'; /* 自定义展开图标 */
+        }
+        .details-content {
+            padding: 0 1.5rem 1.25rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+        ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+        li {
+            padding: 0.75rem 0;
+            display: flex;
+            align-items: flex-start;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        li:last-child {
+            border-bottom: none;
+        }
+        li::before {
+            flex-shrink: 0;
+            content: '';
+            font-size: 1.5rem;
+            margin-right: 0.75rem;
+            line-height: 1.5;
+        }
+        .fact::before {
+            content: '⚙️';
+        }
+        .opinion::before {
+            content: '💡';
+        }
+        .conclusion {
+            background-color: var(--card-bg);
+            border-left: 5px solid var(--accent-color);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            margin-top: 2rem;
+        }
+        .conclusion p {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+    <main>
+        <header>
+            <h1>生产级 AI Agent 的六项原则</h1>
+            <h2>一份动态交互式文章摘要</h2>
+        </header>
+
+        <details>
+            <summary>原则一：投资你的系统提示词 (System Prompt)</summary>
+            <div class="details-content">
+                <ul>
+                    <li class="opinion">放弃“魔法咒语”式提示词。现代LLM需要的是清晰、详尽、无矛盾的指令，而非技巧性诱导。</li>
+                    <li class="fact">遵循模型供应商的最佳实践文档（如 Anthropic, Google）。</li>
+                    <li class="fact">用研究型LLM（如 Deep Research）生成初版提示词，再人工优化，这是一个很好的起点。</li>
+                    <li class="fact">将系统提示词设计为大而静态的部分，利用提示词缓存（Prompt Caching）机制提升效率。</li>
+                </ul>
+            </div>
+        </details>
+
+        <details>
+            <summary>原则二：精细化拆分与管理上下文 (Context)</summary>
+            <div class="details-content">
+                <ul>
+                    <li class="opinion">上下文管理是平衡的艺术：上下文过少导致幻觉，过多则导致成本、延迟和“注意力衰减”问题。</li>
+                    <li class="fact">采用“最小知识”原则：初始只提供最少信息（如文件列表），并提供工具（如 `read_file`）供 Agent 按需获取详细内容。</li>
+                    <li class="fact">对日志等动态内容使用自动化上下文压缩工具，避免上下文爆炸。</li>
+                    <li class="opinion">像面向对象编程中的“封装”一样，为 Agent 的每个部分提供其绝对需要的最小上下文。</li>
+                </ul>
+            </div>
+        </details>
+
+        <details>
+            <summary>原则三：精心设计你的工具 (Tools)</summary>
+            <div class="details-content">
+                <ul>
+                    <li class="opinion">为 Agent 设计工具比设计人类使用的 API 更严苛，因为 LLM 会毫不留情地利用你设计的任何漏洞。</li>
+                    <li class="fact">工具应具备：相似的粒度、少量严格类型的参数、功能专注、经过充分测试、幂等性高。</li>
+                    <li class="fact">多数软件工程 Agent 的核心工具少于10个。也可以根据上下文动态加载额外工具。</li>
+                    <li class="opinion">设计简单、充分、无歧义且不冗余的工具集，是保障 Agent 性能的关键。</li>
+                </ul>
+            </div>
+        </details>
+
+        <details>
+            <summary>原则四：构建强大的反馈循环 (Feedback Loop)</summary>
+            <div class="details-content">
+                <ul>
+                    <li class="opinion">采用“演员-评论家 (Actor-Critic)”模式：让 LLM（演员）自由创造，用确定性规则（评论家）严格验证。</li>
+                    <li class="fact">评论家应基于手工制定的标准：代码可编译、通过单元测试、符合Linter规范等。</li>
+                    <li class="fact">在任何领域，都要引入该领域的“归纳偏见”（Inductive Bias），即必须遵守的领域规则（如复式记账原则）。</li>
+                    <li class="fact">设计明确的恢复策略：对于失败，判断是“尝试修复”还是“直接放弃重来”，这构成了反馈循环的核心。</li>
+                </ul>
+            </div>
+        </details>
+
+        <details>
+            <summary>原则五：用 LLM 驱动错误分析 (LLM-driven Error Analysis)</summary>
+            <div class="details-content">
+                <ul>
+                    <li class="opinion">Agent 会产生海量日志，人工分析效率低下。利用“元认知”循环是强大的策略。</li>
+                    <li class="fact">建立一个 meta-agentic 循环：1. 建立基线 -> 2. 运行并收集日志 -> 3. **用LLM分析日志**（长上下文模型是关键）-> 4. 根据分析结果改进基线。</li>
+                    <li class="opinion">这种方法能高效揭示你在上下文管理或工具设计中的盲点。</li>
+                </ul>
+            </div>
+        </details>
+
+        <details>
+            <summary>原则六：令人沮丧的行为往往是系统问题</summary>
+            <div class="details-content">
+                <ul>
+                    <li class="opinion">当 Agent 做出“愚蠢”行为时，先别急着骂模型，这通常是系统设计缺陷的信号。</li>
+                    <li class="fact">真实案例：Agent 不用指定的 API，而是使用随机数据，原因是开发者忘了提供正确的 API 密钥。</li>
+                    <li class="fact">真实案例：Agent 尝试写入文件却屡次失败，原因是它根本没有被授予文件系统访问权限。</li>
+                    <li class="opinion">Agent 的“愚蠢”行为，很可能是它在当前系统限制下能找到的“最合逻辑”的变通方案。</li>
+                </ul>
+            </div>
+        </details>
+
+        <div class="conclusion">
+            <p><strong>总结：</strong> 构建高效 Agent 的关键不在于寻找某个“银弹”提示词，而在于**系统化的工程设计**。专注于清晰的指令、精简的上下文、鲁棒的工具和自动化的验证循环。当 Agent 的行为让你困惑时，首先调试你的系统。最终目标不是一个永不犯错的 Agent，而是一个**可靠、可恢复、能优雅失败并可持续迭代**的系统。</p>
+        </div>
+    </main>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="blogagent6_files/page.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
