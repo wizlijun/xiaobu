@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频摘要：给忙碌者的大语言模型（LLM）入门</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --primary-color: #007bff;
+            --accent-color: #e9f5ff;
+            --border-color: #dee2e6;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --fact-bg: #e7f5ee;
+            --fact-border: #b8e0d2;
+            --opinion-bg: #fff3e0;
+            --opinion-border: #ffd5a9;
+            --header-bg: #ffffff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: var(--header-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px var(--shadow-color);
+            overflow: hidden;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2em;
+            font-weight: 600;
+        }
+        
+        header p {
+            margin: 10px 0 0;
+            opacity: 0.9;
+        }
+
+        main {
+            padding: 20px 30px 30px;
+        }
+
+        details {
+            background-color: #fff;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        
+        details[open] {
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        summary {
+            font-weight: 600;
+            font-size: 1.2em;
+            padding: 20px;
+            cursor: pointer;
+            outline: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        summary::marker {
+            display: none;
+        }
+
+        summary:after {
+            content: '▼';
+            font-size: 0.8em;
+            transition: transform 0.3s ease;
+            color: var(--primary-color);
+        }
+        
+        details[open] summary:after {
+            transform: rotate(180deg);
+        }
+
+        .content {
+            padding: 0 20px 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        li {
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            border-left: 4px solid;
+            position: relative;
+        }
+
+        .fact {
+            background-color: var(--fact-bg);
+            border-color: var(--fact-border);
+        }
+
+        .opinion {
+            background-color: var(--opinion-bg);
+            border-color: var(--opinion-border);
+        }
+        
+        li::before {
+            content: '💡';
+            position: absolute;
+            left: -28px;
+            top: 12px;
+            font-size: 1.2em;
+        }
+
+        .fact::before {
+            content: ' factual ';
+            background-color: #28a745;
+            color: white;
+            font-size: 0.7em;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 10px;
+            position: absolute;
+            left: -15px; /* Adjust as needed */
+            top: -10px; /* Adjust as needed */
+        }
+
+        .opinion::before {
+            content: ' perspective ';
+            background-color: #fd7e14;
+            color: white;
+            font-size: 0.7em;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 10px;
+            position: absolute;
+            left: -15px; /* Adjust as needed */
+            top: -10px; /* Adjust as needed */
+        }
+        
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f1f3f5;
+            border-radius: 8px;
+            justify-content: center;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>视频摘要</h1>
+            <p>给忙碌者的大语言模型（LLM）入门</p>
+        </header>
+
+        <main>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--fact-bg); border: 1px solid var(--fact-border);"></div>
+                    <span>事实陈述 (Factual)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--opinion-bg); border: 1px solid var(--opinion-border);"></div>
+                    <span>观点/类比 (Perspective)</span>
+                </div>
+            </div>
+
+            <details open>
+                <summary>🧠 1. 什么是大语言模型 (LLM)？</summary>
+                <div class="content">
+                    <ul>
+                        <li class="opinion">本质上，一个LLM可以被看作是两个文件：一个巨大的“参数”文件和一个运行这些参数的“代码”文件。</li>
+                        <li class="fact">以 Llama 2 70B 为例，它有700亿个参数。每个参数用16位浮点数（2字节）存储，所以参数文件大小约为140GB。</li>
+                        <li class="fact">运行模型的代码非常简洁，大约500行C代码即可实现，无需其他依赖。这意味着它是一个完全自包含的系统，可以在本地设备（如MacBook）上离线运行。</li>
+                        <li class="fact">存在两类模型：像Llama这样的“开放权重”（Open-weights）模型，其参数和架构公开；以及像GPT-4这样的闭源模型，只能通过API访问。</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details>
+                <summary>🛠️ 2. LLM 是如何训练的？(预训练 + 微调)</summary>
+                <div class="content">
+                    <h4>阶段一：预训练 (Pre-training) - 获取知识</h4>
+                    <ul>
+                        <li class="opinion">预训练可以理解为对互联网海量文本的“有损压缩”。模型学习了文本中的知识、模式和结构，并将它们压缩到参数中。</li>
+                        <li class="fact">Llama 2 70B 的训练数据量约10TB，使用了约6000个GPU，耗时12天，成本约200万美元。顶尖模型的成本是这个数字的10倍以上。</li>
+                        <li class="fact">模型的核心任务是“预测下一个词”。这个看似简单的目标，迫使模型为了做出准确预测而学习关于世界的海量知识。</li>
+                    </ul>
+                    <h4>阶段二：微调 (Fine-tuning) - 学会对话</h4>
+                    <ul>
+                        <li class="fact">微调使用高质量、人工标注的“问题-答案”对话数据，来教模型如何成为一个有用的助手，而不是一个只会续写网页的“文档生成器”。</li>
+                        <li class="fact">这个过程让模型学会遵循指令、以对话形式回答问题，我们称之为“对齐”（Alignment）。</li>
+                    </ul>
+                    <h4>阶段三：基于人类反馈的强化学习 (RLHF)</h4>
+                    <ul>
+                        <li class="fact">这是一个可选的进阶步骤。让人类去比较模型生成的多个答案的好坏（而不是从头写一个），利用这种“偏好”数据来进一步优化模型。</li>
+                    </ul>
+                </div>
+            </details>
+            
+            <details>
+                <summary>📈 3. LLM 的未来发展方向</summary>
+                <div class="content">
+                    <ul>
+                        <li class="fact"><strong>规模定律 (Scaling Laws)</strong>：模型的性能（预测下一个词的准确率）与其“参数数量”和“训练数据量”呈高度可预测的正相关。这意味着只要投入更多计算和数据，模型几乎必然会变得更强。</li>
+                        <li class="opinion"><strong>系统1 vs 系统2 思维</strong>：目前的LLM只有“系统1”思维（直觉、快速、一次性生成）。未来的方向是赋予其“系统2”思维能力（深思熟虑、推理、规划、探索多种可能性），即用更多时间换取更高准确性。</li>
+                        <li class="opinion"><strong>自我提升 (Self-improvement)</strong>：借鉴AlphaGo的思路，探索如何让LLM在特定领域（如有明确评估标准）通过自我博弈或自我评估来超越人类水平，而不只是模仿人类数据。</li>
+                        <li class="fact"><strong>多模态 (Multimodality)</strong>：LLM正在超越文本，能够理解和生成图像、音频、视频等多种模态的内容，使其交互更自然、能力更强大。</li>
+                        <li class="fact"><strong>工具使用 (Tool Use)</strong>：LLM不再仅仅依赖内部知识，而是学会调用外部工具（如计算器、代码解释器、网络浏览器）来解决复杂问题，极大地扩展了其能力边界。</li>
+                        <li class="fact"><strong>定制化 (Customization)</strong>：通过GPTs商店等形式，允许用户为特定任务创建和定制专属的“专家”LLM，提供个性化的指令、知识库（RAG）和能力。</li>
+                    </ul>
+                </div>
+            </details>
+            
+            <details>
+                <summary>🖥️ 4. 终极图景：LLM 作为新兴操作系统</summary>
+                <div class="content">
+                    <ul>
+                       <li class="opinion">一个更准确的视角是：LLM 正在成为一个新兴“操作系统”的“内核”（Kernel Process）。它不是一个简单的聊天机器人，而是一个通过自然语言交互，协调各种计算资源来解决问题的中枢。</li>
+                       <li class="opinion">这个“LLM操作系统”拥有类似传统OS的组件：
+                            <ul>
+                                <li><strong>CPU/内核</strong>: LLM本身</li>
+                                <li><strong>内存 (RAM)</strong>: 上下文窗口 (Context Window)</li>
+                                <li><strong>硬盘 (Disk)</strong>: 外部文件或互联网（通过RAG或浏览器访问）</li>
+                                <li><strong>工具/应用</strong>: Python解释器、计算器、API等</li>
+                                <li><strong>外设</strong>: 摄像头、麦克风（通过多模态能力接入）</li>
+                            </ul>
+                       </li>
+                        <li class="opinion">当前的市场格局也与操作系统历史相似：存在像GPT、Claude这样的闭源专有系统（如Windows/macOS），也存在一个由Llama系列引领的、快速发展的开源生态系统（如Linux）。</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details>
+                <summary>🛡️ 5. 新范式下的安全挑战</summary>
+                <div class="content">
+                    <ul>
+                        <li class="fact"><strong>越狱 (Jailbreaking)</strong>：通过巧妙的提示（如角色扮演“过世的祖母”）来欺骗模型，使其绕过安全限制，回答有害问题。</li>
+                        <li class="fact"><strong>提示注入 (Prompt Injection)</strong>：攻击者将恶意指令隐藏在模型处理的外部数据中（如网页、文档、图片），当模型读取这些数据时，其行为被劫持，可能导致泄露用户隐私或执行恶意操作。</li>
+                        <li class="fact"><strong>数据投毒 / 后门攻击 (Data Poisoning / Backdoor Attack)</strong>：在模型的训练数据中植入一个特定的“触发词”（如"James Bond"）。平时模型表现正常，一旦在提示中遇到这个触发词，就会产生错误的、被攻击者预设的行为。</li>
+                        <li class="fact"><strong>对抗性攻击 (Adversarial Attacks)</strong>：通过优化算法生成对人类无意义但能精准“欺骗”模型的输入（如一串乱码字符或图片上的特定噪声），从而实现越狱。</li>
+                        <li class="opinion">这些攻击与防御的“猫鼠游戏”正在上演，构成了LLM安全领域的核心研究方向。</li>
+                    </ul>
+                </div>
+            </details>
+
+        </main>
+    </div>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.bilibili.com/video/BV1da8DztEMw/" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
