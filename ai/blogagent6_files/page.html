@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《生产AI智能体的六项原则》</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'FangSong', '仿宋', 'STFangSong', '华文仿宋', serif;
+            line-height: 1.8;
+            color: #333333;
+            background-color: #fefefe;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+            font-size: 1.1rem;
+            text-align: justify;
+        }
+
+        /* 浮动目录按钮 */
+        .toc-toggle {
+            position: fixed;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1000;
+            background: rgba(96, 165, 250, 0.5);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            width: 48px;
+            height: 48px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .toc-toggle:hover {
+            background: rgba(96, 165, 250, 0.8);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        /* 浮动目录面板 */
+        .toc-sidebar {
+            position: fixed;
+            left: -320px;
+            top: 0;
+            width: 300px;
+            height: 100vh;
+            background: #ffffff;
+            border-right: 1px solid #e2e8f0;
+            box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1);
+            z-index: 999;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            padding: 2rem 1rem;
+        }
+
+        .toc-sidebar.active {
+            left: 0;
+        }
+
+        .toc-sidebar h3 {
+            font-size: 1.2rem;
+            color: #1a202c;
+            margin-bottom: 1rem;
+            text-align: center;
+            border-bottom: 2px solid #3182ce;
+            padding-bottom: 0.5rem;
+        }
+
+        /* 目录区域 - 用于插入目录内容 */
+        .toc-content {
+            /* 目录内容将插入到这里 */
+        }
+
+        /* 遮罩层 */
+        .toc-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .toc-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 简洁的目录样式 */
+        .simple-toc ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+
+        .simple-toc ul ul {
+            padding-left: 1rem;
+            margin-top: 0.25rem;
+        }
+
+        .simple-toc li {
+            margin-bottom: 0.25rem;
+        }
+
+        .simple-toc a {
+            display: block;
+            padding: 0.5rem 0.75rem;
+            color: #4a5568;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .simple-toc a:hover {
+            background-color: #edf2f7;
+            color: #3182ce;
+            transform: translateX(4px);
+        }
+
+        /* 标题样式 */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'FangSong', '仿宋', 'STFangSong', '华文仿宋', serif;
+            color: #2d3748;
+            margin-top: 2rem;
+            margin-bottom: 1.2rem;
+            line-height: 1.4;
+            font-weight: normal;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            border-bottom: 2px solid #718096;
+            padding-bottom: 0.8rem;
+            margin-top: 0;
+            margin-bottom: 2.5rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            border-bottom: 1px solid #cbd5e0;
+            padding-bottom: 0.6rem;
+            margin-top: 2.5rem;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            color: #4a5568;
+        }
+
+        h4 {
+            font-size: 1.2rem;
+            color: #4a5568;
+        }
+
+        h5 {
+            font-size: 1.1rem;
+            color: #4a5568;
+        }
+
+        h6 {
+            font-size: 1rem;
+            color: #718096;
+            font-weight: normal;
+        }
+
+        /* 段落样式 */
+        p {
+            margin-bottom: 1.5rem;
+            text-align: justify;
+            word-break: break-word;
+            text-indent: 2em;
+            font-family: 'FangSong', '仿宋', 'STFangSong', '华文仿宋', serif;
+        }
+
+        /* 链接样式 */
+        a {
+            color: #3182ce;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        a:hover {
+            color: #2c5282;
+            text-decoration: underline;
+        }
+
+        /* 图片样式 - 居中显示 */
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 2rem auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 列表样式 */
+        ul, ol {
+            margin: 1.25rem 0;
+            padding-left: 2rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        ul ul, ol ol, ul ol, ol ul {
+            margin: 0.5rem 0;
+        }
+
+        /* 代码样式 */
+        code {
+            font-family: 'Courier New', 'Monaco', 'Consolas', 'Ubuntu Mono', monospace;
+            background-color: #f8f9fa;
+            color: #d63384;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9rem;
+        }
+
+        pre {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            overflow-x: auto;
+            font-family: 'Courier New', 'Monaco', 'Consolas', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+            border-radius: 0;
+            font-size: inherit;
+        }
+
+        /* 引用样式 */
+        blockquote {
+            border-left: 4px solid #a0aec0;
+            margin: 2rem 0;
+            padding: 1.2rem 1.8rem;
+            background-color: #f7fafc;
+            color: #4a5568;
+            font-style: italic;
+            border-radius: 0 6px 6px 0;
+            font-family: 'FangSong', '仿宋', 'STFangSong', '华文仿宋', serif;
+        }
+
+        blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background-color: #ffffff;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background-color: #f7fafc;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        tr:hover {
+            background-color: #f7fafc;
+        }
+
+        /* 分隔线 */
+        hr {
+            border: none;
+            border-top: 2px solid #e2e8f0;
+            margin: 3rem 0;
+        }
+
+        /* 页面分隔器 */
+        .page-separator {
+            border-top: 2px solid #e2e8f0;
+            margin: 3rem 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .page-separator::after {
+            content: "• • •";
+            background-color: #ffffff;
+            color: #a0aec0;
+            padding: 0 1rem;
+            position: relative;
+            top: -0.75rem;
+        }
+
+        /* 强调样式 */
+        strong, b {
+            font-weight: 700;
+            color: #1a202c;
+        }
+
+        em, i {
+            font-style: italic;
+            color: #4a5568;
+        }
+
+        /* 目标标题高亮 */
+        h1:target, h2:target, h3:target, h4:target, h5:target, h6:target {
+            background-color: #fff3cd;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1.5rem 0;
+            border-left: 4px solid #ffc107;
+            animation: highlight 2s ease-in-out;
+        }
+
+        @keyframes highlight {
+            0% {
+                background-color: #fff3cd;
+                transform: scale(1.02);
+            }
+            100% {
+                background-color: transparent;
+                transform: scale(1);
+            }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                padding: 1.5rem;
+                font-size: 1rem;
+                max-width: 100%;
+            }
+
+            .toc-toggle {
+                left: 10px;
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+
+            .toc-sidebar {
+                width: 280px;
+                left: -300px;
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.6rem;
+            }
+
+            h2 {
+                font-size: 1.4rem;
+            }
+
+            h3 {
+                font-size: 1.2rem;
+            }
+
+            h4 {
+                font-size: 1.1rem;
+            }
+
+            table {
+                font-size: 0.9rem;
+            }
+
+            th, td {
+                padding: 0.6rem 0.8rem;
+            }
+
+            pre {
+                padding: 1.2rem;
+                font-size: 0.85rem;
+            }
+
+            blockquote {
+                padding: 1rem 1.2rem;
+                margin: 1.5rem 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 1.2rem;
+                font-size: 0.95rem;
+            }
+
+            .toc-sidebar {
+                width: 260px;
+                left: -280px;
+            }
+
+            h1, h2, h3, h4, h5, h6 {
+                margin-top: 1.5rem;
+            }
+
+            ul, ol {
+                padding-left: 1.5rem;
+            }
+            
+            p {
+                text-indent: 1.5em;
+            }
+        }
+
+        /* 打印样式 */
+        @media print {
+            .toc-toggle,
+            .toc-sidebar,
+            .toc-overlay {
+                display: none !important;
+            }
+
+            body {
+                max-width: none;
+                padding: 0;
+                font-size: 12pt;
+                line-height: 1.5;
+                color: #000;
+            }
+
+            h1, h2, h3, h4, h5, h6 {
+                page-break-after: avoid;
+            }
+
+            img {
+                max-width: 100% !important;
+                page-break-inside: avoid;
+            }
+
+            blockquote, pre {
+                page-break-inside: avoid;
+            }
+
+            a {
+                color: #000;
+                text-decoration: underline;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 浮动目录按钮 -->
+    <button class="toc-toggle" onclick="toggleToc()" title="打开/关闭目录">
+        ☰
+    </button>
+
+    <!-- 浮动目录面板 -->
+    <div class="toc-sidebar" id="tocSidebar">
+        <h3>目录</h3>
+        <div class="toc-content simple-toc">
+            <!-- 目录内容将插入到这里 -->
+        </div>
+    </div>
+
+    <!-- 遮罩层 -->
+    <div class="toc-overlay" id="tocOverlay" onclick="closeToc()"></div>
+
+    <!-- 主要内容 -->
+    <header id="title-block-header">
+<h1 class="title">《生产AI智能体的六项原则》</h1>
+</header>
+<h1 id="生产级ai-agents的六个原则">生产级AI Agents的六个原则</h1>
+<p>构建生产级智能体系统的实用经验</p>
+<p>作者：Arseni Kravchenko</p>
+<p>2025年7月28日</p>
+<p>9分钟</p>
+<p>时不时地，人们会问我：</p>
+<p>“<em>我刚接触智能体开发，正在构建一些东西，但感觉缺少一些部落知识。帮我赶上进度吧！</em>”</p>
+<p>我很想推荐一些严肃的内容，比如多周课程（例如<a
+href="https://huggingface.co/learn/agents-course/en/unit0/introduction">HuggingFace</a>或<a
+href="https://rdi.berkeley.edu/llm-agents/f24">Berkeley</a>的课程），但并不是每个人都有兴趣深入到那种程度。</p>
+<p>所以我决定收集六个简单的经验教训，这些在<a
+href="http://app.build/">app.build</a>开发过程中对我帮助很大。这篇文章在某种程度上受到了<a
+href="https://www.app.build/blog/design-decisions">app.build背后的设计决策</a>的启发，但经过了泛化处理，旨在为智能体工程新手提供快速指南。</p>
+<h2 id="原则1投资于系统提示词">原则1：投资于系统提示词</h2>
+<p>我长期对提示词工程持怀疑态度，它看起来更像是萨满仪式而不是任何接近工程的东西。所有那些”<em>我会给你100美元</em>”或”<em>我的祖母快死了，需要这个</em>”或”<em>要100%准确，否则</em>”的方法可能在利用本地模型效率低下时作为局部波动有用，但从长期来看从未奏效。</p>
+<p>当我意识到一个简单的事实时，我改变了对提示词/上下文工程的看法：现代LLM只需要直接详细的上下文，不需要技巧，但需要清晰和缺乏矛盾。就是这样，不需要操纵。模型擅长遵循指令，问题往往只是指令的模糊性质。</p>
+<p>所有LLM供应商都有关于如何提示其模型最佳实践的教育资源（例如，<a
+href="https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview">Anthropic的资源</a>和<a
+href="https://ai.google.dev/gemini-api/docs/prompting-strategies">Google的资源</a>）。只需遵循它们，确保你的指令直接而详细，不需要自作聪明的技巧。例如，这里是我们用来让Claude为<a
+href="http://ast-grep/">ast-grep</a>生成规则的<a
+href="https://github.com/appdotbuild/claude_astgrep/blob/main/.claude/commands/ast_grep.md">系统提示词</a>
+- 没有什么技巧，只是关于如何使用智能体几乎不了解的工具的详细信息。</p>
+<p>我们喜欢的一个技巧是用LLM的Deep
+Research类变体创建的草稿来引导初始系统提示词。它通常需要人工改进，但是一个可靠的基线。</p>
+<p>保持上下文的共享部分对<a
+href="https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching">提示词缓存</a>机制是有益的。从技术上讲，也可以缓存用户消息，但构建上下文使系统部分大而静态，用户部分小而动态的效果很好。</p>
+<h2 id="原则2分割上下文">原则2：分割上下文</h2>
+<p>好的，现在有了可靠的系统提示词。但是”上下文工程”成为”提示词工程”之后的最新趋势是有原因的。</p>
+<p>上下文管理是一个需要权衡的主题。没有适当的上下文，模型往往会产生幻觉，偏离轨道或者在上下文过大时拒绝提供答案。它们受到注意力衰减的影响（模型难以专注于非常长上下文的相关部分，导致对埋藏在中间的关键细节性能下降），成本更高，延迟更大。</p>
+<p>我们发现有用的原则是首先提供最少的知识，如果需要通过工具获取更多上下文的选项。例如，在我们的情况下，这可能意味着在提示词中列出所有项目文件，并提供一个工具来读取与请求的更改相关的文件；尽管如果我们确定某些文件内容是关键的，我们可以提前在上下文中包含其内容。</p>
+<p>来自反馈循环的日志和其他制品可能很快就会使上下文变得臃肿。自动应用的简单<a
+href="https://github.com/appdotbuild/agent/blob/2a09b4e0c4ba1d7ddba04832514352f424852a04/agent/core/actors.py#L241">上下文压缩</a>工具可以提供很大帮助。封装对于面向对象编程来说是一个炒作词汇，但对于上下文管理来说更加重要：分离关注点，只为你的智能体解决方案的每一部分提供它绝对需要的上下文。</p>
+<p><img src="images/000000.png" /></p>
+<h2 id="原则3仔细设计工具">原则3：仔细设计工具</h2>
+<p>AI智能体的核心特性是<a
+href="https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/overview">工具调用</a>，LLM
++ 暴露的工具 + 基本控制流操作符的组合构成了智能体。</p>
+<p>为智能体设计工具集有点类似于设计API…但实际上更复杂。人类API用户更有能力理解字里行间的意思，可以浏览复杂的文档并找到变通方法。为智能体创建的工具通常更有限（拥有太多工具是污染上下文的一种方式），应该有直接明了的接口，总体上为随机的LLM世界带来秩序。当为人类用户构建时，设计一条主路和一些处理边界情况的技巧可能是可以的；LLM很可能会误用你的漏洞，这就是为什么你不希望有任何漏洞。</p>
+<p>优秀的工具通常在相似的粒度级别上运行，并具有有限数量的严格类型化参数。它们专注且经过充分测试，就像你准备提供给聪明但容易分心的初级开发人员的API一样。强烈建议幂等性以避免状态管理问题。大多数软件工程agent拥有不到10个多功能工具（如read_file、write_file、edit_file、execute…）</p>
+<p><a
+href="https://github.com/appdotbuild/agent/blob/2a09b4e0c4ba1d7ddba04832514352f424852a04/agent/core/actors.py#L157">每个工具有1-3个参数（appbuild示例，</a>
+<a
+href="https://github.com/opencode-ai/opencode/blob/f0571f5f5adef12eba9ddf6d07223a043d63dca8/README.md?plain=1#L400">opencode示例</a><a
+href="https://github.com/opencode-ai/opencode/blob/f0571f5f5adef12eba9ddf6d07223a043d63dca8/README.md?plain=1#L400">），并且</a></p>
+<p>根据上下文附加额外工具<a
+href="https://github.com/appdotbuild/agent/blob/2a09b4e0c4ba1d7ddba04832514352f424852a04/agent/nicegui_agent/actors.py#L176">可能也是合适的。</a></p>
+<p>在某些情况下，设计一个agent来编写某种DSL（领域特定语言）代码并执行操作，而不是逐一调用工具，是一个很好的想法。这种方法被</p>
+<p><a
+href="https://huggingface.co/blog/smolagents">smolagents广泛推广；然而</a>，它需要为agent执行设计一套合适的函数集合。尽管顶层结构发生了变化，但主要思想仍然有效：简单、充分但无歧义且无冗余的工具对agent性能至关重要。</p>
+<h2 id="原则4设计反馈循环">原则4：设计反馈循环</h2>
+<p>优秀的agentic解决方案结合了LLM和传统软件的优势。这种结合的一个</p>
+<p>关键方式是设计类似于<a
+href="https://en.wikipedia.org/wiki/Actor-critic_algorithm">actor-</a></p>
+<p><a
+href="https://en.wikipedia.org/wiki/Actor-critic_algorithm">critic方法的两阶段算法：其中actor决定行动，critic评估这些行动。</a></p>
+<p>我们发现让LLM
+Actor具有创造性，让Critic保持严格是有用的。在我们的应用生成世界中，这意味着Actor创建新文件或编辑它们，Critic确保这些代码符合我们的期望。期望基于手工制作的标准：我们希望代码可以编译、通过测试、类型检查、linter和其他验证器。Critic的工作主要是确定的，但不是100%——例如，我们可以独立使用LLM生成测试，然后运行测试套件。</p>
+<p>在为任何垂直领域构建agent时，包含领域特定的验证至关重要。这需要定义和检查必须保持的领域不变量，无论</p>
+<p>agent的具体方法如何——这是ML工程师所说的包含”<a
+href="https://en.wikipedia.org/wiki/Inductive_bias">归纳</a></p>
+<p><a
+href="https://en.wikipedia.org/wiki/Inductive_bias">偏差</a>“的概念。</p>
+<p>软件工程是受AI
+agent影响最大的行业，正是出于这个原因。反馈循环非常有效：使用编译器、linter和测试等非常直接的验证器很容易过滤掉不良结果。这在两个层面上影响性能：基础模型在大规模可验证奖励上进行训练，后来产品工程师可以利用这些学习到的属性。</p>
+<p>同样的思维适用于其他领域。例如，如果面向旅行的agent建议多程航班，首先要验证这些连接确实存在。同样，如果记账agent的结果不满足复式记账原则，那就是不良结果，不应该被接受。</p>
+<p>反馈循环与许多框架中可用的”护栏”概念紧密相关。Agent在恢复方面表现中等。有时，不良结果值得尝试修复（向LLM发送下一条消息，反映”嘿，你之前的解决方案因为X而不可接受”），其他时候一连串的错误修复已经无法修复了——直接丢弃并重新尝试。</p>
+<p>Agentic系统应该准备好应对硬故障和软故障，采用不同的恢复策略，这些恢复策略与护栏一起构成了</p>
+<p>反馈循环的本质。你可以用类似于<a
+href="https://en.wikipedia.org/wiki/Monte_Carlo_tree_search">蒙特卡罗树</a></p>
+<p><a
+href="https://en.wikipedia.org/wiki/Monte_Carlo_tree_search">搜索</a>概念的方式来思考它：一些分支是有希望的，应该进一步开发，一些是死胡同，应该被切掉。</p>
+<h2 id="原则5llm驱动的错误分析">原则5：LLM驱动的错误分析</h2>
+<p>一旦你有了基本的agent和附加的反馈循环，你就可以迭代和改进。错误分析一直是AI/ML工程的基石，AI
+agent也不例外。</p>
+<p>错误分析的一种方法是回顾常见故障，但agent是如此高效！通常很容易生成数十个agent，让它们在不同任务上运行，生成大量日志（希望你的反馈循环内置了一些可观察性功能，对吧？）。无论你多么高效，agent的日志流很可能是不可读的。</p>
+<p>这就是为什么简单的元agentic循环非常强大：</p>
+<ol type="1">
+<li><p>建立基线</p></li>
+<li><p>获取一些轨迹/日志</p></li>
+<li><p>用LLM分析它们（感谢Gemini的1M上下文）</p></li>
+<li><p>基于收到的见解改进基线。</p></li>
+</ol>
+<p>这通常会揭示上下文管理或提供的工具中的盲点。</p>
+<p><img src="images/000001.png" /></p>
+<h2
+id="原则6令人沮丧的行为表明系统问题">原则6：令人沮丧的行为表明系统问题</h2>
+<p>如今LLM很强大，这就是为什么当agent做出真正愚蠢的事情或完全忽略指令时，人们会很快感到沮丧。现实是，指令调优模型也非常容易受到奖励黑客攻击，意味着它们会尽一切可能满足被解释的目标。然而，这不一定是原始系统设计者心中的目标。</p>
+<p>这个洞察是：一个令人恼火的问题可能不是由LLM缺陷引起的，而是由系统错误引起的，比如缺少处理解决问题所需的工具或系统提示中的模糊段落。</p>
+<p>最近，我在大声咒骂：代理到底为什么不使用提供的集成来获取数据，而是使用模拟的随机数据，尽管我明确要求不要这样做？我查看了日志，意识到愚蠢的是我自己——我没有为代理提供合适的API密钥，所以它试图获取数据，以同样的方式连续失败了多次，然后转向了变通方法。这不是唯一的事故：例如，我们还观察到类似的行为，代理试图写入文件但缺少文件系统访问权限。</p>
+<p>[<strong>结论</strong>]</p>
+<p>构建有效的AI代理不是要找到一个伟大提示或高级框架的银弹——它是系统设计和正确的软件工程。专注于清晰的指令、精简的上下文管理、强大的工具接口和自动化验证循环。当你的代理让你沮丧时，首先调试系统：缺少工具、不清晰的提示或不充分的上下文通常是罪魁祸首，而不是模型限制。最重要的是，将错误分析视为开发过程中的一等公民。让LLM帮助你理解代理在哪里失败，然后系统性地解决这些失败模式。目标不是完美的代理——而是可靠的、可恢复的代理，能够优雅地失败并可以迭代改进。</p>
+<p>分享</p>
+
+    <script>
+        function toggleToc() {
+            const sidebar = document.getElementById('tocSidebar');
+            const overlay = document.getElementById('tocOverlay');
+            
+            if (sidebar.classList.contains('active')) {
+                closeToc();
+            } else {
+                openToc();
+            }
+        }
+
+        function openToc() {
+            const sidebar = document.getElementById('tocSidebar');
+            const overlay = document.getElementById('tocOverlay');
+            
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeToc() {
+            const sidebar = document.getElementById('tocSidebar');
+            const overlay = document.getElementById('tocOverlay');
+            
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // ESC键关闭目录
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeToc();
+            }
+        });
+
+        // 点击目录链接后自动关闭目录（移动端）
+        document.addEventListener('click', function(e) {
+            if (e.target.matches('.simple-toc a') && window.innerWidth <= 768) {
+                setTimeout(closeToc, 300);
+            }
+        });
+    </script>
+</body>
+</html>
