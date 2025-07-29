@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>交互式文章摘要：机器人采摘手</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.8;
+            background-color: #f9f9f9;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        .summary-container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 30px 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            color: #1a1a1a;
+            font-size: 2em;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        h2 {
+            color: #666;
+            font-size: 1.1em;
+            text-align: center;
+            font-weight: normal;
+            margin-top: 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+        details {
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.2s ease-in-out;
+        }
+        details[open] {
+            border-color: #4a90e2;
+        }
+        summary {
+            font-weight: bold;
+            font-size: 1.2em;
+            padding: 15px;
+            cursor: pointer;
+            list-style: none; /* 移除默认箭头 */
+            display: flex;
+            align-items: center;
+            outline: none;
+        }
+        summary::before {
+            content: '▸'; /* 自定义箭头 */
+            margin-right: 12px;
+            font-size: 1em;
+            color: #4a90e2;
+            transition: transform 0.2s ease-in-out;
+        }
+        details[open] > summary::before {
+            transform: rotate(90deg);
+        }
+        .details-content {
+            padding: 0 20px 15px 40px;
+            border-top: 1px solid #eee;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        li {
+            padding: 8px 0 8px 15px;
+            border-left: 4px solid;
+            margin-bottom: 8px;
+            transition: background-color 0.2s;
+        }
+        li:hover {
+            background-color: #f5f8ff;
+        }
+        .fact {
+            border-left-color: #4a90e2; /* 蓝色代表事实 */
+        }
+        .opinion {
+            border-left-color: #f5a623; /* 橙色代表观点 */
+        }
+        .tag {
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .fact .tag {
+            color: #4a90e2;
+        }
+        .opinion .tag {
+            color: #f5a623;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="summary-container">
+        <h1>机器人采摘手：比人类更懂黑莓？</h1>
+        <h2>一分钟了解核心要点</h2>
+
+        <details open>
+            <summary>核心摘要</summary>
+            <div class="details-content">
+                <p>阿肯色大学研发了一款受郁金香启发的软体机器人手，旨在解决黑莓采摘业的劳动力短缺问题。它通过精确的力控制，有望比人类更高效、更稳定地采摘娇嫩的黑莓，同时具备扩展到其他软水果和辅助医疗领域的潜力。</p>
+            </div>
+        </details>
+
+        <details>
+            <summary>为什么需要这个机器人？ (问题背景)</summary>
+            <div class="details-content">
+                <ul>
+                    <li class="fact"><span class="tag">[事实]</span> 经济价值：鲜食黑莓仅在阿肯色州每年就贡献2430万美元的经济价值。</li>
+                    <li class="fact"><span class="tag">[事实]</span> 行业痛点：用于鲜食的黑莓非常娇嫩，必须手工采摘。</li>
+                    <li class="fact"><span class="tag">[事实]</span> 劳动力短缺：近年来农业劳动力供应持续受限。</li>
+                </ul>
+            </div>
+        </details>
+
+        <details>
+            <summary>它是如何工作的？ (技术方案)</summary>
+            <div class="details-content">
+                <ul>
+                    <li class="fact"><span class="tag">[事实]</span> 设计灵感：采用“仿生学”，模仿郁金香花瓣随光线开合的形态。</li>
+                    <li class="fact"><span class="tag">[事实]</span> 核心结构：由3个柔软、可弯曲的“手指”构成，属于“软体机器人”技术。</li>
+                    <li class="fact"><span class="tag">[事实]</span> 驱动方式：通过拉动一根“肌腱”（吉他弦）使手指收缩。</li>
+                    <li class="fact"><span class="tag">[事实]</span> 关键技术：指尖装有“力传感器”，确保采摘力度恰到好处，避免压坏果实。</li>
+                    <li class="fact"><span class="tag">[事实]</span> 数据校准：研究团队通过测量经验丰富的采摘工人的指尖力度，来确定最佳采摘力。</li>
+                </ul>
+            </div>
+        </details>
+        
+        <details>
+            <summary>它比人类更好吗？ (优势与潜力)</summary>
+            <div class="details-content">
+                <ul>
+                    <li class="opinion"><span class="tag">[观点/展望]</span> 超越人类：发明者认为，针对单一特定任务，机器人手的设计可以超越人手。</li>
+                    <li class="opinion"><span class="tag">[观点/展望]</span> 质量更稳定：机器人能提供比人类（新手和专家差异大）更一致的采摘质量，减少果损。</li>
+                    <li class="fact"><span class="tag">[事实]</span> 避免损伤：能有效避免因处理不当导致的“红核果逆转”现象，保证商品价值。</li>
+                </ul>
+            </div>
+        </details>
+
+        <details>
+            <summary>目前的进展和未来？ (现状与规划)</summary>
+            <div class="details-content">
+                <ul>
+                    <li class="fact"><span class="tag">[事实]</span> 已获专利：该发明已于今年4月获得美国专利。</li>
+                    <li class="fact"><span class="tag">[事实]</span> 技术瓶颈：目前仍需开发配套的“计算机视觉”和“定位技术”，才能让机器人自主寻找和伸手采摘。</li>
+                    <li class="opinion"><span class="tag">[观点/展望]</span> 应用扩展：未来可用于采摘其他软水果，如覆盆子。</li>
+                    <li class="opinion"><span class="tag">[观点/展望]</span> 跨界应用：可能被用作辅助工具，帮助因伤或年老而行动不便的人。</li>
+                </ul>
+            </div>
+        </details>
+
+        <details>
+            <summary>关键人物与机构</summary>
+            <div class="details-content">
+                <ul>
+                    <li class="fact"><span class="tag">[事实]</span> 研发机构：阿肯色大学 (U of A)。</li>
+                    <li class="fact"><span class="tag">[事实]</span> 主要发明人：Anthony Gunderman (主导，现为助理教授), Yue Chen, Jeremy Collins。</li>
+                </ul>
+            </div>
+        </details>
+
+    </div>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="blogrobotberry_files/page.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
