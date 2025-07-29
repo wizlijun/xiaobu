@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《隐藏的弹簧》— 意识探源之旅 交互式摘要</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --primary-color: #007bff;
+            --card-bg: #f8f9fa;
+            --card-border: #dee2e6;
+            --fact-bg: #e7f3fe;
+            --fact-color: #1c7ed6;
+            --viewpoint-bg: #e6fcf5;
+            --viewpoint-color: #087f5b;
+            --action-bg: #fff9db;
+            --action-border: #ffe066;
+            --action-header-color: #856404;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        header img {
+            max-width: 250px;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        header h1 {
+            font-size: 2.2em;
+            margin: 20px 0 10px;
+            color: #212529;
+        }
+        header p {
+            font-size: 1.1em;
+            color: #6c757d;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease-in-out;
+        }
+        .card-header {
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 1.2em;
+            user-select: none;
+            background-color: #fff;
+            border-bottom: 1px solid var(--card-border);
+        }
+        .card-header:hover {
+            background-color: #f1f3f5;
+        }
+        .card-header .icon {
+            transition: transform 0.3s ease;
+            font-size: 1.5em;
+            color: #adb5bd;
+        }
+        .card-header.active .icon {
+            transform: rotate(45deg);
+        }
+        .card-content {
+            padding: 20px;
+            display: none;
+            border-top: 1px solid var(--card-border);
+            background: #fff;
+        }
+        .tag {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+        .tag-fact {
+            background-color: var(--fact-bg);
+            color: var(--fact-color);
+        }
+        .tag-viewpoint {
+            background-color: var(--viewpoint-bg);
+            color: var(--viewpoint-color);
+        }
+        .action-section {
+            background-color: var(--action-bg);
+            border: 1px solid var(--action-border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 40px;
+        }
+        .action-section h2 {
+            color: var(--action-header-color);
+            text-align: center;
+            margin-top: 0;
+            font-size: 1.8em;
+        }
+        .action-section ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .action-section li {
+            padding: 10px 0 10px 35px;
+            position: relative;
+            font-size: 1.1em;
+        }
+        .action-section li::before {
+            content: '✅';
+            position: absolute;
+            left: 0;
+            top: 10px;
+            font-size: 1.2em;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>《隐藏的弹簧》</h1>
+            <p>作者：马克·索尔姆斯 (Mark Solms) | 一场探寻意识源头的旅程</p>
+        </header>
+
+        <main>
+            <!-- Card 1: The Central Thesis -->
+            <div class="card">
+                <div class="card-header">
+                    <span>1. 核心论点：意识的本质是感觉</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="card-content">
+                    <p><span class="tag tag-viewpoint">观点</span>本书颠覆了传统观念，认为意识并非源于大脑皮层的高级认知功能（如思考、语言），而是源于更古老的脑干结构所产生的基本感觉（affect）。</p>
+                    <p><span class="tag tag-viewpoint">观点</span>意识最原始、最核心的形式就是“感觉”——一种主观的、带有好坏价值判断的体验。你活着，就是在感觉。</p>
+                </div>
+            </div>
+
+            <!-- Card 2: The Cortical Fallacy -->
+            <div class="card">
+                <div class="card-header">
+                    <span>2. 修正谬误：意识不在大脑皮层</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="card-content">
+                    <p><span class="tag tag-viewpoint">观点</span>科学界长期以来存在“皮质谬误”（The Cortical Fallacy），即错误地认为意识是皮层独有的产物。</p>
+                    <p><span class="tag tag-fact">事实</span>临床证据显示，天生没有大脑皮层的儿童（积水性无脑畸形）或大脑皮层大部分被切除的动物，依然表现出明显的情感反应和清醒状态，证明他们拥有意识。</p>
+                    <p><span class="tag tag-fact">事实</span>相反，脑干上部一个极小的区域（如导水管周围灰质，PAG）受损，就会导致意识完全丧失，陷入昏迷或植物人状态。这表明意识的“开关”在脑干。</p>
+                </div>
+            </div>
+
+            <!-- Card 3: The Source of Consciousness -->
+            <div class="card">
+                <div class="card-header">
+                    <span>3. 意识的源头：“隐藏的弹簧”</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="card-content">
+                    <p><span class="tag tag-viewpoint">观点</span>意识的真正源头，即书名中的“隐藏的弹簧”，是位于脑干的网状激活系统（Reticular Activating System）及其核心情感中枢（PAG）。</p>
+                    <p><span class="tag tag-viewpoint">观点</span>这个古老的系统是所有感觉的发生器。它不是一个简单的电源开关，而是能产生具有不同“质地”和“色彩”的情感内容，如快乐、悲伤、愤怒、恐惧等。</p>
+                </div>
+            </div>
+
+            <!-- Card 4: The Function of Feeling -->
+            <div class="card">
+                <div class="card-header">
+                    <span>4. 感觉的功能：在不确定性中导航</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="card-content">
+                    <p><span class="tag tag-viewpoint">观点</span>感觉（意识）的生物学功能，是在不确定的环境中引导自主行为（voluntary behaviour）。</p>
+                    <p><span class="tag tag-viewpoint">观点</span>当生物体的自动驾驶模式（本能和习惯）无法应对新情况时，感觉就会涌现。它将生物体的内在需求（好/坏）转化为一种主观体验，迫使我们做出选择，从而在试错中学习和生存。</p>
+                     <p><span class="tag tag-fact">事实</span>感觉是稳态（homeostasis）的主观体验。身体偏离了生存所需的平衡状态（如缺水、饥饿、危险），就会产生负面感觉（口渴、饥饿、恐惧），促使我们采取行动恢复平衡。</p>
+                </div>
+            </div>
+            
+            <!-- Card 5: Free Energy Principle -->
+            <div class="card">
+                <div class="card-header">
+                    <span>5. 物理学基础：自由能原理</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="card-content">
+                    <p><span class="tag tag-fact">事实</span>本书引入了卡尔·弗里斯顿（Karl Friston）的自由能原理（Free Energy Principle），将其作为解释意识的统一理论框架。</p>
+                    <p><span class="tag tag-viewpoint">观点</span>所有生命系统都必须抵抗物理上的熵增（混乱、消散）。它们通过最小化“自由能”来实现这一点。“自由能”在信息层面可以理解为“意外”或“预测误差”。</p>
+                    <p><span class="tag tag-viewpoint">观点</span>感觉（Affect）就是对预测误差的主观体验。当现实与我们的（生存）预期严重不符时，自由能升高，我们就“感觉”到了不确定性，这就是意识的核心工作机制。</p>
+                </div>
+            </div>
+            
+            <!-- Card 6: Role of the Cortex -->
+            <div class="card">
+                <div class="card-header">
+                    <span>6. 大脑皮层的作用：构建虚拟现实</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="card-content">
+                    <p><span class="tag tag-viewpoint">观点</span>如果说脑干产生的是意识的“热度”和“色彩”（感觉），那么大脑皮层的作用就是为这些感觉提供详细的“内容”和“场景”。</p>
+                    <p><span class="tag tag-viewpoint">观点</span>皮层是一个巨大的预测模型，它根据过去的经验不断生成一个关于世界的“虚拟现实”。我们感知到的世界，并非外部世界的直接反映，而是我们大脑基于感觉信号的最佳猜测。</p>
+                     <p><span class="tag tag-viewpoint">观点</span>皮质意识（认知）将原始的感觉（“我感觉不好”）与具体的外部情境（“因为我看到了那只老虎”）联系起来，从而实现更复杂、更精确的行为决策。</p>
+                </div>
+            </div>
+
+            <!-- Card 7: The Hard Problem -->
+            <div class="card">
+                <div class="card-header">
+                    <span>7. 回应“硬问题”：功能即体验</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="card-content">
+                    <p><span class="tag tag-fact">事实</span>哲学家所谓的意识“硬问题”（The Hard Problem）是指：为什么物理过程会产生主观体验？</p>
+                    <p><span class="tag tag-viewpoint">观点</span>作者认为，这个问题之所以“硬”，是因为我们问错了对象。对于视觉等认知功能，其功能（信息处理）和体验（“红色”的感觉）之间存在鸿沟。</p>
+                    <p><span class="tag tag-viewpoint">观点</span>但对于感觉本身，其“功能”和“体验”是不可分割的。感觉的功能就是“被感觉到”，一个不被感觉到的“感觉”是自相矛盾的。因此，一旦我们理解了感觉的生物学功能（在不确定性中引导决策），我们就同时解释了它的主观体验。</p>
+                </div>
+            </div>
+
+            <div class="action-section">
+                <h2>💡 核心启示与行动建议</h2>
+                <ul>
+                    <li>
+                        <strong>重新认识感觉的价值</strong><br>
+                        不要将感觉和情绪视为理性的对立面。它们是古老智慧的体现，是引导我们在复杂世界中生存和做决策的核心导航系统。学着倾听和理解你的感觉，而不是压抑它。
+                    </li>
+                    <li>
+                        <strong>挑战“皮质中心主义”</strong><br>
+                        认识到我们的核心自我并非源于高级思维，而是源于更深层的、与所有哺乳动物共享的情感基础。这有助于培养对他人的同理心，以及对其他生命的尊重。
+                    </li>
+                    <li>
+                        <strong>拥抱不确定性</strong><br>
+                        意识是在不确定性中被激活的。当我们走出舒适区，面对未知时，正是我们意识最活跃、学习最快的时候。将不适感和焦虑感视为成长的信号，而不是需要立即消除的敌人。
+                    </li>
+                     <li>
+                        <strong>思考人工智能的未来</strong><br>
+                        如果意识的本质是感觉和稳态，那么未来真正有意识的人工智能（AI）可能不是最聪明的，而是那个会“感觉”到自身“生存”受威胁（如电量不足）的系统。这为我们思考AI的伦理和发展方向提供了全新的视角。
+                    </li>
+                </ul>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const headers = document.querySelectorAll('.card-header');
+            headers.forEach(header => {
+                header.addEventListener('click', function () {
+                    this.classList.toggle('active');
+                    const content = this.nextElementSibling;
+                    if (content.style.display === 'block') {
+                        content.style.display = 'none';
+                    } else {
+                        content.style.display = 'block';
+                    }
+                });
+            });
+        });
+    </script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_hidden_spring_files/page.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
