@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章摘要：扣子(Coze)开源背后决策</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --container-bg: #ffffff;
+            --text-color: #212529;
+            --title-color: #343a40;
+            --border-color: #dee2e6;
+            --fact-bg: #e7f5ff;
+            --fact-border: #90cfff;
+            --opinion-bg: #fff9e6;
+            --opinion-border: #ffd761;
+            --summary-bg: #f1f3f5;
+            --summary-hover-bg: #e9ecef;
+            --button-bg: #495057;
+            --button-hover-bg: #343a40;
+            --button-text: #ffffff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .summary-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: var(--container-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 25px 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        h1 {
+            color: var(--title-color);
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        h1 svg {
+            width: 32px;
+            height: 32px;
+            flex-shrink: 0;
+        }
+
+        .intro {
+            color: #6c757d;
+            font-size: 0.95em;
+            margin-bottom: 20px;
+            border-left: 3px solid var(--border-color);
+            padding-left: 15px;
+        }
+        
+        .controls-legend {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .controls button {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.2s;
+        }
+
+        .controls button:hover {
+            background-color: var(--button-hover-bg);
+        }
+
+        .legend .item {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.9em;
+            padding: 5px 10px;
+            border-radius: 6px;
+        }
+        
+        .legend .fact {
+            background-color: var(--fact-bg);
+            color: #1c5c91;
+        }
+        
+        .legend .opinion {
+            background-color: var(--opinion-bg);
+            color: #856404;
+        }
+
+        details {
+            margin-bottom: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        details[open] summary {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        summary {
+            font-weight: 600;
+            font-size: 1.1em;
+            padding: 15px 20px;
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--summary-bg);
+            transition: background-color 0.2s;
+        }
+
+        summary:hover {
+            background-color: var(--summary-hover-bg);
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::after {
+            content: '▼';
+            font-size: 0.8em;
+            transform: rotate(-90deg);
+            transition: transform 0.2s;
+        }
+
+        details[open] summary::after {
+            transform: rotate(0deg);
+        }
+
+        .content {
+            padding: 20px;
+        }
+        
+        .point {
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border-left: 4px solid;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .point::before {
+            flex-shrink: 0;
+            font-size: 1.2em;
+            margin-top: 2px;
+        }
+        
+        .point.fact {
+            background-color: var(--fact-bg);
+            border-color: var(--fact-border);
+        }
+        .point.fact::before {
+            content: '📋'; /* Clipboard icon */
+        }
+        
+        .point.opinion {
+            background-color: var(--opinion-bg);
+            border-color: var(--opinion-border);
+        }
+        .point.opinion::before {
+             content: '💡'; /* Lightbulb icon */
+        }
+
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="summary-container">
+        <h1>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M20.998 3.99997H3C2.44772 3.99997 2 4.44769 2 4.99997V19C2 19.5522 2.44772 20 3 20H20.998C21.5503 20 22 19.5522 22 19V4.99997C22 4.44769 21.5503 3.99997 20.998 3.99997ZM20 18H10V16H20V18ZM20 14H10V12H20V14ZM20 10H10V8.00003H20V10ZM8.00003 8.00003H4V18H8.00003V8.00003Z"></path></svg>
+            文章摘要：扣子(Coze)开源背后决策
+        </h1>
+        <p class="intro">
+            本文以动态交互方式提炼核心要点，高亮事实与观点，为您提供超轻认知负荷的阅读体验。点击下方标题可展开或折叠详细内容。
+        </p>
+
+        <div class="controls-legend">
+            <div class="controls">
+                <button id="expand-all">全部展开</button>
+                <button id="collapse-all">全部折叠</button>
+            </div>
+            <div class="legend">
+                <span class="item fact">📋 客观事实</span>
+                <span class="item opinion">💡 观点/战略</span>
+            </div>
+        </div>
+
+        <details open>
+            <summary>核心事件：扣子正式开源</summary>
+            <div class="content">
+                <div class="point fact"><strong>事件：</strong> 字节跳动于7月26日将旗下AI Agent平台“扣子(Coze)”的两大核心项目Coze Studio与Coze Loop在GitHub开源。</div>
+                <div class="point fact"><strong>许可协议：</strong> 采用Apache 2.0许可证，允许自由用于任何商业用途，无附加条款。</div>
+                <div class="point fact"><strong>市场反响：</strong> 开源仅两天，项目在GitHub上已收获超过6000个Star。</div>
+                <div class="point fact"><strong>用户规模：</strong> 国内版扣子截至2024年6月，月访问用户数约458万。</div>
+            </div>
+        </details>
+
+        <details>
+            <summary>开源决策：时机、目标与战略</summary>
+            <div class="content">
+                <div class="point opinion"><strong>决策时机：</strong> 团队认为，随着Agentic AI理念被普遍接受，行业生态需要由成千上万开发者共同定义，而非单一公司主导，因此迎来了开源的良好契机。</div>
+                <div class="point opinion"><strong>核心目标：</strong> 希望将扣子打造为Agent开发领域的基础设施和“事实标准”之一，减少行业重复建设。</div>
+                <div class="point opinion"><strong>核心战略：</strong> 赢得Agent时代的关键在于赢得开发者，而拥抱开源是赢得开发者的最佳方式。</div>
+                <div class="point fact"><strong>内部过程：</strong> 团队内部经过近半年时间的定期审视、深度讨论和代码重构等准备工作，最终决定开源。</div>
+                <div class="point opinion"><strong>选择Apache 2.0的原因：</strong> 商业友好，无商业化限制，能最大程度吸引开发者和企业参与，建立信任，形成良性开源生态。</div>
+            </div>
+        </details>
+
+        <details>
+            <summary>开源内容：开放两大核心引擎</summary>
+            <div class="content">
+                <div class="point fact"><strong>Coze Studio (开发平台)：</strong> 开源了完整的工作流引擎、插件核心框架和开箱即用的开发环境，支持可视化拖拽与二次开发。</div>
+                <div class="point fact"><strong>Coze Loop (调优平台)：</strong> 开源了Prompt开发、多维度评测和全链路可观测性三大功能，解决Agent开发中的不确定性问题，实现从开发到优化的闭环。</div>
+                <div class="point opinion"><strong>独特优势：</strong> 不同于从零起步的开源项目，扣子的开源代码经过字节内部大规模生产环境验证，稳定可靠。</div>
+            </div>
+        </details>
+
+        <details>
+            <summary>产品矩阵：开源版、团队版与企业版定位</summary>
+            <div class="content">
+                <div class="point fact"><strong>开源版：</strong> 面向个人开发者和技术爱好者，作为产品体系的基石与生态入口。</div>
+                <div class="point fact"><strong>团队版：</strong> 面向中小企业，提供云端托管、多人协作等功能，开箱即用。</div>
+                <div class="point fact"><strong>企业版：</strong> 面向中大型企业，提供单点登录、高级权限管理等企业级功能和服务。</div>
+                <div class="point opinion"><strong>商业化策略：</strong> 开源版用于建立信任和展示核心价值，吸引用户向功能更完善的商业版转化。未开源租户管理、弹性扩展等与字节内部系统耦合较深的企业级能力。</div>
+                <div class="point opinion"><strong>团队承诺：</strong> 确保商业版与开源版“内外同源”，核心代码库共享，优化会同步至开源版本。</div>
+            </div>
+        </details>
+
+        <details>
+            <summary>核心竞争力：超越大模型的平台价值</summary>
+            <div class="content">
+                <div class="point opinion"><strong>竞争力核心：</strong> 随着模型能力趋同，竞争力已转向平台的编排、集成与工程化能力，即如何稳定、高效、低成本地使用工具。</div>
+                <div class="point opinion"><strong>平台优势：</strong> 提供从开发、运维到分发的全流程解决方案，经过大规模生产验证，并采取开放态度，不绑定特定模型。</div>
+                <div class="point fact"><strong>架构演进：</strong> 从紧耦合的SaaS应用演进为模块化、服务化的AI PaaS平台，分为模型层、能力层、编排层和应用层四层架构。</div>
+                <div class="point opinion"><strong>避免被替代的关键：</strong> 深刻理解并解决特定用户在特定流程中的真实痛点，构建模型自身难以替代的平台价值。</div>
+            </div>
+        </details>
+
+        <details>
+            <summary>未来展望：战略方向与行业挑战</summary>
+            <div class="content">
+                <div class="point opinion"><strong>未来6-12个月三大战略：</strong> 1. 持续提升核心引擎技术； 2. 大幅降低开发门槛； 3. 建立有效的开源贡献者激励机制。</div>
+                <div class="point fact"><strong>面临的行业挑战：</strong> 智能体行为的可靠性与可控性、大规模应用后的成本控制、长链条推理与复杂规划能力突破等。</div>
+                <div class="point opinion"><strong>成功标准：</strong> 衡量开源成功的标准是多元的，包括基础活跃度（Star数）、生态贡献度（社区插件和PR）和行业影响力（实际应用采纳率）。</div>
+                <div class="point opinion"><strong>终极目标：</strong> 当开发者社区普遍将扣子视为构建智能体的首选平台时，即认为其开源取得了成功。</div>
+            </div>
+        </details>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const expandBtn = document.getElementById('expand-all');
+            const collapseBtn = document.getElementById('collapse-all');
+            const allDetails = document.querySelectorAll('details');
+
+            expandBtn.addEventListener('click', () => {
+                allDetails.forEach(detail => detail.open = true);
+            });
+
+            collapseBtn.addEventListener('click', () => {
+                allDetails.forEach(detail => detail.open = false);
+            });
+        });
+    </script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://mp.weixin.qq.com/s/VIQBcS5KFxri4VuzFo_5OA" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
