@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMAD方法 & Claude Code 深度实践视频摘要</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --accent-color: #28a745;
+            --highlight-bg: #e9ecef;
+            --border-color: #dee2e6;
+            --header-bg: #f8f9fa;
+            --fact-color: #0056b3;
+            --opinion-color: #218838;
+            --command-color: #d9534f;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.7;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        header {
+            background-color: var(--header-bg);
+            padding: 25px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 2em;
+        }
+
+        header p {
+            margin: 10px 0 0;
+            color: var(--secondary-color);
+            font-size: 1.1em;
+        }
+        
+        .controls {
+            text-align: right;
+            padding: 10px 20px;
+            background-color: #fdfdfd;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .controls button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: 10px;
+            transition: background-color 0.3s;
+        }
+        .controls button:hover {
+            background-color: var(--fact-color);
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        details {
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        details[open] {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        summary {
+            font-weight: 600;
+            font-size: 1.2em;
+            padding: 15px 20px;
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--primary-color);
+            background-color: var(--header-bg);
+            border-radius: 8px 8px 0 0;
+        }
+        details[open] summary {
+             border-bottom: 1px solid var(--border-color);
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary:after {
+            content: '+';
+            font-size: 1.5em;
+            font-weight: 400;
+            transition: transform 0.3s;
+        }
+
+        details[open] summary:after {
+            transform: rotate(45deg);
+        }
+
+        .details-content {
+            padding: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        li {
+            padding: 10px 0 10px 30px;
+            position: relative;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        li:last-child {
+            border-bottom: none;
+        }
+
+        li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--accent-color);
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .highlight {
+            font-weight: bold;
+        }
+
+        .fact {
+            color: var(--fact-color);
+            font-weight: 600;
+        }
+
+        .opinion {
+            color: var(--opinion-color);
+            font-style: italic;
+        }
+        
+        .command {
+            background-color: #f3f3f3;
+            color: var(--command-color);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+            font-weight: bold;
+        }
+
+        .flowchart {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 20px 0;
+            flex-wrap: wrap;
+        }
+        .flow-step {
+            text-align: center;
+            padding: 10px;
+            min-width: 100px;
+            margin: 5px;
+        }
+        .flow-step .agent-name {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        .flow-step .agent-role {
+            font-size: 0.9em;
+            color: var(--secondary-color);
+        }
+        .arrow {
+            font-size: 1.5em;
+            color: var(--secondary-color);
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>BMAD方法 & Claude Code 深度实践</h1>
+            <p>一份动态交互式视频摘要，助您快速掌握核心工作流与关键技巧</p>
+        </header>
+
+        <div class="controls">
+            <button id="expandAll">全部展开</button>
+            <button id="collapseAll">全部折叠</button>
+        </div>
+
+        <main>
+            <details>
+                <summary>1. 视频介绍与核心目标</summary>
+                <div class="details-content">
+                    <ul>
+                        <li><span class="highlight">演讲者</span>: Brian，<span class="fact">BMAD 方法的创建者</span>。</li>
+                        <li><span class="highlight">视频目标</span>: 全面演示如何在 <span class="fact">IDE (集成开发环境)</span> 中，特别是使用 <span class="command">Claude Code</span>，来运行完整的 BMAD 方法，包括所有 <span class="fact">Agents (代理)</span> 和选项。</li>
+                        <li><span class="opinion">核心价值</span>: 视频包含许多从未演示过的、非常酷的功能和技术，对所有 IDE 用户都有普适性价值，强烈建议从头到尾观看。</li>
+                        <li><span class="highlight">行动号召</span>: 点赞、订阅、分享，帮助更多人了解 BMAD 方法。</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details>
+                <summary>2. 准备工作与安装</summary>
+                <div class="details-content">
+                    <ul>
+                        <li><span class="highlight">起始点</span>: <span class="fact">BMAD 方法的 GitHub 仓库</span>是获取最新信息和开始的最佳地点。</li>
+                        <li><span class="opinion">关键认知</span>: 使用 BMAD 方法<span class="fact">无需克隆 (clone) 整个 GitHub 仓库</span>。这极大地简化了上手过程。</li>
+                        <li><span class="highlight">安装命令</span>: 在你的项目父目录中运行 <code class="command">npx bmad-method install</code>。</li>
+                        <li><span class="highlight">安装步骤</span>:
+                            <ul>
+                                <li>选择项目路径 (可以是新目录或现有项目)。</li>
+                                <li>选择核心包 (<span class="fact">BMAD core</span>)。</li>
+                                <li><span class="opinion">建议开启</span>: 对 <span class="fact">PRD (产品需求文档)</span> 和架构文档进行<span class="highlight">分片 (Sharding)</span>，以便于大型项目管理上下文。</li>
+                                <li>选择你使用的 IDE (本视频演示为 <span class="fact">claude code</span>)。</li>
+                            </ul>
+                        </li>
+                        <li><span class="opinion">安装速度</span>: 整个过程非常快，大约 <span class="fact">5-10秒</span> 即可完成。</li>
+                    </ul>
+                </div>
+            </details>
+            
+            <details open>
+                <summary>3. BMAD 核心工作流 (The Workflow)</summary>
+                <div class="details-content">
+                    <p><span class="opinion">这是整个方法论的核心，通过一系列分工明确的 Agent 协作，将一个想法逐步转化为可执行的代码。</span></p>
+                    <div class="flowchart">
+                        <div class="flow-step">
+                            <div class="agent-name">💡 想法</div>
+                            <div class="agent-role">初始概念</div>
+                        </div>
+                        <div class="arrow">→</div>
+                        <div class="flow-step">
+                            <div class="agent-name">Analyst</div>
+                            <div class="agent-role">业务分析师</div>
+                        </div>
+                        <div class="arrow">→</div>
+                        <div class="flow-step">
+                            <div class="agent-name">PM</div>
+                            <div class="agent-role">产品经理</div>
+                        </div>
+                        <div class="arrow">→</div>
+                         <div class="flow-step">
+                            <div class="agent-name">Architect</div>
+                            <div class="agent-role">架构师</div>
+                        </div>
+                        <div class="arrow">→</div>
+                        <div class="flow-step">
+                            <div class="agent-name">Scrum Master</div>
+                            <div class="agent-role">敏捷教练</div>
+                        </div>
+                        <div class="arrow">→</div>
+                        <div class="flow-step">
+                            <div class="agent-name">Developer</div>
+                            <div class="agent-role">开发者</div>
+                        </div>
+                        <div class="arrow">→</div>
+                        <div class="flow-step">
+                            <div class="agent-name">QA</div>
+                            <div class="agent-role">质量保证</div>
+                        </div>
+                    </div>
+                     <ul>
+                        <li><span class="highlight">关键原则：上下文管理</span>: <span class="opinion">为每个主要任务或 Agent 切换启动一个新的聊天会话</span>。使用 <code class="command">/clear</code> 或重启终端来保持上下文的干净和专注，这是高效工作的秘诀。</li>
+                        <li><span class="highlight">优势</span>: 在 IDE 中工作，所有<span class="fact">产出物 (Artifacts)</span>，如文档和报告，都会被实时保存到项目文件中，无需担心丢失。</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details>
+                <summary>4. Agent 深度解析</summary>
+                <div class="details-content">
+                    <details style="margin-top: 15px;">
+                        <summary>Step 1: 业务分析师 (Analyst)</summary>
+                        <div class="details-content">
+                           <ul>
+                               <li><span class="highlight">目的</span>: 在创建 PRD 之前，深入挖掘和完善你的想法。(<span class="opinion">可选但强烈推荐</span>)</li>
+                               <li><span class="highlight">核心功能 ①：头脑风暴 (Brainstorming)</span>:
+                                   <ul>
+                                       <li><span class="opinion">这可能是整个 BMAD 中最特别的 Agent</span>。它不仅仅是生成想法，更是扮演一个<span class="fact">教练 (Coach)</span>的角色，通过 <span class="fact">Six Thinking Hats (六顶思考帽)</span>、<span class="fact">Five W's (五问法)</span> 等多种专业技巧，引导和激发用户的创造力。</li>
+                                       <li>产出物: <code class="command">brainstorming-session.md</code></li>
+                                   </ul>
+                               </li>
+                               <li><span class="highlight">核心功能 ②：项目简报 (Project Brief)</span>:
+                                   <ul>
+                                       <li>基于头脑风暴的结果，创建一份结构化的项目简报。</li>
+                                       <li><span class="highlight">引入了“高级启发 (Advanced Elicitations)”</span>: <span class="opinion">这是一个强大的概念，允许用户反过来挑战和“压榨”LLM</span>，使其提供更高质量的输出，例如“挑战范围”、“进行批判性假设测试”等。</li>
+                                       <li>产出物: <code class="command">project-brief.md</code></li>
+                                   </ul>
+                               </li>
+                           </ul>
+                        </div>
+                    </details>
+                    <details style="margin-top: 15px;">
+                        <summary>Step 2: 产品经理 (PM)</summary>
+                        <div class="details-content">
+                           <ul>
+                               <li><span class="highlight">目的</span>: 创建一份详细的<span class="fact">产品需求文档 (PRD)</span>。</li>
+                               <li><span class="highlight">关键产出</span>:
+                                   <ol>
+                                       <li><span class="fact">功能性与非功能性需求</span>。</li>
+                                       <li>明确<span class="fact">MVP (最小可行产品)</span>的范围，区分核心功能和未来功能。</li>
+                                       <li><span class="fact">史诗 (Epics) 和用户故事 (User Stories)</span>: <span class="opinion">这是与开发环节衔接的关键</span>。这些故事被特意编写得非常详细和有序，以便开发 Agent 能够直接理解和执行。</li>
+                                   </ol>
+                               </li>
+                               <li>产出物: <code class="command">prd.md</code></li>
+                           </ul>
+                        </div>
+                    </details>
+                    <details style="margin-top: 15px;">
+                        <summary>Step 3: 架构师 (Architect)</summary>
+                        <div class="details-content">
+                           <ul>
+                               <li><span class="highlight">目的</span>: 设计项目的技术实现蓝图。</li>
+                               <li><span class="opinion">使用建议</span>: 在这一步，<span class="fact">建议使用你所能获得的最高级的 LLM 模型 (如 Opus)</span>，以确保架构的质量。</li>
+                               <li><span class="highlight">关键定义</span>:
+                                   <ul>
+                                       <li><span class="fact">技术栈 (Tech Stack)</span>: <span class="opinion">极其重要</span>。明确所有库和版本，防止开发 Agent “即兴发挥”导致项目混乱。</li>
+                                       <li><span class="fact">数据模型/接口 (Data Models/Interfaces)</span>: 保证代码的类型安全和数据结构的一致性。</li>
+                                       <li><span class="fact">目录结构 (Directory Structure)</span>: 指导 Agent 在何处创建和查找文件。</li>
+                                       <li><span class="fact">编码规范 (Coding Standards)</span>: 确保代码风格统一，可读性高。</li>
+                                   </ul>
+                               </li>
+                               <li>产出物: <code class="command">architecture.md</code></li>
+                           </ul>
+                        </div>
+                    </details>
+                     <details style="margin-top: 15px;">
+                        <summary>Step 4: 文档分片 (Sharding)</summary>
+                        <div class="details-content">
+                           <ul>
+                               <li><span class="highlight">目的</span>: 将庞大的 PRD 和架构文档，拆分成小的、专注的 Markdown 文件。</li>
+                               <li><span class="highlight">命令</span>: <code class="command">/task shard-doc</code></li>
+                               <li><span class="opinion">核心价值：“上下文工程 (Context Engineering)”的实践</span>。通过分片，后续的 Agent 只需加载与当前任务相关的“小文档”，极大地节约了上下文窗口，提升了准确性和效率。</li>
+                           </ul>
+                        </div>
+                    </details>
+                     <details style="margin-top: 15px;">
+                        <summary>Step 5-7: 开发与测试循环</summary>
+                        <div class="details-content">
+                           <ul>
+                               <li><span class="highlight">Scrum Master (敏捷教练)</span>:
+                                   <ul>
+                                       <li>读取高阶的用户故事和相关的架构分片文档。</li>
+                                       <li><span class="fact">生成一份极其详细的、自包含的“开发者故事”</span>，其中包含了开发所需的所有上下文和步骤。</li>
+                                       <li>将故事状态设为 <code class="command">approved</code>。</li>
+                                   </ul>
+                               </li>
+                               <li><span class="highlight">Developer (开发者)</span>:
+                                   <ul>
+                                       <li>执行 <code class="command">approved</code> 的开发者故事。</li>
+                                       <li>严格按照故事中的任务列表和架构文档（技术栈、编码规范等）编写代码。</li>
+                                       <li>完成后，将故事状态设为 <code class="command">Ready for Review</code>。</li>
+                                   </ul>
+                               </li>
+                               <li><span class="highlight">QA (质量保证)</span>:
+                                   <ul>
+                                       <li>审查处于 <code class="command">Ready for Review</code> 状态的代码。</li>
+                                       <li>对照验收标准进行检查，确保代码质量。</li>
+                                       <li>通过后，将故事状态设为 <code class="command">Done</code>。</li>
+                                   </ul>
+                               </li>
+                           </ul>
+                        </div>
+                    </details>
+                </div>
+            </details>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const expandAllBtn = document.getElementById('expandAll');
+            const collapseAllBtn = document.getElementById('collapseAll');
+            const allDetails = document.querySelectorAll('details');
+
+            expandAllBtn.addEventListener('click', () => {
+                allDetails.forEach(detail => detail.open = true);
+            });
+
+            collapseAllBtn.addEventListener('click', () => {
+                allDetails.forEach(detail => detail.open = false);
+            });
+        });
+    </script>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.youtube.com/watch?v=LorEJPrALcg&t=1s" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
