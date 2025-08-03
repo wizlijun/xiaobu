@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Code SDK & GitHub Action 视频摘要</title>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #f0f2f5;
+            --text-color: #333;
+            --border-color: #dee2e6;
+            --white-color: #ffffff;
+            --success-color: #28a745;
+            --highlight-bg: #e9f5ff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "Microsoft YaHei";
+            line-height: 1.7;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: var(--white-color);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+            padding: 20px 25px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+        
+        header p {
+            margin: 5px 0 0;
+            opacity: 0.9;
+        }
+
+        main {
+            padding: 25px;
+        }
+
+        details {
+            background-color: var(--white-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        details[open] {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        summary {
+            font-size: 1.2em;
+            font-weight: 600;
+            padding: 15px 20px;
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s ease;
+        }
+
+        summary:hover {
+            background-color: #f8f9fa;
+        }
+
+        summary::after {
+            content: '＋';
+            font-size: 1.4em;
+            color: var(--primary-color);
+            transition: transform 0.3s ease;
+        }
+
+        details[open] summary::after {
+            transform: rotate(45deg);
+        }
+
+        .details-content {
+            padding: 0 20px 20px 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        li {
+            padding: 10px 0 10px 35px;
+            position: relative;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        
+        li:last-child {
+            border-bottom: none;
+        }
+
+        li::before {
+            position: absolute;
+            left: 5px;
+            top: 12px;
+            font-size: 1.2em;
+        }
+        
+        /* Differentiate facts and opinions */
+        .fact::before {
+            content: '⚙️'; /* Gear for facts/features */
+        }
+        
+        .viewpoint::before {
+            content: '💡'; /* Lightbulb for ideas/views */
+        }
+
+        strong, b {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        code {
+            background-color: var(--secondary-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            font-size: 0.9em;
+        }
+
+        .cta-section {
+            background-color: var(--highlight-bg);
+            border: 1px solid var(--primary-color);
+        }
+        .cta-section summary {
+            color: var(--primary-color);
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: var(--success-color);
+            color: var(--white-color);
+            padding: 12px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-top: 15px;
+            text-align: center;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(40, 167, 69, 0.4);
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Cloud Code SDK & GitHub Action</h1>
+            <p>动态交互式视频摘要</p>
+        </header>
+
+        <main>
+            <details>
+                <summary>什么是 Cloud Code SDK？</summary>
+                <div class="details-content">
+                    <ul>
+                        <li class="viewpoint"><b>核心理念：</b>它是一个全新的<b>“构建基块” (building block)</b>，允许以编程方式在<b>无头模式 (headless mode)</b>下调用 Cloud Code 智能体的强大能力。</li>
+                        <li class="fact"><b>主要用途：</b>
+                            <ul>
+                                <li class="fact"><b>类 Unix 工具：</b>可无缝集成到终端管道 (pipeline) 中，处理标准输入/输出，像<code>cat log | cloud-b ...</code>一样使用。</li>
+                                <li class="fact"><b>CI 自动化：</b>实现自动化代码审查 (code review)、根据自然语言描述编写新的代码检查器 (linter)。</li>
+                                <li class="fact"><b>自定义应用：</b>作为底层能力，构建您自己的聊天机器人或远程代码生成工具。</li>
+                            </ul>
+                        </li>
+                        <li class="fact"><b>未来计划：</b>官方即将推出 <strong>Python</strong> 和 <strong>TypeScript</strong> 的 SDK 绑定，简化集成。</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details open>
+                <summary>核心功能与示例</summary>
+                <div class="details-content">
+                    <ul>
+                        <li class="fact"><b>权限管理：</b>通过 <code>--allow-tools</code> 标志，可以精细化地预先授权，例如 <code>write</code> (文件写入)、<code>bash</code> (执行Shell命令) 或自定义的 <code>MCP</code> 工具。</li>
+                        <li class="fact"><b>结构化输出：</b>使用 <code>--output-format JSON</code> 获取机器可读的 JSON 响应。这是构建自动化应用和工具的<b>关键</b>。</li>
+                        <li class="fact"><b>会话保持：</b>利用响应中返回的 <code>session ID</code>，可以在后续请求中恢复上下文，实现多轮连续对话。</li>
+                        <li class="viewpoint"><b>架构剖析：</b>GitHub Action 本身就是基于 SDK 构建的，分为三层：<b>SDK (底层)</b> -> <b>Base Action (封装)</b> -> <b>PR Action (高级交互)</b>。这种分层设计本身就是使用 SDK 的一个绝佳范例。</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details>
+                <summary>实战演示：GitHub Action</summary>
+                <div class="details-content">
+                    <ul>
+                        <li class="fact"><b>触发方式：</b>在 GitHub Issue 或 Pull Request 的评论区，通过 <code>@cloud</code> 提及机器人并用自然语言下达指令。</li>
+                        <li class="fact"><b>演示任务：</b>
+                            <ol>
+                                <li><b>实现新功能：</b>从一个仅有标题的 Issue 出发，为问答 App 实现了“道具”功能（50/50 排除选项、跳过问题）。</li>
+                                <li><b>修改现有代码：</b>在一个已有的 PR 上，根据指令“change this to green”，将背景色从蓝色修改为绿色。</li>
+                            </ol>
+                        </li>
+                        <li class="viewpoint"><b>核心价值：</b>整个开发过程都在标准的 <b>GitHub Runner</b> 上自动执行，用户无需管理和维护任何额外的基础设施，极大地简化了工作流。</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="cta-section" open>
+                <summary>行动指南：如何开始使用</summary>
+                <div class="details-content">
+                    <ul>
+                        <li class="fact"><b>目标：</b>将强大的 Cloud 智能体集成到您的 GitHub 工作流中。</li>
+                        <li class="fact"><b>操作步骤：</b>
+                            <ol>
+                                <li>在您本地的项目仓库目录中，打开终端并启动 <strong>Cloud Code</strong>。</li>
+                                <li>在 Cloud Code 交互界面中，输入命令：<code>/install-github-action</code></li>
+                                <li>程序将引导您完成配置，并自动创建一个包含所需 <code>YAML</code> 配置文件的 Pull Request。</li>
+                                <li>在 GitHub 上合并这个 PR，并根据指引配置好您的 <code>API Key</code> 等密钥。</li>
+                            </ol>
+                        </li>
+                        <li class="fact"><b>特别注意：</b>如果您是 <strong>Bedrock</strong> 或 <strong>Vertex</strong> 用户，安装过程略有不同，需要参考官方文档进行更手动的配置。</li>
+                    </ul>
+                    <a href="https://github.com/anthropics/claude-code-action" target="_blank" class="cta-button">➡️ 前往 GitHub Action 仓库获取更多信息</a>
+                </div>
+            </details>
+        </main>
+    </div>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.bilibili.com/video/BV15vhVzREPu/" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
