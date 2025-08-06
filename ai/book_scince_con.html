@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《意识》交互式摘要 | 卡片导航</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f0f4f8;
+            --text-color: #333;
+            --bg-color: #ffffff;
+            --highlight-bg: #eaf2fa;
+            --discovery-bg: #fffde7;
+            --action-bg: #e6ffed;
+            --border-radius: 12px;
+            --shadow: 0 4px 15px rgba(0,0,0,0.08);
+            --transition-speed: 0.3s;
+        }
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            line-height: 1.8;
+            color: var(--text-color);
+            background-color: #f7f9fc;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        header h1 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+        header p {
+            font-style: italic;
+            color: #667;
+            font-size: 1.1em;
+        }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+        .card {
+            background: var(--bg-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            cursor: pointer;
+            transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+            border-top: 5px solid var(--primary-color);
+        }
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+        .card h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.5em;
+        }
+        .card p {
+            color: #555;
+            font-size: 0.95em;
+        }
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity var(--transition-speed), visibility var(--transition-speed);
+            z-index: 1000;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: var(--bg-color);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: transform var(--transition-speed);
+        }
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--secondary-color);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .modal-header h2 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 1.8em;
+        }
+        .close-button {
+            font-size: 2em;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+        .close-button:hover {
+            color: #333;
+        }
+        /* Content highlighters */
+        .modal-body ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .modal-body li {
+            background-color: var(--highlight-bg);
+            border-left: 4px solid var(--primary-color);
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        strong { color: #1e63b3; } /* Fact */
+        em { color: #8e44ad; font-style: normal; } /* Opinion */
+        .discovery, .action {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left-width: 5px;
+            border-left-style: solid;
+        }
+        .discovery { background-color: var(--discovery-bg); border-color: #f1c40f; }
+        .action { background-color: var(--action-bg); border-color: #2ecc71; }
+        .discovery::before, .action::before {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .discovery::before { content: '🔬 创新发现'; color: #c29d0b; }
+        .action::before { content: '💡 行动视角'; color: #25a25a; }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>《意识》交互式摘要</h1>
+            <p>点击下方卡片，开启一场关于心智、自我与现实的探索之旅</p>
+        </header>
+
+        <div class="card-grid">
+            <div class="card" data-chapter="1">
+                <h2>第 1 章 | 意识是什么？</h2>
+                <p>探索意识研究中的“硬问题”，了解二元论、物理主义等核心理论，并审视全局工作空间和整合信息等前沿模型。</p>
+            </div>
+            <div class="card" data-chapter="2">
+                <h2>第 2 章 | 有意识的心智</h2>
+                <p>从进化角度审视意识的起源，探讨动物意识的迹象，并思考机器人是否可能拥有主观体验。</p>
+            </div>
+            <div class="card" data-chapter="3">
+                <h2>第 3 章 | 你的意识自我</h2>
+                <p>剖析“自我”的构成与进化，探讨自我是否为一种幻觉，并揭示身体信号如何塑造我们的自我感知。</p>
+            </div>
+            <div class="card" data-chapter="4">
+                <h2>第 4 章 | 睡眠与梦境</h2>
+                <p>揭示睡眠的神秘功能，特别是其在记忆巩固中的作用，并探索梦境的构成和半睡状态下的创造力火花。</p>
+            </div>
+            <div class="card" data-chapter="5">
+                <h2>第 5 章 | 意识的改变状态</h2>
+                <p>从麻醉、幻觉到濒死体验，分析意识的各种改变状态。重点关注“隐蔽意识”的惊人发现及其伦理意义。</p>
+            </div>
+            <div class="card" data-chapter="6">
+                <h2>第 6 章 | 意识与现实</h2>
+                <p>探讨意识与物理世界的关系，量子力学如何挑战我们对现实的理解，以及“泛心论”为何在现代科学中复兴。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Structure -->
+    <div class="modal-overlay" id="modal-container">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title"></h2>
+                <button class="close-button" id="close-modal">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        const chapterData = {
+            '1': {
+                title: '第 1 章 | 意识是什么？',
+                content: `
+                    <ul>
+                        <li><strong>意识的“难题”划分</strong>：哲学家大卫·查默斯 (David Chalmers) 提出，意识研究可分为<strong>“简单问题” (Easy Problem)</strong>——解释大脑如何处理信息、学习、记忆等功能；以及<strong>“硬问题” (Hard Problem)</strong>——解释为什么我们拥有主观体验或“感质”(Qualia)，即“身临其境”的感觉。</li>
+                        <li><em>核心理论流派</em>：
+                            <ul>
+                                <li><strong>二元论 (Dualism)</strong>：心灵与大脑是两种独立的东西。</li>
+                                <li><strong>一元论 (Monism)</strong>：心灵与大脑是同一事物，意识源于物质。其主流是<strong>物理主义 (Physicalism)</strong>。</li>
+                                <li><strong>泛心论 (Panpsychism)</strong>：意识是宇宙的基本属性，所有物质都具有某种程度的意识。</li>
+                                <li><strong>幻觉主义 (Illusionism)</strong>：主观体验是我们大脑为监控自身而产生的“幻觉”。</li>
+                            </ul>
+                        </li>
+                        <li><strong>寻找意识的“神经相关物” (NCC)</strong>：科学家们试图找到与特定意识体验相对应的大脑活动模式。<div class="discovery"><u>创新发现</u>：研究表明，意识并非源于单一的“意识中心”，而是涉及多个脑区的广泛网络，如“后部热区”(Posterior Hot Zone)、前额叶皮层和丘脑。</div></li>
+                        <div class="action">
+                            <strong>行动视角：网络理论的兴起</strong>：由于找不到单一的意识“座位”，研究焦点转向了网络模型。
+                            <ul>
+                                <li><strong>全局工作空间理论 (GWT)</strong>：认为当信息被大脑的“全局工作空间”（一个广泛分布的神经元网络）广播时，意识就产生了。</li>
+                                <li><strong>整合信息理论 (IIT)</strong>：由朱利奥·托诺尼 (Giulio Tononi) 提出，认为意识是系统整合信息能力的体现，其程度可以用一个量<strong>Φ (Phi)</strong>来衡量。Φ值越高，意识水平越高。</li>
+                            </ul>
+                        </div>
+                    </ul>`
+            },
+            '2': {
+                title: '第 2 章 | 有意识的心智',
+                content: `
+                    <ul>
+                        <li><em>意识的进化</em>：<em>观点</em>：意识并非智能的副产品，而是一种演化优势，它通过“享乐评估”(Hedonic Valuation) 机制，为生物体提供了灵活、适应性强的行为策略。</li>
+                        <li><strong>动物意识的标志</strong>：科学家通过观察动物行为来推断其意识水平，标志包括：在镜子中认出自己、表现出后悔、进行策略性欺骗、以及拥有“选择性注意”(Selective Attention) 等。<div class="discovery"><u>创新发现</u>：研究表明，不仅是哺乳动物和鸟类，连章鱼甚至蜘蛛和果蝇都可能拥有某种形式的意识。</div></li>
+                        <li><strong>五维意识模型</strong>：哲学家乔纳森·伯奇 (Jonathan Birch) 提出，可以用五个维度来评估不同物种的意识：<strong>知觉丰富度、评估丰富度、统一性、时间性、自我性</strong>。</li>
+                        <div class="action">
+                            <strong>行动视角：机器人能有意识吗？</strong>：这个问题取决于对意识的定义。
+                            <ul>
+                                <li><em>幻觉主义者</em>认为，只要能构建出模拟大脑自我监控过程的机器，它就能拥有意识。</li>
+                                <li>迈克尔·格拉齐亚诺 (Michael Graziano) 的<strong>“注意图式理论” (Attention Schema Theory)</strong> 认为，意识是大脑对自己注意过程的简化模型，这在理论上是可工程化的。</li>
+                            </ul>
+                        </div>
+                    </ul>`
+            },
+            '3': {
+                title: '第 3 章 | 你的意识自我',
+                content: `
+                    <ul>
+                        <li><em>自我的进化</em>：<em>观点</em>：“社会脑假说”(Social Brain Hypothesis) 认为，理解和预测社会群体中其他成员的心智状态，是驱动大脑复杂化和“自我”意识产生的关键压力。</li>
+                        <li><strong>自我是一种幻觉？</strong>：<strong>事实</strong>：从细胞更替到性格特征，我们始终处于变化之中。大脑通过构建一个连贯的叙事，创造了一个持续、统一的“自我”感，但这可能是一种幻觉。</li>
+                        <div class="discovery"><u>创新发现：元认知 (Metacognition)</u>：即“对认知的认知”（知道自己知道什么），被认为是人类意识的一个高级特征，与大脑<strong>前额叶皮层</strong>密切相关。它是我们能够反思自身思想和信念的基础。</div>
+                        <div class="action"><strong>行动视角：具身意识 (Embodied Consciousness)</strong>：意识并非仅存于大脑。来自身体内部（如心跳、呼吸）的信号，即<strong>“内感受”(Interoception)</strong>，深刻地影响着我们的情绪、决策和自我感。我们的“自我”是身体与大脑持续互动的产物。</div>
+                    </ul>`
+            },
+            '4': {
+                title: '第 4 章 | 睡眠与梦境',
+                content: `
+                    <ul>
+                        <li><strong>睡眠的目的</strong>：至今仍是谜。主流理论包括：身体修复、大脑维护、以及独特的认知功能。</li>
+                        <div class="action"><strong>行动视角：突触稳态假说 (Synaptic Homeostasis Hypothesis)</strong>：这是一个前沿理论，认为我们在清醒时不断学习，加强了神经元之间的连接（突触）。睡眠的作用是按比例削弱这些连接，从而节省能量，为第二天的学习腾出空间，防止大脑“饱和”。</div>
+                        <li><em>梦的意义</em>：<em>观点</em>：梦境可能与<strong>记忆巩固</strong>过程有关。当大脑将短期记忆转移到长期存储时，记忆的碎片可能会以梦的形式浮现。情绪在塑造梦境内容和形式方面扮演着关键角色。</li>
+                        <div class="discovery"><u>创新发现：半睡幻觉 (Hypnagogia)</u>：在清醒与睡眠之间的过渡状态（N1期），大脑会产生生动的幻觉。这个状态被证明与创造力的迸发有关，许多科学家和艺术家曾利用这一状态获得灵感。</div>
+                    </ul>`
+            },
+            '5': {
+                title: '第 5 章 | 意识的改变状态',
+                content: `
+                    <ul>
+                        <div class="discovery"><u>创新发现：麻醉之谜</u>：全身麻醉并非像关灯一样“关闭”意识，而更像一个“调光器”。它通过<strong>破坏大脑不同区域间的远距离通信和同步性</strong>来使意识消失，这支持了全局工作空间等网络理论。</div>
+                        <div class="action"><strong>行动视角：幻觉的本质</strong>：幻觉并非凭空产生。根据安尼尔·塞斯 (Anil Seth) 的理论，我们的正常知觉本身就是一种<strong>“受控的幻觉”</strong>。大脑基于过去的经验不断对感官输入做出“最佳猜测”。当感官输入缺失或大脑的预测机制出错时，幻觉就产生了。</div>
+                        <li><strong>“更高”的意识状态</strong>：<u>创新发现</u>：研究表明，使用LSD等迷幻药物后，大脑不同区域间的连接会变得异常丰富，信号多样性增加，可能进入了一种比正常清醒时“更复杂”或“熵更高”的意识状态。</li>
+                        <div class="discovery"><u>创新发现：隐蔽意识 (Covert Consciousness)</u>：由阿德里安·欧文 (Adrian Owen) 等人开创性地发现，一些被诊断为植物人状态的患者，实际上拥有清醒的意识，但无法通过行为表现出来。通过功能性磁共振成像 (fMRI) 等技术，可以与他们进行“交流”。</div>
+                    </ul>`
+            },
+            '6': {
+                title: '第 6 章 | 意识与现实',
+                content: `
+                    <ul>
+                        <li><strong>意识的物理学</strong>：物理学面临的一个巨大挑战是解释<strong>“能动性”(Agency)</strong>——即有意识的主体如何能够做出选择并改变物理世界的进程。这在现有物理定律中没有位置。</li>
+                        <li><em>意识创造现实？</em>：<em>观点</em>：量子力学中的<strong>“测量问题”</strong>引发了深刻的哲学思考。一些诠释（如哥本哈根诠释、参与性宇宙）暗示，观察者（甚至可能是意识本身）在现实的塑造中扮演着关键角色。现实可能并非独立于观察者而客观存在。</li>
+                        <div class="action"><strong>行动视角：宇宙是“活”的吗？</strong>：整合信息理论 (IIT) 的一个激进推论是，任何能够整合信息的系统都具有一定程度的意识。这导致了<strong>泛心论</strong>的复兴——即意识可能是物质的基本属性。<u>创新发现</u>：虽然计算整个宇宙的Φ值是不可能的，但该理论为思考意识在宇宙中的地位提供了一个全新的数学框架。</div>
+                        <div class="discovery"><u>创新发现：意识的“真实问题”</u>：安尼尔·塞斯 (Anil Seth) 提出，我们应聚焦于意识的<strong>“真实问题”(Real Problem)</strong>，即解释、预测和控制意识的各种属性（如意识水平、内容和自我），而不是纠结于无法下手的“硬问题”。他认为，通过“预测性加工”和“内感受”等机制，我们可以逐步“溶解”意识之谜，就像曾经溶解“生命”之谜一样。</div>
+                    </ul>`
+            }
+        };
+
+        const cards = document.querySelectorAll('.card');
+        const modalContainer = document.getElementById('modal-container');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+        const closeModalButton = document.getElementById('close-modal');
+
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                const chapter = card.getAttribute('data-chapter');
+                const data = chapterData[chapter];
+
+                modalTitle.textContent = data.title;
+                modalBody.innerHTML = data.content;
+                modalContainer.classList.add('active');
+            });
+        });
+
+        const closeModal = () => {
+            modalContainer.classList.remove('active');
+        };
+
+        closeModalButton.addEventListener('click', closeModal);
+        modalContainer.addEventListener('click', (event) => {
+            // Close if clicked on the overlay itself, not the content
+            if (event.target === modalContainer) {
+                closeModal();
+            }
+        });
+
+    </script>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_scince_con_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
