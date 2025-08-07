@@ -1,6 +1,6 @@
 # Sönke Ahrens: AI时代的外部思维与卡片盒笔记法
 
-> 本文内容基于MindHack播客对《How to Take Smart Notes》作者Sönke Ahrens的访谈，由我结合三大AI模型（GPT-4.1、Gemini Pro、Claude 4）归纳整理。希望对你理解Zettelkasten、外部思维与AI时代的个人知识管理有实用启发。
+> 本文内容基于MindHack播客对《How to Take Smart Notes》作者Sönke Ahrens的访谈，由我的笔记焦点下，通过三大AI模型（GPT-4.1、Gemini Pro、Claude 4）归纳整理。希望对你理解Zettelkasten、外部思维与AI时代的个人知识管理有实用启发。
 
 
 ## 文章目录
