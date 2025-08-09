@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code 视频字幕摘要</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+        :root {
+            --bg-color: #FFFFFF;
+            --text-color: #333333;
+            --primary-color: #4A90E2;
+            --secondary-color: #F5F7FA;
+            --accent-color: #50E3C2;
+            --fact-color: #4A90E2;
+            --opinion-color: #7d5ab5;
+            --action-color: #2E8B57;
+            --border-color: #EAECEF;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --font-family: 'Noto Sans SC', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.8;
+            margin: 0;
+            padding: 20px;
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            color: #666;
+        }
+
+        .summary-section {
+            background-color: var(--secondary-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            overflow: hidden;
+        }
+
+        details {
+            padding: 20px 25px;
+        }
+
+        summary {
+            font-size: 1.4em;
+            font-weight: 500;
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::after {
+            content: '+';
+            font-size: 1.8em;
+            color: var(--primary-color);
+            transition: transform 0.3s ease;
+            font-weight: 300;
+        }
+
+        details[open] summary::after {
+            transform: rotate(45deg);
+        }
+
+        .details-content {
+            margin-top: 20px;
+            padding-left: 10px;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .details-content ul {
+            list-style: none;
+            padding-left: 15px;
+        }
+
+        .details-content li {
+            margin-bottom: 15px;
+            position: relative;
+            padding-left: 25px;
+        }
+        
+        .details-content li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 9px;
+            height: 10px;
+            width: 10px;
+            border-radius: 50%;
+        }
+
+        .point-fact::before { background-color: var(--fact-color); }
+        .point-opinion::before { background-color: var(--opinion-color); }
+        .point-action::before { background-color: var(--action-color); }
+        
+        .point-label {
+            font-weight: 700;
+            margin-right: 8px;
+        }
+        .label-fact { color: var(--fact-color); }
+        .label-opinion { color: var(--opinion-color); }
+        .label-action { color: var(--action-color); }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            border-bottom: 1px dotted var(--text-color);
+            cursor: help;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 250px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -125px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .toggle-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+
+        .toggle-button:hover {
+            background-color: #357ABD;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9em;
+            color: #999;
+        }
+
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Claude Code 核心摘要</h1>
+            <p>与创造者 Boris Cherny 的深度对话精华</p>
+        </header>
+
+        <div class="button-container">
+            <button class="toggle-button" id="toggleAll">全部展开/折叠</button>
+        </div>
+
+        <div class="summary-section">
+            <details>
+                <summary>🚀 产品速览与诞生故事</summary>
+                <div class="details-content">
+                    <ul>
+                        <li class="point-fact"><span class="point-label label-fact">[事实]</span> <strong>产品定义:</strong> Claude Code 是一个在<span class="tooltip">终端(CLI)<span class="tooltiptext">Command Line Interface, 命令行界面，一种基于文本的计算机交互方式，深受开发者喜爱。</span></span>中运行的“代理式”(Agentic)编码AI。</li>
+                        <li class="point-fact"><span class="point-label label-fact">[事实]</span> <strong>惊人增长:</strong> 产品发布仅5个月，传闻年化收入(Annualized Revenue)已达4亿美元。</li>
+                        <li class="point-opinion"><span class="point-label label-opinion">[观点]</span> <strong>意外的产物:</strong> 它并非计划中产物，最初是Boris为自己开发的个人自动化工具，一个“非常偶然”的成功。</li>
+                        <li class="point-fact"><span class="point-label label-fact">[事实]</span> <strong>转折点:</strong> 当给模型提供了 <span class="tooltip">Bash<span class="tooltiptext">一种常见的命令行解释器，允许用户和程序执行系统命令。</span></span> 工具后，它立即“自发地”开始编码，这是一个惊喜的发现。</li>
+                        <li class="point-opinion"><span class="point-label label-opinion">[观点]</span> <strong>CLI的优势:</strong> 最初选择CLI是因为实现简单，但事后发现其“普适性”（跨平台/IDE）是成功的关键，能适应工程师多样化的工作环境。</li>
+                    </ul>
+                </div>
+            </details>
+        </div>
+        
+        <div class="summary-section">
+            <details>
+                <summary>🛠️ 核心功能与技术解读</summary>
+                <div class="details-content">
+                    <ul>
+                        <li class="point-fact"><span class="point-label label-fact">[事实]</span> <strong>代理式编码 (Agentic Coding):</strong> 用户描述意图，模型会自主规划并执行一系列操作（如读写文件、搜索、运行命令）来完成任务，而不仅仅是生成代码片段。</li>
+                        <li class="point-fact"><span class="point-label label-fact">[事实]</span> <strong>子代理 (Sub-agents):</strong> 允许将一个复杂任务分解给多个具有特定角色（如QA、工程师）的子代理协同完成，类似于组建一个AI团队。</li>
+                        <li class="point-fact"><span class="point-label label-fact">[事实]</span> <strong>Agentic Search:</strong> 不使用传统的<span class="tooltip">RAG<span class="tooltiptext">Retrieval-Augmented Generation, 检索增强生成。一种通过从外部知识库检索信息来增强模型回答的技术。</span></span>，而是模仿人类使用`grep`等简单工具反复搜索、迭代查询，以获取代码库的上下文。</li>
+                        <li class="point-fact"><span class="point-label label-fact">[事实]</span> <strong>记忆机制 (`claude.md`):</strong> 一个简单的Markdown文件，用于存储团队共享的指令和偏好。当团队成员向其中添加记忆时，整个团队的Claude Code都会“变聪明”。</li>
+                        <li class="point-opinion"><span class="point-label label-opinion">[观点]</span> <strong>安全设计:</strong> 默认所有危险操作都需要人类批准，这在保障安全和建立用户信任方面至关重要。但用户可配置白名单来提高效率。</li>
+                    </ul>
+                </div>
+            </details>
+        </div>
+
+        <div class="summary-section">
+            <details>
+                <summary>🎯 用户、用例与定价</summary>
+                <div class="details-content">
+                    <ul>
+                        <li class="point-fact"><span class="point-label label-fact">[事实]</span> <strong>目标用户:</strong> 主要面向专业软件工程师，但数据科学家、设计师等非传统编码角色也发现其价值。</li>
+                        <li class="point-opinion"><span class="point-label label-opinion">[观点]</span> <strong>核心用例评级:</strong> 在“代码库研究和新员工入职”方面表现卓越(10/10)，在“代码编写”和“调试”方面表现良好(6-7/10)。</li>
+                        <li class="point-fact"><span class="point-label label-fact">[事实]</span> <strong>生产力提升:</strong> 在Anthropic内部，新工程师的上手时间从几周缩短到了几天，极大减少了对资深工程师的打扰。</li>
+                        <li class="point-fact"><span class="point-label label-fact">[事实]</span> <strong>定价模型:</strong> 提供订阅制（Pro/Max）和按用量付费的API Key模式，旨在平衡重度用户的使用需求和服务的可持续性。</li>
+                    </ul>
+                </div>
+            </details>
+        </div>
+
+        <div class="summary-section">
+            <details open>
+                <summary>💡 行动指南与未来展望</summary>
+                <div class="details-content">
+                    <ul>
+                        <li class="point-action"><span class="point-label label-action">[行动]</span> <strong>核心构建原则:</strong> <strong>为你6个月后模型将拥有的能力而构建，而不是现在！</strong>这是在快速发展的AI领域取得成功的关键。</li>
+                        <li class="point-action"><span class="point-label label-action">[行动]</span> <strong>如何预测未来:</strong> 深入使用最原始的模型，找到其当前的能力边界(frontiers)，然后想象当这些边界被突破后，你能创造什么新产品或体验。</li>
+                         <li class="point-action"><span class="point-label label-action">[行动]</span> <strong>高效使用技巧:</strong> 对于复杂任务，先让Claude Code制定一个计划(plan)，并与其反复迭代确认方向一致后，再让它执行。这能极大提高成功率。</li>
+                        <li class="point-opinion"><span class="point-label label-opinion">[观点]</span> <strong>编码的未来:</strong> 编码不会消失，而是会进化。它将从“直接的文本操作”转变为“与AI代理协同工作”，工程师的角色更像是思想的指挥家和架构师。</li>
+                        <li class="point-opinion"><span class="point-label label-opinion">[观点]</span> <strong>市场格局:</strong> 编码AI市场巨大，足以容纳多个玩家。Anthropic认为大部分创新将发生在开放的API和SDK之上，而非闭门造车。</li>
+                    </ul>
+                </div>
+            </details>
+        </div>
+
+        <footer>
+            <p>摘要根据 Matt Turk 播客与 Anthropic 的 Boris Cherny 的对话生成。</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleButton = document.getElementById('toggleAll');
+            const allDetails = document.querySelectorAll('details');
+
+            toggleButton.addEventListener('click', () => {
+                // Check if any details are open. If so, close all. Otherwise, open all.
+                const areAnyOpen = Array.from(allDetails).some(details => details.open);
+                allDetails.forEach(details => {
+                    details.open = !areAnyOpen;
+                });
+            });
+        });
+    </script>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.bilibili.com/video/BV14Ctpz8EAx/" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
