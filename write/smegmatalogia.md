@@ -181,229 +181,46 @@ IT is not possible to give certain Rules
 in this Art of Bleaching; and therefore he must vary and bleach as he sees Cause, for some Cloth is easier bleached than others, particularly your fine Cloths, and your Lees may alter in their Operations: So that the Time of Bucking and Bleaching must be at the Discretion of the Bleacher, for he must take Care how to manage his Lee; or he may burn his Cloth; and his Lee must not be over hot, so he must be constantly pouring it, during the Time of Bucking, from the Top to the Bottom, and from the Bottom to the Top. Again; after it has had the last Milk, he must put his Cloth in a Tub, and tramp it with his Feet for Half an Hour and thereafter wash it clean with Water several Times till the Water come off of it as clear as when first put in the Tub. 
 
 
-. _ 
+### Additional Bleaching Notes
 
+For all Washers and Dressers of Linen, I need not treat of it extensively, only recommend Azure for Indigo, because it makes clearer Cloth, and is not so hurtful to it.
 
-n 
-Lowland” beg: a Fang — 
+## Washing of Linen Cloths
 
+For washing of Linen Cloths, White Soap is better than Black, except for the very coarsest of Linen; for it washes better, and gives the Cloths a better Smell and Colour. There are two Ways of washing with White Soap. The first is by Boiling. You must take your Cloths and wash 
 
-L. 34 1 
-tour to all Vaſbers and Dre ſers of 
 
+them well in warm Water and White Soap, so as they be clean. Then put them in your Boiler, with some Soap, and let them boil about an Hour or more, according to the Quantity of Linen you are cleaning, and be sure to keep down the Linen under the Water with a Stick, while it is boiling; let it be smooth at the End, lest it tear the Linen. If in Summer, lay them to the Sun, upon the Green, and carefully water them for two Days 
 
-Linen, I need not treat of it, only 
-recommend Azure for Indigo, be- 
-cauſe it makes clearer Cloath, and is 
-not ſo hurtful to it. it ar 3 
 
+and turn frequently, till they be well bleached; then rinse them in cold Water, so as they be very clean. Blue and starch any of them that are needful; but Azure I prefer to Indigo, as safer, because it makes clearer Linen than Indigo. 
 
-+ For waſhing of Linen Cloaths, 
-White Soap. is better than Black, exe: 
-cept the very coarſeſt of Linen; forit 
-waſhes better, and gives the Cloaths 
-a better Smell and Colour. There 
-arc two Ways of waſhing with J/Þifte' 
-Soap. The firſt is by Boiling. You: 
-muſt take your Cloaths and waſh 
+If in Winter, after washing, as before, and boiling, you must take the Linens and rinse them in Water, and put them in a Tub, with the Lather they were boiled in; cover them up till the Morning, and hang them to the Air upon Ropes or Palings till they dry, and starch and blue as formerly. 
 
+### Method 2: Warm Water and White Soap
 
-= 
-1 
+The other Way of washing is by warm Water and White Soap. Make a good Lather, and wash your Linen, and rub with the Soap the Necks and Hands of the Shirts, which are commonly most dirty, or any Place that requires it; when well wrought and rubbed amongst the Lather, wring them out and give them a new Lather, and so on as they require, as aforesaid, using the Bleaching in Summer; and, in Winter, by giving them Air the most convenient cleanly Way, bluing and starching as before. 
 
 
-them well in warm Water and White: 
+### Commercial Soap Making
 
+As White Soap is best for Bleaching, Washing and Scouring, and cheaper, because a Pound of it will go farther than a Pound and a Half of Black Soap, Mr. Steven and Company, in Leith, have set up a Manufactory, in which they use all Scots Materials and Vegetables, and have brought their Work to such Perfection, that they (notwithstanding of their paying Duty) make not only hard white Soap; but also the Soap commonly called Castile, scented and plain Balls for Shaving; by which it is plainly evident, that, upon due Encouragement, and Application, our Country Gentlemen, Farmers, &c. may have Money or Soap for their Ashes, prepared in Manner before prescribed. The Use of these Vegetables being before either not known, 
+or neglected, if not both, was the principal Aim of this Treatise.
 
-Sap, fo as they be clean. Then put 
+---
 
+## Cleaning Woollen Cloths
 
-them in your Boiler, with ſome Saap, 
+For Woollen Cloths, Blankets, Carpets, and Arras: For preserving their Colours, the two first require weaker Lee, a Mutchkin of Fern or Whin Lee conformable to three Ells; Proportion your Lee conform to your Number of Ells of Cloth, put your Lee in a Tub, then steep your Cloth therein till it be thoroughly wet; then have a Lather of White Soap and warm Water, pour it on the Cloth as Need is, and let a Woman tramp it with her Feet for about Half an Hour; then take out the Cloth by the Selvedge and let it drip, and as soon as possible have another Lather of Water and White Soap, very strong, and tramp it over till all the Dirt be taken out of it, thereafter rinse it with cold Water, and hang it out to dry.
 
+For the last Two, you must make your Lee as strong, in proportion to the Breadth, Length, and Thickness of your Cloth, and 
+when fully steeped, you must put it in the Walk-Mill, which will beat out all the Grease and Stuff that lurks in the Cloth; the Walkers know how long Time it should be in the Mill, only you must put in a Lather of Soap and Water in the Trough, before the Cloth is put therein; and, when frequently scoured, take it out by the Selvedge and hold it in the Mill Run and rinse out as the Walker does other Cloths.
 
-and let them boil about an Hour or 
-more, according to the Quantity of 
-Linen you are cleaning, and ha ſure 
-to keep downithe Linen under the- 
-Water with a Stick, while tis hailing 
-let it be ſmooth at the End; leaſt it 
-tear the Linen. If in Summer, hay 
-them to the Sun, upon the Ereen, and 
-earefully- wator- them for wo Nope 
+**Note:** Salt Water and Iron Water are not proper for bleaching, because they spoil the Colour of the Cloth.
 
+**Note:** That when the Cloth is well bucked with the Lees, and laid out on the Green, you must water only as the Sun arises; for as too much Sun, without Water, burns the Cloth, so too much Water, without the Sun, will be ready to rot it, the Lees being deadened: Therefore, if it be rainy in the Night-Time, and little Sun in the Day, house the Cloth all Night; for we cannot be too careful in rainy Weather.
 
-* 
+---
 
-
-19091 
-
-
-5 
-
-
-OY 
-
-and turn frequently, till they be well 
-bleath'd:; then rinſe them in cold 
-Water, ſo as they be very clean. 
-Blue and ftarch any of them that 
-are. needful ; but Azure 1 prefer. to 
-Indigo, as ſafer, becauſe it makes 
-clearer Linen than Indigo. If in 
-Winter, after waſhing, as before, 
-and boz/zng, you muſt take the Linens 
-and rinſe them in Water, and-put 
-them in a Tub, with the Lather they 
-
-were boiled in; cover them up till 
-
-the Morning, and hang them to the 
-
-Air upon Ropes or Pailings till they 
-
-dry, and ftarch and blue as formet- 
-
-ly. The other Way of waſhing is by 
-
-warm Water and White Soap. Make 
-
-a good Lat her, and waſh your Li- 
-
-nen, and rub with the Soap the Necks 
-| and Hands of the Shirts, which are 
-; commonly - moſt dirty, or any Place 
-| that requires it; when well wrought 
-and rubbed amongſt the Lather, wring 
-them out and give them a new La- 
-i ther, and ſo on a8 they require, as 
-aforeſaid, ufing the Bleaching in Sum- 
-TE mer, 
-
-
-i 3 
-
-
-wer; and, in Winter, by giving tham 
-
-
-Airthe moſt convenient eleanly Way, 
-Maing and farching as before. 
-
-
-As White Soap is bolt ſor Bleasb» 
-ing, Waſhing and Frouriug, and 
-cheaper, becauſe 'a Pound of it will 
-go farther than a Pound and à Half 
-of Black Soap,' Mr. Seven and um- 
-pany, in Leib, have ſet up a Manu- 
-factory, in which they uſe all Scors 
-Materials and Vugetablas, and have 
-brought their Work to ſueh PerfeRi- 
-on, that they (notwithſtanding of 
-their paying Duty) make not only 
-hard bite Soap; but alfo the Soap 
-commonly called Caftite, ſcented and 
-plain Balls for Shaving ; by which it 
-is plainly evident, that, upon duc 
-Encouragement, and” Application, our 
-Country Gentlemen, Parmers, Gc. 
-may have Monzy or Soap for their 
-Aber, prepared in Manner before 
-preſcribod. Phe Uſe of theſe Fegs+ 
-2ables being before either not known, 
-or · veglefJed, if not both, was the 
-EE prin- 
-
-
-1 
-principal Aim af this Treatiſe, ha- 
-
-
-ning — for — 
-eee nm 
-
-
-Bal) 
-
-
-itt B OR, 8 Waoilan , Blanke 
-\Garpets,>end Arras eee ad 
-
-
-For preſtmiing tiia Co loss, 
-the two Fixſt) a — 
-der Las, a Mutchkinof Fern or We 
-Les conform O 1 antl 
-+ will ſerve thteeElas; Proporti- 
-en your Les confort to your Naan 
-her of Eins of Cioath, put your Lee | 
-in a Tub, then iſteep yeur Cloath- 
-therein till it be thraugmiy wet; then 
-have a Lather of Vite Soap and ward 
-Water, pour it on the Cloath as Need 
-is, and let a Woman tramp- it With 
-her. Feet for about Half an Hour; 
-chen take ont the Cloath by the Sel- 
-ved ed let it dreep, and * as 
-polible have — Lather of Wa- 
-ter and Vbise Soap, very ſtreng, and 
-tramp it over tit all the Dirt 
-
-
-be taken out of it, thereafter rinſe it 
-_ with. cold Water, and hang it 
-out 
-
-
-I 
-
-et to dry; for the laſt Two, 
-muſt make your Lee as arte = 
-proportion Lo the Breadth, Leugth, 
-and Thickneſs of your Cloath, and 
-when fully ſteept, — put ĩt in 
-the Walk- Min, which will beat out all 
-- the Greaſe and Stuff that. lurks in the 
-Cloath; the Wakers knowihow long 
-Time it ſhauld be in che Mill, only 
-vou muſt put in a Lather of Soap 
-and Water in the Trough, before the 
--Cloath is put therein; and; when fre- 
-ently ſcoured, take it out by the 
-8” and hold it in the Mill Run 
-and rinſe ou as the Waker does other 
-
-
-6 Bag 28 20 Mo - mor VL net 
-Water ane proper for -bleachs 
-
-
-ing, becauſe they ſpoil the C 
-lour of the auth. 
-
-
-| Not That — i: the Clash i is 
-Well bucked with the Lees, and 
-laid out onthe Green, you muſt 
-water only as the Sun aries ; for 
-rn MAS 
-
-
-1 
-as too much Sun, without Pater. 
-burns the Cloath, ſo too muc 
-Water, without the Sun, will be 
-ready to rot it, the Lees being 
-deadned : Therefore, if it be 
-rainy in the Night-Time, and 
-
-
-little Sun in the Day, honſe the 
-
-
-Cloath all Night ; for wwe cannot 
-be 100 carefut in rainy Weather. 
-
-
-£015; 
+**FINIS** 
 
