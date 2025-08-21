@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《寻路者》深度摘要 | Wade Davis</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+        :root {
+            --bg-color: #ffffff;
+            --primary-text-color: #212529;
+            --secondary-text-color: #495057;
+            --accent-color-fact: #007bff; /* 事实 - 蓝色 */
+            --accent-color-viewpoint: #28a745; /* 观点 - 绿色 */
+            --card-bg-color: #f8f9fa;
+            --border-color: #dee2e6;
+            --shadow-color: rgba(0, 0, 0, 0.075);
+            --expanded-card-bg: #eef7ff;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-text-color);
+            line-height: 1.9;
+            margin: 0;
+            padding: 2rem;
+            font-weight: 300;
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 2rem;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary-text-color);
+            margin: 0;
+        }
+
+        header h2 {
+            font-size: 1.6rem;
+            font-weight: 300;
+            color: var(--secondary-text-color);
+            margin-top: 0.5rem;
+        }
+
+        .thesis {
+            background-color: #f0f3f5;
+            border-left: 5px solid var(--primary-text-color);
+            padding: 1.5rem 2rem;
+            margin: 2rem 0 3rem 0;
+            font-size: 1.15rem;
+            border-radius: 8px;
+        }
+        .thesis strong {
+            font-weight: 500;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .tab-button {
+            padding: 12px 28px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--secondary-text-color);
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button:hover {
+            background-color: var(--card-bg-color);
+            border-color: #adb5bd;
+        }
+
+        .tab-button.active {
+            background-color: var(--primary-text-color);
+            color: var(--bg-color);
+            border-color: var(--primary-text-color);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.6s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+        
+        .chapter-title {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .chapter-title h3 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .chapter-title p {
+            font-size: 1.2rem;
+            color: var(--secondary-text-color);
+            margin-top: 0.5rem;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px var(--shadow-color);
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px var(--shadow-color);
+        }
+        
+        .card.expanded {
+            background-color: var(--expanded-card-bg);
+            border-color: var(--accent-color-fact);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .card-header::after {
+            content: '+';
+            font-size: 1.8rem;
+            font-weight: 300;
+            color: #adb5bd;
+            position: absolute;
+            right: 1.5rem;
+            top: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .card.expanded .card-header::after {
+            transform: rotate(45deg);
+        }
+
+        .card-icon {
+            font-size: 1.8rem;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .card-icon.fact { color: var(--accent-color-fact); }
+        .card-icon.viewpoint { color: var(--accent-color-viewpoint); }
+
+        .card-title-wrapper {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .card-tag {
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 3px 10px;
+            border-radius: 12px;
+            color: var(--bg-color);
+            width: fit-content;
+            margin-top: 0.25rem;
+        }
+        .card-tag.fact { background-color: var(--accent-color-fact); }
+        .card-tag.viewpoint { background-color: var(--accent-color-viewpoint); }
+
+        .card-summary {
+            font-size: 1.05rem;
+            color: var(--secondary-text-color);
+            margin: 0;
+            padding-right: 2rem;
+        }
+
+        .card-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.6s ease-in-out, margin-top 0.6s ease-in-out;
+            font-size: 1rem;
+            border-top: 1px solid transparent;
+        }
+        
+        .card.expanded .card-details {
+            max-height: 1000px; /* Increased to allow for more content */
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .card-details ul {
+            padding-left: 20px;
+            margin-top: 0.5rem;
+        }
+        
+        .card-details li {
+            margin-bottom: 0.75rem;
+        }
+        .card-details li::marker {
+             color: var(--accent-color-fact);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>《寻路者》</h1>
+            <h2>为何古代智慧在现代世界至关重要</h2>
+            <p>作者：Wade Davis (韦德·戴维斯)</p>
+        </header>
+
+        <div class="thesis">
+            <strong>核心论点：</strong>“民族圈”（Ethnosphere）——即人类文化思想的整体——是我们最宝贵的遗产，它包含了应对未来挑战的无限可能。然而，在一种单一的、以技术和消费为驱动的现代化模式的冲击下，这个宝库正以前所未有的速度消失。本书旨在证明，这些所谓的“古代智慧”并非过时的遗迹，而是充满活力的、应对生存挑战的复杂思想体系。重新认识它们的价值，不仅是人权问题，更是关乎我们作为一个物种能否智慧地走向未来的关键。
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="openTab(event, 'ch1')">第一章：棕鬣狗的季节</button>
+            <button class="tab-button" onclick="openTab(event, 'ch2')">第二章：寻路者</button>
+            <button class="tab-button" onclick="openTab(event, 'ch3')">第三章：巨蟒的子民</button>
+            <button class="tab-button" onclick="openTab(event, 'ch4')">第四章：神圣地理</button>
+            <button class="tab-button" onclick="openTab(event, 'ch5')">第五章：风之世纪</button>
+        </div>
+
+        <!-- Chapter 1 Content -->
+        <div id="ch1" class="tab-content active">
+             <div class="chapter-title">
+                <h3>第一章：棕鬣狗的季节</h3>
+                <p>民族圈的消亡与人类的共同起源</p>
+            </div>
+            <div class="card-grid">
+                
+                <div class="card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon viewpoint">🌍</span>
+                        <div class="card-title-wrapper">
+                            <h4 class="card-title">民族圈：人类的精神网络</h4>
+                            <span class="card-tag viewpoint">核心观点</span>
+                        </div>
+                    </div>
+                    <p class="card-summary">“民族圈”是人类想象力创造的所有思想、神话、信念和灵感的总和，它与生物圈同等重要。</p>
+                    <div class="card-details">
+                        <p>作者将民族圈定义为：</p>
+                        <ul>
+                            <li><strong>人类最伟大的遗产：</strong>它是我们梦想的产物，希望的体现，是我们作为一个物种创造力的象征。</li>
+                            <li><strong>一个精神与智慧的生命网络：</strong>它包裹着地球，为人类应对各种挑战提供了丰富的思想资源库。</li>
+                            <li><strong>正在被侵蚀：</strong>如同生物圈因栖息地破坏而衰退，民族圈也因文化同质化而正以更惊人的速度消亡。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon fact">🗣️</span>
+                         <div class="card-title-wrapper">
+                            <h4 class="card-title">语言流失：文化的警报</h4>
+                            <span class="card-tag fact">关键事实</span>
+                        </div>
+                    </div>
+                    <p class="card-summary">全球7000种语言中，有一半不再传授给下一代。语言的消亡是文化多样性崩溃的最直接指标。</p>
+                    <div class="card-details">
+                        <ul>
+                            <li><strong>惊人的速度：</strong>平均每两周，就有一位长者带着一门古老语言的最后音节逝去。这意味着在一两代人的时间内，人类将失去一半的社会、文化和知识遗产。</li>
+                            <li><strong>语言的本质：</strong>语言不仅是沟通工具，更是“思想的古老森林”，是特定文化灵魂的物质载体。肯·哈尔（Ken Hale）的名言：“失去一种语言，就像在卢浮宫投下了一颗炸弹。”</li>
+                            <li><strong>错误的统一论：</strong>作者反驳了“单一语言让世界更美好”的观点，指出这是一种文化剥夺。他质问：“如果那种通用语言是印加语或约鲁巴语呢？”</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon fact">🧬</span>
+                        <div class="card-title-wrapper">
+                            <h4 class="card-title">遗传学终结种族主义</h4>
+                            <span class="card-tag fact">关键事实</span>
+                        </div>
+                    </div>
+                    <p class="card-summary">现代遗传学（如国家地理的“基因地理计划”）证明，所有人类都源于约6万年前走出非洲的共同祖先，种族是虚构的社会概念。</p>
+                    <div class="card-details">
+                        <ul>
+                            <li><strong>基因的连续体：</strong>人类的基因是一个单一的连续体，不存在明显的基因差异界限。任何一个偏远的族群都包含了人类总基因多样性的85%。</li>
+                            <li><strong>对线性进步论的颠覆：</strong>科学证明，所有文化共享相同的原始智力。无论是用于技术创新（西方），还是用于解读神话（澳洲原住民），都只是文化选择和优先级的不同。这彻底推翻了维多利亚时代将社会划分为“野蛮”到“文明”的等级阶梯。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon fact">🏜️</span>
+                        <div class="card-title-wrapper">
+                            <h4 class="card-title">萨恩人：人类家族的根</h4>
+                             <span class="card-tag fact">案例故事</span>
+                        </div>
+                    </div>
+                    <p class="card-summary">生活在喀拉哈里沙漠的萨恩人（San people），因其基因中缺少后来迁徙人群产生的突变标记，被认为是人类家族树的“树干”，是地球上最古老的文化之一。</p>
+                    <div class="card-details">
+                        <p>他们展示了人类惊人的适应智慧：</p>
+                        <ul>
+                            <li><strong>语言的复杂性：</strong>他们的语言包含141种发音（英语为31种），被认为可能回响着语言的起源。</li>
+                            <li><strong>极限生存：</strong>在每年缺水10个月的沙漠中，他们能从树洞、植物根茎甚至动物内脏中获取水分，并在“棕鬣狗的季节”里以尿液湿润沙土、静躺不动来忍受酷热。</li>
+                            <li><strong>社会与互惠：</strong>狩猎不仅是生存技能，更是成年仪式。他们通过赠予涂有剧毒甲虫幼虫汁液的箭来建立终生的社会责任网络，这比礼物本身更重要。</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Chapter 2 Content -->
+        <div id="ch2" class="tab-content">
+             <div class="chapter-title">
+                <h3>第二章：寻路者</h3>
+                <p>波利尼西亚人的航海智慧与对“进步”的挑战</p>
+            </div>
+            <div class="card-grid">
+
+                <div class="card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon fact">⛵</span>
+                        <div class="card-title-wrapper">
+                            <h4 class="card-title">波利尼西亚奇迹：征服太平洋</h4>
+                             <span class="card-tag fact">案例故事</span>
+                        </div>
+                    </div>
+                    <p class="card-summary">波利尼西亚人仅凭石器和植物纤维，在没有现代仪器的条件下，驾驶双体船“Hokule'a”的祖先们，成功定居了地球上最广阔、最偏远的海洋。</p>
+                    <div class="card-details">
+                        <ul>
+                            <li><strong>史诗般的旅程：</strong>他们在公元前1500年左右开始，从美拉尼西亚出发，逆着盛行风，分阶段探索了夏威夷、复活节岛和新西兰构成的巨大三角区域。</li>
+                            <li><strong>对西方偏见的挑战：</strong>欧洲人长期以来用“意外漂流”（Andrew Sharp）或“南美起源”（Thor Heyerdahl的Kon-Tiki号）等理论来解释这一成就，本质上是否认了波利尼西亚人的航海能力和智慧。</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon viewpoint">🧠</span>
+                        <div class="card-title-wrapper">
+                            <h4 class="card-title">“寻路”：一门心灵的整体科学</h4>
+                             <span class="card-tag viewpoint">核心观点</span>
+                        </div>
+                    </div>
+                    <p class="card-summary">波利尼西亚的航海术是一种“寻路”（Wayfinding）艺术，它整合了所有感官和自然科学知识，是一种动态的心灵地图。</p>
+                    <div class="card-details">
+                        <p>寻路者的大脑就像一台活的计算机，持续处理着海量信息：</p>
+                        <ul>
+                            <li><strong>星辰罗盘：</strong>他们能识别220颗恒星，利用它们在东方升起和西方落下的固定方位来确定方向。</li>
+                            <li><strong>解读波浪：</strong>他们能仅凭身体感受，分辨出多达五种不同的海浪（本地风浪、远方风暴产生的涌浪等），甚至能通过海浪在岛屿周围的折射模式“感知”到地平线外的陆地。</li>
+                            <li><strong>自然的信使：</strong>云的形状和颜色、海鸟的飞行距离和归巢路线、水的盐度和温度、磷光的亮度，都是他们导航的线索。</li>
+                            <li><strong>推演定位的巅峰：</strong>整个航行基于“推演定位”（Dead Reckoning）。导航员必须在脑中时刻记住航行的起点、方向、速度和时间的每一个变化。这要求他们保持极度的专注，在整个航程中几乎不睡觉。</li>
+                        </ul>
+                        <blockquote>“如果把送人上月球的全部智慧用来理解海洋，你得到的就是波利尼西亚。”</blockquote>
+                    </div>
+                </div>
+
+                <div class="card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon viewpoint">🗿</span>
+                         <div class="card-title-wrapper">
+                            <h4 class="card-title">重新定义“文明”与“技术”</h4>
+                             <span class="card-tag viewpoint">核心观点</span>
+                        </div>
+                    </div>
+                    <p class="card-summary">寻路者的故事证明，以是否拥有金属和文字来评判文明高低是一种狭隘的偏见。</p>
+                    <div class="card-details">
+                        <ul>
+                            <li><strong>非物质的复杂性：</strong>波利尼西亚文化在航海、记忆术和社会组织方面达到了极高的复杂程度，这是一种不同于西方物质技术的智慧形式。</li>
+                            <li><strong>文化的复兴：</strong>1975年，仿古双体船Hokule'a号的建造及其在导航大师Mau Piailug指导下的成功航行，不仅证明了古代航海术的真实性，更点燃了整个波利尼西亚的文化复兴之火，帮助一个民族找回了被殖民历史所否定的自豪感。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chapter 3 Content -->
+        <div id="ch3" class="tab-content">
+             <div class="chapter-title">
+                <h3>第三章：巨蟒的子民</h3>
+                <p>亚马逊失落的文明与神话中的生态智慧</p>
+            </div>
+            <div class="card-grid">
+
+                <div class="card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon viewpoint">🌴</span>
+                        <div class="card-title-wrapper">
+                            <h4 class="card-title">亚马逊：被误解的“伪天堂”</h4>
+                            <span class="card-tag viewpoint">核心观点</span>
+                        </div>
+                    </div>
+                    <p class="card-summary">长期以来，亚马逊雨林被描绘成一个土壤贫瘠、无法支撑复杂文明的“伪天堂”，这是一个基于对幸存边缘部落研究而产生的误解。</p>
+                    <div class="card-details">
+                        <ul>
+                            <li><strong>历史的证据：</strong>最早的西班牙探险家（如奥雷利亚纳的随行修士卡瓦哈尔）记录了亚马逊河沿岸有长达数百公里的连续村庄和大型城市，但这被后世视为谎言。</li>
+                            <li><strong>考古学的颠覆：</strong>近代的考古发现，如马拉若岛上的复杂文化遗址和广泛分布的“亚马逊黑土”（Terra Preta），证明亚马逊曾是人类大规模改造和管理的景观，养活了数百万人口。</li>
+                            <li><strong>“刀耕火种”的真相：</strong>作者提出，广泛的刀耕火种农业可能是在欧洲人带来铁器后才普及的，对于只有石斧的古代人来说效率极低。古代文明可能拥有更可持续、更定居的农业模式。</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon fact">🐍</span>
+                        <div class="card-title-wrapper">
+                            <h4 class="card-title">巨蟒的子民：活着的古老文明</h4>
+                            <span class="card-tag fact">案例故事</span>
+                        </div>
+                    </div>
+                    <p class="card-summary">哥伦比亚西北亚马逊的巴拉萨纳（Barasana）等族群，其复杂的社会和宇宙观，可能是古代亚马逊大型文明的文化遗存。</p>
+                    <div class="card-details">
+                        <ul>
+                            <li><strong>创世神话与社会结构：</strong>他们的祖先乘坐巨蟒独木舟沿河而上，创造了世界。每个不同语言的部落都是同一艘独木舟上的“兄弟”，因此必须实行“语言外婚制”——男人必须娶说不同语言的女人。这创造了一个和平、多元且相互连接的巨大社会网络。</li>
+                            <li><strong>宇宙的缩影——茅草长屋（Maloca）：</strong>长屋不仅是住所，更是一个完整的宇宙模型。屋顶是天空，柱子是支撑世界的山脉，地面是尘世，地下是死亡之河。人们生活在其中，与祖先和神话共存。</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon viewpoint">🌿</span>
+                        <div class="card-title-wrapper">
+                            <h4 class="card-title">神话作为生态管理蓝图</h4>
+                            <span class="card-tag viewpoint">核心观点</span>
+                        </div>
+                    </div>
+                    <p class="card-summary">他们的宇宙观认为自然与文化是一体的，万物有灵，这种信仰体系本身就是一套精妙的生态管理法则。</p>
+                    <div class="card-details">
+                        <ul>
+                            <li><strong>万物皆为“人”：</strong>在他们的世界里，动物和植物只是另一维度的人类。因此，与自然互动必须遵循与社会交往同样的互惠和尊重原则。</li>
+                            <li><strong>萨满的职责：</strong>萨满通过仪式和饮用死藤水（Ayahuasca）进入精神世界，与动物的“主人”协商，才能进行狩猎。狩猎不是征服，而是一种神圣的交换。</li>
+                            <li><strong>生态后果：</strong>复杂的食物禁忌和对神圣地点的敬畏，客观上保护了物种的繁衍和生态系统的平衡。例如，被认为是“祖先之血”污染的河流区域禁止捕鱼，而这些地方恰好是鱼类的产卵地。他们的生活方式证明了在亚马逊实现可持续繁荣是可能的。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chapter 4 Content -->
+        <div id="ch4" class="tab-content">
+             <div class="chapter-title">
+                <h3>第四章：神圣地理</h3>
+                <p>土地是活的：不同文化对“地方”的感知</p>
+            </div>
+            <div class="card-grid">
+
+                <div class="card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon viewpoint">🏞️</span>
+                         <div class="card-title-wrapper">
+                            <h4 class="card-title">两种世界观的冲突</h4>
+                             <span class="card-tag viewpoint">核心观点</span>
+                        </div>
+                    </div>
+                    <p class="card-summary">西方文化将土地视为可供开发的惰性资源（商品），而许多原住民文化则将土地视为有生命的、神圣的、与人类意识相互作用的存在。</p>
+                    <div class="card-details">
+                        <ul>
+                            <li><strong>“神圣源头”的隐喻：</strong>作者以加拿大BC省三条大河的源头——“神圣源头”（Sacred Headwaters）面临矿业和天然气开发的威胁为例，指出我们的经济体系完全忽略了土地的内在价值和文化意义。</li>
+                            <li><strong>信念决定足迹：</strong>“一个被教导相信山是守护神的孩子，与一个被教导相信山是可以开采的岩石的孩子，将是截然不同的人。” 一种文化如何与环境互动，根本上取决于其对土地的信念和隐喻。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon fact">🏔️</span>
+                        <div class="card-title-wrapper">
+                            <h4 class="card-title">安第斯：活着的山脉</h4>
+                            <span class="card-tag fact">案例故事</span>
+                        </div>
+                    </div>
+                    <p class="card-summary">在安第斯山脉，至今仍有数百万克丘亚人相信大地（Pachamama）和山神（Apus）是活生生的、有意志的存在，人类必须通过互惠仪式来维持与它们的和谐关系。</p>
+                    <div class="card-details">
+                        <ul>
+                            <li><strong>古柯叶的交流：</strong>交换三片完美的古柯叶（k'intu），并向山神吹送其精华（phukuy），是日常生活中最基本的与神圣地理沟通的方式。</li>
+                            <li><strong>雪星节（Qoyllur Rit'i）：</strong>这是一个大规模的朝圣活动，数万名朝圣者前往神圣的西纳卡拉山谷。装扮成熊的舞者（ukukus）会攀登冰川，将十字架放置其中，汲取山的力量，再带回象征生命之源的冰块。这是一种人与神、生与死、水与山之间的宏大能量交换。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon fact">🏛️</span>
+                        <div class="card-title-wrapper">
+                            <h4 class="card-title">内华达山脉的“兄长”</h4>
+                            <span class="card-tag fact">案例故事</span>
+                        </div>
+                    </div>
+                    <p class="card-summary">哥伦比亚内华达山脉的科吉（Kogi）等原住民自视为世界的“兄长”（Elder Brothers），他们的使命是通过仪式和冥想来维持整个地球的宇宙平衡。</p>
+                    <div class="card-details">
+                        <ul>
+                            <li><strong>世界的心脏：</strong>他们认为他们的山脉是“世界的心脏”，是地球能量的中心。</li>
+                            <li><strong>Aluna：精神现实：</strong>他们相信存在一个名为“Aluna”的精神层面，它是物质世界的思想和源头。现实世界是Aluna的显化。</li>
+                            <li><strong>祭司的修行：</strong>他们的祭司（Mamos）要经历长达18年的黑暗修行，象征着在子宫内的孕育，学习维系世界平衡的知识。他们的祈祷和仪式是为了治愈整个地球，包括“弟弟们”（指现代人）造成的破坏。</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon viewpoint">🌌</span>
+                        <div class="card-title-wrapper">
+                            <h4 class="card-title">澳洲的“梦创时代”：静止的哲学</h4>
+                            <span class="card-tag viewpoint">核心观点</span>
+                        </div>
+                    </div>
+                    <p class="card-summary">澳洲原住民的“梦创时代”（The Dreaming）是一种深刻的哲学，它超越了线性的时间概念，认为人类的责任是维持世界的初始状态，而非改变它。</p>
+                    <div class="card-details">
+                        <ul>
+                            <li><strong>歌之径（Songlines）：</strong>这是创世祖先在行走和歌唱中创造世界的路径。它既是地图，也是历史，更是连接所有土地和人民的神圣网络。</li>
+                            <li><strong>战胜历史：</strong>他们的世界观里没有过去、现在和未来的区分，只有一个永恒的“当下”。人类不是历史的推动者，而是宇宙秩序的维持者。这种对“静止”和“平衡”的极致追求，是与西方“进步”观念完全不同的智慧体系。</li>
+                            <li><strong>深度的连接：</strong>在这种哲学下，人与土地的关系不是拥有，而是相互依存、共同创造。土地的存续依赖于人的仪式，人的存续则依赖于土地。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chapter 5 Content -->
+        <div id="ch5" class="tab-content">
+             <div class="chapter-title">
+                <h3>第五章：风之世纪</h3>
+                <p>权力的面孔、文化的崩溃与未来的希望</p>
+            </div>
+            <div class="card-grid">
+
+                <div class="card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon viewpoint">💥</span>
+                        <div class="card-title-wrapper">
+                            <h4 class="card-title">权力：文化消亡的根源</h4>
+                            <span class="card-tag viewpoint">核心观点</span>
+                        </div>
+                    </div>
+                    <p class="card-summary">作者明确指出，文化消亡并非自然的“优胜劣汰”，而是权力——尤其是殖民主义、极端意识形态和全球化发展模式——的直接后果。</p>
+                    <div class="card-details">
+                        <ul>
+                            <li><strong>文化灭绝 (Ethnocide)：</strong>不同于种族灭绝（genocide），文化灭绝是指摧毁一个民族的生活方式。这种行为常常被包裹在“发展”、“进步”或“文明开化”的外衣下，使其看似合理，实则残忍。</li>
+                            <li><strong>历史的伤痕：</strong>从美国政府屠杀野牛以摧毁平原印第安文化，到法国殖民者禁止波利尼西亚的一切传统，再到红色高棉和毛泽东的文化清洗，历史反复上演着以某种单一意识形态摧毁文化多样性的悲剧。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon fact">🌳</span>
+                        <div class="card-title-wrapper">
+                            <h4 class="card-title">佩南人的悲剧：一代人的沦陷</h4>
+                             <span class="card-tag fact">案例故事</span>
+                        </div>
+                    </div>
+                    <p class="card-summary">婆罗洲的佩南（Penan）游牧民族，其与森林共生的、以分享为核心的文化，在短短一代人的时间里，被商业伐木的推土机彻底摧毁。</p>
+                    <div class="card-details">
+                        <ul>
+                            <li><strong>分享的文化：</strong>在佩南语中没有“谢谢”，因为分享是义务。他们最大的罪行是“sihun”——未能分享。他们无法理解一个富裕社会为何会存在无家可归者，因为在他们看来，“一个穷人是我们所有人的耻辱”。</li>
+                            <li><strong>“发展”的代价：</strong>政府官员声称要将他们带入“现代社会”，摆脱“半饥饿、疾病缠身”的生活。然而，佩南领袖在联合国的发言揭示了真相：“你们所谓的进步对我们只意味着饥饿、依赖、无助和我们文化的毁灭。”</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon viewpoint">⚠️</span>
+                        <div class="card-title-wrapper">
+                            <h4 class="card-title">文化：抵御野蛮的最后屏障</h4>
+                             <span class="card-tag viewpoint">核心观点</span>
+                        </div>
+                    </div>
+                    <p class="card-summary">文化不仅仅是装饰或习俗，它是一个赋予生命意义、提供道德准则的保护毯。当文化崩溃时，社会往往会陷入极端和野蛮。</p>
+                    <div class="card-details">
+                        <ul>
+                            <li><strong>失序的后果：</strong>作者认为，当人们被从传统中连根拔起，被抛入一个无法融入的未来时，极端的“复兴运动”就会出现。这些运动往往是致命的，如柬埔寨的红色高棉、利比里亚的童子军军阀，以及基地组织等。</li>
+                            <li><strong>全球化的阴影：</strong>对于世界上大多数人来说，全球化并未带来繁荣，而是将他们卷入一个看不见尽头的经济阶梯的底层，导致大规模的城市化贫民窟和地缘政治的不稳定。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card" onclick="toggleCard(this)">
+                    <div class="card-header">
+                        <span class="card-icon viewpoint">🌏</span>
+                        <div class="card-title-wrapper">
+                            <h4 class="card-title">希望在于多样性</h4>
+                            <span class="card-tag viewpoint">核心观点</span>
+                        </div>
+                    </div>
+                    <p class="card-summary">面对气候变化等全球性危机，古代智慧的存在本身就是希望，因为它证明了人类有其他的生存方式和价值选择。</p>
+                    <div class="card-details">
+                        <ul>
+                            <li><strong>危机的根源：</strong>气候变化是我们这种将“在有限地球上实现无限增长”作为唯一目标的特定世界观的必然结果。</li>
+                            <li><strong>因纽特人的前线：</strong>因纽特人是气候变化最早的受害者和观察者。他们的冰上生存智慧和坚韧精神，以及他们新获得的政治实体“努纳武特”，都展示了文化在适应和应对危机中的力量。</li>
+                            <li><strong>我们必须改变：</strong>这些文化提醒我们，我们当前的生活方式不是唯一的，也不是最优的。它们的存在本身就是对“我们别无选择”这一悲观论调最有力的反驳。保护民族圈，就是为人类的未来保留更多的可能性。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>这是一个根据Wade Davis的《寻路者》制作的深度交互式摘要。所有观点和事实均提炼自原书。</p>
+            <p>制作于2025年</p>
+        </footer>
+    </div>
+
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tabbuttons;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+                tabcontent[i].classList.remove('active');
+            }
+            tabbuttons = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tabbuttons.length; i++) {
+                tabbuttons[i].classList.remove('active');
+            }
+            const activeTab = document.getElementById(tabName);
+            activeTab.style.display = "block";
+            // A tiny delay to allow the display property to apply before adding the animation class
+            setTimeout(() => {
+                activeTab.classList.add('active');
+            }, 10);
+            evt.currentTarget.classList.add('active');
+        }
+
+        function toggleCard(cardElement) {
+            cardElement.classList.toggle('expanded');
+        }
+        
+        // Ensure the first tab is active on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('.tab-button').click();
+        });
+    </script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_wayfinders_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
