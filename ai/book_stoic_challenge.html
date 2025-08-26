@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《斯多葛挑战》- 动态交互核心摘要（详细版）</title>
+    <style>
+        :root {
+            --primary-text: #343a40;
+            --secondary-text: #495057;
+            --background: #f8f9fa;
+            --main-bg: #ffffff;
+            --border-color: #dee2e6;
+            --accent-blue: #4dabf7;
+            --accent-blue-light: #e7f5ff;
+            --accent-yellow: #ffd43b;
+            --accent-yellow-light: #fff9db;
+            --accent-green: #20c997;
+            --accent-green-light: #e6fcf5;
+            --header-bg: #f1f3f5;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.8;
+            background-color: var(--background);
+            color: var(--primary-text);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: var(--main-bg);
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
+            overflow: hidden;
+        }
+
+        header {
+            padding: 30px;
+            background-color: var(--accent-blue-light);
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            margin: 0;
+            color: var(--accent-blue);
+            font-size: 2.2em;
+        }
+
+        header p {
+            margin: 5px 0 0;
+            color: var(--secondary-text);
+            font-size: 1.1em;
+        }
+
+        main {
+            padding: 20px 30px 30px 30px;
+        }
+
+        .intro, .part-title {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .part-title {
+            font-size: 1.8em;
+            color: var(--primary-text);
+            margin-top: 40px;
+            border-bottom: 2px solid var(--accent-green);
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+        
+        .intro p {
+            font-size: 1.1em;
+            color: var(--secondary-text);
+        }
+
+        details {
+            background-color: var(--main-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 1em;
+            transition: all 0.3s ease-in-out;
+        }
+        
+        details:hover {
+            border-color: var(--accent-blue);
+        }
+
+        summary {
+            font-size: 1.2em;
+            font-weight: 600;
+            padding: 1em;
+            cursor: pointer;
+            background-color: var(--header-bg);
+            list-style: none; /* 移除默认箭头 */
+            position: relative;
+            transition: background-color 0.2s;
+        }
+        
+        summary:hover {
+            background-color: #e9ecef;
+        }
+        
+        summary::-webkit-details-marker {
+            display: none; /* 隐藏 Webkit 默认箭头 */
+        }
+        
+        summary::after { /* 自定义箭头 */
+            content: '＋';
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.4em;
+            color: var(--accent-blue);
+            transition: transform 0.3s;
+        }
+        
+        details[open] > summary::after {
+            content: '－';
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        details[open] {
+            border-color: var(--accent-blue);
+        }
+        
+        details[open] > summary {
+            background-color: var(--accent-blue-light);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .content {
+            padding: 1.5em;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .highlight-fact {
+            background-color: var(--accent-blue-light);
+            border-left: 5px solid var(--accent-blue);
+            padding: 1em;
+            margin: 1em 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .highlight-opinion {
+            background-color: var(--accent-yellow-light);
+            border-left: 5px solid var(--accent-yellow);
+            padding: 1em;
+            margin: 1em 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .action-guide {
+            background-color: var(--accent-green-light);
+            border: 1px solid var(--accent-green);
+            padding: 1.2em;
+            margin-top: 1.5em;
+            border-radius: 8px;
+        }
+        
+        .action-guide h4 {
+            color: #087f5b;
+            margin-top: 0;
+            font-size: 1.1em;
+        }
+        
+        ul, ol {
+            padding-left: 20px;
+        }
+        
+        li {
+            margin-bottom: 0.8em;
+        }
+
+        strong {
+            color: var(--accent-blue);
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>《斯多葛挑战》</h1>
+            <p>作者：威廉·B·欧文 | 核心要点与行动指南（详细版）</p>
+        </header>
+
+        <main>
+            <section class="intro">
+                <h2>核心理念：将挫折转化为内在力量的游戏</h2>
+                <p>本书的核心是<strong>斯多葛测试策略</strong>：当面对生活中的挫折时，主动将其“重构”为一场由想象中的“斯多葛众神”为你量身定制的考验。这个心理游戏的最终目的不是为了消除所有情绪，而是为了<strong>最小化破坏性的负面情绪</strong>（如愤怒、沮丧、嫉妒），同时<strong>培养坚韧、平静和内在的喜悦</strong>。这不是宿命论的消极忍受，而是一种主动、乐观、充满力量的生活哲学。</p>
+            </section>
+
+            <div class="part-title-wrapper" style="text-align:center;"><h3 class="part-title">第一部分：理解生活的挑战</h3></div>
+
+            <details>
+                <summary>第一章：挫折——当事情变糟时</summary>
+                <div class="content">
+                    <h4>核心要点：</h4>
+                    <ul>
+                        <li><strong>挫折的定义：</strong> 任何打断你平稳生活、迫使你改变计划的意外事件。其范围极广，从生活琐事（堵车）到人生巨变（失业、丧亲）都算。</li>
+                        <li><strong>挫折的来源：</strong>
+                            <ol>
+                                <li><strong>自然：</strong> 如恶劣天气、意外事故。</li>
+                                <li><strong>他人：</strong> 可能是无意的（服务员上错菜），也可能是故意的（职场倾轧）。</li>
+                                <li><strong>自己：</strong> 这是最常被忽略但最关键的一点。很多挫折源于我们自己的规划不周、选择不当或缺乏远见。</li>
+                            </ol>
+                        </li>
+                        <li><strong>挫折与欲望的关系：</strong> 一件事是否构成挫折，完全取决于你的欲望和期望。比如，六岁时掉牙是惊喜（有牙仙子），婚礼当天掉牙则是灾难。这意味着，管理好欲望，就能从根本上减少挫折感。</li>
+                        <li class="highlight-fact"><strong>挫折的双重成本：</strong> 这是本章最重要的概念。
+                            <ul>
+                                <li><strong>物理成本：</strong> 解决问题所需的实际代价，如时间、金钱、精力。</li>
+                                <li><strong>情感成本：</strong> 伴随挫折而来的愤怒、焦虑、沮丧等负面情绪。作者强调，<strong>对大多数人来说，情感成本远超物理成本，是痛苦的主要根源。</strong></li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <div class="action-guide">
+                        <h4>行动指南：开启你的“挫折日记”</h4>
+                        <p>准备一个本子，或在手机备忘录中，记录下你每天遇到的挫折。每一条记录包含：</p>
+                        <ol>
+                            <li><strong>事件描述：</strong> 发生了什么？</li>
+                            <li><strong>来源分析：</strong> 是谁或什么造成的？（对自己诚实）</li>
+                            <li><strong>物理成本：</strong> 我为此付出了什么实际代价？</li>
+                            <li><strong>情感成本：</strong> 这件事让我产生了什么情绪？这种情绪持续了多久？</li>
+                        </ol>
+                        <p>坚持一周，你将清晰地看到，真正消耗你的并非事件本身，而是你的情绪反应。这是启动改变的第一步。</p>
+                    </div>
+                </div>
+            </details>
+
+            <details>
+                <summary>第二章：愤怒问题</summary>
+                <div class="content">
+                    <h4>核心要点：</h4>
+                    <ul>
+                        <li><strong>愤怒是默认的、有害的反应：</strong> 对很多人来说，遭遇挫折后的第一反应是沮丧，并迅速升级为愤怒。这种反应几乎是自动的。</li>
+                        <li><strong>愤怒的本质是“反快乐”：</strong> 愤怒与幸福是完全不相容的。当你愤怒时，你不可能感到快乐或平静。</li>
+                        <li><strong>愤怒的传染性：</strong> 愤怒会通过抱怨和寻求“共情”而传播。我们希望别人和我们一样愤怒，但这只是将一个人的痛苦变成了两个人的痛苦，于事无补。</li>
+                        <li class="highlight-opinion"><strong>塞涅卡的智慧：</strong> 古罗马斯多葛哲学家塞涅卡在《论愤怒》中写道：<strong>“没有哪种瘟疫给人类带来过更大的损失。”</strong> 愤怒是个人冲突、家庭破裂乃至国家战争的根源。</li>
+                        <li><strong>斯多葛的解决方案：预防而非管理。</strong> 传统方法教我们如何“管理”愤怒，而斯多葛哲学追求的是从一开始就“阻止”愤怒的产生。作者通过自己在诊所等候的经历，领悟到可以通过理性思考（“生气只会伤害我自己，毫无用处”）来阻止愤怒的萌发。</li>
+                    </ul>
+                    <div class="action-guide">
+                        <h4>行动指南：观察并质疑你的愤怒</h4>
+                        <p>下次当你感到愤怒时（尤其是在无法改变的情况下，如交通堵塞、网络延迟），暂停一下，问自己三个问题：</p>
+                        <ol>
+                            <li>我的愤怒能解决问题吗？</li>
+                            <li>这种情绪现在让我感觉更好还是更糟？</li>
+                            <li>除了伤害我自己，这种愤怒还有什么实际作用吗？</li>
+                        </ol>
+                        <p>仅仅是提出这些问题，就能在你的自动情绪反应中插入一个理性的“断路器”。</p>
+                    </div>
+                </div>
+            </details>
+            
+            <details>
+                <summary>第三、四章：韧性与后天习得</summary>
+                <div class="content">
+                    <h4>核心要点：</h4>
+                    <ul>
+                        <li><strong>韧性的典范（第三章）：</strong> 本章通过一系列震撼人心的真实故事，展示了人类精神力量的极限。
+                            <ul>
+                                <li><strong>宇航员阿姆斯特朗：</strong> 在坠毁训练机、死里逃生后，他只是平静地回到办公室继续工作，仿佛什么都没发生。</li>
+                                <li><strong>冲浪手贝瑟尼·汉密尔顿：</strong> 被鲨鱼咬断手臂后，她没有沉溺于自怜，而是迅速思考“如何用一只手臂冲浪”，并最终重返职业赛场。</li>
+                                <li><strong>其他案例：</strong> 包括幸存暴力袭击的艾莉森·博塔、因癌症失声的影评人罗杰·埃伯特、患上“渐冻症”的棒球手卢·格里格和物理学家史蒂芬·霍金等。他们共同的特点是：<strong>专注于可控的部分，并以惊人的勇气和创造力应对不可控的现实。</strong></li>
+                            </ul>
+                        </li>
+                        <li class="highlight-fact"><strong>核心论证：韧性是一种可以后天习得的技能（第四章）。</strong> 作者反驳了“韧性是天生的”这一观点。
+                            <ul>
+                                <li><strong>历史证据：</strong> 经历过二战轰炸的伦敦人普遍表现出“保持冷静，继续前进”的坚韧，而他们的后代在和平富足的环境下，韧性却普遍下降。这证明韧性受环境和训练的影响。</li>
+                                <li><strong>现代社会对韧性的侵蚀：</strong>
+                                    <ul>
+                                        <li><strong>受害者心态：</strong> 将自己视为不公的“受害者”而非“目标”。受害者是被动的、无力的；而目标是可以反击的、主动的。</li>
+                                        <li><strong>过度保护的养育方式：</strong> “直升机父母”为孩子扫清一切障碍，剥夺了他们从失败和挫折中学习和成长的机会，导致他们长大后变得“情绪脆弱”。</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <div class="highlight-opinion">
+                        <h4>关键启示：</h4>
+                        <p>既然韧性是一种技能，而非天赋，这意味着<strong>无论你现在感觉多么脆弱，你都有能力通过刻意练习，变得更加坚韧、平静和强大。</strong> 这为本书后续提出的所有策略提供了根本的希望和理论基础。</p>
+                    </div>
+                </div>
+            </details>
+
+            <div class="part-title-wrapper" style="text-align:center;"><h3 class="part-title">第二部分：挫折背后的心理学</h3></div>
+
+            <details>
+                <summary>第五、六、七章：心理学三大基石</summary>
+                <div class="content">
+                    <h4>1. 你有两种心智（第五章）</h4>
+                    <ul>
+                        <li><strong>意识心智：</strong> 像一个理性的骑手。它负责逻辑分析、长期规划和自我反思。</li>
+                        <li><strong>潜意识心智：</strong> 像一头情绪化的大象。它充满直觉、欲望和古老的生存本能。它反应迅速，力量强大，并且在面对挫折时，会<strong>自动将事件解读为威胁或不公，并启动“指责模式”</strong>，从而点燃负面情绪。</li>
+                        <li><strong>斯多葛策略的本质：</strong> 在“大象”开始狂奔之前，由“骑手”主动给它指明一个更有利的方向。即用意识心智，抢在潜意识的自动反应之前，为挫折赋予一个全新的、建设性的解释。</li>
+                    </ul>
+                    
+                    <h4>2. 锚定效应与消极想象（第六章）</h4>
+                    <ul>
+                        <li><strong>锚定效应：</strong> 心理学实验证明，人们的判断极易受一个初始信息（“锚”）的影响，即使这个信息毫无关联。</li>
+                        <li class="highlight-opinion"><strong>斯多葛的应用——消极想象：</strong> 这是一种主动设置“坏”锚点的强大心理工具。
+                            <ul>
+                                <li><strong>操作方法：</strong> 短暂地、清醒地想象失去你现在所拥有的东西——你的健康、你的工作、你所爱的人。这并非让你沉溺于悲伤，而是通过与一个更差的可能性进行对比，来<strong>重新点燃你对现状的感激之情</strong>。</li>
+                                <li><strong>效果：</strong> 它可以有效对抗“享乐适应”（即对拥有的一切习以为常），让我们从日常生活中发现更多的喜悦。</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <div class="action-guide">
+                        <h4>行动指南：实践“消极想象”</h4>
+                        <p>每天选择一件事物进行练习。例如，在与家人共进晚餐时，花三秒钟想：“如果这一刻无法重来，会是怎样的感觉？”然后迅速回到当下，更深刻地体会此刻的温馨。这个练习成本为零，效果却非常显著。</p>
+                    </div>
+
+                    <h4>3. 框架效应与重构游戏（第七章）</h4>
+                    <ul>
+                        <li><strong>框架效应：</strong> 这是本书最核心的工具。同一件事，用不同的语言或视角（框架）来描述，会引发截然不同的情绪和行为。例如，“90%的存活率”比“10%的死亡率”听起来更让人安心，尽管它们是同一回事。</li>
+                        <li class="highlight-fact"><strong>斯多葛的核心信条：真正困扰我们的，不是事情本身，而是我们对事情的看法（判断）。</strong> 这意味着我们拥有改变自己情绪反应的主动权。</li>
+                        <li><strong>可供选择的替代框架：</strong>
+                            <ul>
+                                <li><strong>无能框架：</strong> 对方不是坏，可能只是能力不足或犯了错。这会引发同情而非愤怒。</li>
+                                <li><strong>故事框架：</strong> “这会让我的个人故事增添一个有趣的波折。”把自己的人生看作一部小说，挫折是让情节更精彩的必要元素。</li>
+                                <li><strong>幽默框架：</strong> 发现情况中的荒谬之处并一笑置之。作者举例，一群澳大利亚游客因洪水被困，他们的反应是：“那我们去喝点啤酒吧！” 幽默能瞬间化解紧张。</li>
+                                <li><strong>游戏框架：</strong> 把挫折看作游戏中的一个关卡。就像马里奥遇到蘑菇，你需要跳过去。这能激发我们的好胜心和解决问题的乐趣。</li>
+                                <li><strong>终极框架——斯多葛测试框架：</strong> 这是以上所有框架的集大成者，也是本书的核心策略。</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </details>
+            
+            <div class="part-title-wrapper" style="text-align:center;"><h3 class="part-title">第三部分：如何参加斯多葛测试</h3></div>
+
+            <details>
+                <summary>第九、十章：斯多葛测试策略与五秒法则</summary>
+                <div class="content">
+                    <h4>斯多葛测试策略详解（第九章）</h4>
+                    <ul>
+                        <li><strong>谁是测试者？</strong> 想象中的“斯多葛众神”。他们不是要惩罚你，而是像严格而慈爱的教练，通过设置障碍来帮助你成长，发掘你的潜力。如果你有宗教信仰，也可以将其视为上帝或安拉的考验。这个“测试者”是一个心理工具，其真实性并不重要。</li>
+                        <li><strong>测试的目的：</strong> 锻炼你的美德（智慧、勇气、自制、正义），让你成为一个更优秀的人。</li>
+                        <li><strong>如何给自己打分？</strong> 测试有两个评分维度：
+                            <ol>
+                                <li><strong>解决方案的质量（ workaround grade）：</strong> 你是否冷静、理智、有创造性地找到了最佳的解决方案？</li>
+                                <li><strong>情绪反应的质量（emotional-response grade，更重要！）：</strong> 在整个过程中，你是否保持了内心的平静和风度？仅仅保持冷静可得B。如果能从挑战中感到一丝兴奋和乐趣，那么你将获得A+。</li>
+                            </ol>
+                        </li>
+                    </ul>
+
+                    <h4>关键行动：五秒法则（第十章）</h4>
+                    <div class="highlight-fact">
+                        <p><strong>核心观点：</strong> 当挫折发生时，你大约只有<strong>五秒钟</strong>的时间来启动“斯多葛测试”框架。这是一个关键的反应窗口期。</p>
+                        <ul>
+                            <li><strong>工作原理：</strong> 我们的潜意识反应非常迅速。一旦超过五秒，负面情绪（愤怒、沮丧）的“洪水”就会被释放，这时再去控制就非常困难了。</li>
+                            <li><strong>与传统方法的区别：</strong> 传统方法（如“深呼吸，从1数到10”）是<strong>情绪管理</strong>，即在情绪已经发生后试图平息它。而<strong>“五秒法则”是情绪预防</strong>，即在情绪的火花点燃之前就将其熄灭。</li>
+                            <li><strong>进化心理学解释：</strong> 我们大脑的“原始操作系统”在面对威胁时会立即启动“战斗或逃跑”反应。斯多葛测试策略是一种现代的、有意识的“软件补丁”，用于覆盖这个过时的自动程序。</li>
+                        </ul>
+                    </div>
+                     <div class="action-guide">
+                        <h4>行动指南：将“五秒法则”内化为本能</h4>
+                        <p>从今天起，每当遇到任何小挫折——洒了咖啡、电脑死机、别人插队——立刻在心中对自己大喊一声：<strong>“游戏开始！这是一个斯多葛测试！”</strong> 将其变成一种新的、积极的条件反射，覆盖掉旧的、消极的反应模式。</p>
+                    </div>
+                </div>
+            </details>
+
+            <div class="part-title-wrapper" style="text-align:center;"><h3 class="part-title">第四部分：过一种斯多葛式的生活</h3></div>
+
+            <details>
+                <summary>第十一、十二章：为测试学习 & 拥抱“失败”</summary>
+                <div class="content">
+                    <h4>为斯多葛测试而学习（第十一章）</h4>
+                    <ul>
+                        <li><strong>斯多葛冒险：</strong> 这是主动的“实战演习”。你不是等待挫折发生，而是主动将自己置于可能发生意外的挑战性环境中。这能让你在相对可控的条件下，练习应对挫折的“肌肉”。
+                            <ul>
+                                <li><strong>例子：</strong> 学习一门新乐器、去一个陌生国家旅行、参加一项竞技体育（作者以自己学习赛艇为例）。</li>
+                            </ul>
+                        </li>
+                        <li><strong>战胜“懒惰的比尔”：</strong> 作者将内心那个劝你放弃、寻求安逸的声音称为“懒惰的比尔”。“斯多葛冒险”是战胜这个声音的绝佳训练场，培养你“再多划一下”的毅力。</li>
+                    </ul>
+
+                    <h4>拥抱“失败”（第十二章）</h4>
+                    <ul>
+                        <li><strong>失败是成功的必要成分：</strong> 书中列举了戴森吸尘器（5000多次失败）、《飘》的出版（被拒38次）等例子，说明没有哪个重大成就是一蹴而就的。</li>
+                        <li class="highlight-opinion"><strong>重构“失败”：将“挫折”视为“障碍”。</strong>
+                            <ul>
+                                <li><strong>挫折（Setback）：</strong> 带有意外和负面的意味。</li>
+                                <li><strong>障碍（Obstacle）：</strong> 是可预见的、游戏路线图上的一部分。就像参加障碍赛跑，你知道前面有高墙和泥潭，它们是比赛的一部分，而不是意外。</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <div class="action-guide">
+                        <h4>行动指南：将你的大目标“障碍化”</h4>
+                        <p>选择一个让你感到畏惧的大目标（如创业、写一本书）。不要把它看成一个整体，而是将其分解成一长串具体的、可执行的“障碍清单”。例如，“写一本书”可以分解为“完成资料搜集”、“写出大纲”、“完成第一章草稿”…… 专注于攻克眼前的这个小障碍，你会发现整个旅程变得清晰而可行。</p>
+                    </div>
+                </div>
+            </details>
+            
+            <details>
+                <summary>第十三、十四、十五章：高级挑战</summary>
+                <div class="content">
+                    <h4>坚韧训练：扩展你的舒适区（第十三章）</h4>
+                    <ul>
+                        <li><strong>与“斯多葛冒险”的区别：</strong> 冒险是为了应对“意外”，而坚韧训练是为了主动、可预见地体验不适，从而让更多曾经的不适变得舒适。</li>
+                        <li><strong>目的：</strong> 扩大你的舒适区，让你在更多环境下都能保持从容。如果习惯了冲冷水澡，那么酒店热水器坏了对你来说就不算什么大事。</li>
+                        <li><strong>训练方法（自愿不适）：</strong>
+                            <ul>
+                                <li><strong>身体上：</strong> 体验轻微的冷、热、饿。例如，少穿一件外套出门，尝试间歇性禁食。</li>
+                                <li><strong>心理上：</strong> 主动做一些让你感到轻微社交恐惧或尴尬的事情，如主动与陌生人攀谈。</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <h4>“圈套”：当事情变得异常顺利时（第十四章）</h4>
+                    <ul>
+                        <li><strong>定义：</strong> 指生活先给你巨大的好运，让你飘飘然，然后再给你致命一击。这种先扬后抑的挫折最具破坏力。作者用自己误以为赢得赛艇金牌后又被取消资格的经历来说明。</li>
+                        <li><strong>心理根源：</strong> 这与古希腊的“狂妄”（Hubris）概念有关。过度的幸运会让我们自大，忘记世事无常，从而在逆转来临时毫无防备。</li>
+                        <li class="highlight-opinion"><strong>应对之道：对好运保持谦逊和平常心。</strong> 当你成功时，将其归功于运气，而非完全是自己的能力。这样，当好运离去时，你的心态落差会小很多，也更容易保持平静。</li>
+                    </ul>
+
+                    <h4>死亡：你的结业考试（第十五章）</h4>
+                    <ul>
+                        <li><strong>斯多葛对死亡的态度：</strong> 死亡是生命中最大、最终极的挫折，也是对你斯多葛修行的“结业考试”。我们不应回避它，而应通过冥想来为之准备。</li>
+                        <li><strong>死亡冥想的技巧：</strong>
+                            <ul>
+                                <li><strong>最后一次冥想：</strong> 在做任何日常小事时，提醒自己：“这可能是我最后一次做这件事了。” 这能为平凡的瞬间注入深刻的意义和价值。</li>
+                                <li><strong>前瞻性回溯：</strong> 想象未来的你（可能年老、病弱）会多么渴望能回到现在这个充满活力的时刻。你会意识到，<strong>你此刻正活在未来自己的梦想里。</strong></li>
+                            </ul>
+                        </li>
+                        <li><strong>“生命是一本小说”的比喻：</strong> 你每天都在为这本小说写新的一页。你不知道编辑（死神）何时会收稿。因此，你的任务是确保无论在哪一页结束，这都是一本尽可能完整、没有重大遗憾的好书。</li>
+                    </ul>
+                </div>
+            </details>
+
+        </main>
+    </div>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_stoic_challenge_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
