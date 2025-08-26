@@ -1,348 +1,570 @@
-# 快捷分享HTML应用
+# 小布工具集 🚀
 
-一个用于快速分享HTML文件的macOS桌面应用，能够将HTML文件复制到Git仓库并推送到服务器，然后生成可分享的链接。
+一个功能丰富的文件分享与管理工具集，包含HTML快捷分享应用和高性能文件服务器。
 
-## 功能特点
+## 📋 项目概述
 
-- 支持在Finder中右键选择以"打开方式"打开HTML文件
-- 允许用户自定义本地Git仓库路径
-- 允许用户自定义分享脚本路径
-- 允许用户自定义网站地址
-- 提供日志查看功能，方便排查问题
-- 自动复制分享链接到剪贴板
+本项目提供两个核心工具：
+- **快捷分享HTML应用**: macOS原生桌面应用，用于快速分享HTML文件到Git仓库
+- **文件服务器**: 高性能Python文件服务器，支持大文件传输和断点续传
 
-## 依赖项
+---
 
-- Python 3.6+
-- PyQt5
+# 🌐 快捷分享HTML应用
 
-## 安装依赖
+一个专为macOS设计的桌面应用程序，能够将HTML文件快速复制到Git仓库并推送到服务器，然后生成可分享的链接。
+
+## ✨ 主要特性
+
+- 🖱️ **Finder集成**: 支持右键"打开方式"直接分享HTML文件
+- ⚙️ **灵活配置**: 自定义本地Git仓库路径、分享脚本路径和网站地址
+- 📋 **自动复制**: 分享链接自动复制到剪贴板
+- 📊 **日志查看**: 完整的操作日志，便于问题排查
+- 🎨 **现代界面**: 基于PyQt5的原生macOS界面
+
+## 📦 系统要求
+
+- **操作系统**: macOS 10.12+
+- **Python版本**: Python 3.6+
+- **依赖库**: PyQt5
+
+## 🛠️ 安装指南
+
+### 1. 安装依赖
 
 ```bash
 pip3 install -r requirements.txt
 ```
 
-## 使用方法
-
-1. 直接运行脚本：
+### 2. 验证安装
 
 ```bash
-python3 sharehtml.py
+python3 sharehtml.py --help
 ```
 
-2. 或者通过命令行参数指定HTML文件：
+## 🚀 使用方法
+
+### 直接运行
 
 ```bash
+# 启动应用程序
+python3 sharehtml.py
+
+# 指定HTML文件
 python3 sharehtml.py /path/to/your/file.html
 ```
 
-3. 也可以将应用打包为macOS应用程序，然后在Finder中右键HTML文件，选择"打开方式"，选择快捷分享HTML.app进行打开。
+### 打包为macOS应用
 
-## 打包为应用程序
+#### 方法一：使用PyInstaller（推荐）
 
-有两种方法可以将脚本打包为macOS应用程序：
+1. **安装打包工具**
+   ```bash
+   pip3 install pyinstaller pillow
+   ```
 
-### 使用PyInstaller方法（推荐）
+2. **创建应用图标**（可选）
+   ```bash
+   python3 -c "from PIL import Image, ImageDraw; img = Image.new('RGB', (512, 512), color='blue'); draw = ImageDraw.Draw(img); draw.rectangle([100, 100, 412, 412], fill='white'); img.save('icon.png')"
+   python3 -c "from PIL import Image; img = Image.open('icon.png'); img.save('appicon.icns')"
+   ```
 
-1. 安装PyInstaller和Pillow：
+3. **构建应用**
+   ```bash
+   pyinstaller "快捷分享HTML.spec"
+   ```
 
-```bash
-pip3 install pyinstaller pillow
-```
+4. **安装到应用程序文件夹**
+   ```bash
+   cp -r "dist/快捷分享HTML.app" ~/Applications/
+   ```
 
-2. 创建一个简单的图标文件（如果没有）：
+#### 方法二：使用py2app
 
-```bash
-python3 -c "from PIL import Image, ImageDraw; img = Image.new('RGB', (512, 512), color='blue'); draw = ImageDraw.Draw(img); draw.rectangle([100, 100, 412, 412], fill='white'); img.save('icon.png')"
-python3 -c "from PIL import Image; img = Image.open('icon.png'); img.save('appicon.icns')"
-```
+1. **安装py2app**
+   ```bash
+   pip3 install py2app
+   ```
 
-3. 使用提供的spec文件构建应用程序：
+2. **构建应用**
+   ```bash
+   python3 setup.py py2app
+   ```
 
-```bash
-pyinstaller "快捷分享HTML.spec"
-```
+## ⚙️ 文件关联设置
 
-4. 构建好的应用程序位于`dist/快捷分享HTML.app`目录中。
-
-5. 复制到Applications文件夹：
-
-```bash
-cp -r "dist/快捷分享HTML.app" ~/Applications/
-```
-
-### 使用py2app方法
-
-1. 安装py2app：
-
-```bash
-pip3 install py2app
-```
-
-2. 构建应用程序：
-
-```bash
-python3 setup.py py2app
-```
-
-构建成功后，应用程序位于`dist/快捷分享HTML.app`目录中。
-
-## 文件关联设置
-
-应用程序已经配置为可以打开HTML文件。要关联HTML文件类型，请执行以下步骤：
-
-1. 在Finder中找到一个HTML文件，右键点击
-2. 选择"打开方式" > "其他..."
-3. 在应用程序列表中找到并选择"快捷分享HTML"
-4. 勾选"始终使用此应用打开"选项
+1. 在Finder中右键点击HTML文件
+2. 选择"打开方式" → "其他..."
+3. 选择"快捷分享HTML"应用
+4. 勾选"始终使用此应用打开"
 5. 点击"打开"
 
-现在，所有的HTML文件都将默认使用"快捷分享HTML"应用程序打开。
-
-## 已知问题及解决方法
+## 🔧 常见问题解决
 
 ### Carbon框架错误
 
-如果在运行打包的应用时遇到以下错误：
-
+**问题**: 
 ```
 OSError: dlopen(/System/Library/Carbon.framework/Carbon, 0x0006): tried: '/System/Library/Carbon.framework/Carbon' (no such file)
 ```
 
-解决方法是将setup.py中的`argv_emulation`设置为False：
-
+**解决方案**: 在setup.py中设置：
 ```python
 OPTIONS = {
-    'argv_emulation': False,  # 设置为False以避免Carbon.framework依赖问题
+    'argv_emulation': False,  # 避免Carbon.framework依赖问题
     # 其他配置...
 }
 ```
 
 ### Qt插件错误
 
-如果遇到以下错误：
-
+**问题**: 
 ```
-qt.qpa.plugin: Could not load the Qt platform plugin "cocoa" in "" even though it was found.
+qt.qpa.plugin: Could not load the Qt platform plugin "cocoa"
 ```
 
-解决方法是确保Qt插件被正确打包，使用PyInstaller时插件已经被自动包含。
+**解决方案**: 使用PyInstaller打包时插件会自动包含。如果仍有问题，检查Qt插件路径配置。
 
-## 开发指南
+---
 
-项目目录结构：
+# 📁 高性能文件服务器
 
-- `sharehtml.py` - 主程序文件
-- `setup.py` - py2app配置文件
-- `快捷分享HTML.spec` - PyInstaller配置文件
-- `requirements.txt` - 依赖项配置
-- `plugins/` - Qt平台插件目录
+一个基于Python的现代化文件服务器，专门为大文件传输和多设备文件共享场景优化设计。
 
-## 贡献
+## ⚡ 核心特性
 
-欢迎提交问题报告和改进建议。
+### 📂 文件管理
+- **目录浏览**: 美观的Web界面，响应式设计
+- **文件上传**: 支持大文件上传，1MB缓冲区优化
+- **文件下载**: 点击即下载，自动触发大文件下载
+- **文件信息**: 显示文件大小、修改时间等详细信息
 
-# 文件服务器 (webserver.py)
+### 🚀 性能优化
+- **大文件传输**: 64KB分块传输，避免内存溢出
+- **断点续传**: 完整支持HTTP Range请求
+- **高效缓冲**: 1MB读写缓冲区，提升I/O性能
+- **连接优化**: 智能超时和错误恢复机制
+- **内存友好**: 流式传输，不会将大文件加载到内存
 
-一个简单而功能完整的 Python 文件服务器，支持文件上传、下载和目录浏览，专门优化了大文件传输性能。
+### 🔒 安全保护
+- **路径安全**: 防止目录遍历攻击
+- **访问控制**: 限制在指定目录范围内
+- **错误处理**: 完善的异常处理和日志记录
 
-## 🚀 功能特性
+### 🎨 用户体验
+- **现代界面**: 清爽的Web界面设计
+- **移动优化**: 支持手机和平板设备访问
+- **视觉标识**: 大文件特殊标记（>50MB红色显示）
+- **便捷导航**: 面包屑导航和返回上级目录
 
-- 📁 **目录浏览**: 美观的 Web 界面浏览文件夹内容
-- 📤 **文件上传**: 通过 Web 界面上传文件到指定目录
-- 📥 **文件下载**: 点击文件名即可下载文件
-- ⚡ **大文件优化**: 支持大文件快速传输和断点续传
-- 🔄 **断点续传**: 支持 HTTP Range 请求，下载中断可继续
-- 🔒 **安全防护**: 防止目录遍历攻击，确保只能访问指定目录
-- 🎨 **现代界面**: 响应式设计，支持移动设备
-- 📊 **文件信息**: 显示文件大小、类型等信息，大文件特别标记
+## 📊 性能指标
 
-## ⚡ 性能优化
+| 特性 | 规格 |
+|------|------|
+| 单文件最大支持 | 无限制（受存储空间限制） |
+| 并发连接 | 取决于系统资源 |
+| 传输缓冲区 | 1MB（上传/下载） |
+| 分块大小 | 64KB |
+| 超时设置 | 5分钟 |
+| 大文件阈值 | 50MB（界面标记）/ 10MB（自动下载） |
 
-### 大文件传输优化
-- **分块传输**: 使用 64KB 块大小进行分块传输
-- **大缓冲区**: 1MB 读写缓冲区，提高 I/O 性能
-- **断点续传**: 支持 HTTP Range 请求，可从断点继续下载
-- **连接管理**: 优化连接超时和错误处理
-- **内存优化**: 避免将大文件完全加载到内存
+## 🛠️ 系统要求
 
-### 适用场景
-- ✅ 80MB+ 大文件快速下载
-- ✅ 网络不稳定环境下的可靠传输
-- ✅ 移动设备和慢速网络
-- ✅ 批量文件传输
+- **Python版本**: Python 3.6+
+- **依赖库**: 仅使用Python标准库
+- **推荐内存**: 1GB+（处理大文件）
+- **操作系统**: Windows / macOS / Linux
 
-## 使用方法
+## 🚀 快速开始
 
 ### 基本用法
 
 ```bash
-python webserver.py <目录路径>
-```
-
-例如：
-```bash
 # 共享当前目录
-python webserver.py .
+python3 webserver.py .
 
 # 共享指定目录
-python webserver.py /path/to/your/folder
+python3 webserver.py /path/to/shared/folder
 
-# Windows 示例
-python webserver.py C:\Users\YourName\Documents
+# Windows示例
+python3 webserver.py C:\Users\YourName\Documents
 ```
 
-### 高级选项
+### 高级配置
 
 ```bash
-# 指定端口 (默认: 8888)
-python webserver.py <目录路径> -p 9000
+# 自定义端口
+python3 webserver.py ./folder -p 9000
 
-# 指定监听地址 (默认: 0.0.0.0)
-python webserver.py <目录路径> -H 127.0.0.1
+# 指定监听地址
+python3 webserver.py ./folder -H 192.168.1.100
 
-# 组合使用
-python webserver.py /path/to/folder -p 9000 -H 192.168.1.100
+# 组合配置
+python3 webserver.py /shared -p 8080 -H 0.0.0.0
 ```
 
 ### 参数说明
 
-- `directory`: 要共享的目录路径（必需）
-- `-p, --port`: 服务器端口号（默认: 8888）
-- `-H, --host`: 服务器监听地址（默认: 0.0.0.0，表示所有网络接口）
+| 参数 | 描述 | 默认值 | 示例 |
+|------|------|--------|------|
+| `directory` | 共享目录路径（必需） | - | `./shared` |
+| `-p, --port` | 服务器端口 | `8888` | `-p 9000` |
+| `-H, --host` | 监听地址 | `0.0.0.0` | `-H 127.0.0.1` |
 
-## 访问方式
+## 🌐 访问方式
 
-启动服务器后，可以通过以下方式访问：
+| 访问类型 | URL | 说明 |
+|----------|-----|------|
+| 本地访问 | `http://localhost:8888` | 仅本机访问 |
+| 局域网访问 | `http://你的IP:8888` | 同网段设备访问 |
+| 指定接口 | `http://服务器IP:8888` | 指定网络接口 |
 
-- **本地访问**: http://localhost:8888
-- **局域网访问**: http://你的IP地址:8888
-- **其他设备**: http://服务器IP:8888
+## 📱 使用场景
 
-## 使用示例
+### 💼 办公场景
+- **文档共享**: 在团队间快速共享文档和资料
+- **演示文件**: 会议中实时分享PPT和演示文件
+- **临时文件传输**: 避免邮件附件大小限制
 
-### 1. 启动服务器
+### 🏠 家庭使用
+- **设备间传输**: 手机、电脑、平板之间文件共享
+- **媒体文件**: 分享照片、视频等大文件
+- **备份访问**: 访问NAS或备份文件
+
+### 🎓 教育培训
+- **课件分发**: 向学生分发课程资料
+- **作业收集**: 学生上传作业到指定目录
+- **资源库**: 建立课程资源共享平台
+
+### 🔧 开发测试
+- **文件部署**: 快速部署测试文件到服务器
+- **日志查看**: 访问远程服务器日志文件
+- **资源下载**: 下载构建产物和依赖文件
+
+## 📋 操作指南
+
+### 🔍 浏览文件
+1. 在浏览器打开服务器地址
+2. 点击文件夹名称进入子目录
+3. 使用"返回上级目录"链接导航
+4. 大文件会以红色文字显示
+
+### 📤 上传文件
+1. 在任意目录页面找到"上传文件"区域
+2. 点击"选择文件"按钮
+3. 选择要上传的文件
+4. 点击"上传"按钮完成
+
+### 📥 下载文件
+1. 点击文件名开始下载
+2. 大文件（>10MB）会自动触发下载
+3. 支持断点续传，可暂停后继续
+4. 下载进度显示在浏览器中
+
+### 🔄 断点续传
+- 使用支持断点续传的下载工具
+- 现代浏览器通常自动支持
+- 网络中断后可继续下载
+- 服务器支持HTTP Range请求
+
+## 🔧 技术细节
+
+### HTTP特性支持
+- ✅ HTTP/1.1协议
+- ✅ Range请求（断点续传）
+- ✅ MIME类型自动检测
+- ✅ Last-Modified头
+- ✅ Cache-Control头
+- ✅ Accept-Ranges头
+
+### 安全机制
+- ✅ 路径遍历防护
+- ✅ 文件访问权限检查
+- ✅ 异常处理和错误恢复
+- ✅ 连接超时控制
+
+### 性能优化技术
+- ✅ 分块传输编码
+- ✅ 大缓冲区读写
+- ✅ 流式文件处理
+- ✅ 内存使用优化
+
+## 🛡️ 安全注意事项
+
+### 网络安全
+⚠️ **默认配置**: 监听所有网络接口(0.0.0.0)，局域网设备可访问
+⚠️ **外网暴露**: 如需外网访问，请配置防火墙规则
+⚠️ **敏感文件**: 不要共享包含敏感信息的目录
+
+### 系统安全
+⚠️ **文件权限**: 确保Python进程有目录读写权限
+⚠️ **磁盘空间**: 监控磁盘使用，避免空间不足
+⚠️ **资源限制**: 大量并发可能影响系统性能
+
+### 使用建议
+✅ **局域网使用**: 推荐在内网环境中使用
+✅ **临时分享**: 适合临时文件分享场景  
+✅ **定期检查**: 定期清理共享目录
+✅ **备份重要数据**: 上传前备份重要文件
+
+## 🔍 故障排除
+
+### 常见错误
+
+#### 端口占用问题
+```
+OSError: [Errno 98] Address already in use
+```
+**解决方案**:
 ```bash
-$ python webserver.py ./shared_folder
-🚀 文件服务器启动成功!
-📂 共享目录: /path/to/shared_folder
-🌐 服务地址: http://0.0.0.0:8888
-💡 功能: 文件上传、下载、目录浏览
-⚡ 优化: 支持大文件传输和断点续传
-⏹️  按 Ctrl+C 停止服务器
---------------------------------------------------
+# 使用其他端口
+python3 webserver.py ./folder -p 9000
+
+# 查找占用进程
+lsof -i :8888
+netstat -tulpn | grep 8888
 ```
 
-### 2. 浏览文件
-- 在浏览器中打开 http://localhost:8888
-- 点击文件夹名称进入子目录
-- 点击文件名下载文件（大文件自动触发下载）
-- 使用"返回上级目录"链接导航
-- 大文件（>50MB）会用红色标记显示
+#### 权限不足问题
+```
+PermissionError: [Errno 13] Permission denied
+```
+**解决方案**:
+```bash
+# 检查目录权限
+ls -la /path/to/directory
 
-### 3. 上传文件
-- 在任意目录页面找到"上传文件"区域
-- 点击"选择文件"按钮选择要上传的文件
-- 点击"上传文件"按钮完成上传
-- 支持大文件上传，使用 1MB 缓冲区优化性能
+# 修改权限
+chmod 755 /path/to/directory
 
-### 4. 断点续传
-- 下载大文件时，如果网络中断，可以使用支持断点续传的下载工具
-- 浏览器通常会自动处理断点续传
-- 服务器支持 HTTP Range 请求
+# 或使用管理员权限运行
+sudo python3 webserver.py ./folder
+```
 
-## 🔧 技术特性
+#### 大文件传输问题
+```
+连接超时或传输中断
+```
+**解决方案**:
+- 检查网络连接质量
+- 使用有线网络代替WiFi
+- 关闭防病毒软件实时扫描
+- 使用专业下载工具
 
-### 性能参数
-- **块大小**: 64KB（下载）/ 1MB（上传）
-- **缓冲区**: 1MB 读写缓冲区
-- **超时设置**: 5分钟连接超时
-- **大文件阈值**: 10MB（自动下载）/ 50MB（红色标记）
+### 性能调优建议
 
-### HTTP 特性
-- 支持 HTTP/1.1 Range 请求
-- 正确的 MIME 类型检测
-- 缓存控制头（1小时缓存）
-- Last-Modified 头支持
-- Accept-Ranges 头声明
+#### 提升传输速度
+1. **网络优化**
+   - 使用千兆以太网
+   - 避免WiFi信号干扰
+   - 减少网络跳数
 
-## 安全注意事项
+2. **系统优化**
+   - 关闭不必要的后台程序
+   - 增加系统内存
+   - 使用SSD存储
 
-1. **网络安全**: 默认监听所有网络接口 (0.0.0.0)，局域网内的其他设备都可以访问
-2. **目录限制**: 服务器只能访问指定的目录及其子目录，无法访问系统其他位置
-3. **文件权限**: 确保 Python 进程有读写指定目录的权限
-4. **防火墙**: 如需外网访问，请配置防火墙规则
-5. **大文件**: 注意磁盘空间，大文件传输会占用相应的存储空间
+3. **配置优化**
+   - 调整缓冲区大小
+   - 优化Python参数
+   - 使用多线程版本
 
-## 系统要求
-
-- Python 3.6 或更高版本
-- 无需额外依赖，使用 Python 标准库
-- 建议：至少 1GB 可用内存（处理大文件时）
-
-## 停止服务器
-
-在终端中按 `Ctrl+C` 即可停止服务器。
-
-## 故障排除
-
-### 常见问题
-
-1. **端口被占用**
+#### 处理超大文件（GB级别）
+1. **预检查**
+   ```bash
+   # 检查磁盘空间
+   df -h
+   
+   # 监控内存使用
+   top
+   htop
    ```
-   OSError: [Errno 98] Address already in use
+
+2. **传输建议**
+   - 使用稳定的有线连接
+   - 避免同时传输多个大文件
+   - 考虑文件压缩
+
+3. **监控工具**
+   ```bash
+   # 监控网络流量
+   iftop
+   nethogs
+   
+   # 监控磁盘I/O
+   iotop
    ```
-   解决方案：使用 `-p` 参数指定其他端口
-
-2. **权限不足**
-   ```
-   PermissionError: [Errno 13] Permission denied
-   ```
-   解决方案：确保对目录有读写权限，或使用管理员权限运行
-
-3. **大文件下载慢**
-   - 检查网络连接质量
-   - 使用支持断点续传的下载工具
-   - 确保服务器有足够的内存和 CPU 资源
-
-4. **上传大文件失败**
-   - 检查磁盘空间是否充足
-   - 确保网络连接稳定
-   - 浏览器可能有上传大小限制
-
-### 性能调优
-
-1. **提高传输速度**
-   - 在局域网环境中使用
-   - 确保服务器和客户端网络质量良好
-   - 关闭不必要的防病毒软件实时扫描
-
-2. **处理超大文件**
-   - 确保有足够的磁盘空间
-   - 监控服务器内存使用情况
-   - 考虑使用专业的文件传输工具
 
 ### 获取帮助
 
 ```bash
-python webserver.py -h
+# 查看帮助信息
+python3 webserver.py -h
+
+# 查看版本信息
+python3 webserver.py --version
 ```
 
-## 更新日志
+---
 
-### v2.0 - 大文件优化版本
-- ✅ 添加断点续传支持
-- ✅ 优化大文件传输性能
-- ✅ 增加分块传输机制
-- ✅ 改进错误处理和连接管理
-- ✅ 添加大文件标记显示
-- ✅ 优化内存使用
+# 📊 项目架构
 
-### v1.0 - 基础版本
-- ✅ 基本文件上传下载功能
-- ✅ 目录浏览界面
-- ✅ 安全防护机制
+## 目录结构
 
-## 许可证
+```
+xiaobu/
+├── README.md                    # 项目文档
+├── requirements.txt             # Python依赖
+├── sharehtml.py                # HTML分享主程序
+├── webserver.py                # 文件服务器主程序
+├── setup.py                    # py2app配置
+├── 快捷分享HTML.spec            # PyInstaller配置
+├── appicon.icns                # 应用图标
+├── plugins/                    # Qt插件目录
+├── ai/                         # HTML文件存储
+├── write/                      # 写作文档
+└── template/                   # 模板文件
+```
 
-此项目使用 MIT 许可证。 
+## 核心文件说明
+
+| 文件 | 说明 | 用途 |
+|------|------|------|
+| `sharehtml.py` | HTML分享应用主程序 | macOS桌面应用 |
+| `webserver.py` | 文件服务器主程序 | Web文件服务 |
+| `setup.py` | py2app打包配置 | macOS应用打包 |
+| `快捷分享HTML.spec` | PyInstaller配置 | 应用打包配置 |
+| `requirements.txt` | Python依赖列表 | 环境配置 |
+
+---
+
+# 🤝 贡献指南
+
+欢迎为本项目做出贡献！请遵循以下步骤：
+
+## 贡献流程
+
+1. **Fork项目** - 点击GitHub页面右上角的Fork按钮
+2. **创建分支** - `git checkout -b feature/your-feature-name`
+3. **提交更改** - `git commit -m 'Add some feature'`
+4. **推送分支** - `git push origin feature/your-feature-name`
+5. **创建Pull Request** - 在GitHub上创建PR
+
+## 代码规范
+
+### Python代码风格
+- 使用PEP 8代码风格
+- 添加必要的文档字符串
+- 包含类型注解（推荐）
+- 编写单元测试
+
+### 提交信息格式
+```
+类型(范围): 简短描述
+
+详细描述（可选）
+
+关闭 #issue编号
+```
+
+类型包括：
+- `feat`: 新功能
+- `fix`: 修复bug
+- `docs`: 文档更新
+- `style`: 代码格式化
+- `refactor`: 代码重构
+- `test`: 测试相关
+- `chore`: 构建或辅助工具
+
+## 开发环境设置
+
+```bash
+# 克隆项目
+git clone https://github.com/your-username/xiaobu.git
+cd xiaobu
+
+# 创建虚拟环境
+python3 -m venv venv
+source venv/bin/activate  # Linux/macOS
+# 或
+venv\Scripts\activate     # Windows
+
+# 安装依赖
+pip install -r requirements.txt
+
+# 运行测试
+python -m pytest tests/
+```
+
+## 问题报告
+
+在提交问题时，请包含：
+- 操作系统和版本
+- Python版本
+- 错误信息和堆栈跟踪
+- 重现步骤
+- 预期行为vs实际行为
+
+---
+
+# 📄 许可证
+
+本项目采用MIT许可证 - 详情请查看 [LICENSE](LICENSE) 文件
+
+## MIT License
+
+```
+MIT License
+
+Copyright (c) 2025 Xiaobu Tools
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+---
+
+# 📞 联系方式
+
+- **项目主页**: [GitHub Repository](https://github.com/your-username/xiaobu)
+- **问题反馈**: [GitHub Issues](https://github.com/your-username/xiaobu/issues)
+- **功能请求**: [GitHub Discussions](https://github.com/your-username/xiaobu/discussions)
+
+---
+
+# 📚 更多资源
+
+## 相关文档
+- [Python HTTP服务器文档](https://docs.python.org/3/library/http.server.html)
+- [PyQt5官方文档](https://doc.qt.io/qtforpython/)
+- [macOS应用打包指南](https://py2app.readthedocs.io/)
+
+## 类似项目
+- [SimpleHTTPServer](https://docs.python.org/2/library/simplehttpserver.html) - Python内置简单服务器
+- [Caddy](https://caddyserver.com/) - 现代化Web服务器
+- [Nginx](https://nginx.org/) - 高性能Web服务器
+
+---
+
+<div align="center">
+
+**⭐ 如果这个项目对你有帮助，请给它一个star！⭐**
+
+Made with ❤️ by [Your Name]
+
+</div>
