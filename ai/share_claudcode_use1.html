@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code 深度解析：AI 编程革命实战指南</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333;
+            --primary-color: #007aff;
+            --light-gray: #f2f2f7;
+            --border-color: #e5e5ea;
+            --action-bg: #eef7ee;
+            --action-border: #a5d6a7;
+            --fact-bg: #f0f4f8;
+            --fact-border: #b0c4de;
+            --ai-color: #8e44ad;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.7;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 2.2em;
+            color: var(--text-color);
+            margin: 0;
+        }
+
+        header p {
+            font-size: 1.1em;
+            color: #666;
+        }
+
+        .accordion-item {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: box-shadow 0.3s ease;
+        }
+        .accordion-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .accordion-header {
+            padding: 18px 25px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.2em;
+            font-weight: 600;
+            background-color: #fafafa;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .accordion-header.active {
+            border-bottom: 1px solid var(--border-color);
+        }
+        .accordion-item:last-child .accordion-header.active {
+             border-bottom: none;
+        }
+
+
+        .accordion-header .icon {
+            font-weight: bold;
+            transition: transform 0.3s ease;
+            font-size: 1.4em;
+        }
+        .accordion-header.active .icon {
+            transform: rotate(45deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out;
+            background-color: var(--bg-color);
+        }
+        
+        .accordion-content-inner {
+            padding: 25px;
+        }
+
+        h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+            border-bottom: 2px solid var(--light-gray);
+            padding-bottom: 8px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        li {
+            padding-left: 25px;
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        li::before {
+            content: '🔹';
+            position: absolute;
+            left: 0;
+            color: var(--primary-color);
+        }
+
+        .highlight {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid;
+        }
+
+        .action-item {
+            background-color: var(--action-bg);
+            border-color: var(--action-border);
+        }
+        .action-item h4 {
+            margin: 0 0 10px 0;
+            color: #2e7d32;
+        }
+        .action-item li::before {
+             content: '💡';
+        }
+
+
+        .fact-item {
+            background-color: var(--fact-bg);
+            border-color: var(--fact-border);
+        }
+        .fact-item h4 {
+            margin: 0 0 10px 0;
+            color: #1976d2;
+        }
+        .fact-item li::before {
+             content: 'ℹ️';
+        }
+
+        .opinion-item {
+            font-style: italic;
+            color: #555;
+            padding: 10px;
+            border-left: 3px solid #ccc;
+            margin: 15px 0;
+            background: #f9f9f9;
+        }
+
+        .ai-term {
+            font-weight: 600;
+            color: var(--ai-color);
+            background: rgba(142, 68, 173, 0.08);
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+        
+        code {
+            font-family: "SF Mono", "Fira Code", monospace;
+            background-color: var(--light-gray);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Claude Code 深度解析：AI 编程革命实战指南</h1>
+            <p>从手敲代码到 <span class="ai-term">AI 伙伴</span>，掌握最强 AI 编程工具的核心技巧与思维变革。</p>
+        </header>
+
+        <div class="accordion">
+            <!-- Part 1: Evolution & Why Terminal -->
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    <span>第一部分：编程的进化与 Claude Code 的终端选择</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-content-inner">
+                        <h3>编程方式的演进</h3>
+                        <ul>
+                            <li><strong>手敲时代 (~2015):</strong> 依赖手动输入和基础的代码片段补全。</li>
+                            <li><strong>整行补全时代 (2018):</strong> 以 <code>Tabnine</code> (<span class="ai-term">GPT-2</span> 模型) 为代表，能理解上下文补全整行代码。</li>
+                            <li><strong>“代码搬运工”时代 (2023):</strong> <span class="ai-term">ChatGPT</span> / <span class="ai-term">GPT-4</span> 爆发，程序员频繁在 IDE 和网页间复制粘贴。</li>
+                            <li><strong>AI 原生集成时代 (2024-2025):</strong> <span class="ai-term">AI</span> 直接入驻编辑器，进化为能理解整个项目、拆解任务的“<span class="ai-term">智能体编程伙伴</span>”。</li>
+                        </ul>
+                        <div class="fact-item highlight">
+                            <h4>核心事实：为何选择看似“原始”的黑框终端？</h4>
+                            <ul>
+                                <li><strong>解决编辑器碎片化：</strong> 开发团队内部使用 VS Code, Vim, IntelliJ 等多种工具，终端是通用解决方案。</li>
+                                <li><strong>UI 成为枷锁：</strong> 华丽的 UI 反而会限制 <span class="ai-term">AI</span> 的能力。<span class="ai-term">AI 智能体</span>的核心循环是“感知-规划-行动”，与界面无关。</li>
+                                <li><strong>终端三大优势：</strong>
+                                    <ol>
+                                        <li><strong>自由度最大：</strong> <span class="ai-term">AI</span> 可调用一切系统能力 (<code>npm</code>, <code>docker</code>)。</li>
+                                        <li><strong>认知负担最小：</strong> 用户只需用自然语言描述“我想要什么”。</li>
+                                        <li><strong>与开发生态天然融合：</strong> 命令行是开发工具的“母语”。</li>
+                                    </ol>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="opinion-item">
+                            <strong>观点：</strong>“很多人觉得终端难用，是因为没有尝到效率的甜头。一旦尝到，什么 UI 都不重要了。” 此外，<span class="ai-term">Claude Code</span> 的 <code>Token</code> 额度“给的实在是太多了”，性价比极高。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Part 2: "谋、定、动"三字诀 -->
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    <span>第二部分：核心使用技巧：「谋、定、动」三字诀</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-content-inner">
+                        <div class="action-item highlight">
+                            <h4>行动建议：用“谋、定、动”三步法，让 <span class="ai-term">AI</span> 效率翻倍</h4>
+                            <ul>
+                                <li>
+                                    <strong>谋 (Strategize) - 把需求聊透：</strong>
+                                    <ul>
+                                        <li>将需求文档化，和 <span class="ai-term">AI</span> 反复沟通，确保思路清晰。</li>
+                                        <li><strong>关键一步：</strong>让 <span class="ai-term">AI</span> 复述一遍你的需求，确保理解完全对齐。</li>
+                                        <li><strong>Pro-Tip:</strong> 复杂需求切换到 <span class="ai-term">Opus</span> 模型处理。</li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <strong>定 (Define) - 把任务定下来：</strong>
+                                    <ul>
+                                        <li>让 <span class="ai-term">AI</span> 基于需求，生成一个清晰的、分步骤的执行计划 (To-do list)。</li>
+                                        <li>标明哪些任务可以并行处理，形成渐进式开发路径。</li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <strong>动 (Act) - 快速执行：</strong>
+                                    <ul>
+                                        <li>让 <span class="ai-term">AI</span> “开启狂飙模式”，大胆执行。用 <code>Git</code> 作为安全网。</li>
+                                        <li><strong>纠偏：</strong>执行错误时，用 <code>ESC</code> 终止任务；轻微跑偏时，通过补充提示微调。</li>
+                                        <li><strong>重置：</strong><span class="ai-term">AI</span> 变“笨”时，使用 <code>clear</code> 命令清空记忆。</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                        <h3>其他实用技巧</h3>
+                        <ul>
+                            <li><code>init</code>: 快速扫描项目，生成上下文摘要 <code>claude.md</code>，让 <span class="ai-term">AI</span> 记在心里。</li>
+                            <li><strong>为 AI 写注释:</strong> 注释不仅是给人看的，更是给 <span class="ai-term">AI</span> 提供上下文的重要信息。</li>
+                            <li><code>commit</code>: 直接在终端输入，让 <span class="ai-term">AI</span> 自动生成规范的 commit message。</li>
+                            <li><strong>自定义命令:</strong> 将常用且冗长的提示词创建为自定义命令，提高效率。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Part 3: Prompting Techniques -->
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    <span>第三部分：让 <span class="ai-term">AI</span> 秒开窍的提示词技巧</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-content-inner">
+                        <div class="opinion-item">
+                            <strong>核心观点：</strong>不需要复杂的提示词框架，<strong>把话说清楚</strong>比什么都重要。简单反而更好。
+                        </div>
+                        <div class="action-item highlight">
+                            <h4>行动建议：解锁 <span class="ai-term">AI</span> 潜能的提示词魔法</h4>
+                            <ul>
+                                <li>
+                                    <strong>使用“魔法咒语”开启深度思考：</strong>
+                                    <ul>
+                                        <li>当你说“你给我好好想想”，实际可能触发了 <span class="ai-term">AI</span> 的 <code>Extended Thinking</code> 功能。</li>
+                                        <li>尝试使用 <code>think</code>, <code>think hard</code>, <code>think harder</code>, <code>out of think</code> 等指令，让 <span class="ai-term">AI</span> 花更多时间思考，答案更准确。</li>
+                                    </ul>
+                                </li>
+                                <li><strong>搭配“辩证思考”（Chain-of-Thought）：</strong>在深度思考前，先让 <span class="ai-term">AI</span> 自行拆解问题，防止超时并提升回答质量。</li>
+                                <li><strong>使用“正面表达”：</strong>告诉 <span class="ai-term">AI</span> “做什么”，而不是“不要做什么”。（例：用“增加 TryCatch 错误处理”替代“不要忘记错误处理”）。</li>
+                                <li><strong>提前设定高标准：</strong>明确要求“生产级代码”（健壮、可维护、可扩展），避免 <span class="ai-term">AI</span> 只写出应付测试的代码。</li>
+                                <li><strong>优化长文本输入：</strong>遵循“内容在前，指令在后”原则。先粘贴长日志或文档，再给出分析指令。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Part 4: Boundaries of AI -->
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    <span>第四部分：<span class="ai-term">AI</span> 编程的边界与上限</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-content-inner">
+                        <h3>人、工程、大模型分析框架</h3>
+                        <div class="fact-item highlight">
+                            <h4>核心事实：<span class="ai-term">AI</span> 编程能力由三要素决定</h4>
+                            <ul>
+                                <li><strong><span class="ai-term">大模型 (Large Model)</span>:</strong> 决定了能力的<strong>天花板</strong>。顶级模型（如 <span class="ai-term">Claude 4</span>, <span class="ai-term">Gemini 2.5 Pro</span>）写不出的代码，目前所有工具都写不出。</li>
+                                <li><strong>工程 (Engineering):</strong> 指 <span class="ai-term">Claude Code</span>, <code>Cursor</code> 这类工具本身，它们是模型的“套壳”，负责优化交互和管理上下文，但无法突破模型上限。</li>
+                                <li><strong>人 (Human):</strong> 工程师在 <span class="ai-term">AI</span> 编程中扮演三个关键角色：
+                                    <ol>
+                                        <li><strong>定义者：</strong>清晰描述需求。</li>
+                                        <li><strong>把关者：</strong>审核代码质量、业务逻辑和性能。</li>
+                                        <li><strong>创新者：</strong>负责关键架构设计、算法创新等 <span class="ai-term">AI</span> 无法完成的创造性工作。</li>
+                                    </ol>
+                                </li>
+                            </ul>
+                        </div>
+                        <h3><span class="ai-term">AI</span> 目前擅长什么？</h3>
+                        <ul>
+                            <li>常规功能实现</li>
+                            <li>代码重构</li>
+                            <li>测试用例编写</li>
+                            <li>文档生成</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Part 5: Summary & Reflections -->
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    <span>第五部分：总结与感悟：从胶卷到数码的时代变革</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-content-inner">
+                        <h3>一个核心比喻：编程界的“胶卷 vs. 数码”革命</h3>
+                        <div class="fact-item highlight">
+                             <h4>观点：我们正经历一场不可逆的思维转变</h4>
+                             <ul>
+                                <li><strong>胶卷时代 (传统编程):</strong> 像摄影师珍惜每一张底片一样，程序员每行代码都需深思熟虑。依赖经验、直觉和扎实的底层知识。</li>
+                                <li><strong>数码时代 (<span class="ai-term">AI</span> 编程):</strong> 像数码摄影师一样，可以快速生成多个版本，“择其善者而从之”。核心能力转变为：
+                                    <ul>
+                                        <li>识别好代码的<strong>审美和眼光</strong>。</li>
+                                        <li><strong>提示词工程</strong>成为基本功。</li>
+                                        <li><strong>快速迭代和验证</strong>的能力。</li>
+                                    </ul>
+                                </li>
+                             </ul>
+                        </div>
+                        <div class="opinion-item">
+                            <strong>结论：</strong>“基础不重要”是伪命题，但我们的<strong>创作方式、思考路径、解决问题的手段</strong>都已彻底改变。我们回不去了，但这是一个不必回去的时代。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const accordionItems = document.querySelectorAll('.accordion-item');
+
+            accordionItems.forEach(item => {
+                const header = item.querySelector('.accordion-header');
+
+                header.addEventListener('click', () => {
+                    const content = item.querySelector('.accordion-content');
+                    const isActive = header.classList.contains('active');
+
+                    // Optional: Close other items
+                    // accordionItems.forEach(otherItem => {
+                    //     if (otherItem !== item) {
+                    //         otherItem.querySelector('.accordion-header').classList.remove('active');
+                    //         otherItem.querySelector('.accordion-content').style.maxHeight = null;
+                    //     }
+                    // });
+
+                    header.classList.toggle('active');
+                    if (header.classList.contains('active')) {
+                        content.style.maxHeight = content.scrollHeight + "px";
+                    } else {
+                        content.style.maxHeight = null;
+                    }
+                });
+            });
+
+            // Auto-open the first item by default
+            if (accordionItems.length > 0) {
+                 const firstHeader = accordionItems[0].querySelector('.accordion-header');
+                 const firstContent = accordionItems[0].querySelector('.accordion-content');
+                 firstHeader.classList.add('active');
+                 firstContent.style.maxHeight = firstContent.scrollHeight + "px";
+            }
+        });
+    </script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.youtube.com/watch?v=sOvi9Iu1Dq8&t=9s" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
