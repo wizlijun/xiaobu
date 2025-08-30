@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code 实战心法摘要</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333;
+            --primary-color: #4A90E2;
+            --secondary-color: #F4F6F8;
+            --accent-color: #DDEEFF;
+            --border-color: #EAEAEA;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --header-font: 'Noto Sans SC', sans-serif;
+            --body-font: 'Noto Sans SC', sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--body-font);
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.8;
+            margin: 0;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .book-container {
+            background: var(--bg-color);
+            max-width: 800px;
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .book-page {
+            padding: 2.5rem 3rem;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        .book-page:last-child {
+            border-bottom: none;
+        }
+
+        .book-cover {
+            background: linear-gradient(135deg, #f0f7ff 0%, #e6f1ff 100%);
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .book-cover h1 {
+            font-family: var(--header-font);
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin: 0 0 0.5rem 0;
+            font-weight: 700;
+        }
+
+        .book-cover p {
+            font-size: 1.1rem;
+            color: #557799;
+            margin: 0;
+        }
+        
+        h2 {
+            font-family: var(--header-font);
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 0.5rem;
+            margin-top: 0;
+        }
+
+        .table-of-contents ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .table-of-contents li {
+            margin-bottom: 0.8rem;
+        }
+
+        .table-of-contents a {
+            text-decoration: none;
+            color: #444;
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: all 0.2s ease;
+            display: block;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+
+        .table-of-contents a:hover {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            transform: translateX(5px);
+        }
+        
+        .chapter {
+            scroll-margin-top: 20px;
+        }
+
+        details {
+            margin-bottom: 1.2rem;
+            background-color: var(--secondary-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        summary {
+            font-weight: 500;
+            font-size: 1.1rem;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            outline: none;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.2s ease;
+        }
+
+        summary:hover {
+            background-color: var(--accent-color);
+        }
+
+        details[open] summary {
+            border-bottom: 1px solid var(--border-color);
+            background-color: #e9f3ff;
+        }
+
+        .details-content {
+            padding: 1rem 1.5rem 1.5rem 1.5rem;
+            font-size: 1rem;
+            color: #555;
+        }
+        
+        .details-content p {
+            margin: 0;
+        }
+
+        .details-content ul {
+            margin: 0.5rem 0 0 0;
+            padding-left: 1.5rem;
+        }
+        
+        .icon {
+            margin-right: 0.8rem;
+            font-size: 1.2rem;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            background-color: var(--accent-color);
+            color: var(--primary-color);
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-left: 0.5rem;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem 0.5rem;
+            }
+            .book-page {
+                padding: 1.5rem;
+            }
+            .book-cover h1 {
+                font-size: 2rem;
+            }
+            summary {
+                font-size: 1rem;
+                padding: 0.8rem 1rem;
+            }
+            .details-content {
+                padding: 0.8rem 1rem 1rem 1rem;
+            }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="book-container">
+
+        <header class="book-cover">
+            <h1>Claude Code 实战心法</h1>
+            <p>一个月深度使用后的七大核心模式</p>
+        </header>
+
+        <nav class="book-page table-of-contents">
+            <h2>目录</h2>
+            <ul>
+                <li><a href="#chapter1">模式一：高效小技巧合集</a></li>
+                <li><a href="#chapter2">模式二：上下文管理</a></li>
+                <li><a href="#chapter3">模式三：语音的力量</a></li>
+                <li><a href="#chapter4">模式四：规划与PRD</a></li>
+                <li><a href="#chapter5">模式五：自定义命令</a></li>
+                <li><a href="#chapter6">模式六：检查点机制</a></li>
+                <li><a href="#chapter7">模式七：超越代码的想象</a></li>
+            </ul>
+        </nav>
+
+        <section id="chapter1" class="book-page chapter">
+            <h2>模式一：高效小技巧合集</h2>
+            <details>
+                <summary><span class="icon">⚙️</span> 在代码编辑器中运行 <span class="tag">事实</span></summary>
+                <div class="details-content">
+                    <p>在 Cursor 或 VS Code 等编辑器中运行 Claude Code，可以直接访问和拖拽项目文件，极大提升便利性。</p>
+                </div>
+            </details>
+            <details>
+                <summary><span class="icon">💡</span> 开启 YOLO 模式 <span class="tag">观点/建议</span></summary>
+                <div class="details-content">
+                    <p>使用 <code>--dangerously-skip-permissions</code> 参数启动，可以跳过每次操作的权限确认，大幅提升流畅度。但作者建议，初期使用时需保持警惕，直到建立信任。</p>
+                </div>
+            </details>
+            <details>
+                <summary><span class="icon">⚙️</span> 使用钩子（Hooks）<span class="tag">事实</span></summary>
+                <div class="details-content">
+                    <p>通过在配置文件中设置钩子，可以在 Claude Code 完成任务后播放提示音，方便在多任务时感知其工作状态。</p>
+                </div>
+            </details>
+             <details>
+                <summary><span class="icon">💡</span> 善用截图粘贴 <span class="tag">观点/建议</span></summary>
+                <div class="details-content">
+                    <p>建立一个能快速截图并复制到剪贴板的工作流。直接将图片（UI、错误信息等）粘贴到对话中，是提供视觉上下文的最快方式。</p>
+                </div>
+            </details>
+        </section>
+        
+        <section id="chapter2" class="book-page chapter">
+            <h2>模式二：上下文管理</h2>
+             <details>
+                <summary><span class="icon">💡</span> 上下文是双刃剑 <span class="tag">观点/隐喻</span></summary>
+                <div class="details-content">
+                    <p>把上下文管理想象成玩拼图。如果不断加入不相关的拼图碎片（过时或无关的上下文），模型就很难完成当前的任务。精准、简短的上下文是高质量输出的关键。</p>
+                </div>
+            </details>
+            <details>
+                <summary><span class="icon">⚙️</span> 频繁清空上下文 <span class="tag">事实/操作</span></summary>
+                <div class="details-content">
+                    <p>每当完成一个阶段性任务或准备开始新任务时，果断使用 <code>/clear</code> 命令。这能确保模型不受之前对话的干扰，更专注于新问题。</p>
+                </div>
+            </details>
+            <details>
+                <summary><span class="icon">💡</span> 上下文交接（Context Handoff） <span class="tag">观点/技巧</span></summary>
+                <div class="details-content">
+                    <p>在清空上下文之前，可以让模型“为我创建一个用于继续当前任务的新提示”。模型会总结当前对话的核心要点和未解决的问题，形成一个凝练的新提示，让你带着关键信息轻装上阵。</p>
+                </div>
+            </details>
+            <details>
+                <summary><span class="icon">⚙️</span> 精心维护记忆文件 <span class="tag">事实/操作</span></summary>
+                <div class="details-content">
+                    <p><code>.claude.md</code> 文件是项目的长期记忆。不要使用 <code>/init</code> 命令自动生成一个臃肿的文件，而应手动维护它，只保留最重要的指令，如：“总是使用 TypeScript”、“必须为代码编写测试”等。</p>
+                </div>
+            </details>
+        </section>
+
+        <section id="chapter3" class="book-page chapter">
+            <h2>模式三：语音的力量</h2>
+            <details>
+                <summary><span class="icon">💡</span> 语音是带宽倍增器 <span class="tag">核心观点</span></summary>
+                <div class="details-content">
+                    <p>如果你还在打字，你几乎肯定没有提供足够的上下文。语音输入能让你在短时间内轻松地提供更丰富、更细致的需求、顾虑和想法，其信息密度远超打字。</p>
+                </div>
+            </details>
+             <details>
+                <summary><span class="icon">💡</span> 对新手和专家同样有效 <span class="tag">观点</span></summary>
+                <div class="details-content">
+                    <ul>
+                        <li><strong>新手：</strong> 通过口述，可以自然地描述出更多细节（“我想要一个史努比那样的狗屋时钟，用在手机上”），而不是只输入“狗屋时钟”。</li>
+                        <li><strong>专家：</strong> 可以避免过早地陷入技术实现细节，而是更多地描述“为什么”和“是什么”，给模型更大的创造空间。</li>
+                    </ul>
+                </div>
+            </details>
+        </section>
+
+        <section id="chapter4" class="book-page chapter">
+            <h2>模式四：规划与PRD</h2>
+            <details>
+                <summary><span class="icon">💡</span> 先规划，后编码 <span class="tag">核心观点</span></summary>
+                <div class="details-content">
+                    <p>一份好的产品需求文档（PRD）是高质量交付的基石。在动手编码前，先与 LLM 合作，通过对话迭代出一份清晰的规划文档。</p>
+                </div>
+            </details>
+            <details>
+                <summary><span class="icon">💡</span> 关注“What”，而非“How” <span class="tag">观点/原则</span></summary>
+                <div class="details-content">
+                    <p>PRD 应专注于产品的功能、用户体验、目标和约束（“它应该有两个按钮，主色调是蓝色”），而不是技术实现方案（“用 React 和 Redux”）。把“How”留给 AI 决定。</p>
+                </div>
+            </details>
+            <details>
+                <summary><span class="icon">⚙️</span> 将规划文档化 <span class="tag">事实/操作</span></summary>
+                <div class="details-content">
+                    <p>让 Claude Code 将最终的规划保存为项目中的一个 Markdown 文件（例如在 <code>/docs</code> 文件夹下）。这既是后续开发的蓝图，也方便在中断后快速恢复工作。</p>
+                </div>
+            </details>
+        </section>
+
+        <section id="chapter5" class="book-page chapter">
+            <h2>模式五：自定义命令</h2>
+            <details>
+                <summary><span class="icon">⚙️</span> 创建项目专属命令 <span class="tag">事实/操作</span></summary>
+                <div class="details-content">
+                    <p>在项目根目录的 <code>.claude/commands/</code> 文件夹下创建 Markdown 文件，即可定义新的斜杠命令（slash commands）。例如，为特定项目创建一个复杂的 <code>/build</code> 命令。</p>
+                </div>
+            </details>
+            <details>
+                <summary><span class="icon">⚙️</span> 创建全局命令 <span class="tag">事实/操作</span></summary>
+                <div class="details-content">
+                    <p>在你的用户主目录（<code>~/.claude/commands/</code>）下创建的命令，可以在任何项目中调用，非常适合封装通用的工作流，如作者自定义的 <code>/gsave</code> 命令，用于生成标准化的 Git 提交信息。</p>
+                </div>
+            </details>
+            <details>
+                <summary><span class="icon">💡</span> 这是你的个人工具箱 <span class="tag">观点</span></summary>
+                <div class="details-content">
+                    <p>将任何你经常重复或容易忘记的操作，都封装成自定义命令。这能极大地提升效率，并使 Claude Code 真正成为为你量身定制的工具。</p>
+                </div>
+            </details>
+        </section>
+
+        <section id="chapter6" class="book-page chapter">
+            <h2>模式六：检查点机制</h2>
+            <details>
+                <summary><span class="icon">💡</span> 用 Git 作为安全网 <span class="tag">核心观点</span></summary>
+                <div class="details-content">
+                    <p>Claude Code 目前缺少内置的版本回滚功能。使用 Git 是弥补这一点的最佳方式。把每一次提交（commit）看作游戏中的一个“存档点”。</p>
+                </div>
+            </details>
+            <details>
+                <summary><span class="icon">💡</span> 频繁提交 <span class="tag">观点/建议</span></summary>
+                <div class="details-content">
+                    <p>当 AI 代理开始“失控”或执行结果不符合预期时，一个最近的检查点能让你轻松回滚，避免灾难。因此，在每个小功能完成后或重大修改前，都应该进行一次提交。</p>
+                </div>
+            </details>
+            <details>
+                <summary><span class="icon">⚙️</span> 让 Claude 帮你提交 <span class="tag">事实/操作</span></summary>
+                <div class="details-content">
+                    <p>你甚至不需要自己写 Git 命令，可以直接告诉 Claude Code：“请帮我提交这些更改”。它会分析变更并生成合适的提交信息来完成操作。</p>
+                </div>
+            </details>
+        </section>
+        
+        <section id="chapter7" class="book-page chapter">
+            <h2>模式七：超越代码的想象</h2>
+            <details>
+                <summary><span class="icon">💡</span> 这不仅是编码工具 <span class="tag">核心观点</span></summary>
+                <div class="details-content">
+                    <p>作者称之为“氛围编辑”（Vibe Editing）。Claude Code 的核心能力是：<strong>理解、推理、并操作本地文件</strong>。这意味着它可以用于任何涉及文本和文件处理的任务，远不止于编程。</p>
+                </div>
+            </details>
+            <details>
+                <summary><span class="icon">⚙️</span> 实际案例：视频脚本创作 <span class="tag">事实/案例</span></summary>
+                <div class="details-content">
+                    <p>作者将自己口述录音的原始文字稿（长篇、无结构）交给 Claude Code，通过自定义的“视频大纲”代理（Agent），将其自动处理成结构化、带版本号的视频大纲文件。整个过程都在本地文件系统中完成。</p>
+                </div>
+            </details>
+            <details>
+                <summary><span class="icon">💡</span> 未来是“代理式编辑环境” <span class="tag">观点/预测</span></summary>
+                <div class="details-content">
+                    <p>我们正处在一个新时代的开端。未来，我们将拥有能处理各种任务（写邮件、整理报告、管理文件）的通用型代理编辑环境。跳出“它只是个写代码的”思维定式，将彻底改变你的工作方式。</p>
+                </div>
+            </details>
+        </section>
+
+    </div>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.youtube.com/watch?v=IUi--nVU4yA" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
