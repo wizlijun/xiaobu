@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code 核心认知卡片</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+        :root {
+            --bg-color: #F8F9FA;
+            --card-bg: #FFFFFF;
+            --text-color: #343A40;
+            --primary-color: #4A90E2;
+            --secondary-color: #7B8B9A;
+            --accent-color: #E9F3FF;
+            --border-color: #DEE2E6;
+            --shadow-color: rgba(0, 0, 0, 0.06);
+            --header-font: 'Noto Sans SC', sans-serif;
+            --body-font: 'Noto Sans SC', sans-serif;
+        }
+
+        body {
+            font-family: var(--body-font);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            margin: 0;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-family: var(--header-font);
+            font-size: 2.5rem;
+            color: var(--text-color);
+            margin: 0 0 0.5rem 0;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: var(--secondary-color);
+            margin: 0;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .cognitive-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 15px var(--shadow-color);
+            padding: 1.8rem;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .cognitive-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1rem;
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-right: 1rem;
+            color: var(--primary-color);
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-title {
+            font-family: var(--header-font);
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .card-insight {
+            background-color: var(--accent-color);
+            border-left: 4px solid var(--primary-color);
+            padding: 1rem;
+            margin: 0 0 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+            font-weight: 500;
+            font-size: 1.05rem;
+            color: #335d8a;
+        }
+        
+        .card-insight p {
+            margin: 0;
+        }
+
+        .card-body ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .card-body li {
+            padding-left: 1.5rem;
+            position: relative;
+            margin-bottom: 0.8rem;
+        }
+
+        .card-body li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .card-body code {
+            background-color: #e9ecef;
+            padding: 0.1em 0.4em;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="header">
+            <h1>Claude Code 实战心法</h1>
+            <p>一个月深度使用后提炼的七张核心认知卡片</p>
+        </header>
+
+        <div class="card-grid">
+
+            <!-- Card 1: Context Management -->
+            <div class="cognitive-card">
+                <div class="card-header">
+                    <div class="card-icon">🧠</div>
+                    <h3 class="card-title">上下文管理</h3>
+                </div>
+                <div class="card-insight">
+                    <p><strong>核心洞察：</strong>上下文是双刃剑。精准、小巧的上下文是高质量输出的关键，冗余信息只会干扰 AI。</p>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li><strong>频繁清空：</strong>完成一个子任务后，立即使用 <code>/clear</code>，避免历史信息干扰。</li>
+                        <li><strong>上下文交接：</strong>清空前，让 AI 总结当前要点生成新提示，实现“带记忆”的重启。</li>
+                        <li><strong>精简记忆：</strong>手动维护 <code>.claude.md</code> 文件，只保留最高优先级的指令，而非自动生成。</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Card 2: Voice Power -->
+            <div class="cognitive-card">
+                <div class="card-header">
+                    <div class="card-icon">🎙️</div>
+                    <h3 class="card-title">语音的力量</h3>
+                </div>
+                <div class="card-insight">
+                    <p><strong>核心洞察：</strong>语音是带宽倍增器。用嘴说出的信息密度和细节，远超打字所能及。</p>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li><strong>打破局限：</strong>如果你还在打字，几乎肯定没有提供足够的上下文。</li>
+                        <li><strong>丰富细节：</strong>通过口述，可以自然地描述需求、背景和顾虑，让 AI 全面理解你的想法。</li>
+                        <li><strong>解放思维：</strong>避免过早陷入技术细节，更多地描述“是什么”和“为什么”，释放 AI 的创造力。</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Card 3: Planning & PRD -->
+            <div class="cognitive-card">
+                <div class="card-header">
+                    <div class="card-icon">🗺️</div>
+                    <h3 class="card-title">规划与PRD</h3>
+                </div>
+                <div class="card-insight">
+                    <p><strong>核心洞察：</strong>先规划，后编码。一份好的需求文档，是 AI 高效工作的蓝图。</p>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li><strong>协同规划：</strong>与 AI 对话，迭代出一份清晰的产品需求文档 (PRD)。</li>
+                        <li><strong>关注“What”：</strong>PRD 应描述“做什么”（功能、体验），而不是“怎么做”（技术实现）。</li>
+                        <li><strong>规划存档：</strong>让 AI 将最终规划保存为项目中的 Markdown 文件，作为后续开发的依据。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Card 4: Custom Commands -->
+            <div class="cognitive-card">
+                <div class="card-header">
+                    <div class="card-icon">🛠️</div>
+                    <h3 class="card-title">自定义命令</h3>
+                </div>
+                <div class="card-insight">
+                    <p><strong>核心洞察：</strong>把 Claude Code 变成你的专属工具箱，将重复性工作流自动化。</p>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li><strong>项目专属：</strong>在项目 <code>.claude/commands/</code> 目录创建命令，处理特定任务（如复杂的构建流程）。</li>
+                        <li><strong>全局通用：</strong>在用户主目录 <code>~/.claude/commands/</code> 创建命令，封装通用工作流（如标准化的 Git 提交）。</li>
+                        <li><strong>简化操作：</strong>将任何你觉得繁琐或容易忘记的步骤，都封装成一个简单的斜杠命令。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Card 5: Checkpointing -->
+            <div class="cognitive-card">
+                <div class="card-header">
+                    <div class="card-icon">💾</div>
+                    <h3 class="card-title">检查点机制</h3>
+                </div>
+                <div class="card-insight">
+                    <p><strong>核心洞察：</strong>用 Git 作为安全网，把每次提交（commit）都看作游戏中的“存档点”。</p>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li><strong>频繁提交：</strong>在每个小功能完成后或重大修改前进行提交，以防 AI “失控”。</li>
+                        <li><strong>轻松回滚：</strong>当 AI 生成结果不理想时，可以快速回退到上一个可靠的状态。</li>
+                        <li><strong>委托 AI：</strong>直接告诉 AI “请帮我提交更改”，让它自动完成 Git 操作。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Card 6: Beyond Code -->
+            <div class="cognitive-card">
+                <div class="card-header">
+                    <div class="card-icon">🚀</div>
+                    <h3 class="card-title">超越代码的想象</h3>
+                </div>
+                <div class="card-insight">
+                    <p><strong>核心洞察：</strong>这不仅是编码工具，而是“代理式编辑环境”。其核心是理解、推理和操作本地文件。</p>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li><strong>核心能力：</strong>利用其读写本地文件的能力处理任何文本任务，如整理笔记、写报告。</li>
+                        <li><strong>实际案例：</strong>作者用它将口述录音稿自动整理成带版本号的结构化视频大纲。</li>
+                        <li><strong>思维转变：</strong>把它看作一个通用的文件处理助手，将彻底改变你的工作流。</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Card 7: Quick Wins -->
+            <div class="cognitive-card">
+                <div class="card-header">
+                    <div class="card-icon">⚡</div>
+                    <h3 class="card-title">高效小技巧</h3>
+                </div>
+                 <div class="card-insight">
+                    <p><strong>核心洞察：</strong>一些简单的工作流调整，可以大幅提升与 AI 协作的流畅度。</p>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li><strong>YOLO 模式：</strong>启动时加 <code>--dangerously-skip-permissions</code> 参数，跳过权限确认，提升效率。</li>
+                        <li><strong>编辑器集成：</strong>在 VS Code 或 Cursor 中运行，实现文件拖拽和实时查看。</li>
+                        <li><strong>截图粘贴：</strong>用截图工具直接将视觉信息（UI、错误）粘贴到对话中，提供精准上下文。</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.youtube.com/watch?v=IUi--nVU4yA" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
