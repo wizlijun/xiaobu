@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《自律是命运》核心摘要 - 翻转卡片版</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+        :root {
+            --bg-color: #f7f9fc;
+            --text-color: #333333;
+            --primary-color: #3498db;
+            --light-primary-color: #eaf2fb;
+            --secondary-color: #2ecc71;
+            --light-secondary-color: #eafaf1;
+            --accent-color: #f39c12;
+            --light-accent-color: #fef5e7;
+            --border-color: #e0e0e0;
+            --card-bg: #ffffff;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.8;
+            margin: 0;
+            padding: 20px 0;
+        }
+
+        .container {
+            max-width: 960px;
+            width: 95%;
+            margin: 40px auto;
+            padding: 30px;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        header h2 {
+            font-size: 1.2em;
+            font-weight: 400;
+            color: #666;
+            margin: 5px 0 0;
+        }
+        
+        header .intro {
+            font-size: 1.1em;
+            color: #555;
+            margin-top: 20px;
+            font-style: italic;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab-button {
+            padding: 15px 30px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1.2em;
+            font-weight: 500;
+            color: #888;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .tab-button::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 3px;
+            background-color: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+
+        .tab-button.active {
+            color: var(--primary-color);
+        }
+
+        .tab-button.active::after {
+            width: 100%;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* New Flashcard Styles */
+        .point-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .flashcard-container {
+            background-color: transparent;
+            min-height: 220px;
+            perspective: 1000px; /* For 3D effect */
+            cursor: pointer;
+            user-select: none; /* 防止文本选择 */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        .flashcard {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 220px;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            will-change: transform;
+        }
+        
+        .flashcard-container:hover .flashcard:not(.is-flipped) {
+             transform: translateY(-5px);
+        }
+
+        .flashcard.is-flipped {
+            transform: rotateY(180deg);
+            box-shadow: var(--shadow);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            min-height: 220px;
+            -webkit-backface-visibility: hidden; /* Safari */
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            border-radius: var(--border-radius);
+            box-sizing: border-box;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+        }
+
+        .card-front {
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .card-front h3 {
+            font-size: 1.3em;
+            color: var(--text-color);
+            margin: 0;
+        }
+
+        .card-front span {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #aaa;
+        }
+
+        .card-back {
+            padding: 20px;
+            transform: rotateY(180deg);
+            overflow-y: auto;
+            text-align: left;
+            z-index: 1; /* 确保背面在翻转时位于上层 */
+            user-select: text; /* 允许卡片背面文本选择 */
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+        }
+        
+        .card-back h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.2em;
+        }
+        
+        .card-back .person {
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 10px;
+            display: block;
+            font-size: 0.9em;
+        }
+
+        .card-back .desc {
+            font-size: 0.95em;
+            margin-bottom: 15px;
+        }
+
+        .highlight {
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin: 8px 0;
+            border-left: 3px solid;
+            font-size: 0.9em;
+        }
+
+        .fact {
+            background-color: var(--light-secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .opinion {
+            background-color: var(--light-primary-color);
+            border-color: var(--primary-color);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.9em;
+            color: #999;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 0; }
+            .container {
+                padding: 15px;
+                width: 100%;
+                margin: 0;
+                border-radius: 0;
+                box-shadow: none;
+            }
+            header h1 { font-size: 2em; }
+            .tab-button {
+                padding: 12px 10px;
+                font-size: 1em;
+                flex: 1;
+                text-align: center;
+            }
+            .tabs {
+                flex-wrap: wrap;
+            }
+            .point-grid {
+                grid-template-columns: 1fr;
+            }
+            .flashcard-container {
+                min-height: 200px;
+            }
+        }
+        
+        /* 添加触摸设备支持 */
+        @media (hover: none) {
+            .flashcard-container:hover .flashcard {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>自律是命运</h1>
+            <h2>The Power of Self-Control</h2>
+            <p class="intro">瑞安·霍利迪（Ryan Holiday）深入探讨了斯多葛学派四大美德之一的“节制”（Temperance），即自律。本书通过大量历史人物的故事，阐述了如何通过掌控身体、心性和灵魂，最终主宰自己的命运。</p>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-button active" onclick="openTab(event, 'body-tab')">I. 身体 · The Exterior</button>
+            <button class="tab-button" onclick="openTab(event, 'temperament-tab')">II. 心性 · The Inner Domain</button>
+            <button class="tab-button" onclick="openTab(event, 'soul-tab')">III. 灵魂 · The Magisterial</button>
+        </nav>
+
+        <main>
+            <div id="body-tab" class="tab-content active">
+                <div class="point-grid" id="body-points"></div>
+            </div>
+
+            <div id="temperament-tab" class="tab-content">
+                <div class="point-grid" id="temperament-points"></div>
+            </div>
+
+            <div id="soul-tab" class="tab-content">
+                <div class="point-grid" id="soul-points"></div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>交互式摘要根据 Ryan Holiday 的《Discipline Is Destiny》一书制作。</p>
+        </footer>
+    </div>
+
+    <script>
+        const pointsData = {
+            body: [
+                { title: '掌控身体', person: '卢·格里格 (Lou Gehrig)', desc: '自律始于对身体的掌控。一切伟大的成就都建立在健康的体魄和强大的耐力之上。', fact: '棒球运动员卢·格里格，人称“铁马”，忍受着骨折和伤病，连续出场2130场比赛，创造了半个多世纪无人能破的纪录。', opinion: '真正的强大并非永不受伤，而是在伤痛中依然坚持履行职责。身体是意志力的训练场。' },
+                { title: '清晨出击', person: '托妮·莫里森 (Toni Morrison)', desc: '在世界苏醒之前，利用宁静的清晨完成最重要、最需要创造力的工作。', fact: '诺贝尔文学奖得主托妮·莫里森作为单身母亲和全职编辑，坚持在每天凌晨4点起床写作，利用日出前的宝贵时间创作了多部杰作。', opinion: '清晨的意志力和精力最充沛。赢得清晨，就赢得了这一天。' },
+                { title: '刻苦即至善', person: '西奥多·罗斯福 (Theodore Roosevelt)', desc: '舒适和懒惰是潜能的坟墓。拥抱“刻苦的生活”，通过体育锻炼和挑战来塑造强健的体魄和坚韧的意志。', fact: '罗斯福总统童年体弱多病，但他通过持续的拳击、远足、骑马等高强度运动，彻底改变了自己，并精力充沛地领导国家。', opinion: '锻炼不仅塑造肌肉，更塑造意志力。身体的强健是精神力量的基石。' },
+                { title: '戒除奴役', person: '德怀特·艾森豪威尔 (Dwight Eisenhower)', desc: '识别并戒除那些控制你的坏习惯，无论是香烟、酒精还是社交媒体。真正的自由是“免于被奴役的自由”。', fact: '艾森豪威尔有长达38年、每天三到四包的烟瘾，但在49年下定决心后，他“冷火鸡式”地彻底戒烟，再未复吸。', opinion: '任何让我们失去“拒绝的自由”的东西，都在奴役我们。掌控自己，而非被欲望掌控。' },
+                { title: '摒弃多余', person: '老加图 (Cato the Elder)', desc: '简化生活，拒绝不必要的物质欲望。一个满足于基本需求的人，内心更自由，也更难被外界诱惑。', fact: '古罗马政治家老加图生活简朴，喝与奴隶一样的酒，穿最普通的衣服。他认为“如果东西是多余的，那它就不便宜”。', opinion: '真正的财富是自主权。拥有的越少，欲望越低，你就越富有、越强大。' },
+                { title: '整理你的书桌', person: '罗伯特·摩西 (Robert Moses)', desc: '外部的秩序能带来内心的平静。一个整洁有序的工作空间能提升效率，减少压力，让你更专注于重要事务。', fact: '纽约传奇城市规划师罗伯特·摩西从不在抽屉里办公，他用一张大桌子，确保所有文件都必须被立即处理，从而高效地推进了无数项目。', opinion: '混乱的环境会滋生混乱的思维。先建立秩序，再进行创造。' },
+                { title: '坚持出场', person: '托马斯·爱迪生 (Thomas Edison)', desc: '成功的关键并非总是灵光乍现，而是日复一日地出现在实验室、办公室或训练场。坚持本身就能创造运气。', fact: '爱迪生将他的成功归功于“日夜守在实验室”。他认为，如果有什么事情发生，他恰好在那里抓住了它，这就是天才。', opinion: '你不需要每天都状态绝佳，但你必须每天都到场。持之以恒是超能力。' },
+                { title: '专注细节', person: '约翰·伍登 (John Wooden)', desc: '伟大的成就建立在对微小细节的极致关注之上。基础不牢，地动山摇。', fact: '传奇篮球教练约翰·伍登每个赛季的第一堂训练课，都是从教球员如何正确地穿袜子和鞋子开始，以防止水泡影响比赛。', opinion: '魔鬼在细节中，救赎也在细节中。把小事做对，大事才能成功。' },
+                { title: '管理负荷', person: '格雷格·波波维奇 (Gregg Popovich)', desc: '自律不仅是挑战极限，也包括明智地休息和恢复。过度工作是“最虚假的经济学”。', fact: '马刺队主教练波波维奇首创“负荷管理”，战略性地让核心球员轮休，为此不惜被联盟罚款25万美元，但最终延长了球员生涯并赢得了总冠军。', opinion: '可持续的成功需要张弛有度。休息不是懒惰，而是为了更好地前行。' },
+                { title: '睡眠是品格', person: '詹姆斯·斯塔夫里迪斯 (James Stavridis)', desc: '将睡眠视为一项重要的纪律。充足、高质量的睡眠是保持最佳身体和精神状态的关键。', fact: '美国海军上将斯塔夫里迪斯将“睡眠纪律”引入军舰管理，他认为保障船员的睡眠是一种品格行为，能极大地提升作战能力。', opinion: '疲惫时我们更容易犯错、情绪失控。掌控夜晚，才能掌控白天。' },
+                { title: '忍耐极限', person: '欧内斯特·沙克尔顿 (Ernest Shackleton)', desc: '人生总会遇到看似无法承受的艰难困苦。真正的考验在于我们能忍受多少，并继续前行。', fact: '探险家沙克尔顿的“坚忍号”被困南极浮冰，他和船员在经历了沉船、海上漂流等极限考验后，最终全员获救。他的家族座右铭是：“靠坚忍去征服”。', opinion: '几乎所有伟人都极为坚韧。他们能忍受痛苦、孤独和挫折，并将其转化为力量。' },
+            ],
+            temperament: [
+                { title: '掌控心性', person: '伊丽莎白二世女王 (Queen Elizabeth II)', desc: '身体的自律之上，是心性的掌控。面对权力的诱惑、公众的压力和个人生活的波折，保持冷静、理性和沉稳。', fact: '女王在位70年，经历了无数政治风波、家庭危机和恐怖袭击，但始终以其非凡的镇定和克制示人，几乎从未在公共场合失态。', opinion: '比才智更重要的是性情。稳定的性情是长期成功的关键。' },
+                { title: '冷静审视', person: '乔治·华盛顿 (George Washington)', desc: '在刺激和回应之间留出思考的空间。用“温和哲学的冷静之光”来审视一切，避免被第一印象和情绪冲动所左右。', fact: '华盛顿并非天生沉稳，他脾气火爆，但他一生都在努力约束自己。杰斐逊评价他“在权衡所有情况之前从不行动”。', opinion: '暂停的能力是智慧的开端。不要让恐惧、愤怒或偏见替你做决定。' },
+                { title: '要事第一', person: '布克·华盛顿 (Booker T. Washington)', desc: '明确你生命中最重要的事情，然后有纪律地对其他所有事情说"不"。', fact: '作为塔斯基吉学院的创办者，布克·华盛顿事务繁忙，但他清楚自己的核心使命是提升黑人教育，因此拒绝了无数无关的请求和干扰。', opinion: '你说的每一个“是”，都意味着对另一件事说了“不”。保护你的时间和精力，专注于你的“主战场”。' },
+                { title: '极度专注', person: '路德维希·凡·贝多芬 (Ludwig van Beethoven)', desc: '在充满干扰的世界里，深度专注是一种超能力。全身心地投入到当前的任务中，达到物我两忘的境界。', fact: '贝多芬在构思音乐时会进入一种被称为“raptus”的恍惚状态，完全沉浸其中，对外界毫无反应，即使朋友与他交谈。这种极度的专注是他创作伟大的源泉。', opinion: '灵感缪斯从不青睐心不在焉的人。' },
+                { title: '等待甜果', person: '乔伊斯·卡罗尔·欧茨 (Joyce Carol Oates)', desc: '耐心是苦涩的，但它的果实是甜美的。伟大的作品和决策都需要时间来酝酿和成熟。', fact: '高产作家欧茨完成手稿初稿后，会将其放入抽屉里搁置一年甚至更久，以便获得必要的距离感和客观视角来进行修改。', opinion: '冲动行事往往导致错误和遗憾。学会等待，等待合适的时机，等待自己变得更成熟。' },
+                { title: '完美主义是恶习', person: '玛莎·葛兰姆 (Martha Graham)', desc: '对完美的过度追求会导致瘫痪和拖延。完成比完美更重要。', fact: '现代舞之母玛莎·葛兰姆曾因对作品《典礼》不满意而陷入创作僵局，几乎放弃。她的音乐总监劝她：“你不可能永远在同一水平上创作，完成它，继续前进。”', opinion: '因为害怕不够完美而不敢发布的作品，本身就是一种失败。' },
+                { title: '先做困难之事', person: '威廉·斯塔福德 (William Stafford)', desc: '每天一早就处理掉最困难、最不想做的那件事（“吃掉那只青蛙”）。之后的一天都会变得轻松。', fact: '诗人威廉·斯塔福德的日常准则是：“先做困难的事情”。这不仅是一种时间管理技巧，更是一种战胜拖延的纪律。', opinion: '拖延是最大的精力消耗器。立即行动，先难后易，你会赢得一整天的主动权。' },
+                { title: '跌倒后能否站起', person: '弗洛伊德·帕特森 (Floyd Patterson)', desc: '我们都会犯错、失败。自律的关键不在于永不跌倒，而在于跌倒后有重新站起来的决心和行动。', fact: '帕特森是历史上第一位在失去重量级拳王金腰带后，又重新夺回它的人。他在惨败后曾一度消沉，但最终重整旗鼓，实现了逆袭。', opinion: '失败不是终点，放弃才是。纪律让你在失败后重新开始，而非自暴自弃。' },
+                { title: '对抗激情', person: '温斯顿·丘吉尔 (Winston Churchill)', desc: '激情（Passion）——无论是愤怒、欲望还是狂喜——都是一种短暂的疯狂。被它控制会让我们做出追悔莫及的事。', fact: '山姆·卡塞尔在NBA季后赛投中关键球后，因做出不雅的“大心脏”庆祝动作而拉伤了臀部，导致球队输掉了系列赛。', opinion: '你可以拥有激情，但决不能成为激情的奴隶。在行动前，让理智占上风。' },
+                { title: '沉默是金', person: '斯巴达人 (Spartans)', desc: '言多必失。有力量的人通过少说来给人留下深刻印象并保持威严。', fact: '斯巴达人以其简洁（laconic）的言辞著称。当波斯使者威胁“我们的箭矢将遮蔽太阳”时，斯巴达国王回答：“那我们正好在阴凉处作战。”', opinion: '用两只耳朵听，用一张嘴说。让你的行动替你发声。' },
+            ],
+            soul: [
+                { title: '提升自我', person: '安东尼·庇护 & 马可·奥勒留', desc: '自律的最高境界，是将对身体和心性的掌控，升华为一种服务他人的高尚品格，尤其是在拥有权力之时。', fact: '罗马皇帝安东尼·庇护被指定为继承人，条件是必须收养马可·奥勒留并培养他成为接班人。他非但没有嫉妒，反而倾尽心力，成为马可一生的榜样。马可掌权后，第一件事就是将一半权力分给自己的继兄弟。', opinion: '真正的伟大不仅在于成就自己，更在于成就他人。权力是考验品格的终极试金石。' },
+                { title: '严于律己，宽以待人', person: '小加图 (Cato the Younger)', desc: '将最高的标准用于要求自己，同时对他人的不完美保持宽容和理解。', fact: '以严苛著称的斯多葛主义者小加图，对他生活奢侈的兄弟却充满爱与包容。他认为，每个人都有权选择自己的生活方式。', opinion: '自律是针对自己的修行，而非评判他人的标尺。强求他人与你一样，是一种傲慢。' },
+                { title: '成为榜样', person: '乔治六世国王 (King George VI)', desc: '你的自律行为本身就是一种强大的力量，它会像涟漪一样扩散，激励和影响周围的人变得更好。', fact: '乔治六世国王克服了严重的口吃，在二战期间发表了鼓舞人心的演讲。他的勇气和坚韧，不仅激励了英国人民，也深深影响了他的女儿伊丽莎白二世女王。', opinion: '以身作则，胜于千言万语。我们通过成为更好的自己，来让世界变得更好。' },
+                { title: '压力下的优雅', person: '马丁·路德·金 (Martin Luther King Jr.)', desc: '真正的勇气是在巨大压力、危机和挑衅下，依然保持镇定、理性和尊严。', fact: '在一次演讲中，一名白人种族主义者冲上台殴打马丁·路德·金。他没有还手，而是平静地承受，并阻止了愤怒的听众报复，坚持要为攻击者祈祷。', opinion: '在危机时刻，我们的反应定义了我们是谁。优雅不是天生的，是通过反复的自律训练得来的。' },
+                { title: '为他人负重', person: '詹姆斯·马蒂斯将军 (James Mattis)', desc: '领导力不是特权，而是责任。真正的领导者会主动为下属分担重担，将团队的利益置于个人之上。', fact: '马蒂斯将军在担任准将时，曾在圣诞节当天主动代替一名有家庭的年轻士兵站岗，让他能回家与亲人团聚。', opinion: '身先士卒，危难时冲在最前，享受时退居最后。这是赢得尊重的唯一途径。' },
+                { title: '善待自己', person: '克林西安 (Cleanthes)', desc: '自律不是自我憎恨或自我惩罚。在严格要求自己的同时，也要学会像对待朋友一样善待自己，尤其是在犯错之后。', fact: '斯多葛哲学家克林西安看到一个人因犯错而痛骂自己时，上前温和地提醒他：“请记住，你不是在和一个坏人说话。”', opinion: '自我同情和自我鞭策并不矛盾。从爱与支持出发，我们才能更好地成长。' },
+                { title: '放弃权力的力量', person: '乔治·华盛顿 (George Washington)', desc: '追求权力是本能，但懂得在何时、以何种方式放弃权力，是一种更高层次的智慧和力量。', fact: '领导大陆军赢得独立战争后，华盛顿本可以成为国王，但他效仿罗马共和国的辛辛那图斯，主动辞去总司令职务，交还权力，回归平民生活。', opinion: '权力会揭示一个人的本性。那些不贪恋权力的人，才最适合拥有权力。' },
+                { title: '适时退出', person: '敦刻尔克大撤退 (Dunkirk)', desc: '前进需要勇气，但有纪律、有秩序地撤退有时需要更大的勇气和智慧。', fact: '敦刻尔克大撤退虽然是军事上的失败，但其有序和坚韧的过程，保留了盟军的有生力量，为最终胜利奠定了基础，反而极大地鼓舞了英国的士气。', opinion: '懂得何时止损，何时离场，是一种关键的战略纪律。顽固不化不是坚韧。' },
+                { title: '忍受不可忍受之事', person: '路德维希·凡·贝多芬 (Ludwig van Beethoven)', desc: '生命中总有某些时刻，我们会面临几乎无法承受的痛苦和绝望。自律的终极考验，就是忍受这一切，并坚持活下去。', fact: '贝多芬在双耳失聪、爱情失败、事业受挫的多重打击下，曾写下遗书，濒临自杀。但最终，他对艺术的责任感让他坚持了下来，并创作出了最伟大的交响乐。', opinion: '有时候，仅仅是活着，就是一种勇敢的行为。' },
+                { title: '灵活性即力量', person: '宫本武藏 (Miyamoto Musashi)', desc: '纪律不应僵化为一成不变的规则。真正的强者是灵活的，能根据环境变化调整策略，而非固守陈规。', fact: '日本剑圣宫本武藏从不拘泥于一种武器或战术。他研究艺术、诗歌，以保持思维的开放性，并能用船桨等非常规武器击败对手。', opinion: '坚硬的橡树易被暴风折断，柔韧的芦苇却能存活。原则要坚定，方法需灵活。' },
+                { title: '不为成功所变', person: '安格拉·默克尔 (Angela Merkel)', desc: '成功的最大考验，是在拥有了一切之后，依然能保持初心和简朴。', fact: '作为德国总理，默克尔多年来一直住在同一间普通的公寓里，自己去超市购物。她认为，无论地位如何变化，她本质上还是那个“牧师的女儿”。', opinion: '当所有外部约束都消失时，自律就成了唯一的依靠。成功不是放松纪律的理由，而是加倍需要它的时刻。' }
+            ]
+        };
+
+        function openTab(evt, tabName) {
+            let i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+                tabcontent[i].classList.remove('active');
+            }
+            tablinks = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            document.getElementById(tabName).classList.add('active');
+            evt.currentTarget.className += " active";
+            
+            // 重新计算卡片高度
+            setTimeout(() => {
+                const activeGrid = document.querySelector('.tab-content.active .point-grid');
+                if (activeGrid) {
+                    const cards = activeGrid.querySelectorAll('.flashcard-container');
+                    cards.forEach(card => {
+                        if (card.querySelector('.card-back').scrollHeight > 220) {
+                            const height = card.querySelector('.card-back').scrollHeight;
+                            card.style.minHeight = height + 'px';
+                            card.querySelector('.flashcard').style.minHeight = height + 'px';
+                            card.querySelector('.card-front').style.minHeight = height + 'px';
+                            card.querySelector('.card-back').style.minHeight = height + 'px';
+                        }
+                    });
+                }
+            }, 100);
+        }
+
+        function createFlashcard(point) {
+            const container = document.createElement('div');
+            container.className = 'flashcard-container';
+
+            const card = document.createElement('div');
+            card.className = 'flashcard';
+
+            const front = document.createElement('div');
+            front.className = 'card-front';
+            front.innerHTML = `<h3>${point.title}</h3><span>点击查看详情</span>`;
+
+            const back = document.createElement('div');
+            back.className = 'card-back';
+            back.innerHTML = `
+                <h3>${point.title}</h3>
+                <span class="person">代表人物: ${point.person}</span>
+                <p class="desc">${point.desc}</p>
+                <div class="highlight fact">${point.fact}</div>
+                <div class="highlight opinion">${point.opinion}</div>
+                <div style="text-align:center; margin-top:15px; font-size:0.9em; color:#888;">点击卡片返回</div>
+            `;
+
+            card.appendChild(front);
+            card.appendChild(back);
+            container.appendChild(card);
+            
+            // 使用mousedown而不是click事件，避免与hover效果冲突
+            container.addEventListener('mousedown', (e) => {
+                e.preventDefault(); // 防止选择文本
+                card.classList.toggle('is-flipped');
+            });
+            
+            // 添加触摸支持
+            container.addEventListener('touchstart', (e) => {
+                if (e.cancelable) {
+                    e.preventDefault();
+                    card.classList.toggle('is-flipped');
+                }
+            });
+
+            return container;
+        }
+
+        function populateGrid(gridId, data) {
+            const grid = document.getElementById(gridId);
+            grid.innerHTML = ''; // Clear existing cards before populating
+            data.forEach(point => {
+                const cardElement = createFlashcard(point);
+                grid.appendChild(cardElement);
+            });
+            
+            // 调整卡片高度
+            setTimeout(() => {
+                const cards = grid.querySelectorAll('.flashcard-container');
+                cards.forEach(card => {
+                    if (card.querySelector('.card-back').scrollHeight > 220) {
+                        const height = card.querySelector('.card-back').scrollHeight;
+                        card.style.minHeight = height + 'px';
+                        card.querySelector('.flashcard').style.minHeight = height + 'px';
+                        card.querySelector('.card-front').style.minHeight = height + 'px';
+                        card.querySelector('.card-back').style.minHeight = height + 'px';
+                    }
+                });
+            }, 100);
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            populateGrid('body-points', pointsData.body);
+            populateGrid('temperament-points', pointsData.temperament);
+            populateGrid('soul-points', pointsData.soul);
+            
+            // 确保默认标签页正确激活
+            document.querySelector('.tab-button.active').click();
+            
+            // 添加窗口调整大小时重新计算卡片高度
+            window.addEventListener('resize', () => {
+                const activeGrid = document.querySelector('.tab-content.active .point-grid');
+                if (activeGrid) {
+                    setTimeout(() => {
+                        const cards = activeGrid.querySelectorAll('.flashcard-container');
+                        cards.forEach(card => {
+                            // 重置高度
+                            card.style.minHeight = '220px';
+                            card.querySelector('.flashcard').style.minHeight = '220px';
+                            card.querySelector('.card-front').style.minHeight = '220px';
+                            card.querySelector('.card-back').style.minHeight = '220px';
+                            
+                            // 重新计算
+                            if (card.querySelector('.card-back').scrollHeight > 220) {
+                                const height = card.querySelector('.card-back').scrollHeight;
+                                card.style.minHeight = height + 'px';
+                                card.querySelector('.flashcard').style.minHeight = height + 'px';
+                                card.querySelector('.card-front').style.minHeight = height + 'px';
+                                card.querySelector('.card-back').style.minHeight = height + 'px';
+                            }
+                        });
+                    }, 200);
+                }
+            });
+            
+            // 防止iOS Safari上的滚动问题
+            document.querySelectorAll('.card-back').forEach(back => {
+                back.addEventListener('touchmove', e => {
+                    e.stopPropagation();
+                });
+            });
+        });
+
+    </script>
+</body>
+</html>
