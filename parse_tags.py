@@ -68,6 +68,16 @@ def parse_yaml_header(html_content):
     
     return None
 
+def parse_meta_yaml(meta_yaml_path):
+    """从meta.yaml文件中解析内容"""
+    try:
+        with open(meta_yaml_path, 'r', encoding='utf-8') as f:
+            data = yaml.safe_load(f)
+            return data
+    except Exception as e:
+        print(f"解析 {meta_yaml_path} 时出错: {e}")
+        return None
+
 def get_tag_group(tag):
     """确定标签属于哪个分组"""
     tag_lower = tag.lower()
@@ -90,16 +100,57 @@ def get_tag_group(tag):
     return 'others'
 
 def main():
-    # 获取ai目录中的所有HTML文件
+    # 获取ai目录中的所有HTML文件和meta.yaml文件
     ai_dir = 'ai'
-    html_files = [f for f in os.listdir(ai_dir) if f.endswith(('.html', '.htm'))]
     
     # 收集所有标签
     all_tags = defaultdict(list)  # 标签 -> 文件列表
     tag_groups = defaultdict(set)  # 分组 -> 标签集合
     file_titles = {}  # 文件名 -> 标题
     
+    # 首先处理meta.yaml文件
+    for root, dirs, files in os.walk(ai_dir):
+        if 'meta.yaml' in files:
+            meta_yaml_path = os.path.join(root, 'meta.yaml')
+            yaml_data = parse_meta_yaml(meta_yaml_path)
+            
+            if yaml_data:
+                # 获取对应的HTML文件名
+                dir_name = os.path.basename(root)
+                if dir_name.endswith('_files'):
+                    html_file = dir_name[:-6] + '.html'  # 移除'_files'后缀，添加'.html'
+                else:
+                    continue  # 跳过不符合命名规范的目录
+                
+                # 存储文件标题
+                if 'title' in yaml_data:
+                    file_titles[html_file] = yaml_data['title']
+                else:
+                    file_titles[html_file] = html_file  # 默认使用文件名
+                
+                # 处理标签
+                if 'tags' in yaml_data and yaml_data['tags']:
+                    for tag in yaml_data['tags']:
+                        # 忽略无意义的标签
+                        if tag.lower() in MEANINGLESS_TAGS:
+                            continue
+                        
+                        # 添加到标签索引
+                        all_tags[tag].append(html_file)
+                        
+                        # 分组标签
+                        group = get_tag_group(tag)
+                        if group:
+                            tag_groups[group].add(tag)
+    
+    # 然后处理直接在ai目录下的HTML文件（没有对应meta.yaml的）
+    html_files = [f for f in os.listdir(ai_dir) if f.endswith(('.html', '.htm'))]
+    
     for html_file in html_files:
+        # 跳过已经通过meta.yaml处理过的文件
+        if html_file in file_titles:
+            continue
+            
         file_path = os.path.join(ai_dir, html_file)
         
         try:
