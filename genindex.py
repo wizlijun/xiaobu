@@ -17,24 +17,48 @@ def load_tags_yaml(tags_yaml_path):
         group_display_names = {}
         group_articles = {}
         
-        # 遍历所有分组（除了ignored_tags）
-        for group_name, group_info in tags_data.items():
-            if group_name == 'ignored_tags':
-                continue
-                
-            if isinstance(group_info, dict) and 'tags' in group_info:
-                # 获取分组的显示名称
-                group_display_names[group_name] = group_info.get('name', group_name)
-                
-                # 获取分组的文章列表
-                group_articles[group_name] = group_info.get('articles', [])
+        # 检查是否是新格式（parse_tags.py生成的格式）
+        if 'tag_groups' in tags_data:
+            # 新格式：处理tag_groups
+            # 定义分组的中文显示名称
+            group_chinese_names = {
+                'ai': 'AI人工智能',
+                'bushcraft': '野外技艺',
+                'mind': '思维认知',
+                'se': '软件工程',
+                'others': '其他'
+            }
+            
+            for group_name, tag_list in tags_data['tag_groups'].items():
+                # 设置显示名称（优先使用中文名称）
+                group_display_names[group_name] = group_chinese_names.get(group_name, group_name)
+                group_articles[group_name] = []
                 
                 # 将该分组下的所有标签映射到分组名
-                for tag in group_info['tags']:
+                for tag in tag_list:
                     tag_to_group[tag] = group_name
-        
-        # 获取忽略的标签列表
-        ignored_tags = set(tags_data.get('ignored_tags', []))
+            
+            # 获取忽略的标签列表（新格式中可能没有这个字段）
+            ignored_tags = set(tags_data.get('ignored_tags', []))
+        else:
+            # 旧格式：遍历所有分组（除了ignored_tags）
+            for group_name, group_info in tags_data.items():
+                if group_name == 'ignored_tags':
+                    continue
+                    
+                if isinstance(group_info, dict) and 'tags' in group_info:
+                    # 获取分组的显示名称
+                    group_display_names[group_name] = group_info.get('name', group_name)
+                    
+                    # 获取分组的文章列表
+                    group_articles[group_name] = group_info.get('articles', [])
+                    
+                    # 将该分组下的所有标签映射到分组名
+                    for tag in group_info['tags']:
+                        tag_to_group[tag] = group_name
+            
+            # 获取忽略的标签列表
+            ignored_tags = set(tags_data.get('ignored_tags', []))
                 
         return tag_to_group, group_display_names, group_articles, ignored_tags
     except Exception as e:
