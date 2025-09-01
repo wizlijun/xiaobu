@@ -7,7 +7,8 @@ from collections import defaultdict
 # 定义分组关键词
 TAG_GROUPS = {
     'bushcraft': ['bushcraft', 'outdoor', 'camping', '露营', '野外', '生存', '技艺', 'survival', 'nature', 'skills', 'crafts', 'blacksmith', 'birchbark', 'cooking', 'talkbc', 'fullbc', 'outdoors', 'axe', 'gear', 'tent', 'fire', 'archaeology', 'fire-making', 'woodcraft', 'scouting', 'military', 'wilderness', 'healing'],
-    'ai': ['ai', 'llm', 'gpt', 'claude', 'gemini', 'model', '人工智能', '大模型', 'openai', 'altman', 'microsoft', 'meta', 'atlassian', 'anthropic', 'agi', 'chatgpt', 'models', 'robot', 'copilot', 'github', 'tts', 'speech', 'agent', 'context', 'routine', 'rag', 'cot', 'security', 'gpt5', 'genai', 'agentic', 'sophistication', 'ai-native', 'devops', 'delivery'],
+    'ai': ['ai', 'llm', 'gpt', 'gemini', 'model', '人工智能', '大模型', 'openai', 'altman', 'microsoft', 'meta', 'atlassian', 'agi', 'chatgpt', 'models', 'robot', 'copilot', 'github', 'tts', 'speech', 'agent', 'context', 'routine', 'rag', 'cot', 'security', 'gpt5', 'genai', 'agentic', 'sophistication', 'ai-native', 'devops', 'delivery'],
+    'claude': ['claude', 'anthropic', 'sonnet', 'haiku', 'opus', 'constitutional', 'helpful', 'harmless', 'honest', 'ai助手', 'claude助手', 'anthropic ai', 'claude ai', 'cc', 'claude code', 'cli', 'ai coding'],
     'mind': ['mind', 'psychology', 'cognitive', 'mental', 'brain', '思维', '心理', '认知', '大脑', 'philosophy', 'stoic', 'stoicism', 'learning', 'education', 'taxonomy', 'youth', 'society', 'community', 'belonging', 'life', 'anthropology', 'evolution', 'neuroscience', 'motivation', 'creativity', 'neuroplasticity', 'adhd', 'focus', 'consciousness', 'behavior', 'human', 'meaning', 'meditation', 'practice', 'taoism', 'wisdom', 'ethics', 'success', 'career', 'mindfulness', 'self-development', 'patience', 'communication', 'social', 'parenting', 'anxiety', 'emotion', 'value', 'minimalism', 'knowledge'],
     'se': ['software', 'programming', 'code', 'development', 'engineering', '软件', '编程', '代码', '开发', 'tools', 'pkm', 'roam', 'notes', 'productivity', 'research', 'business', 'management', 'coordination', 'leadership', 'coding', 'review', 'specification', 'lsp', 'compiler', 'methodology', 'se', 'rovo', 'scaling', 'infrastructure', 'investment', 'technology', 'startup', 'entrepreneur', 'interview', 'product', 'enterprise', 'decision', 'strategy', 'opensource', 'sales', 'b2b', 'pricing', 'saas', 'cursor', 'kiro', 'python', 'history', 'innovation', 'project', 'planning', 'evolution', 'professionalization'],
     'others': []  # 空分组，不使用
@@ -44,7 +45,6 @@ DIRECT_TAG_MAPPING = {
     'meta': 'ai',
     'microsoft': 'ai',
     'altman': 'ai',
-    'anthropic': 'ai',
     'agi': 'ai',
     'chatgpt': 'ai',
     'models': 'ai',
@@ -64,12 +64,30 @@ DIRECT_TAG_MAPPING = {
     'agentic': 'ai',
     'sophistication': 'ai',
     'ai-native': 'ai',
-    'claude': 'ai',
     'openai': 'ai',
     'llm': 'ai',
     'gpt': 'ai',
     'ml': 'ai',
     'machine learning': 'ai',
+    
+    # Claude相关
+    'claude': 'claude',
+    'anthropic': 'claude',
+    'sonnet': 'claude',
+    'haiku': 'claude',
+    'opus': 'claude',
+    'constitutional': 'claude',
+    'helpful': 'claude',
+    'harmless': 'claude',
+    'honest': 'claude',
+    'ai助手': 'claude',
+    'claude助手': 'claude',
+    'anthropic ai': 'claude',
+    'claude ai': 'claude',
+    'assistant': 'claude',
+    'chatbot': 'claude',
+    'conversational ai': 'claude',
+    'ai chat': 'claude',
     
     # Mind相关
     'society': 'mind',
