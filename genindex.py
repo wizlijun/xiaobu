@@ -22,11 +22,12 @@ def load_tags_yaml(tags_yaml_path):
             # 新格式：处理tag_groups
             # 定义分组的中文显示名称
             group_chinese_names = {
-                'ai': 'AI人工智能',
-                'bushcraft': '野外技艺',
-                'mind': '思维认知',
-                'se': '软件工程',
-                'others': '其他'
+                'ai': 'AI',
+                'bushcraft': 'Bushcraft',
+                'claude': 'Claude',
+                'mind': 'Mind',
+                'se': 'Software Engineering',
+                'others': 'Others'
             }
             
             for group_name, tag_list in tags_data['tag_groups'].items():
