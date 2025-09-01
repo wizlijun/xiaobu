@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Pull latest changes first
+git pull
+if [ $? -ne 0 ]; then
+    echo "Error: git pull failed. Exiting."
+    exit 1
+fi
+
 python3 -m venv venv
 source venv/bin/activate
 
