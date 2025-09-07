@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>论文摘要：语言模型为何会产生幻觉</title>
+    <style>
+        :root {
+            --primary-color: #333;
+            --secondary-color: #555;
+            --bg-color: #ffffff;
+            --accent-color: #007bff;
+            --fact-bg: #e6f7ff;
+            --fact-border: #91d5ff;
+            --opinion-bg: #fffbe6;
+            --opinion-border: #ffe58f;
+            --shadow: 0 4px 8px rgba(0,0,0,0.05);
+            --border-radius: 8px;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.7;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 20px;
+        }
+        header h1 {
+            font-size: 2.2em;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        header p {
+            font-size: 1.1em;
+            color: var(--secondary-color);
+        }
+        details {
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+        details[open] {
+            background-color: var(--bg-color);
+        }
+        summary {
+            font-size: 1.2em;
+            font-weight: 600;
+            padding: 18px 20px;
+            cursor: pointer;
+            outline: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s ease;
+        }
+        summary:hover {
+            background-color: #f0f0f0;
+        }
+        summary::after {
+            content: '＋';
+            font-size: 1.5em;
+            color: var(--accent-color);
+            transition: transform 0.3s ease;
+        }
+        details[open] summary::after {
+            transform: rotate(45deg);
+        }
+        .content {
+            padding: 0 20px 20px 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .highlight {
+            padding: 15px;
+            margin-top: 15px;
+            border-left-width: 5px;
+            border-left-style: solid;
+            border-radius: 4px;
+        }
+        .fact {
+            background-color: var(--fact-bg);
+            border-color: var(--fact-border);
+        }
+        .opinion {
+            background-color: var(--opinion-bg);
+            border-color: var(--opinion-border);
+        }
+        .highlight strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1.05em;
+        }
+        ul {
+            list-style-type: '» ';
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        code {
+            background-color: #eee;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>论文摘要：语言模型为何会产生幻觉</h1>
+            <p>一篇关于大型语言模型 (LLM) 产生看似合理却错误陈述的统计学根源和社会技术因素的分析。</p>
+        </header>
+
+        <details>
+            <summary>核心论点：问题的本质</summary>
+            <div class="content">
+                <div class="highlight opinion">
+                    <strong>核心观点</strong>
+                    语言模型之所以会产生幻觉，是因为其训练和评估机制系统性地<strong>奖励“猜测”行为</strong>，而不是在不确定时承认“不知道”。这并非一个神秘的技术缺陷，而是统计压力和评估体系错位共同导致的结果。
+                </div>
+                <ul>
+                    <li><strong>预训练阶段</strong>：幻觉源于模型在学习区分事实与错误时的统计性失败，类似于二元分类问题中的错误。</li>
+                    <li><strong>后训练阶段</strong>：现有的主流评测基准（Leaderboards）大多采用“非对即错”的评分模式，这激励模型即使在不确定时也要去猜测答案，以最大化预期得分，从而使幻觉问题持续存在。</li>
+                </ul>
+            </div>
+        </details>
+
+        <details>
+            <summary>第一部分：幻觉的起源 (预训练)</summary>
+            <div class="content">
+                <p>论文认为，即使训练数据完全正确，预训练的目标也会自然地导致模型产生错误和幻觉。</p>
+                
+                <div class="highlight opinion">
+                    <strong>关键洞察：生成问题 ⟺ 分类问题</strong>
+                    论文创新性地将“生成有效文本”这一无监督学习问题，<strong>归约（reduce）</strong>为“判断一个句子是否有效”的二元分类问题 (Is-It-Valid, IIV)。
+                    <br><br>
+                    如果一个模型无法准确地判断一个陈述的真伪（分类），那么它在生成文本时也必然会犯错（生成）。论文给出了一个数学关系式：
+                    <br>
+                    <code>(生成错误率) ≳ 2 × (IIV 分类错误率)</code>
+                </div>
+
+                <div class="highlight fact">
+                    <strong>导致分类错误的统计因素</strong>
+                    <ul>
+                        <li><strong>知识缺失/任意事实</strong>：当事实之间没有可学习的模式时（如个人生日），模型难以泛化。论文指出，对于那些在训练数据中仅出现过一次的事实（“孤例”），模型产生幻觉的概率至少与这些“孤例”在数据中的占比相当。</li>
+                        <li><strong>模型能力不足 (Poor Models)</strong>：模型结构或参数可能不足以捕捉某些概念。
+                            <br><em><strong>例</strong>：早期的N-gram模型无法处理长距离依赖，导致语法错误。现代模型因其Tokenization（分词）方式，在简单的字符计数任务（如"DEEPSEEK"中有几个'D'）上表现不佳。</em></li>
+                        <li><strong>分布偏移</strong>：当模型遇到的提示（prompt）与其训练数据的分布显著不同时，更容易出错。</li>
+                         <li><strong>垃圾进，垃圾出 (GIGO)</strong>：训练数据中本身就包含大量错误信息，模型会学习并复现这些错误。</li>
+                    </ul>
+                </div>
+            </div>
+        </details>
+
+        <details>
+            <summary>第二部分：幻觉的持续 (后训练)</summary>
+            <div class="content">
+                <p>后训练（如 RLHF）旨在减少幻觉，但论文认为，当前的评估生态系统反而阻碍了这一目标的实现。</p>
+
+                <div class="highlight opinion">
+                    <strong>核心观点：“考生困境”</strong>
+                    语言模型就像一个总是在参加考试的学生。大多数基准测试采用二元（0-1）评分，答对得1分，不答或回答“我不知道”(IDK) 得0分。在这种机制下，<strong>猜测是最大化分数的理性策略</strong>。
+                    <br><br>
+                    这导致模型被优化成一个“优秀的应试者”，而不是一个“诚实的知识传达者”。
+                </div>
+
+                <div class="highlight fact">
+                    <strong>事实：对主流评测基准的分析</strong>
+                    论文分析了多个行业内极具影响力的评测基准（如 GPQA, MMLU-Pro, IFEval, SWE-bench 等），发现：
+                    <ul>
+                        <li><strong>绝大多数采用二元评分</strong>：它们的最终指标是准确率（Accuracy）或通过率（Pass Rate）。</li>
+                        <li><strong>对不确定性的惩罚</strong>：回答“我不知道”或任何形式的回避，都会被判为0分，与一个完全错误的胡乱猜测得分相同。</li>
+                        <li><strong>结果</strong>：一个从不产生幻 giác 但会在不确定时拒绝回答的“诚实模型A”，其在这些主流榜单上的排名会低于一个总是大胆猜测的“幻觉模型B”。这形成了一种“惩罚不确定性”的流行病。</li>
+                    </ul>
+                </div>
+            </div>
+        </details>
+
+        <details>
+            <summary>第三部分：解决方案 (社会技术协同)</summary>
+            <div class="content">
+                <p>论文主张，与其开发更多专门的幻觉评测，不如直接修改那些主导着行业方向的主流评测基准，从根本上改变激励机制。</p>
+                <div class="highlight opinion">
+                    <strong>核心提议：引入“置信度目标”</strong>
+                    建议在评测的指令中明确告知模型评分规则，特别是对错误答案的惩罚。
+                    <br><br>
+                    <strong>例如，可以向提示中添加如下说明：</strong>
+                    <p style="background:#f0f7ff; border:1px solid #cce5ff; padding:10px; border-radius:5px; font-style:italic;">
+                    “请只在你<strong>有超过 90% 把握</strong>时回答。因为正确答案得1分，错误答案将<strong>扣除9分</strong>，回答‘我不知道’得0分。”
+                    </p>
+                    <ul>
+                        <li><strong>明确阈值</strong>：这为模型提供了一个清晰的“置信度阈值”（如90%），当其内部判断的正确概率低于此阈值时，选择回答“我不知道”将是更优策略。</li>
+                        <li><strong>改变激励</strong>：通过引入负分，改变了“猜测”的风险收益比，鼓励模型进行更诚实的自我评估。</li>
+                        <li><strong>推动“行为校准”</strong>：促使模型不仅仅是输出一个概率值，而是根据这个概率值采取最合适的行动（回答、拒绝或提供有限信息）。</li>
+                    </ul>
+                </div>
+            </div>
+        </details>
+    </div>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="paper_open_why_hallucinate_files/paper.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
