@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频摘要：Cloud Code 与 GitHub 的高效开发工作流</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.7;
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 25px 40px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            border-bottom: 2px solid #e7eaf1;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        details {
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #e7eaf1;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        details[open] {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        summary {
+            font-size: 1.2em;
+            font-weight: 600;
+            padding: 15px 20px;
+            cursor: pointer;
+            background-color: #fdfdff;
+            color: #34495e;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        summary::-webkit-details-marker {
+            display: none;
+        }
+        summary:after {
+            content: '＋';
+            font-size: 1.5em;
+            color: #7f8c8d;
+            transition: transform 0.2s ease;
+        }
+        details[open] summary:after {
+            transform: rotate(45deg);
+        }
+        .content {
+            padding: 0 20px 20px 20px;
+            border-top: 1px solid #e7eaf1;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        li {
+            padding: 12px 0 12px 25px;
+            position: relative;
+            border-bottom: 1px dashed #eee;
+        }
+        li:last-child {
+            border-bottom: none;
+        }
+        li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            top: 12px;
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .highlight {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        .fact {
+            background-color: #e8f4fd;
+            color: #1a5f9e;
+        }
+        .opinion {
+            background-color: #fffbe6;
+            color: #8a6d3b;
+        }
+        .action {
+            background-color: #e6f9f0;
+            color: #1d7b50;
+            font-weight: bold;
+        }
+        .tool {
+            background-color: #f0eaff;
+            color: #563d7c;
+            border: 1px solid #d1c4e9;
+        }
+        .quote {
+            border-left: 4px solid #bdc3c7;
+            padding-left: 15px;
+            margin: 10px 0;
+            font-style: italic;
+            color: #555;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>视频摘要：Cloud Code 与 GitHub 的高效开发工作流</h1>
+
+        <details open>
+            <summary>核心工作流概览 (The Workflow)</summary>
+            <div class="content">
+                <p>作者介绍了一套结合 <code class="tool">Cloud Code</code> 和 <code class="tool">GitHub</code> 的软件开发工作流，该流程遵循经典的软件开发生命周期（SDLC）：<strong>规划 (Plan) -> 创建 (Create) -> 测试 (Test) -> 部署 (Deploy)</strong>。</p>
+                <ul>
+                    <li><span class="fact"><strong>规划 (Plan):</strong> 为所有待办工作创建精细的 GitHub Issues。</span></li>
+                    <li><span class="fact"><strong>创建 (Create):</strong> 在 Cloud Code 中使用自定义的 <code class="tool">Slash Command</code>，指示 AI 首先使用“草稿本”(Scratchpads) 来规划工作、拆分任务，然后再编写代码。</span></li>
+                    <li><span class="fact"><strong>测试 (Test):</strong> AI 通过两种方式测试其工作：1) 运行项目已有的测试套件；2) 使用 <code class="tool">Puppeteer</code> 在浏览器中模拟点击，以验证UI变更。</span></li>
+                    <li><span class="fact"><strong>部署 (Deploy):</strong> AI 将代码提交到 GitHub 并创建一个拉取请求 (Pull Request)，经过审查（人工或由另一个AI审查）后，合并到主分支，触发自动部署。</span></li>
+                </ul>
+            </div>
+        </details>
+
+        <details>
+            <summary>理念与背景：为何需要此工作流？</summary>
+            <div class="content">
+                <ul>
+                    <li><span class="opinion"><strong>AI时代的“旧瓶装新酒”:</strong> 作者坦言这套流程并非全新发明，而是将软件行业早已熟知的 <code class="tool">GitHub Flow</code> 工作模式应用于 AI 协作。</span> [00:02:26]</li>
+                    <li><span class="opinion"><strong>角色的转变:</strong> 在这个工作流中，作者的角色从“代码编写者”转变为“工程经理”。大部分时间用于编写详细的需求（Issues）、审查AI生成的代码，而不是亲自写码。</span> [00:04:27]</li>
+                    <li><span class="fact"><strong>框架选择:</strong> 作者选择了 <code class="tool">Ruby on Rails</code>，因为它基于MVC（模型-视图-控制器）架构。</span> <span class="opinion">他认为这种模块化的代码库结构，比单一巨大的文件（如 `main.py`）更有利于 AI 编程助手理解和操作。</span> [00:05:35]</li>
+                </ul>
+            </div>
+        </details>
+
+        <details>
+            <summary>第一步：规划与准备 (Plan & Setup)</summary>
+            <div class="content">
+                <p>坚实的基础是高效迭代的关键。</p>
+                <ul>
+                    <li><span class="action"><strong>创建极其具体的 Issues:</strong> 最初的失败经验表明，直接让 AI 处理宽泛的需求是行不通的。必须投入时间将任务分解成“粒度更细、更具体、更原子化”的 GitHub Issues。</span> [00:04:02]</li>
+                    <li><span class="action"><strong>安装 GitHub CLI:</strong> 这是 Anthropic 推荐的方式，让 Cloud Code 可以通过 Bash 命令 (<code>gh</code>) 与 GitHub 交互。</span> [00:03:19]</li>
+                    <li><span class="action"><strong>优先建立测试体系:</strong> 在开发功能前，先让 AI 建立起测试套件和持续集成 (CI)。作者使用 <code class="tool">GitHub Actions</code> 在每次提交时自动运行测试和Linter。</span> [00:05:10]</li>
+                    <li><span class="action"><strong>配置 Puppeteer:</strong> 设置 <code class="tool">Puppeteer</code> 本地 MCP 服务器，使 Cloud Code 能够控制一个真实的浏览器来测试UI，例如点击按钮或填写表单，这非常直观且有效。</span> [00:06:08]</li>
+                </ul>
+            </div>
+        </details>
+        
+        <details>
+            <summary>第二三步：创建与测试 (Create & Test)</summary>
+            <div class="content">
+                <ul>
+                    <li><span class="fact"><strong>自定义 Slash Command:</strong> 核心驱动力是一个自定义的斜杠命令（如 <code>/process_issue</code>），它本质上是一个高度优化的 Prompt 模版，详细指导 AI 如何分四步（规划、编码、测试、部署）处理一个 Issue。</span> [00:07:00]</li>
+                    <li><span class="fact"><strong>利用草稿本 (Scratchpads):</strong> 在命令中，明确要求 AI 在正式编码前，先在特定目录（草稿本）中制定详细计划，并将大任务拆分为小步骤。</span> [00:07:51]</li>
+                    <li><span class="opinion"><strong>关于代码提交的责任:</strong> 作者引用了 Thomas Ptacek 的观点：“你永远要为你合并到主分支的代码负责”。</span> <span class="fact">尽管如此，作者承认自己在这个项目中变得“懒惰”，会让 Cloud Code 自动完成代码提交 (commit)。</span> [00:09:42, 00:10:27]</li>
+                    <li><span class="opinion"><strong>测试的信心:</strong> 完备的测试让他有信心授权 AI 提交代码。目标不是100%的代码覆盖率，而是“高度自信”AI在开发新功能时不会破坏旧功能。</span> [00:11:03]</li>
+                </ul>
+            </div>
+        </details>
+
+        <details>
+            <summary>第四步：部署与审查 (Deploy & Review)</summary>
+            <div class="content">
+                <ul>
+                    <li><span class="fact"><strong>自动部署:</strong> 作者使用 <code class="tool">Render</code> 平台，它会监控 GitHub 主分支的变动，一旦有新的合并，就自动部署应用。因此，“合并PR”约等于“上线生产环境”。</span> [00:11:26]</li>
+                    <li><span class="action"><strong>PR 是人类的关键介入点:</strong> 拉取请求 (Pull Request) 是你审查、评论和否决 AI 工作的最佳时机。</span> [00:12:07]</li>
+                    <li><span class="action"><strong>用 AI 审查 AI:</strong> 可以创建另一个 Slash Command（如 <code>/review_pr</code>）来让 Cloud Code 审查它自己或其他 AI 创建的 PR。作者会让 AI 模仿 Rails 社区英雄 <code class="tool">Sandi Metz</code> 的风格进行审查，以发现代码中可维护性和可读性的问题。</span> [00:12:33]</li>
+                     <li><span class="action"><strong>保持上下文纯净:</strong> 每个 Issue 处理完毕并合并PR后，作者会运行 <code>/clear</code> 命令彻底清空上下文窗口。</span> <span class="opinion">这能确保 AI 以“冷启动”状态处理下一个独立的任务，从而获得更好的结果并节省 Token。</span> [00:14:16]</li>
+                </ul>
+            </div>
+        </details>
+
+        <details>
+            <summary>其他技巧与思考</summary>
+            <div class="content">
+                <ul>
+                    <li><span class="opinion"><strong>Cloud Code Console vs. GitHub Actions:</strong> 作者不常用 Anthropic 推出的 GitHub Actions 集成，主要原因是：1) 即使订阅了昂贵的 Claude Max 套餐，通过 Actions 调用仍需按 API 使用量额外付费。2) 他认为在 Console 中能获得更好的洞察和结果。</span> [00:15:01]</li>
+                    <li><span class="opinion"><strong>对 Git Worktrees 的看法:</strong> <code class="tool">Git Worktrees</code> 允许并行运行多个 Cloud Code 实例处理不同任务，就像打多桌扑克。</span> <span class="fact">但作者尝试后发现：1) 早期项目任务依赖性强，难以并行。2) 每次创建新 worktree 都要重新授权，过程繁琐，感觉更像是在“带孩子”，因此放弃了。</span> [00:16:25]</li>
+                </ul>
+            </div>
+        </details>
+
+    </div>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.youtube.com/watch?v=FjHtZnjNEBU" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
