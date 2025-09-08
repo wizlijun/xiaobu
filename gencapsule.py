@@ -50,18 +50,24 @@ def generate_source_html(source):
 
 def generate_links_html(links):
     """生成相关链接的HTML"""
-    if not links:
+    # 明确处理None值和空列表
+    if not links or links is None:
         return ""
     
     html = ['<h3>相关链接</h3>']
     
+    # 确保links是列表格式
     if isinstance(links, str):
         links = [links]
+    elif not isinstance(links, list):
+        # 如果不是字符串也不是列表，跳过处理
+        return ""
     
     for link in links:
-        title, url = parse_link_format(link)
-        if title and url:
-            html.append(f'    <a href="{url}" target="_blank">{title}</a><br>')
+        if link:  # 跳过空字符串或None项
+            title, url = parse_link_format(link)
+            if title and url:
+                html.append(f'    <a href="{url}" target="_blank">{title}</a><br>')
     
     return '\n    '.join(html)
 
@@ -420,8 +426,15 @@ document.addEventListener('DOMContentLoaded', function() {
         # 输出统计信息
         print(f"\n统计信息:")
         print(f"- 原文链接: {'有' if meta_data.get('source') else '无'}")
-        print(f"- 相关链接: {len(meta_data.get('links', []))} 个")
-        print(f"- 附件数量: {len(meta_data.get('attachments', []))} 个")
+        
+        # 安全获取links数量，处理None值
+        links = meta_data.get('links') or []
+        print(f"- 相关链接: {len(links)} 个")
+        
+        # 安全获取attachments数量，处理None值
+        attachments = meta_data.get('attachments') or []
+        print(f"- 附件数量: {len(attachments)} 个")
+        
         print(f"- 修正图片路径: {fixed_images_count} 个")
         
     except Exception as e:
