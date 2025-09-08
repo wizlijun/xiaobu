@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基于AI的规范驱动开发：新开源工具包入门指南</title>
+    <style>
+        body {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fff;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+        }
+        .author-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+        }
+        .process-phase {
+            background-color: #f1f8ff;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #0366d6;
+        }
+        .scenario {
+            background-color: #f6f8fa;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 3px solid #6f42c1;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+        pre {
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+        }
+        ul, ol {
+            padding-left: 30px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        blockquote {
+            border-left: 4px solid #ddd;
+            margin: 20px 0;
+            padding-left: 20px;
+            font-style: italic;
+            color: #666;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+    <h1>基于AI的规范驱动开发：新开源工具包入门指南</h1>
+    
+    <div class="author-info">
+        <h3>开发者可以使用自己选择的AI工具进行规范驱动开发，使用这个开源工具包。</h3>
+        <p><strong>Den Delimarsky·@localden</strong><br>
+        <em>2025年9月2日 | 9分钟阅读</em></p>
+    </div>
+
+    <hr>
+
+    <p>随着编程代理变得越来越强大，一个模式开始显现：你描述你的目标，得到一段代码，通常...看起来是对的，但并不完全奏效。这种"感觉式编程"方法对于快速原型开发可能很好，但在构建严肃的、任务关键型应用程序或处理现有代码库时就不那么可靠了。</p>
+
+    <p>有时代码无法编译。有时它解决了问题的一部分，但错过了实际意图。技术栈或架构可能不是你会选择的。</p>
+
+    <p>问题不在于编程代理的编程能力，而在于我们的方法。我们对待编程代理就像搜索引擎一样，而我们应该更像对待字面意义的结对程序员。它们在模式识别方面表现出色，但仍然需要明确的指令。</p>
+
+    <div class="highlight">
+        <p>这就是为什么我们重新思考规范——不是作为静态文档，而是作为与项目一起发展的活生生的、可执行的工件。规范成为共享的真相来源。当某些东西说不通时，你回到规范；当项目变得复杂时，你完善它；当任务感觉太大时，你把它们分解。</p>
+    </div>
+
+    <p>Spec Kit，我们新的开源规范驱动开发工具包，提供了一个结构化的过程，将规范驱动开发引入你的编程代理工作流程，支持包括GitHub Copilot、Claude Code和Gemini CLI在内的工具。</p>
+
+    <h2>💡 什么是规范驱动开发？</h2>
+    <p>与其先编码后写文档，在规范驱动开发中，你从（你猜对了）规范开始。这是一个关于你的代码应该如何行为的契约，成为你的工具和AI代理用来生成、测试和验证代码的真相来源。结果是更少的猜测，更少的意外，以及更高质量的代码。</p>
+
+    <h2>Spec Kit的规范驱动过程是什么？</h2>
+    <p>Spec Kit让你的规范成为工程过程的中心。不是写一个规范然后把它放在一边，规范驱动实施、检查清单和任务分解。你的主要角色是引导；编程代理做大部分的编写工作。</p>
+
+    <p>它在四个阶段工作，有清晰的检查点。但这里的关键洞察是：每个阶段都有特定的工作，直到当前任务完全验证后，你才能进入下一个阶段。</p>
+
+    <div class="highlight">
+        <p>过程分解如下：</p>
+    </div>
+
+    <div class="process-phase">
+        <h3>规范化（Specify）</h3>
+        <p>你提供你正在构建什么以及为什么的高级描述，编程代理生成详细的规范。这不是关于技术栈或应用设计。这是关于用户旅程、体验和成功的样子。谁将使用这个？它为他们解决什么问题？他们将如何与之互动？什么结果重要？把它想象成映射你想创建的用户体验，让编程代理充实细节。关键是，这成为一个活生生的工件，随着你了解更多关于用户和他们的需求而发展。</p>
+    </div>
+
+    <div class="process-phase">
+        <h3>计划（Plan）</h3>
+        <p>现在你变得技术化。在这个阶段，你向编程代理提供你期望的技术栈、架构和约束，编程代理生成全面的技术计划。如果你的公司标准化某些技术，这是你说明的地方。如果你要与遗留系统集成，有合规要求，或有需要达到的性能目标...所有这些都在这里。你也可以要求多个计划变体来比较和对比不同的方法。如果你让编程代理可以访问你的内部文档，它可以直接将你的架构模式和标准集成到计划中。毕竟，编程代理需要理解游戏规则，然后才开始玩游戏。</p>
+    </div>
+
+    <div class="process-phase">
+        <h3>任务化（Tasks）</h3>
+        <p>编程代理接受规范和计划，并将它们分解成实际工作。它生成小的、可审查的块，每个块解决拼图的特定部分。每个任务都应该是你可以独立实施和测试的东西；这很关键，因为它给编程代理一种验证其工作并保持正轨的方式，几乎就像你的AI代理的测试驱动开发过程。不是"构建身份验证"，你得到具体的任务，如"创建验证电子邮件格式的用户注册端点"。</p>
+    </div>
+
+    <div class="process-phase">
+        <h3>实施（Implement）</h3>
+        <p>你的编程代理逐个处理任务（或在适用的情况下并行处理）。但这里不同的是：不是审查千行代码转储，你作为开发者审查解决特定问题的有针对性的更改。编程代理知道它应该构建什么，因为规范告诉了它。它知道如何构建，因为计划告诉了它。它确切知道要做什么工作，因为任务告诉了它。</p>
+    </div>
+
+    <div class="highlight">
+        <p>关键是，你的角色不只是引导。而是验证。在每个阶段，你反思和完善。规范是否捕捉到了你真正想要构建的东西？计划是否考虑了现实世界的约束？AI是否遗漏了遗漏或边缘情况？该过程建立了明确的检查点，让你批评已生成的内容，发现差距，并在继续前进之前纠正路线。AI生成工件；你确保它们是正确的。</p>
+    </div>
+
+    <h2>如何在你的代理工作流程中使用Spec Kit</h2>
+    <p>Spec Kit与像GitHub Copilot、Claude Code和Gemini CLI这样的编程代理一起工作。关键是使用一系列简单的命令来引导编程代理，然后编程代理为你做生成工件的艰苦工作。</p>
+
+    <p>设置很简单。首先，安装specify命令行工具。这个工具初始化你的项目并设置必要的结构。</p>
+
+    <pre><code>uvx --from git+https://github.com/github/spec-kit.git specify init &lt;PROJECT_NAME&gt;</code></pre>
+
+    <p>一旦你的项目初始化，使用<code>/specify</code>命令提供高级提示，编程代理生成完整规范。专注于你项目的"什么"和"为什么"，而不是技术细节。</p>
+
+    <p>接下来，使用<code>/plan</code>命令引导编程代理创建技术实施计划。在这里，你提供高级技术方向，编程代理将生成尊重你的架构和约束的详细计划。</p>
+
+    <p>最后，使用<code>/tasks</code>命令让编程代理将规范和计划分解成可操作的任务列表。你的编程代理然后将使用这个列表来实施项目需求。</p>
+
+    <div class="highlight">
+        <p>这种结构化的工作流程将模糊的提示转化为编程代理可以可靠执行的清晰意图。</p>
+    </div>
+
+    <h2>为什么这种方法有效</h2>
+    <p>这种方法在"只是提示AI"失败的地方成功，因为语言模型工作的基本真理：它们在模式完成方面非常出色，但不擅长读心术。像"向我的应用添加照片分享"这样的模糊提示迫使模型猜测潜在的数千个未说明的需求。AI会做出合理的假设，有些会是错误的（而且你通常直到深入实施时才会发现哪些不太对）。</p>
+
+    <p>相比之下，预先提供清晰的规范，连同技术计划和有针对性的任务，给编程代理更多的清晰度，提高其整体效力。它知道要构建什么，如何构建，以及按什么顺序，而不是猜测你的需求。</p>
+
+    <p>这就是为什么这种方法在不同技术栈中都有效。无论你是用Python、JavaScript还是Go构建，基本挑战都是一样的：将你的意图转化为工作代码。规范清楚地捕捉意图，计划将其转化为技术决策，任务将其分解为可实施的片段，你的AI编程代理处理实际编码。</p>
+
+    <div class="highlight">
+        <p>对于大型组织，这解决了另一个关键问题：你把所有关于安全策略、合规规则、设计系统约束和集成需求的需求放在哪里？通常，这些东西要么存在于某人的头脑中，要么埋藏在没人阅读的wiki中，要么分散在后来无法找到的Slack对话中。</p>
+    </div>
+
+    <p>使用Spec Kit，所有这些东西都进入规范和计划，AI实际上可以使用它们。你的安全需求不是事后想法；它们从第一天就融入规范。你的设计系统不是你后来添加的东西。它是指导实施的技术计划的一部分。</p>
+
+    <p>这种方法的迭代性质赋予它力量。传统开发将你锁定在早期决策中，规范驱动使改变路线变得简单：只需更新规范，重新生成计划，让编程代理处理其余部分。</p>
+
+    <h2>这种方法特别有效的3个场景</h2>
+    <p>规范驱动开发在三个场景中特别有用：</p>
+
+    <div class="scenario">
+        <h3>1. 绿地项目（从零到一）</h3>
+        <p>当你开始一个新项目时，诱人的是直接开始编码。但少量的前期工作来创建规范和计划确保AI构建你真正打算的东西，而不仅仅是基于常见模式的通用解决方案。</p>
+    </div>
+
+    <div class="scenario">
+        <h3>2. 现有系统中的功能工作（N到N+1）</h3>
+        <p>这是规范驱动开发最强大的地方。向复杂的现有代码库添加功能是困难的。通过为新功能创建规范，你强制明确它应该如何与现有系统互动。然后计划编码架构约束，确保新代码感觉是项目的原生部分，而不是螺栓固定的添加。这使得持续开发更快、更安全。为了使这有效，可能需要高级上下文工程实践——我们将单独涵盖这些。</p>
+    </div>
+
+    <div class="scenario">
+        <h3>3. 遗留系统现代化</h3>
+        <p>当你需要重建遗留系统时，原始意图往往随时间丢失。使用Spec Kit提供的规范驱动开发过程，你可以在现代规范中捕获基本业务逻辑，在计划中设计新架构，然后让AI从头重建系统，而不继承遗留技术债务。</p>
+    </div>
+
+    <div class="highlight">
+        <p>核心好处是将稳定的"什么"与灵活的"如何"分离，实现迭代开发而不需要昂贵的重写。这允许你构建多个版本并快速实验。</p>
+    </div>
+
+    <h2>我们的发展方向</h2>
+    <p>我们正在从"代码是真相来源"转向"意图是真相来源"。通过AI，规范成为真相来源并决定构建什么。</p>
+
+    <p>这不是因为文档变得更重要。这是因为AI让规范可执行。当你的规范自动转化为工作代码时，它决定构建什么。</p>
+
+    <p>Spec Kit是我们让这种转换变为现实的实验。我们开源它是因为这种方法比任何一个工具或公司都大。真正的创新是过程。这里还有更多我们很快会涵盖的内容，特别是关于如何将规范驱动开发实践与上下文工程相结合，在你的AI工具包中构建更高级的能力。</p>
+
+    <div class="highlight">
+        <p>我们很想听到它对你的效果如何，我们可以改进什么！如果你正在使用规范驱动模式构建，请与我们分享你的经验。我们特别好奇：</p>
+        <ul>
+            <li><strong>使工作流程更具参与性和可用性</strong>：阅读大段文本可能很乏味。我们如何使这个过程真正令人愉快？</li>
+            <li><strong>可能的VS Code集成</strong>：我们正在探索将这个工作流程直接引入VS Code的方法。什么对你来说感觉最自然？</li>
+            <li><strong>比较和差异化多个实施</strong>：在实施之间迭代和差异化开启了创造性可能性。什么在这里最有价值？</li>
+            <li><strong>在你的组织中大规模管理规范和任务</strong>：管理大量Markdown文件可能变得令人困惑。什么会帮助你保持组织和专注？</li>
+        </ul>
+    </div>
+
+    <p>我们很兴奋看到你利用AI找出将人类创造力转化为工作软件的更好方法。</p>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://github.blog/ai-and-ml/developers-can-use-their-ai-tool-of-choice-for-spec-driven-development-with-this-open-source-toolkit/" target="_blank">GitHub博客原文</a>
+    <h3>相关链接</h3>
+        <a href="https://github.com/github/spec-kit" target="_blank">Spec Kit GitHub仓库</a><br>
+        <a href="https://github.com/features/copilot" target="_blank">GitHub Copilot</a><br>
+        <a href="https://claude.ai/code" target="_blank">Claude Code</a><br>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
