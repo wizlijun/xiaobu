@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>将 Cursor 常用操作转化为 Claude Code 命令</title>
+    <style>
+        /* 现代化CSS样式 */
+        body {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fff;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+        }
+        .author-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+        }
+        .process-phase {
+            background-color: #f1f8ff;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #0366d6;
+        }
+        .scenario {
+            background-color: #f6f8fa;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 3px solid #6f42c1;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+        pre {
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+        }
+        .problem-highlight {
+            background-color: #ffebee;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #e74c3c;
+            margin: 20px 0;
+        }
+        .solution-step {
+            background-color: #e8f5e8;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #27ae60;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+    <h1>将 Cursor 常用操作转化为 Claude Code 命令</h1>
+
+    <div class="highlight">
+        <p>最近越来越多人开始用 Cursor 的 GUI 交互加上 Claude Code 全自动代理来做笔记系统，我也从中学到了不少玩法。这几天试下来，确实比之前智能了很多。</p>
+        <p>这篇文章分享一下我如何把 Cursor 上那些频繁重复的手动操作，整理成标准化的 prompt，再生成 Claude Code 的自定义命令。</p>
+    </div>
+
+    <h2>背景：重复性工作的痛点</h2>
+
+    <div class="process-phase">
+        <p>我的 <strong>laobu.net</strong> 是个托管在 GitHub 上的静态网页，有一些脚本做本地化处理，都是用 Cursor 和 Claude Code 生成的。在没有 Claude Code 的时候，我用 Cursor 处理 tags 生成。</p>
+        
+        <p>具体流程是这样的：每次要执行一个 prompt，让 Cursor 理解全文，然后按我的要求给那些没有 tags 的文章，逐个生成 3 个纯英文 tag 放入 yaml。Cursor 会调用一系列指令处理，每次调用的指令还不一样，但结果还算满意。最后用 Python 程序生成网站索引。</p>
+    </div>
+
+    <div class="problem-highlight">
+        <strong>问题在于</strong>：每次都要手工执行那一段 prompt，频率很高。让他写成 Python 脚本吧，又用不上 Cursor 的 LLM 能力，他会写出固定的规则匹配，效果不好。
+    </div>
+
+    <h2>解决方案：Prompt 标准化流程</h2>
+
+    <div class="solution-step">
+        <h3>1. 让 Cursor 总结自己的工作</h3>
+        <p>在 Cursor 的对话框中，让他总结我前后提出的 prompt 要求，生成一个可自动运行的 prompt。</p>
+    </div>
+
+    <div class="solution-step">
+        <h3>2. 批改和维护 Prompt</h3>
+        <p>把生成的 prompt 批改一下，去掉跟目的无关的部分，生成 <code>prompt.md</code> 文件维护起来：</p>
+
+        <pre><code>## Context
+
+## 背景
+- 项目目录：`/Users/bruce/git/xiaobu/`
+- 核心目录：`ai/` 包含多个子目录，每个子目录下有 `meta.yaml` 和 `capsule.html` 文件
+- 目标：建立完整的标签分类和索引系统
+
+## 主要任务序列
+
+### 手动标签补全（核心任务）
+**要求：** 逐个处理缺少 `tags` 的 `meta.yaml` 文件
+- 目标文件：所有 `ai/` 子目录下没有 `tags` 字段的 `meta.yaml` 文件
+- 处理方式：**手动逐个处理，不编写自动化程序**
+- 具体步骤：
+  1. 找到缺少 `tags` 的 `meta.yaml` 文件
+  2. 阅读同目录下的 `capsule.html` 文件内容
+  3. 根据内容推断3个最相关的**小写英文**标签
+  4. 将标签以YAML列表格式添加到 `meta.yaml` 文件中
+
+## 技术规范
+
+### 标签规范
+- 数量：每个文件恰好3个标签
+- 格式：小写英文单词
+- 结构：YAML列表格式
+
+```yaml
+tags:
+- tag1
+- tag2
+- tag3
+```
+
+### 工作流程
+1. 使用 `find ai -name "meta.yaml" -exec grep -L "tags:" {} \;` 查找缺少标签的文件
+2. 分批处理（建议每批10个文件）
+3. 对每个文件：读取 → 分析内容 → 推断标签 → 更新文件
+4. 持续追踪进度直到所有文件完成
+
+## 最终目标
+- 所有 `meta.yaml` 文件都包含准确的标签
+
+## 特殊说明
+- **严格要求手动处理**：不允许编写自动化脚本来批量推断标签
+- **内容理解优先**：标签必须基于对文章内容的真实理解
+- **一致性维护**：相似主题的文章应使用相似的标签
+- **质量控制**：每个标签都要准确反映文章核心主题</code></pre>
+    </div>
+
+    <div class="solution-step">
+        <h3>3. 创建 Claude Code 命令</h3>
+        <p>把这个 prompt 放入项目目录下的 <code>.claude/command/processtags.md</code>。</p>
+        <p>还可以加入输入参数，例如命令第一行写入：如果有输入 md 文件，请只处理输入 markdown 文件名 <code>{mdfile}</code></p>
+    </div>
+
+    <div class="solution-step">
+        <h3>4. 自动化执行</h3>
+        <p>在 Claude 中，执行 <code>/processtags</code> 就可以自动化运行了，其中还包含很多自动纠错的过程。</p>
+    </div>
+
+    <div class="solution-step">
+        <h3>5. 集成到工作流</h3>
+        <p>写成 <code>claude -p</code> 的调用脚本，放入到提交 blog 之前的任务中，每次或定期执行。</p>
+    </div>
+
+    <h2>结果</h2>
+
+    <div class="highlight">
+        <p>自此，常用的手动操作就变成了带 LLM 能力的全自动化功能。不仅节省了时间，还保证了处理的一致性和准确性。</p>
+        <p>这种方法可以推广到其他重复性的开发工作中，特别适合那些需要理解内容但又有固定流程的任务。</p>
+    </div>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="/write/20250909_cursor_to_claude_code.md" target="_blank">原文</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
