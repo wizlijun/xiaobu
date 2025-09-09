@@ -122,7 +122,7 @@
 
 ```yaml
 title: {翻译后的标题}
-datetime: {now}
+datetime: '{now}'
 tags:
 - {相关标签1，全小写英文}
 - {相关标签2，全小写英文}  
