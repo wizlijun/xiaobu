@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>从手动到自动：用 Claude Code 构建博客发布工作流</title>
+    <style>
+        /* 现代化CSS样式 */
+        body {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fff;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+        }
+        .author-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+        }
+        .process-phase {
+            background-color: #f1f8ff;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #0366d6;
+        }
+        .scenario {
+            background-color: #f6f8fa;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 3px solid #6f42c1;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+        pre {
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+        }
+        ol, ul {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .workflow-step {
+            background-color: #e8f5e8;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 3px solid #28a745;
+        }
+        blockquote {
+            background-color: #f8f9fa;
+            border-left: 4px solid #6c757d;
+            margin: 20px 0;
+            padding: 15px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>从手动到自动：用 Claude Code 构建博客发布工作流</h1>
+
+    <div class="author-info">
+        <p>最近在思考如何优化我的博客写作流程。之前的方法虽然效果不错，但步骤太多，总觉得可以更简化一些。这篇文章记录了我如何把原本需要多个工具协作的流程，整合成一个 Claude Code 命令搞定的自动化方案。</p>
+    </div>
+
+    <h2>原始工作流的痛点</h2>
+
+    <p>我之前的博客发布流程是这样的，虽然智能但确实繁琐：</p>
+
+    <div class="process-phase">
+        <ol>
+            <li>在 Roam 中一股脑输出想法大纲，这时候经常会有表达错误、啰嗦或不清晰的地方</li>
+            <li>选中全部内容复制到 ChatGPT，让 GPT5 thinking 帮我改成 markdown 文章。校对后基本 95% 没问题，偶尔有问题也是我大纲文本有明显错误造成歧义</li>
+            <li>把 markdown 复制到静态博客 <code>laobu.net</code> 的 <code>/write</code> 目录下，手动命名，有时候还要加上时间</li>
+            <li>使用我在 Claude Code 上写的命令 <code>claude -c pressblog /write/thisblog.md</code>，自动生成静态博客的 HTML、补充 tags 和元数据，然后推送到 GitHub，自动分发到 Vercel 变成博客</li>
+        </ol>
+    </div>
+
+    <p>整个流程需要在三个工具间切换，确实有改进空间。</p>
+
+    <h2>目标：一个命令搞定</h2>
+
+    <div class="highlight">
+        <p>我的理想状态是：<code>claude -c genblog &lt;粘贴大纲&gt;</code>，直接从大纲到发布，中间不需要任何手动操作。</p>
+    </div>
+
+    <h2>实现方法</h2>
+
+    <h3>1. 提取可重复使用的 Prompt</h3>
+
+    <p>首先让 GPT5 thinking 把我之前的写作要求整理成标准化 prompt：</p>
+
+    <pre><code class="language-markdown">请把我刚才的生成blog md的要求，整理为一个prompt，我希望重复使用</code></pre>
+
+    <p>GPT 生成了一个很详细的 prompt，包含了任务要求、语言风格、结构规范等：</p>
+
+    <div class="scenario">
+        <pre><code class="language-javascript">你现在是我的中文技术博文代笔助手。**只依据我提供的大纲内容进行写作**，不得引入任何大纲之外的观点、事实或外链。
+
+【任务】
+- 将我给出的中文要点式"大纲"，整理并扩写为一篇可直接发布的 Markdown 博文。
+- 只在大纲允许的范围内做自然语言润色与结构化表达，不新增情节/案例/数据。
+- 保留并正确渲染大纲中的代码块、命令、文件名与路径（必要时用 ``` 代码围栏，命令/文件名用行内 `code`）。
+
+【语言与风格】
+- 语言：简洁、口语化中文，技术名词保留英文原文（两侧留空格），避免夸张形容。
+- 语气：经验分享/实操手记风，客观克制。
+- 不要使用营销式语句或无依据的评价。
+
+【结构要求】
+1) 标题：从大纲主题中提炼 1 行 H1 标题（# 标题）。若大纲含现成标题，直接使用。
+2) 导语：1–2 段，简述动机/背景与读者将收获什么（内容必须来自大纲）。
+3) 正文：按大纲的顺序与层级展开，用二级/三级标题（## / ###）承载各要点；列表与编号与大纲保持一致。
+4) 代码/命令/配置：使用合适的代码围栏并注明语言类型（如 ```markdown、```yaml、```bash）。
+5) 结尾：给出 1 段简短小结或下一步计划（仍须源自大纲信息）。
+
+【格式细则】
+- 文件与目录、命令、键名：使用行内 `code`；长命令或多行脚本放入代码块。
+- 引用原话或提示语可用 Markdown 引用 >。
+- 列表层级清晰，不混用有序/无序列表。
+- 不输出 YAML frontmatter，除非大纲里明确给出。
+- 全文只输出 Markdown，不添加任何额外说明或前后缀。
+
+【禁止项】
+- 禁止增加大纲未给出的外部信息、链接、图片、参考文献。
+- 禁止虚构工具、API、结果或示例。
+- 禁止改变大纲顺序或删改大纲要点含义。
+
+【自检清单（在生成前自行核对）】
+- [ ] 所有段落与示例均可在大纲中找到对应依据
+- [ ] 代码块语言标注正确；命令/文件路径未被改写
+- [ ] 标题层级从 # 开始且递进合理
+- [ ] 无多余说明文字（只输出 Markdown 正文）
+
+【输入大纲】
+<<<在此粘贴我的大纲>>>
+
+【输出】
+请直接输出最终 Markdown 文档内容（不需要再包裹三引号）。</code></pre>
+    </div>
+
+    <h3>2. 集成到 Claude Code 命令</h3>
+
+    <p>把这个 prompt 复制到博客项目下 <code>.claude/command/genblog.md</code>，并添加了自动化功能：</p>
+
+    <div class="workflow-step">
+        <pre><code class="language-markdown">你现在是我的技术博文代笔助手。**只依据我提供的大纲内容进行写作**，不得引入任何大纲之外的观点、事实或外链
+
+【任务】
+- 将我给出的中文要点式"大纲"，整理并扩写为一篇可直接发布的 Markdown 博文。
+- 只在大纲允许的范围内做自然语言润色与结构化表达，不新增情节/案例/数据。
+- 保留并正确渲染大纲中的代码块、命令、文件名与路径（必要时用 ``` 代码围栏，命令/文件名用行内 `code`）。
+
+获取当前日期为 {now},格式为 yyyymmdd
+根据内容生成当前日期和英文小写单词组合文件名 {now}_slug.md，如 20250909_about_tech.md
+保存为 /write/目录下。带目录的文件名为 {mdfile}
+
+最后再执行一下claude -c blogpress {mdfile}</code></pre>
+    </div>
+
+    <h2>最终运行流程</h2>
+
+    <p>现在的使用方法变得极其简单：</p>
+
+    <div class="process-phase">
+        <ol>
+            <li>进入 Claude 项目目录</li>
+            <li>运行 <code>/genblog</code> 命令</li>
+            <li>粘贴大纲内容</li>
+            <li>Claude Code 自动改写生成 markdown 文章，保存到正确位置，并发布为博客 HTML</li>
+            <li>提交到 GitHub 即可自动发布到 Vercel</li>
+        </ol>
+    </div>
+
+    <h2>小结</h2>
+
+    <div class="highlight">
+        <p>通过把重复性的 prompt 标准化并集成到 Claude Code 命令中，原本需要在三个工具间切换的工作流现在一条命令就能完成。这种自动化不仅节省时间，还减少了人工操作可能带来的错误。下一步考虑加入更多内容格式的支持，比如图片处理和链接检查。</p>
+    </div>
+</body>
+</html>

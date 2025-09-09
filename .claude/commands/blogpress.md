@@ -22,6 +22,7 @@
 - `{mdfilename}_files/` 目录
 - `capsule.html` 文件
 - `meta.yaml` 文件
+注意目标文件夹是在 /ai/blog/ 目录下，别搞错了。如果已经存在，则覆盖
 
 ### 3. 生成中文HTML文件
 创建 `/ai/blog/{mdfilename}_files/capsule.html`，要求：
