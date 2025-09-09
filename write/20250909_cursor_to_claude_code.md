@@ -73,7 +73,7 @@ tags:
 
 ### 3. 创建 Claude Code 命令
 
-把这个 prompt 放入项目目录下的 `.claude/command/processtags.md`。
+把这个 prompt 放入项目目录下的 `.claude/commands/processtags.md`。
 
 还可以加入输入参数，例如命令第一行写入：如果有输入 md 文件，请只处理输入 markdown 文件名 `{mdfile}`
 

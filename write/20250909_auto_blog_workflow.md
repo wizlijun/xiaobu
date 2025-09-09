@@ -76,7 +76,7 @@ GPT 生成了一个很详细的 prompt，包含了任务要求、语言风格、
 
 ### 2. 集成到 Claude Code 命令
 
-把这个 prompt 复制到博客项目下 `.claude/command/genblog.md`，并添加了自动化功能：
+把这个 prompt 复制到博客项目下 `.claude/commands/genblog.md`，并添加了自动化功能：
 
 ```markdown
 你现在是我的技术博文代笔助手。**只依据我提供的大纲内容进行写作**，不得引入任何大纲之外的观点、事实或外链
