@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF--8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TDD Done Right - 视频核心摘要</title>
+    <style>
+        :root {
+            --primary-text-color: #333;
+            --secondary-text-color: #555;
+            --background-color: #ffffff;
+            --accent-color: #007bff;
+            --highlight-bg-color: #e6f7ff;
+            --fact-color: #28a745;
+            --opinion-color: #dc3545;
+            --border-color: #e0e0e0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            line-height: 1.7;
+            background-color: var(--background-color);
+            color: var(--primary-text-color);
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1, h2 {
+            color: var(--primary-text-color);
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+        }
+
+        .container {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            background: #fafafa;
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+        
+        details {
+            background: var(--background-color);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 5px var(--shadow-color);
+            transition: all 0.3s ease;
+        }
+
+        details:hover {
+            box-shadow: 0 4px 15px var(--shadow-color);
+            border-color: var(--accent-color);
+        }
+
+        details[open] {
+            border-left: 5px solid var(--accent-color);
+        }
+
+        summary {
+            font-size: 1.2em;
+            font-weight: 600;
+            padding: 15px;
+            cursor: pointer;
+            outline: none;
+            color: var(--accent-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        summary::after {
+            content: '＋';
+            font-size: 1.4em;
+            transition: transform 0.3s ease;
+        }
+        
+        details[open] summary::after {
+            transform: rotate(45deg);
+        }
+
+        .content {
+            padding: 0 20px 20px 20px;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        ul {
+            list-style-type: '✓ ';
+            padding-left: 20px;
+        }
+        
+        li {
+            margin-bottom: 12px;
+        }
+
+        strong, code {
+            color: var(--primary-text-color);
+            background-color: var(--highlight-bg-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+        }
+
+        .highlight {
+            border-left: 4px solid;
+            padding-left: 15px;
+            margin: 15px 0;
+        }
+
+        .fact {
+            border-color: var(--fact-color);
+            background-color: rgba(40, 167, 69, 0.05);
+        }
+        
+        .opinion {
+            border-color: var(--opinion-color);
+            background-color: rgba(220, 53, 69, 0.05);
+        }
+        
+        .tag {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin-right: 5px;
+            color: white;
+        }
+        
+        .tag-problem { background-color: var(--opinion-color); }
+        .tag-solution { background-color: var(--fact-color); }
+        .tag-concept { background-color: var(--accent-color); }
+
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>TDD Done Right (TDD 的正确姿势)</h1>
+        <p>这是一份关于“TDD 已死？”演讲的核心摘要。演讲者认为 TDD 本身没有问题，但业界普遍的实践方式已经偏离了其初衷，导致了诸多问题。以下是回归 TDD 本源思想的精华提炼。</p>
+    </div>
+
+    <h2>核心要点（点击展开）</h2>
+
+    <details>
+        <summary>现代 TDD 实践的痛点</summary>
+        <div class="content">
+            <ul>
+                <li><span class="tag tag-problem">开发减速</span>测试代码量远超生产代码（例如3倍），导致开发速度下降 20-50%。</li>
+                <li><span class="tag tag-problem">测试脆弱</span>测试与<strong>实现细节</strong>过度耦合，尤其是在大量使用 <code>Mock</code> 的情况下。代码一重构，大量测试就会失败，这违背了 TDD “保护重构”的核心承诺。</li>
+                <li><span class="tag tag-problem">维护噩梦</span>一段时间后，开发者（甚至是原作者）回头看测试，完全不明白其意图。当测试失败时，不知道是 Bug 还是实现已变更。</li>
+                <li><span class="tag tag-problem">ATDD/BDD 陷阱</span>像 FitNesse, Cucumber 这类工具编写的测试，客户很少真正关心，且运行缓慢，经常处于失败状态（“一片红”），最终沦为团队互相指责的根源。</li>
+                <li><div class="highlight opinion">
+                    <strong>核心观点：</strong>这些痛苦的根源在于，我们错误地将 TDD 的“单元”理解为“类/方法”，并开始为<strong>实现细节</strong>编写测试，而不是为<strong>软件行为</strong>。
+                </div></li>
+            </ul>
+        </div>
+    </details>
+
+    <details>
+        <summary>回归 TDD 本源：测试行为，而非实现</summary>
+        <div class="content">
+            <ul>
+                <li><span class="tag tag-solution">改变触发点</span>编写新测试的触发点不应该是“我要写一个新方法”，而应该是“<strong>我要实现一个新需求/行为</strong>”。</li>
+                <li><span class="tag tag-concept">关注公开 API</span>测试应该针对模块的<strong>公开契约 (Public API / Contract)</strong>，即它向外界承诺提供的功能。这些是稳定的。</li>
+                <li><span class="tag tag-concept">隐藏内部实现</span>模块内部的类、方法、结构都是实现细节，它们是<strong>不稳定</strong>的，可以随时为了优化而改变。不应该为它们编写独立的测试。</li>
+                <li><div class="highlight fact">
+                    <strong>核心原则：</strong>Kent Beck 最初的“单元测试”中的“单元”，指的是一个<strong>模块 (Module)</strong>，而不是一个孤立的类。测试的隔离单位是“测试本身”，而不是“被测试的类”。
+                </div></li>
+                <li><span class="tag tag-solution">减少 Mock</span>只在必要时使用 Mock，例如隔离外部昂贵资源（数据库、网络）或解决共享状态问题。<strong>绝对不要</strong>用 Mock 来隔离一个类和它的内部协作者。</li>
+            </ul>
+        </div>
+    </details>
+    
+    <details open>
+        <summary>正确地实践“红-绿-重构” (Red-Green-Refactor)</summary>
+        <div class="content">
+            <ol>
+                <li>
+                    <h4><span class="tag tag-concept">红 (Red)</span> - 编写一个失败的测试</h4>
+                    <p>为即将实现的<strong>新行为</strong>编写一个测试。先运行它，确保它会因为功能未实现而<strong>失败</strong>。这是为了证明你的测试是有效的，而不是一个永远通过的“假测试”。</p>
+                </li>
+                <li>
+                    <h4><span class="tag tag-concept">绿 (Green)</span> - 快速让测试通过</h4>
+                    <p>用<strong>最快、最直接、甚至最“丑陋”</strong>的方式让测试变绿。这里的目标是验证解决方案的可行性，而不是追求完美的设计。可以硬编码、复制粘贴代码——此时，“速度压倒设计”。</p>
+                </li>
+                <li>
+                    <h4><span class="tag tag-concept">重构 (Refactor)</span> - 清理代码 (最关键的一步)</h4>
+                    <p>在测试保持绿色的前提下，清理刚刚写的“丑陋”代码。消除重复、改善命名、提取类和方法、应用设计模式。
+                    <div class="highlight opinion">
+                    <strong>至关重要：</strong>在重构阶段，<strong>不要添加任何新的测试</strong>！你唯一的测试就是第一步写的那个行为测试。所有内部实现（新类、新方法）都由这个高层级的行为测试来覆盖。这正是实现“测试与实现解耦”的关键。
+                    </div>
+                    </p>
+                </li>
+            </ol>
+        </div>
+    </details>
+
+    <details>
+        <summary>架构的启示：端口与适配器 (六边形架构)</summary>
+        <div class="content">
+             <ul>
+                <li><span class="tag tag-concept">架构分离</span>使用“端口与适配器”架构，将核心业务逻辑（领域模型）与外部基础设施（如 UI, 数据库, 消息队列）彻底分离。</li>
+                <li><span class="tag tag-concept">核心领域 (Domain)</span>内部是纯粹的业务逻辑对象 (POJOs/POCOs)，不依赖任何具体技术。</li>
+                <li><span class="tag tag-concept">适配器 (Adapters)</span>是与外部技术打交道的部分，例如一个处理 HTTP 请求的 Web Controller，或是一个操作数据库的 Repository 实现。</li>
+                <li><span class="tag tag-concept">端口 (Ports)</span>是核心领域定义的接口，是应用与外部世界通信的“插座”。</li>
+                <li><div class="highlight fact">
+                    <strong>最佳实践：</strong>你的 TDD 测试应该<strong>针对“端口”进行</strong>。通过调用端口接口，验证整个核心领域的行为，而不是穿透到领域内部去测试单个类。这样你的测试就自然地成为了对“行为”的测试。
+                </div></li>
+                <li>这能帮助你构建一个健康的“<strong>测试金字塔</strong>”，拥有大量快速、稳定的单元/开发者测试，而不是一个脆弱的“测试冰淇淋筒”。</li>
+            </ul>
+        </div>
+    </details>
+    
+    <details>
+        <summary>总结与最终建议</summary>
+        <div class="content">
+            <ul>
+                <li><span class="tag tag-solution">测试行为，而非实现细节</span> - 这是最重要的原则。</li>
+                <li><span class="tag tag-solution">拥抱“丑陋”的绿色阶段</span> - 先解决问题，再完善设计。</li>
+                <li><span class="tag tag-solution">重构时绝不添加新测试</span> - 让实现自由演进。</li>
+                <li><span class="tag tag-solution">让测试面向模块的“端口”</span> - 从外部视角验证功能。</li>
+                <li><span class="tag tag-opinion">警惕过度 Mock 和 IoC 容器</span> - 它们常常是测试与实现耦合的重灾区。</li>
+                <li><div class="highlight opinion">
+                    <strong>最终结论：</strong>TDD 依然是强大而有效的实践。只要我们回归其初心——作为一种驱动<strong>设计</strong>和验证<strong>行为</strong>的工具，而不是一个检查每个<strong>实现细节</strong>的僵化规则——它就能带给我们高质量、易维护的软件。
+                </div></li>
+            </ul>
+        </div>
+    </details>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.bilibili.com/video/BV1N9H9zaEcm/" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
