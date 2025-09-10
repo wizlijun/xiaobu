@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kira AI 编程助手核心功能摘要</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.8;
+            background-color: #ffffff;
+            color: #333;
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .container {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 25px;
+            background-color: #fafafa;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+        h2 {
+            color: #555;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 30px;
+            font-size: 1.5em;
+        }
+        details {
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #dcdcdc;
+            overflow: hidden;
+            background-color: #fff;
+        }
+        summary {
+            font-weight: 600;
+            padding: 15px;
+            cursor: pointer;
+            outline: none;
+            background-color: #f5f5f5;
+            transition: background-color 0.2s;
+            position: relative;
+        }
+        summary:hover {
+            background-color: #e9e9e9;
+        }
+        summary::marker {
+            color: #8a2be2;
+        }
+        details[open] > summary {
+            background-color: #e9e9e9;
+        }
+        .details-content {
+            padding: 20px;
+            border-top: 1px solid #dcdcdc;
+        }
+        ul {
+            list-style-type: disc;
+            padding-left: 25px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        strong {
+            color: #8a2be2; /* Purple */
+            font-weight: 600;
+        }
+        .fact {
+            background-color: #e6f7ff; /* Light blue */
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        .opinion {
+            font-style: italic;
+            color: #006400; /* Dark green */
+            border-left: 3px solid #90ee90; /* Light green */
+            padding-left: 10px;
+            margin-top: 10px;
+            display: block;
+        }
+        code {
+            background-color: #eee;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Kira: 亚马逊出品的 AI VS Code 分支</h1>
+        <p>探索由亚马逊推出的 VS Code 分支 <strong>Kira</strong>，它引入了一种名为 <strong>“规范驱动开发” (Spec-Driven Development)</strong> 的全新编程范式。Kira 旨在将自由畅快的“Vibe 编程”与清晰明确的“规范”相结合。</p>
+
+        <h2>核心特性一: 规范驱动开发 (Spec-Driven Development)</h2>
+        <p>这是 Kira 最具变革性的功能，它将模糊的开发需求转化为一个结构化的三步流程，极大地提升了 AI 协作的透明度和可控性。</p>
+
+        <details>
+            <summary>第一步: 创建规范 (Spec)</summary>
+            <div class="details-content">
+                <ul>
+                    <li>用户输入一个高级指令 (Prompt)，例如“为我的产品增加匿名评论功能”。[0:01:12]</li>
+                    <li><strong>事实:</strong> Kira <span class="fact">不会立即编写代码</span>，而是首先生成一个名为 <code>requirements.md</code> 的需求文档。</li>
+                    <li>此文档会将用户指令分解为详细的<strong>用户故事 (User Stories)</strong> 和<strong>验收标准 (Acceptance Criteria)</strong>。例如，“作为一个用户，我希望能提交匿名评论”。[0:01:46]</li>
+                    <li><span class="opinion">观点: 这个功能非常强大，它能将一个模糊的指令清晰化，提前暴露 AI 可能做出的假设，让开发者能在编码前进行校准。</span>[0:02:22]</li>
+                    <li>开发者可以审查、修改这个 Markdown 文件，或要求 Kira 重新生成，以确保 AI 的理解与自己完全一致。[0:02:35]</li>
+                </ul>
+            </div>
+        </details>
+
+        <details>
+            <summary>第二步: 设计方案 (Design)</summary>
+            <div class="details-content">
+                <ul>
+                    <li>在需求确认后，Kira 进入设计阶段。</li>
+                    <li><strong>事实:</strong> 它会<span class="fact">扫描并分析现有代码库</span>，以理解当前项目的架构、技术栈和编码模式。 [0:02:50]</li>
+                    <li>接着，它会生成一份非常详细的<strong>设计文档</strong>，其中可能包含：
+                        <ul>
+                            <li>技术栈确认 (e.g., in-memory storage, React)。[0:03:20]</li>
+                            <li>数据流图、TypeScript 接口定义、数据库结构、API 端点。[0:03:36]</li>
+                            <li>甚至可以使用 Mermaid.js 生成流程图。[0:03:46]</li>
+                        </ul>
+                    </li>
+                    <li><span class="opinion">观点: 这解决了传统 AI 工具“黑盒操作”的问题。开发者在 AI 执行前，就能精确了解它将如何实现功能，避免了意外的或不符合预期的代码修改。</span>[0:04:00]</li>
+                </ul>
+            </div>
+        </details>
+
+        <details>
+            <summary>第三步: 实现计划 (Implementation Plan)</summary>
+            <div class="details-content">
+                <ul>
+                    <li>设计方案通过后，Kira 会创建一份具体的<strong>实现计划</strong>。</li>
+                    <li><strong>事实:</strong> 这份计划是一个<span class="fact">任务清单</span>，将整个功能开发分解为一系列详细的、可执行的子任务，例如“创建 React 组件”、“添加 tRPC 过程”、“编写单元测试”、“增加错误处理”等。[0:04:26]</li>
+                    <li>每个任务都关联着相应的需求，确保开发过程不偏离目标。[0:04:38]</li>
+                    <li>开发者可以逐个或批量启动这些任务，Kira 会自动按顺序执行，并在任务完成后打上勾。[0:05:18 , 0:05:52]</li>
+                </ul>
+            </div>
+        </details>
+        
+        <h2>核心特性二: 钩子 (Hooks) - 事件驱动自动化</h2>
+        <p>这是 Kira 的另一个独特功能，它允许你创建在特定事件发生时自动运行的 AI 任务，极大地提升了开发流程的一致性和效率。</p>
+
+        <details>
+            <summary>工作原理与应用场景</summary>
+            <div class="details-content">
+                <ul>
+                    <li><strong>工作原理:</strong> <span class="fact">事件发生 (如文件保存) → 预设指令发送给 AI → AI 在后台执行任务 → Kira 更新代码</span>。 [0:06:24]</li>
+                    <li><strong>创建方式:</strong> 用户只需用自然语言描述想创建的钩子，例如“在我保存文件时更新我的文档”，Kira 就会自动生成相应的钩子配置。[0:06:56]</li>
+                    <li><strong>应用场景:</strong>
+                        <ul>
+                            <li>保存 React 文件时，自动为其<span class="fact">更新或创建单元测试</span>。[0:06:43]</li>
+                            <li>代码变更后，<span class="fact">自动同步更新相关的文档 (README)</span>。[0:06:48]</li>
+                            <li>代码优化、语言本地化等重复性工作。</li>
+                        </ul>
+                    </li>
+                    <li><strong>事实:</strong> <span class="fact">钩子本身会作为配置文件保存在代码库中</span>。这意味着它们可以被提交到 Git，与团队成员共享，从而确保整个团队遵循一致的开发规范和流程。[0:07:28]</li>
+                    <li><span class="opinion">观点: 这对我来说绝对是游戏规则的改变者！我不再需要思考写完代码后的下一步是什么，只需定义一次，它就能自动完成，还能在团队中共享。</span>[0:08:10 , 0:10:13]</li>
+                </ul>
+            </div>
+        </details>
+
+        <h2>其他功能与定价</h2>
+        <details>
+            <summary>常规 AI 功能与模型支持</summary>
+            <div class="details-content">
+                <ul>
+                    <li><strong>Agent Steering:</strong> 类似 Cursor 的 <code>@</code> 文件或 Claude 的 Markdown 文件，用于引导 AI 的行为。[0:08:36]</li>
+                    <li><strong>上下文支持:</strong> 可以添加文件、代码库、URL、终端输出等作为上下文。[0:08:54]</li>
+                    <li><strong>模型支持:</strong> <span class="fact">目前由 Claude 驱动</span>，支持 Sonnet 3.5 和 Opus 4.0 模型。[0:09:04]</li>
+                    <li><strong>Autopilot 模式:</strong> 开启后，AI 将无需审批直接修改代码，类似其他 AI IDE 的工作模式。[0:09:17]</li>
+                </ul>
+            </div>
+        </details>
+        
+        <details>
+            <summary>定价信息 (预览阶段)</summary>
+            <div class="details-content">
+                <ul>
+                    <li><strong>事实:</strong> <span class="fact">目前处于预览阶段，所有功能免费</span>。[0:09:32]</li>
+                    <li><strong>未来定价计划:</strong>
+                        <ul>
+                            <li><strong>免费版:</strong> 每月 50 次交互。</li>
+                            <li><strong>19美元/月:</strong> 每月 1000 次交互。</li>
+                            <li><strong>39美元/月:</strong> 每月 3000 次交互。</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </details>
+
+        <h2>总结</h2>
+        <p>Kira 通过 <strong>Spec-Driven Development</strong> 解决了 AI 编程中“不可预测”的核心痛点，让开发者重获掌控力。而 <strong>Hooks</strong> 功能则将开发流程中的重复性任务自动化，极大地提升了团队协作和代码质量的一致性。虽然它在某些方面（如缺少实时代码流式更新）尚有不足，但其创新的核心理念使其成为一个非常值得关注的 AI 编程工具。</p>
+
+    </div>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.bilibili.com/video/BV177HSz6Eai/" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
