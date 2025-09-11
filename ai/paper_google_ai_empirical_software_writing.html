@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>论文摘要：一个助力科学家编写专家级实证软件的AI系统</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --bg-color: #ffffff;
+            --card-bg: #f8f9fa;
+            --border-color: #dee2e6;
+            --fact-color: #28a745;
+            --viewpoint-color: #ffc107;
+            --se-color: #17a2b8;
+            --shadow: 0 4px 8px rgba(0,0,0,0.1);
+            --font-family: 'Noto Sans SC', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: #333;
+            line-height: 1.7;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            color: var(--primary-color);
+            margin: 0;
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 1.2em;
+            color: var(--secondary-color);
+            margin-top: 10px;
+        }
+
+        .tag {
+            display: inline-block;
+            background-color: var(--se-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            margin: 5px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            font-weight: 500;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .highlight-card {
+            background: linear-gradient(135deg, #e3f2fd, #fafafa);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid #bbdefb;
+            text-align: center;
+        }
+        
+        .highlight-card h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        
+        .highlight-card p {
+            font-size: 1.1em;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .key-point {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .key-point:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+        }
+
+        .fact { border-color: var(--fact-color); }
+        .viewpoint { border-color: var(--viewpoint-color); }
+        .software-engineering { border-color: var(--se-color); }
+
+        .key-point h4 {
+            margin-top: 0;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .key-point h4 .icon {
+            font-size: 0.8em;
+            padding: 4px 8px;
+            border-radius: 5px;
+            color: white;
+        }
+        .fact .icon { background-color: var(--fact-color); }
+        .viewpoint .icon { background-color: var(--viewpoint-color); }
+        .software-engineering .icon { background-color: var(--se-color); }
+
+        .details {
+            display: none;
+            margin-top: 15px;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 15px;
+            font-size: 0.95em;
+        }
+
+        .details.show {
+            display: block;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .tooltip-term {
+            text-decoration: underline dashed;
+            text-decoration-color: var(--primary-color);
+            cursor: help;
+            position: relative;
+        }
+        
+        .tooltip-term .tooltip-text {
+            visibility: hidden;
+            width: 250px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -125px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip-term:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .workflow {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            flex-wrap: wrap;
+        }
+
+        .workflow-item {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            min-width: 150px;
+        }
+        
+        .workflow-arrow {
+            font-size: 2em;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            header h1 { font-size: 2em; }
+            .workflow { flex-direction: column; }
+        }
+
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>论文摘要：一个助力科学家编写专家级实证软件的AI系统</h1>
+            <p>通过AI编程与软件工程的融合，加速科学发现的循环</p>
+            <div>
+                <span class="tag">AI编程</span>
+                <span class="tag">软件工程自动化</span>
+                <span class="tag">科学发现</span>
+                <span class="tag">大型语言模型(LLM)</span>
+                <span class="tag">树搜索(Tree Search)</span>
+            </div>
+        </header>
+
+        <main>
+            <section class="section">
+                <div class="highlight-card">
+                    <h3>核心论点</h3>
+                    <p>
+                        科学研究中，为计算实验编写高质量的<span class="tooltip-term">实证软件<span class="tooltip-text">指那些旨在最大化某个可衡量质量得分（如对观测数据的拟合度）的软件。</span></span>是主要的瓶颈。本文提出了一个革命性的AI系统，它能系统性地、自动化地创建并优化专家级的科学软件，其性能在多个领域超越了人类顶尖水平。
+                    </p>
+                </div>
+            </section>
+            
+            <section class="section">
+                <h2 class="section-title">核心创新：AI驱动的软件开发引擎</h2>
+                <div class="key-point software-engineering" onclick="toggleDetails(this)">
+                    <h4>
+                        系统架构：大型语言模型 (LLM) + 树搜索 (TS)
+                        <span class="icon">软件工程</span>
+                    </h4>
+                    <div class="details">
+                        <p>该系统将软件开发定义为一个<span class="tooltip-term">可评分任务 (Scorable Task)<span class="tooltip-text">任何可以通过实证软件来解决，并且其产出结果可以被一个质量分数来量化的任务。</span></span>，其目标是找到能最大化质量分数的程序代码。</p>
+                        <div class="workflow">
+                            <div class="workflow-item"><strong>输入</strong><br>可评分任务<br>+ 研究思路</div>
+                            <div class="workflow-arrow">→</div>
+                            <div class="workflow-item"><strong>LLM</strong><br>重写代码<br>提出候选方案</div>
+                            <div class="workflow-arrow">→</div>
+                            <div class="workflow-item"><strong>沙箱</strong><br>执行与评分</div>
+                            <div class="workflow-arrow">→</div>
+                            <div class="workflow-item"><strong>树搜索 (TS)</strong><br>智能探索<br>决定下一步优化方向</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="key-point software-engineering" onclick="toggleDetails(this)">
+                    <h4>
+                        关键突破：超越传统自动化编程
+                        <span class="icon">软件工程</span>
+                    </h4>
+                    <div class="details">
+                        <ul>
+                            <li><strong>智能“突变”</strong>：与传统<span class="tooltip-term">遗传编程 (Genetic Programming)<span class="tooltip-text">一种演化计算技术，通过模拟自然选择来自动演化计算机程序。</span></span>的随机突变不同，本系统使用LLM进行具备语义感知能力的智能代码重写，能产生更复杂、更有意义的程序变体。</li>
+                            <li><strong>外部知识注入</strong>：系统可以灵活地整合领域知识和外部研究思路（如顶尖论文、教科书或AI搜索结果），指导LLM生成更具创新性的解决方案。这是实现专家级性能的关键。</li>
+                            <li><strong>系统性探索</strong>：树搜索算法系统地在巨大的解决方案空间中导航，有效平衡了对当前最优解的“利用”和对新路径的“探索”，避免了陷入局部最优。</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">跨领域实证：超越人类专家的性能</h2>
+                <p>该系统在六个不同的科学与工程基准测试中，均取得了SOTA（State-of-the-Art）或超越人类专家的成果。</p>
+                <div class="grid">
+                    <div class="key-point fact" onclick="toggleDetails(this)">
+                        <h4>
+                            生物信息学：单细胞数据分析
+                            <span class="icon">事实</span>
+                        </h4>
+                        <div class="details">
+                            <p><strong>成果</strong>：在一个公开的排行榜上，发现了<strong>40种新方法</strong>，其性能超越了所有人类开发的顶尖方法。</p>
+                            <p><strong>AI创新</strong>：系统自主地将两种现有方法（ComBat和BBKNN）的优点进行<span class="tooltip-term">思想重组<span class="tooltip-text">系统通过LLM分析多个方法的原理，并创造性地将它们的核心思想结合起来，形成新的、更强大的混合方法。</span></span>，创造出一种性能提升14%的新颖混合算法。</p>
+                        </div>
+                    </div>
+                    <div class="key-point fact" onclick="toggleDetails(this)">
+                        <h4>
+                            流行病学：新冠住院预测
+                            <span class="icon">事实</span>
+                        </h4>
+                        <div class="details">
+                            <p><strong>成果</strong>：生成了<strong>14种不同的模型</strong>，其预测准确性全面超越美国CDC的官方集成模型及所有其他独立模型。</p>
+                            <p><strong>AI能力</strong>：展示了强大的软件工程能力，包括：从简短描述中<strong>复现</strong>现有模型、<strong>重组</strong>不同模型范式（如将流行病学理论与机器学习模型结合）、以及通过AI研究工具<strong>生成全新的预测策略</strong>。</p>
+                        </div>
+                    </div>
+                    <div class="key-point fact" onclick="toggleDetails(this)">
+                        <h4>
+                            地理空间分析：遥感图像分割
+                            <span class="icon">事实</span>
+                        </h4>
+                        <div class="details">
+                            <p><strong>成果</strong>：在DLRSD遥感数据集上，mIoU（平均交并比）指标超过<strong>0.80</strong>，显著优于现有学术论文中的所有报告结果。</p>
+                            <p><strong>AI策略</strong>：系统自主探索并应用了多种SOTA架构（如UNet++, SegFormer），并结合了强大的预训练编码器和<span class="tooltip-term">测试时增强(TTA)<span class="tooltip-text">一种在推理阶段通过对输入数据进行多种变换（如翻转、旋转）并平均预测结果，以提高模型鲁棒性和准确性的技术。</span></span>等高级技巧。</p>
+                        </div>
+                    </div>
+                    <div class="key-point fact" onclick="toggleDetails(this)">
+                        <h4>
+                            神经科学：斑马鱼全脑活动预测
+                            <span class="icon">事实</span>
+                        </h4>
+                        <div class="details">
+                            <p><strong>成果</strong>：在ZAPBench基准上，性能超越了所有时间序列预测方法，且在多步预测上优于计算成本高昂的SOTA视频模型。</p>
+                            <p><strong>AI创新</strong>：不仅模型训练速度快了几个数量级，还能轻松地将一个可微分的<span class="tooltip-term">生物物理神经元模拟器(Jaxley)<span class="tooltip-text">一个用于模拟详细神经元模型的库，可以与机器学习框架（如JAX）结合进行端到端训练。</span></span>整合到高性能解决方案中，展现了构建可解释模型的潜力。</p>
+                        </div>
+                    </div>
+                    <div class="key-point fact" onclick="toggleDetails(this)">
+                        <h4>
+                            通用时间序列预测：GIFT-Eval
+                            <span class="icon">事实</span>
+                        </h4>
+                        <div class="details">
+                            <p><strong>成果</strong>：在包含28个不同领域数据集的复杂基准上，超越了包括大型基础模型在内的所有对手。</p>
+                            <p><strong>软件工程壮举</strong>：系统不仅为每个数据集找到了最优解，还<strong>从零开始，仅使用基础库，构建了一个统一的、通用的预测程序库</strong>，该库通过自适应配置系统在整个基准上表现出色。</p>
+                        </div>
+                    </div>
+                    <div class="key-point fact" onclick="toggleDetails(this)">
+                        <h4>
+                            数值分析：求解困难积分
+                            <span class="icon">事实</span>
+                        </h4>
+                        <div class="details">
+                            <p><strong>成果</strong>：构建了一个通用的积分求解器，在标准库`scipy.integrate.quad()`失败的38个困难积分问题上，它成功解决了其中36个（训练集与测试集合计）。</p>
+                            <p><strong>AI发现</strong>：系统自主地“重新发现”并实现了经典的数学技巧，如将无限域分割为有限子区间的序列，并应用<span class="tooltip-term">欧拉变换<span class="tooltip-text">一种序列加速技术，能够通过对一个缓慢收敛的交错序列的前几项进行处理，来估算该序列的极限。</span></span>来加速收敛，从而创建了一个比黄金标准更鲁棒的解决方案。</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="section">
+                <h2 class="section-title">结论与展望</h2>
+                <div class="key-point viewpoint" onclick="toggleDetails(this)">
+                    <h4>
+                        科学进步的革命性加速器
+                        <span class="icon">观点</span>
+                    </h4>
+                    <div class="details">
+                        <p>作者们相信，这项工作代表了朝着加速科学进步迈出的重要一步。通过将探索一系列新想法的时间从数周或数月缩短到数小时或数天，该系统为科学研究带来了深刻的影响。</p>
+                        <p>对于那些其解决方案可以通过机器进行评分的科学领域，我们正处于一场革命性加速的边缘。这种AI辅助的自动化软件工程方法，有望成为未来科学家不可或缺的强大工具。</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        function toggleDetails(element) {
+            const details = element.querySelector('.details');
+            if (details) {
+                details.classList.toggle('show');
+            }
+        }
+    </script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="paper_google_ai_empirical_software_writing_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
