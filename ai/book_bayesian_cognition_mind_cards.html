@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>构建AGI蓝图：源自《贝叶斯认知模型》的核心洞察</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background-color: #f7f9fa;
+            margin: 0;
+            padding: 2em;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2em;
+        }
+
+        header h1 {
+            color: #2c3e50;
+            font-weight: 700;
+        }
+        
+        header p {
+            font-size: 1.1em;
+            color: #555;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 2em;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.07);
+            padding: 1.5em 2em;
+            border: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card h2 {
+            font-size: 1.5em;
+            color: #2980b9;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 0.5em;
+            margin-top: 0;
+        }
+
+        details {
+            background-color: #fdfdfd;
+            border: 1px solid #eaeaea;
+            border-radius: 8px;
+            margin-bottom: 1em;
+            transition: all 0.3s ease-in-out;
+        }
+
+        details[open] {
+            box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+        }
+
+        summary {
+            font-weight: 500;
+            font-size: 1.1em;
+            cursor: pointer;
+            padding: 0.8em 1em;
+            background-color: #f5f7f9;
+            color: #34495e;
+            position: relative;
+            list-style: none;
+        }
+        
+        summary::-webkit-details-marker { display: none; }
+
+        summary::before {
+            content: '▸';
+            position: absolute;
+            left: 10px;
+            transition: transform 0.2s;
+            color: #3498db;
+        }
+
+        details[open] > summary::before {
+            transform: rotate(90deg);
+        }
+
+        .details-content {
+            padding: 0.5em 1.2em 1.2em 1.2em;
+            border-top: 1px solid #eaeaea;
+        }
+
+        .highlight-viewpoint {
+            background-color: #e8f4fd;
+            border-left: 4px solid #3498db;
+            padding: 0.8em 1em;
+            margin: 1em 0;
+            border-radius: 4px;
+            font-style: italic;
+        }
+        
+        .term {
+           font-weight: bold; 
+           font-family: monospace;
+           background-color: #eef1f3;
+           padding: 2px 6px;
+           border-radius: 4px;
+           color: #c0392b;
+           font-size: 0.9em;
+        }
+        
+        svg {
+            width: 100%;
+            margin-top: 1em;
+        }
+
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>构建通用人工智能(AGI)的蓝图</h1>
+            <p>—— 提炼自《贝叶斯认知模型：逆向工程心智》</p>
+        </header>
+
+        <div class="card-grid">
+
+            <div class="card">
+                <h2>核心洞察：智能的本质</h2>
+                <details open>
+                    <summary>洞察 1: 认知是对生成模型的概率推断</summary>
+                    <div class="details-content">
+                        <p>心智并非被动地识别模式，而是在主动地构建和推断世界的<strong>生成模型 (Generative Models)</strong>。它不断地在问：“什么样的内在原因和过程，最能解释我所观察到的这些数据？”</p>
+                        <div class="highlight-viewpoint"><strong>对AGI的启示：</strong>真正的智能不是更大的分类器，而是一个“世界模拟器”。AGI的核心应该是构建、评估和更新关于世界如何运作的因果模型。</div>
+                    </div>
+                </details>
+                <details>
+                    <summary>洞察 2: 先验知识是高效学习的关键</summary>
+                    <div class="details-content">
+                        <p>人类能“从稀少中获得丰富”的秘诀在于强大的<strong>先验知识 (Priors)</strong> 或<strong>归纳偏置 (Inductive Biases)</strong>。这些先验知识为无限的可能性提供了结构和约束，使得从少量样本中进行可靠的泛化成为可能。</p>
+                        <div class="highlight-viewpoint"><strong>对AGI的启示：</strong>与其追求一个“白板”式的学习器，不如设计一个拥有强大、抽象且灵活的初始知识结构（核心知识）的系统。这些先验甚至可以自身通过更高层次的学习（分层贝叶斯）来获得。</div>
+                    </div>
+                </details>
+                <details>
+                    <summary>洞察 3: 认知偏差是资源理性的体现</summary>
+                    <div class="details-content">
+                        <p>人类的许多“非理性”偏差，如启发式思维，并非逻辑缺陷，而是在有限的计算资源（时间、算力）下，为了做出足够好的决策而采取的<strong>最优近似策略 (Optimal Approximations)</strong>。这被称为<span class="term">资源理性 (Resource-Rationality)</span>。</p>
+                         <div class="highlight-viewpoint"><strong>对AGI的启示：</strong>AGI不应追求无限计算下的“完美理性”，而应具备“元认知”能力，能根据任务的价值和自身的计算成本，动态地选择合适的思考深度和近似算法。</div>
+                    </div>
+                </details>
+                 <details>
+                    <summary>洞察 4: 思想语言是概率性的组合程序</summary>
+                    <div class="details-content">
+                        <p>为了解释人类思维的无穷创造力和组合性，作者提出了<span class="term">概率性思想语言 (Probabilistic Language of Thought, PLoT)</span>假说。在这个框架下，概念被视为可组合的、生成式的<strong>随机程序 (Stochastic Programs)</strong>。</p>
+                         <div class="highlight-viewpoint"><strong>对AGI的启示：</strong>AGI的知识表示不应是静态的数据结构，而应是一种图灵完备的编程语言。学习新概念等同于<strong>程序归纳 (Program Induction)</strong>——通过贝叶斯推断发现最能解释数据的、最简洁的程序。</div>
+                    </div>
+                </details>
+            </div>
+            
+            <div class="card">
+                <h2>核心计算框架</h2>
+                 <details open>
+                    <summary>框架 1: 分层贝叶斯模型 (HBMs)</summary>
+                    <div class="details-content">
+                        <p><strong>功能：</strong>实现“学会学习”(Learning to learn)。</p>
+                        <p><strong>原理：</strong>知识被组织在不同的抽象层次。高层知识（如“物体类别通常由形状决定”）为底层学习（学习“杯子”这个具体类别）提供先验。模型能同时在所有层级上进行推断，用具体数据更新抽象知识，也用抽象知识指导具体学习。这解释了“抽象的祝福”(Blessing of Abstraction)现象。</p>
+                    </div>
+                </details>
+                <details>
+                    <summary>框架 2: 非参数贝叶斯模型</summary>
+                    <div class="details-content">
+                        <p><strong>功能：</strong>处理无限复杂的世界。</p>
+                        <p><strong>原理：</strong>允许模型复杂度（如类别数量、特征维度）随数据增长而自适应调整，而不是预先固定。核心机制如<span class="term">中餐馆过程 (CRP)</span> 和 <span class="term">印度自助餐过程 (IBP)</span> 为模型提供了“按需增长”的能力，完美契合终身学习的需求。</p>
+                    </div>
+                </details>
+                <details>
+                    <summary>框架 3: 因果图模型与逆向规划</summary>
+                    <div class="details-content">
+                        <p><strong>功能：</strong>进行因果推理和理解意图。</p>
+                        <p><strong>原理：</strong>使用<span class="term">贝叶斯网络</span>来表示因果关系，并区分“观察”和“干预”。<span class="term">逆向规划 (Inverse Planning)</span> 将他人的行为看作是其为了最大化自身效用而进行的规划过程的输出，通过反向推断来理解其潜在的目标和信念。</p>
+                    </div>
+                </details>
+                 <details>
+                    <summary>框架 4: 概率程序 (Probabilistic Programs)</summary>
+                    <div class="details-content">
+                        <p><strong>功能：</strong>统一所有知识表示的通用语言。</p>
+                        <p><strong>原理：</strong>将知识表示为能够生成数据的<strong>代码</strong>。这个框架具有图灵完备的表达能力，可以自然地表示递归、控制流和抽象。学习新知识被形式化为<span class="term">程序归纳</span>——寻找最能解释数据的程序。这是PLoT假说的具体实现。</p>
+                    </div>
+                </details>
+            </div>
+            
+            <div class="card">
+                <h2>AGI设计蓝图：贝叶斯建构主义智能体 (BCA)</h2>
+                <p>基于本书洞察，一个类人AGI不应是一个单一的、端到端的神经网络，而应是一个多层、模块化的建构系统。</p>
+                <details open>
+                    <summary>第一层: 核心知识引擎 (The "Innate" Library)</summary>
+                    <div class="details-content">
+                        <p>系统启动时并非白板一块，而是预装载了一套抽象的、可组合的<strong>概率程序原语 (probabilistic program primitives)</strong>。这构成了AGI的“核心知识”。</p>
+                        <ul>
+                            <li><strong>直觉物理引擎 (IPE):</strong> 模拟物体、碰撞、重力等。</li>
+                            <li><strong>朴素效用演算 (Naive Utility Calculus):</strong> 模拟智能体、目标、成本和信念。</li>
+                            <li><strong>基础逻辑与数学原语:</strong> 如集合操作、因果关系、数量等。</li>
+                        </ul>
+                    </div>
+                </details>
+                <details>
+                    <summary>第二层: 学习与推断核心 (The "Compiler/Interpreter")</summary>
+                    <div class="details-content">
+                        <p>这是AGI的“思考”中枢，其核心任务是在程序空间中进行贝叶斯推断。</p>
+                        <ul>
+                            <li><strong>引擎:</strong> <span class="term">贝叶斯程序归纳 (Bayesian Program Induction)</span>。</li>
+                            <li><strong>目标:</strong> 寻找最简洁（高先验概率）且最能解释数据（高似然度）的程序。</li>
+                            <li><strong>算法:</strong> 主要使用MCMC等随机搜索算法在巨大的程序假设空间中探索。</li>
+                        </ul>
+                    </div>
+                </details>
+                <details>
+                    <summary>第三层: 习得概念库 (The "Evolving API")</summary>
+                    <div class="details-content">
+                        <p>这是AGI知识增长的地方。通过第二层的学习，新发现的有用程序（即新概念，如“排序”、“象棋规则”）会被加入到一个动态扩展的库中。</p>
+                        <ul>
+                            <li><strong>机制:</strong> <span class="term">库学习 (Library Learning)</span>。新习得的程序成为未来学习的更高级别的原语。</li>
+                            <li><strong>效果:</strong> 实现了认知发展的滚雪球效应，学习能力越来越强，能够解决日益复杂的问题。</li>
+                        </ul>
+                    </div>
+                </details>
+                 <details>
+                    <summary>第四层: 元认知控制器 (The "Resource Manager")</summary>
+                    <div class="details-content">
+                        <p>这一层监控并指导学习与推断核心的工作，体现了<span class="term">资源理性</span>。</p>
+                        <ul>
+                            <li><strong>功能:</strong> 决定<strong>如何思考</strong>。例如，是进行快速但粗糙的近似推断，还是进行耗时但精确的深度搜索？</li>
+                            <li><strong>决策依据:</strong> 基于当前任务的价值、不确定性以及自身的计算成本，来动态分配认知资源。</li>
+                        </ul>
+                    </div>
+                </details>
+            </div>
+            
+            <div class="card">
+                <h2>Python关键模块与架构</h2>
+                <p>要用Python实现上述BCA蓝图，需要集成多个领域的库，形成一个协同工作的系统。</p>
+                <svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#34495e" />
+                        </marker>
+                    </defs>
+                    <style>
+                        .box { fill: #ecf0f1; stroke: #bdc3c7; stroke-width: 1.5; rx:5; }
+                        .core-box { fill: #d1f2eb; stroke: #1abc9c; }
+                        .text { font-family: 'Noto Sans SC', sans-serif; text-anchor: middle; font-size: 11px; }
+                        .title-text { font-weight: 500; font-size: 12px;}
+                        .arrow { stroke: #34495e; stroke-width: 1.5; marker-end: url(#arrow); }
+                    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+                    
+                    <rect x="100" y="10" width="200" height="40" class="box" />
+                    <text x="200" y="35" class="text title-text">4. 元认知控制器</text>
+                    
+                    <rect x="125" y="70" width="150" height="110" class="core-box" />
+                    <text x="200" y="90" class="text title-text">2 & 3. 学习/推断核心</text>
+                    <text x="200" y="105" class="text">(程序归纳与库学习)</text>
+                    <text x="200" y="125" class="text title-text">1. 核心知识引擎</text>
+                     <text x="200" y="140" class="text">(原语库)</text>
+                    
+                    <rect x="10" y="190" width="180" height="50" class="box" />
+                    <text x="100" y="215" class="text title-text">深度学习前端 (感知)</text>
+                    
+                    <rect x="210" y="190" width="180" height="50" class="box" />
+                    <text x="300" y="215" class="text title-text">模拟环境 (交互)</text>
+                    
+                    <line x1="200" y1="50" x2="200" y2="70" class="arrow" />
+                    <line x1="100" y1="215" x2="160" y2="180" class="arrow" />
+                    <line x1="300" y1="215" x2="240" y2="180" class="arrow" />
+                </svg>
+
+                <details open>
+                    <summary>1. 概率编程语言 (PPL) 核心</summary>
+                    <div class="details-content">
+                        <p><strong>作用：</strong>定义生成模型，表示概率性知识，运行推断算法。</p>
+                        <ul>
+                            <li><span class="term">Pyro</span> / <span class="term">NumPyro</span>: 基于PyTorch/JAX，非常灵活，支持变分推断和MCMC。</li>
+                            <li><span class="term">Bean Machine</span>: 来自Meta，专注于MCMC，设计精良。</li>
+                             <li><span class="term">PyMC</span>: 经典的贝叶斯统计库，拥有强大的MCMC采样器。</li>
+                        </ul>
+                        <p>这是整个架构的“大脑”，核心知识库和习得概念库都将用PPL的语法来定义。</p>
+                    </div>
+                </details>
+                <details>
+                    <summary>2. 符号推理与程序合成</summary>
+                    <div class="details-content">
+                         <p><strong>作用：</strong>构建和操作PLoT的符号结构，实现程序归纳。</p>
+                         <ul>
+                            <li><span class="term">SymPy</span>: 用于符号数学，可以作为构建更复杂逻辑系统的基础。</li>
+                            <li><strong>自定义领域特定语言 (DSL)</strong>: 需要自行设计一套数据结构来表示程序树（ASTs），并实现操作这些树的函数（如MCMC中的program proposals）。这是最需要创造性工程的部分。</li>
+                        </ul>
+                    </div>
+                </details>
+                 <details>
+                    <summary>3. 深度学习前端</summary>
+                    <div class="details-content">
+                        <p><strong>作用：</strong>连接原始感官数据（如图像、声音）与符号核心，并用于摊销推断。</p>
+                        <ul>
+                            <li><span class="term">PyTorch</span> / <span class="term">TensorFlow</span>: 
+                                <ol>
+                                    <li><strong>感知模块：</strong>训练如CNN、Transformer等模型，将高维原始数据（如像素）转换为更抽象的特征表示（如物体的位置、类别），作为PPL核心的输入。</li>
+                                    <li><strong>推断网络：</strong>训练神经网络来快速近似复杂的贝叶斯推断，实现摊销推断，作为元认知控制器的一种高效工具。</li>
+                                </ol>
+                            </li>
+                        </ul>
+                    </div>
+                </details>
+                 <details>
+                    <summary>4. 模拟环境</summary>
+                    <div class="details-content">
+                         <p><strong>作用：</strong>为AGI提供一个可交互、可学习的“世界”。</p>
+                        <ul>
+                            <li><span class="term">Gymnasium (OpenAI Gym)</span>: 强化学习的标准接口，用于定义状态、行动和奖励。</li>
+                            <li><span class="term">PyBullet</span> / <span class="term">MuJoCo</span>: 物理模拟器，是学习直觉物理引擎的理想“沙盒”。</li>
+                        </ul>
+                    </div>
+                </details>
+            </div>
+
+        </div>
+    </div>
+    <script>
+        function toggleAll(openState) {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.open = openState;
+            });
+        }
+    </script>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_bayesian_cognition_mind_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
