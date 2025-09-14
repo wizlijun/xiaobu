@@ -44,4 +44,4 @@
 根据内容 生成当前日期和英文小写单词组合文件名 {now}_slug.md，如 20250909_about_tech.md
 保存为 /write/目录下。 带目录的文件名为 {mdfile}
 
-最后再执行一下claude -c blogpress {mdfile}
+最后显示一下文本: claude -c blogpress {mdfile}
