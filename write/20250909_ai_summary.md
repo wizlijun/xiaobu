@@ -12,7 +12,7 @@
 
 第一次：盲目的新内容摘要
 
-链接：https://www.laobu.net/ai/claudecodeceo.html
+链接：https://www.laobu.com/ai/claudecodeceo.html
 	•	看到与 Claude Code 相关的“内部人”访谈。
 	•	直接让工具摘要、入知识库，并做了视频翻译。
 	•	自己只走马观花看了一遍，对普通信息有了大致了解。
@@ -20,7 +20,7 @@
 
 第二次：带讨论目的的有针对性摘要
 
-链接：https://www.laobu.net/ai/yt_talk_with_boris_claudecode.html
+链接：https://www.laobu.com/ai/yt_talk_with_boris_claudecode.html
 	•	与朋友聊天后共同发现：除去代码模型强，Claude Code 本身的编程实践很强，背后应有高人。
 	•	为社群分享、内部会议讨论“软件工程的变革”做准备，想听听源头人士的思考。
 	•	围绕这个聚焦点再次摘要，输出与第一次完全不同，更贴近所需话题。

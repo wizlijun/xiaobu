@@ -31,7 +31,7 @@
 	•	默认值：/home/bruce/git/xiaobu/push.sh；
 	•	可编辑，修改后记忆上次设置。
 	5.	网站地址
-	•	默认值：https://www.xiaobu.net/ai/；
+	•	默认值：https://www.laobu.com/ai/；
 	•	可编辑，修改后记忆上次设置。
 	6.	复制分享链接按钮
 	•	功能：将“网站地址 + 分享后文件名”拼接为完整 URL，并复制到剪贴板。

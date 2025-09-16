@@ -115,7 +115,7 @@ def get_change_frequency(url, text):
         return 'monthly'
 
 
-def generate_sitemap(links, base_url="https://www.xiaobu.net"):
+def generate_sitemap(links, base_url="https://www.laobu.com"):
     """生成 sitemap.xml"""
     print("正在生成 sitemap.xml...")
     
@@ -194,7 +194,7 @@ def auto_detect_base_url(links):
         most_common_domain = max(domain_counts.items(), key=lambda x: x[1])[0]
         return most_common_domain
     
-    return "https://www.xiaobu.net"  # 默认域名
+    return "https://www.laobu.com"  # 默认域名
 
 
 def replace_domain_in_links(links, new_base_url):
@@ -227,7 +227,7 @@ def main():
     """主函数"""
     parser = argparse.ArgumentParser(description='生成网站地图 sitemap.xml')
     parser.add_argument('-u', '--url', '--base-url', 
-                      help='指定基础URL (例如: https://www.xiaobu.net)')
+                      help='指定基础URL (例如: https://www.laobu.com)')
     parser.add_argument('-i', '--input', default='ai/index.html',
                       help='输入HTML文件路径 (默认: ai/index.html)')
     parser.add_argument('-o', '--output', default='sitemap.xml',
@@ -319,10 +319,10 @@ def main():
         # 显示使用示例
         print(f"\n💡 多域名使用示例:")
         print(f"  # 过滤现有域名的链接：")
-        print(f"  python3 gensitemap.py -u https://www.laobu.net")
+        print(f"  python3 gensitemap.py -u https://www.laobu.com")
         print(f"  # 替换为新域名：")
-        print(f"  python3 gensitemap.py -u https://blog.laobu.net --replace-domain -o sitemap-blog.xml")
-        print(f"  python3 gensitemap.py -u https://docs.laobu.net --replace-domain -o sitemap-docs.xml")  
+        print(f"  python3 gensitemap.py -u https://blog.laobu.com --replace-domain -o sitemap-blog.xml")
+        print(f"  python3 gensitemap.py -u https://docs.laobu.com --replace-domain -o sitemap-docs.xml")  
     except Exception as e:
         print(f"❌ 错误: {e}")
         import traceback

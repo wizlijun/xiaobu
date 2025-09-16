@@ -33,7 +33,7 @@
 - **分享后文件名**：设置分享后的文件名（会自动填入）
 - **原始URL**：可选，填写原始文件的URL
 - **分享脚本路径**：设置推送脚本路径（默认：`~/git/xiaobu/push.sh`）
-- **网站地址**：设置分享网站地址（默认：`https://www.xiaobu.net/ai/`）
+- **网站地址**：设置分享网站地址（默认：`https://www.laobu.com/ai/`）
 
 ### 2. 分享流程
 1. 选择HTML文件后，应用会自动填入文件名
@@ -64,7 +64,7 @@ ai/
     └── meta.yaml         # 元数据文件
 ```
 
-最终分享链接：`https://www.xiaobu.net/ai/report_files/capsule.html`
+最终分享链接：`https://www.laobu.com/ai/report_files/capsule.html`
 
 ## 📝 meta.yaml 示例
 
