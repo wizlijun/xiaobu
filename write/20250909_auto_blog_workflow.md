@@ -8,7 +8,7 @@
 
 1. 在 Roam 中一股脑输出想法大纲，这时候经常会有表达错误、啰嗦或不清晰的地方
 2. 选中全部内容复制到 ChatGPT，让 GPT5 thinking 帮我改成 markdown 文章。校对后基本 95% 没问题，偶尔有问题也是我大纲文本有明显错误造成歧义
-3. 把 markdown 复制到静态博客 `laobu.net` 的 `/write` 目录下，手动命名，有时候还要加上时间
+3. 把 markdown 复制到静态博客 `laobu.com` 的 `/write` 目录下，手动命名，有时候还要加上时间
 4. 使用我在 Claude Code 上写的命令 `claude -c pressblog /write/thisblog.md`，自动生成静态博客的 HTML、补充 tags 和元数据，然后推送到 GitHub，自动分发到 Vercel 变成博客
 
 整个流程需要在三个工具间切换，确实有改进空间。

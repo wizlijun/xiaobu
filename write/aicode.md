@@ -41,7 +41,7 @@ Between them always having the best models, the best chatbot interfaces, the bes
 
 ### 3. 生成结果
 
-生成的内容已提交到知识库：https://www.xiaobu.net/ai/claudecode.html
+生成的内容已提交到知识库：https://www.laobu.com/ai/claudecode.html
 
 ## 对比分析
 
@@ -49,7 +49,7 @@ Between them always having the best models, the best chatbot interfaces, the bes
 
 将 AI 生成的摘要与人工编辑的原文进行对比，发现两者存在显著差异：
 
-- **AI 摘要版本**：https://www.xiaobu.net/ai/claudecode.html
+- **AI 摘要版本**：https://www.laobu.com/ai/claudecode.html
 - **人工编辑版本**：https://mp.weixin.qq.com/s/W-pd1d1j8sJoJ_Vko-Ec1A
 
 ### 使用 ChatGPT 的对比分析

@@ -218,5 +218,5 @@ Cursor 还是写了个 Python 程序，合并了一下 HTML。
 请修正 HTML 文件，根据章节标题，在目录中做匹配。要求：不准删除任何内容
 ```
 
-最终效果：https://www.xiaobu.net/ai/spoolprjcn.html
+最终效果：https://www.laobu.com/ai/spoolprjcn.html
 

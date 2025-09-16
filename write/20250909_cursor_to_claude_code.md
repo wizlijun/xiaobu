@@ -6,7 +6,7 @@
 
 ## 背景：重复性工作的痛点
 
-我的 laobu.net 是个托管在 GitHub 上的静态网页，有一些脚本做本地化处理，都是用 Cursor 和 Claude Code 生成的。在没有 Claude Code 的时候，我用 Cursor 处理 tags 生成。
+我的 laobu.com 是个托管在 GitHub 上的静态网页，有一些脚本做本地化处理，都是用 Cursor 和 Claude Code 生成的。在没有 Claude Code 的时候，我用 Cursor 处理 tags 生成。
 
 具体流程是这样的：每次要执行一个 prompt，让 Cursor 理解全文，然后按我的要求给那些没有 tags 的文章，逐个生成 3 个纯英文 tag 放入 yaml。Cursor 会调用一系列指令处理，每次调用的指令还不一样，但结果还算满意。最后用 Python 程序生成网站索引。
 

@@ -456,7 +456,7 @@ def generate_tags_html(all_tags, tag_groups, file_titles):
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>标签索引 - 小布的AI知识库</title>
+    <title>标签索引 - 老布的AI知识库</title>
     <style>
         body {{
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -574,7 +574,7 @@ def generate_tags_html(all_tags, tag_groups, file_titles):
     </main>
     
     <footer>
-        <p>© 2025 小布AI. 自动生成于 <script>document.write(new Date().toLocaleDateString())</script></p>
+        <p>© 2025 老布AI. 自动生成于 <script>document.write(new Date().toLocaleDateString())</script></p>
     </footer>
     
     <script>
