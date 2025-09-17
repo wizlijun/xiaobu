@@ -341,6 +341,9 @@ def main():
                 # 处理标签
                 if 'tags' in yaml_data and yaml_data['tags']:
                     for tag in yaml_data['tags']:
+                        # 跳过空值标签
+                        if tag is None or not isinstance(tag, str):
+                            continue
                         # 忽略无意义的标签
                         if tag.lower() in MEANINGLESS_TAGS:
                             continue
@@ -383,6 +386,9 @@ def main():
                 # 处理标签
                 if 'tags' in yaml_data and yaml_data['tags']:
                     for tag in yaml_data['tags']:
+                        # 跳过空值标签
+                        if tag is None or not isinstance(tag, str):
+                            continue
                         # 忽略无意义的标签
                         if tag.lower() in MEANINGLESS_TAGS:
                             continue
