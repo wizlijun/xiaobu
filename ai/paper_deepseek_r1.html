@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepSeek-R1 论文与同行评议交互式摘要</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+        :root {
+            --bg-color: #ffffff;
+            --primary-text-color: #333;
+            --secondary-text-color: #555;
+            --accent-color: #007bff;
+            --accent-light-color: #e7f3ff;
+            --border-color: #e0e0e0;
+            --card-bg-color: #f8f9fa;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --fact-bg: #e9f5e9;
+            --opinion-bg: #fffbe6;
+            --fact-border: #a3d9a3;
+            --opinion-border: #ffd700;
+            --response-bg: #e6f7ff;
+            --response-border: #91d5ff;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-text-color);
+            line-height: 1.8;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            color: var(--primary-text-color);
+            margin: 0;
+            font-weight: 700;
+            font-size: 2.2em;
+        }
+
+        header p {
+            color: var(--secondary-text-color);
+            font-size: 1.1em;
+            margin-top: 5px;
+        }
+        
+        .tag {
+            display: inline-block;
+            background-color: var(--accent-light-color);
+            color: var(--accent-color);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-weight: 500;
+            margin: 5px;
+            font-size: 0.9em;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .accordion {
+            background-color: var(--card-bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px var(--shadow-color);
+            transition: all 0.3s ease;
+        }
+
+        .accordion-header {
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.2em;
+            font-weight: 500;
+            user-select: none;
+            transition: background-color 0.3s ease;
+        }
+        
+        .accordion-header:hover {
+            background-color: #f1f3f5;
+        }
+
+        .accordion-header .icon {
+            font-size: 1.5em;
+            transition: transform 0.3s ease;
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out, padding 0.4s ease-out;
+            padding: 0 20px;
+        }
+
+        .accordion-content-inner {
+            padding-bottom: 20px;
+        }
+        
+        .accordion.active .accordion-header {
+             border-bottom: 1px solid var(--border-color);
+        }
+
+        .accordion.active .icon {
+            transform: rotate(45deg);
+        }
+
+        .highlight {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 6px;
+            border-left: 5px solid;
+            position: relative;
+        }
+
+        .highlight.fact {
+            background-color: var(--fact-bg);
+            border-color: var(--fact-border);
+        }
+
+        .highlight.opinion {
+            background-color: var(--opinion-bg);
+            border-color: var(--opinion-border);
+        }
+
+        .highlight.response {
+            background-color: var(--response-bg);
+            border-color: var(--response-border);
+        }
+        
+        .highlight::before {
+            position: absolute;
+            top: 15px;
+            left: -35px;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .highlight.fact::before { content: '✔️'; }
+        .highlight.opinion::before { content: '💡'; }
+        .highlight.response::before { content: '↩️'; }
+        
+        .highlight-title {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        ul {
+            padding-left: 20px;
+        }
+        
+        li {
+            margin-bottom: 10px;
+        }
+
+        /* 训练流程样式 */
+        .pipeline {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            position: relative;
+            padding: 20px 0;
+            overflow-x: auto;
+        }
+        .pipeline-line { position: absolute; top: 40px; left: 5%; width: 90%; height: 4px; background-color: var(--border-color); z-index: 1; }
+        .pipeline-progress { position: absolute; top: 40px; left: 5%; width: 0; height: 4px; background-color: var(--accent-color); z-index: 2; transition: width 0.5s ease-in-out; }
+        .stage { flex: 1; text-align: center; position: relative; z-index: 3; min-width: 150px; }
+        .stage-dot { width: 25px; height: 25px; background-color: white; border: 3px solid var(--border-color); border-radius: 50%; margin: 28px auto 15px; cursor: pointer; transition: all 0.3s ease; }
+        .stage-dot:hover, .stage.active .stage-dot { border-color: var(--accent-color); transform: scale(1.2); }
+        .stage.active .stage-dot { background-color: var(--accent-color); }
+        .stage h4 { margin: 0; font-weight: 500; }
+        #pipeline-details { margin-top: 20px; padding: 20px; background: var(--card-bg-color); border: 1px solid var(--border-color); border-radius: 8px; }
+        .detail-content { display: none; }
+        .detail-content.active { display: block; }
+        
+        /* Aha Moment 样式 */
+        .aha-moment { border: 1px dashed var(--accent-color); background-color: var(--accent-light-color); padding: 15px; border-radius: 8px; margin: 15px 0; cursor: pointer; }
+        .aha-moment-content { font-family: 'Courier New', Courier, monospace; background-color: #2d2d2d; color: #f0f0f0; padding: 15px; border-radius: 5px; white-space: pre-wrap; margin-top: 10px; display: none; }
+
+        /* 同行评议 Tab 样式 */
+        .peer-review-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        .peer-review-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+            color: var(--secondary-text-color);
+            transition: all 0.3s ease;
+        }
+        .peer-review-tab:hover {
+            background-color: #f1f3f5;
+        }
+        .peer-review-tab.active {
+            color: var(--accent-color);
+            border-bottom-color: var(--accent-color);
+        }
+        .peer-review-content {
+            display: none;
+        }
+        .peer-review-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>DeepSeek-R1: 通过强化学习激励大语言模型的推理能力</h1>
+            <p>一篇关于利用纯粹的强化学习（RL）来解锁和增强大语言模型（LLM）复杂推理能力的论文摘要</p>
+            <div>
+                <span class="tag">强化学习</span>
+                <span class="tag">大语言模型</span>
+                <span class="tag">自主推理</span>
+                <span class="tag">思维链 (CoT)</span>
+            </div>
+        </header>
+
+        <main>
+            <!-- 核心摘要 -->
+            <div class="accordion section active">
+                <div class="accordion-header">
+                    <span>🎯 核心摘要</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-content-inner">
+                        <p>本文展示了一种新方法，通过纯粹的强化学习（RL）来激发大语言模型（LLM）的推理能力，<strong>完全摆脱了对人类标注推理过程的依赖</strong>。研究团队通过这种方法，让模型自主地涌现出如自我反思、验证和动态策略调整等高级推理模式。</p>
+                        <div class="highlight fact">
+                            <span class="highlight-title">关键成果</span>
+                            训练出的模型（DeepSeek-R1）在数学、代码竞赛和STEM领域等可验证的任务上，表现超越了依赖人类示范进行监督学习的同类模型。
+                        </div>
+                        <div class="highlight opinion">
+                            <span class="highlight-title">核心观点</span>
+                            解锁LLM推理潜力的关键，不在于大规模的人类标注，而在于提供足够难度的推理问题、一个可靠的验证器（奖励信号）和充足的计算资源。
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 关键模型 -->
+            <div class="accordion section">
+                <div class="accordion-header">
+                    <span>🤖 关键模型解析</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-content-inner">
+                        <h4>1. DeepSeek-R1-Zero: 纯粹RL的探索者</h4>
+                        <p>这是整个研究的起点，旨在验证一个核心假设：能否仅通过结果正确与否的奖励信号，让模型自己学会如何推理？</p>
+                        <ul>
+                            <li><strong>训练方法</strong>: 基于DeepSeek-V3 Base模型，跳过传统的监督微调（SFT）阶段，直接使用GRPO强化学习算法进行训练。奖励信号仅来源于最终答案是否正确。</li>
+                            <li><strong>惊人发现：涌现的高级行为</strong>
+                                <ul>
+                                    <li><strong>更长的“思考”时间</strong>: 模型自发地生成更长、更详细的思维链（CoT）来解决问题。</li>
+                                    <li><strong>自我进化</strong>: 模型表现出反思、验证和探索不同解法的行为。</li>
+                                </ul>
+                            </li>
+                        </ul>
+                        <div class="aha-moment" onclick="toggleAhaMoment(this)">
+                            <strong>“Aha Moment”：模型的顿悟时刻</strong> (点击展开/折叠)
+                            <div class="aha-moment-content">
+                                <p><strong>问题:</strong> If a > 1, then the sum of the real solutions of ... is equal to ...</p>
+                                <p><strong>模型响应:</strong></p>
+                                <p>To solve the equation ..., let's start by squaring both ...</p>
+                                <p>... (一系列复杂的数学推导) ...</p>
+                                <p><strong style="color: #ff9999;">Wait, wait. Wait. That’s an aha moment I can flag here.</strong></p>
+                                <p>Let’s reevaluate this step by step to identify whether the correct sum can be ...</p>
+                                <p>... (模型开始重新评估和修正自己的推理路径) ...</p>
+                            </div>
+                        </div>
+                        <div class="highlight fact">
+                             <span class="highlight-title">性能表现</span>
+                            在AIME 2024数学竞赛基准上，pass@1准确率从最初的15.6%飙升至77.9%，远超人类参赛者平均水平。
+                        </div>
+                        <ul>
+                            <li><strong>存在的问题</strong>: 虽然推理能力强大，但可读性差，常出现中英文混合，且在写作等通用任务上表现不佳。</li>
+                        </ul>
+                        
+                        <hr style="border: none; border-top: 1px solid var(--border-color); margin: 20px 0;">
+
+                        <h4>2. DeepSeek-R1: 兼顾推理与通用的集大成者</h4>
+                        <p>为了解决R1-Zero的问题，研究团队设计了一个多阶段的训练流程，旨在继承其强大的推理能力，同时提升通用性和对齐人类偏好。</p>
+                        <ul>
+                            <li><strong>目标</strong>: 打造一个既是推理高手，又是通用助手的全能模型。</li>
+                            <li><strong>训练方法</strong>: 采用一个包含拒绝采样、多轮强化学习和监督微调的复杂流程。<strong>(详情见下一章节)</strong></li>
+                        </ul>
+                         <div class="highlight fact">
+                             <span class="highlight-title">最终成果</span>
+                             最终版的DeepSeek-R1模型不仅保持了顶尖的推理水平，在AlpacaEval 2.0和Arena-Hard等衡量通用能力和用户偏好的基准上，性能也获得了巨大提升（分别提升25%和17%）。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 训练流程 -->
+            <div class="accordion section">
+                <div class="accordion-header">
+                    <span>⚙️ DeepSeek-R1 的多阶段训练流程</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-content-inner">
+                        <p>DeepSeek-R1的诞生过程是一个精妙的多阶段优化流程，每一步都旨在解决特定问题并增强模型能力。点击下方节点查看各阶段详情。</p>
+                        <div class="pipeline">
+                            <div class="pipeline-line"></div>
+                            <div class="pipeline-progress" id="pipeline-progress"></div>
+                            <div class="stage" id="stage-zero" onclick="showDetail('zero', this)">
+                                <div class="stage-dot"></div>
+                                <h4>起点: R1-Zero</h4>
+                            </div>
+                            <div class="stage" id="stage-dev1" onclick="showDetail('dev1', this)">
+                                <div class="stage-dot"></div>
+                                <h4>Dev1: 对齐</h4>
+                            </div>
+                            <div class="stage" id="stage-dev2" onclick="showDetail('dev2', this)">
+                                <div class="stage-dot"></div>
+                                <h4>Dev2: 推理增强</h4>
+                            </div>
+                            <div class="stage" id="stage-dev3" onclick="showDetail('dev3', this)">
+                                <div class="stage-dot"></div>
+                                <h4>Dev3: 通用增强</h4>
+                            </div>
+                             <div class="stage" id="stage-final" onclick="showDetail('final', this)">
+                                <div class="stage-dot"></div>
+                                <h4>Final R1: 最终对齐</h4>
+                            </div>
+                        </div>
+
+                        <div id="pipeline-details">
+                            <div class="detail-content" id="detail-zero">
+                                <h4><strong>起点 (R1-Zero)</strong>: 纯粹推理能力的基石</h4>
+                                <p><strong>方法:</strong> 纯强化学习，奖励只看最终答案对错。</p>
+                                <p><strong>结果:</strong> 获得了强大的推理能力，但存在可读性差、语言混用等问题。</p>
+                            </div>
+                            <div class="detail-content" id="detail-dev1">
+                                <h4><strong>第一阶段 (Dev1)</strong>: 提升可读性与指令遵循</h4>
+                                <p><strong>方法:</strong> 收集少量高质量、符合人类思维习惯的CoT数据进行监督微调(SFT)。</p>
+                                <p><strong>结果:</strong> 可读性和指令遵循能力大幅提升 (IF-Eval分数从46.6 -> 71.7)，但由于数据量有限，推理能力有所下降 (AIME分数从77.9 -> 59.0)。</p>
+                            </div>
+                            <div class="detail-content" id="detail-dev2">
+                                <h4><strong>第二阶段 (Dev2)</strong>: 重获并超越推理能力</h4>
+                                <p><strong>方法:</strong> 在Dev1的基础上，进行第一轮针对推理任务的强化学习。</p>
+                                <p><strong>结果:</strong> 推理能力显著恢复并增强，在编码、数学和STEM基准上表现优异 (AIME分数回升至74.0)。</p>
+                            </div>
+                             <div class="detail-content" id="detail-dev3">
+                                <h4><strong>第三阶段 (Dev3)</strong>: 融合通用能力</h4>
+                                <p><strong>方法:</strong> 将推理和非推理（通用）数据混合，进行新一轮SFT。</p>
+                                <p><strong>结果:</strong> 在保持推理能力的同时，通用语言生成能力得到提升 (AlpacaEval 2.0分数从55.8 -> 62.1)。</p>
+                            </div>
+                            <div class="detail-content" id="detail-final">
+                                <h4><strong>最终阶段 (Final R1)</strong>: 全面对齐人类偏好</h4>
+                                <p><strong>方法:</strong> 在Dev3基础上，进行第二轮综合强化学习，使用混合奖励模型（规则奖励+偏好奖励）。</p>
+                                <p><strong>结果:</strong> 推理能力稳中有升，同时在指令遵循和用户偏好方面取得巨大进步，成为最终的全能模型 (Arena-Hard分数从75.6 -> 92.3)。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 局限与未来展望 -->
+            <div class="accordion section">
+                <div class="accordion-header">
+                    <span>🔭 局限与未来展望</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-content-inner">
+                        <p>尽管DeepSeek-R1取得了突破性进展，但研究团队也坦诚地指出了其当前存在的局限和未来的改进方向。</p>
+                        <ul>
+                            <li><strong>软件工程任务:</strong> 由于评估时间长，RL在软件工程领域的应用受限，导致这方面能力提升不大。</li>
+                            <li><strong>结构化输出与工具使用:</strong> 模型目前无法很好地利用计算器、搜索引擎等外部工具来辅助回答。</li>
+                            <li><strong>Token效率:</strong> 有时对于简单问题会“过度思考”，产生不必要的冗长推理，影响效率。</li>
+                            <li><strong>语言混合:</strong> 主要针对中英文优化，处理其他语言时可能仍会出现语言混用的问题。</li>
+                            <li><strong>提示工程敏感性:</strong> 模型对提示词敏感，零样本（Zero-shot）直接提问的效果优于少样本（Few-shot）。</li>
+                        </ul>
+                        <div class="highlight opinion">
+                            <span class="highlight-title">未来方向</span>
+                            未来的研究将致力于解决以上局限，特别是探索如何让模型更高效地<strong>利用工具</strong>来增强推理，以及如何为写作等难以用规则评估的任务构建<strong>更可靠的奖励模型</strong>，以防止“奖励作弊”（Reward Hacking）。
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 同行评议 -->
+            <div class="accordion section">
+                <div class="accordion-header">
+                    <span>🔬 同行评议核心内容 (Peer Review Highlights)</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-content-inner">
+                        <p>该论文在顶级期刊发表前经过了多轮严格的同行评议。以下是评议过程中最核心的赞扬、质疑以及作者的回应，展现了科学研究的严谨过程。</p>
+                        
+                        <div class="peer-review-tabs">
+                            <div class="peer-review-tab active" onclick="switchPeerTab(this, 'praise')">主要贡献与肯定</div>
+                            <div class="peer-review-tab" onclick="switchPeerTab(this, 'criticism')">核心关切与批评</div>
+                            <div class="peer-review-tab" onclick="switchPeerTab(this, 'response')">作者的回应与修改</div>
+                        </div>
+
+                        <div id="peer-praise" class="peer-review-content active">
+                             <div class="highlight fact">
+                                <span class="highlight-title">开创性工作</span>
+                                评议人普遍认为，该研究首次成功展示了仅通过<strong>纯粹的强化学习（无监督微调）</strong>就能让LLM学会并精通复杂推理，这是一项基础性贡献 (Foundational Contribution)。
+                            </div>
+                            <div class="highlight fact">
+                                <span class="highlight-title">SOTA 性能</span>
+                                评议人承认，生成的 DeepSeek-R1 模型在多个推理基准上达到了<strong>顶尖（State-of-the-Art）</strong>水平，其结果令人印象深刻。
+                            </div>
+                             <div class="highlight fact">
+                                <span class="highlight-title">开放共享的重大意义</span>
+                                 评议人高度评价了团队<strong>开放模型权重</strong>（特别是 R1 和蒸馏版本）的决定，认为这是 AI 研究领域的里程碑事件，为社区后续研究奠定了坚实基础，将极大推动推理模型的发展。
+                            </div>
+                        </div>
+
+                        <div id="peer-criticism" class="peer-review-content">
+                             <div class="highlight opinion">
+                                <span class="highlight-title">最尖锐的质疑：数据透明度与污染 (Data Contamination)</span>
+                                这是多位评议人共同提出的最核心关切。他们指出，基础模型（DeepSeek-V3 Base）的预训练数据缺乏透明度，无法排除其已包含大量推理相关数据或测试集内容的可能性。Referee #8 甚至要求作者在一个<strong>“干净”的（即在 o1 等推理模型发布前开发的）基础模型上重现实验</strong>，以证明其方法的普适性。
+                            </div>
+                             <div class="highlight opinion">
+                                <span class="highlight-title">对 RL 真实作用的疑问</span>
+                                Referee #3 深刻地质疑了 RL 在其中扮演的真实角色。他认为，RL 可能并非“教会”了模型推理，而更像一个<strong>选择器</strong>，从基础模型本就能生成的众多推理路径中，挑选出能得到正确答案的路径并加以强化。他提出，迭代式的监督微调（Iterative SFT）可能也能达到类似效果。
+                            </div>
+                             <div class="highlight opinion">
+                                <span class="highlight-title">对评估方法的批评</span>
+                                评议人认为，仅报告平均分数会掩盖模型在不同难度、不同类型问题上的真实表现。他们要求进行更细致的分析，如按难度分级的评估、分布外（OOD）测试，并对模型的能力进行更深入的剖析，而非简单的分数比较。
+                            </div>
+                             <div class="highlight opinion">
+                                <span class="highlight-title">安全与伦理的缺失</span>
+                                初始版本的论文严重缺乏安全评估。评议人要求作者提供详细的安全报告、风险分析、对抗攻击（红队测试）结果，以及对模型开源后可能被滥用的讨论。
+                            </div>
+                             <div class="highlight opinion">
+                                <span class="highlight-title">对“类人思考”表述的反对</span>
+                                 Referee #3 强烈反对将模型的中间输出描述为“类人思考过程”，认为这种拟人化描述具有误导性，可能会让用户对一个并不完全可靠的模型的输出结果<strong>产生不应有的信任</strong>。
+                            </div>
+                        </div>
+
+                        <div id="peer-response" class="peer-review-content">
+                            <div class="highlight response">
+                                <span class="highlight-title">正面回应数据污染质疑</span>
+                                作者承认预训练数据可能包含网络上的AI生成内容，但强调没有进行主动的蒸馏。为回应核心关切，他们在后续版本中<strong>在 Qwen2-7B（一个发布于 o1 之前的“干净”模型）上成功重现了实验</strong>，这极大地增强了论文结论的可信度。
+                            </div>
+                             <div class="highlight response">
+                                <span class="highlight-title">补充大量实验与分析</span>
+                                 作者根据评议人要求，在附录中增加了大量内容，包括：各个训练阶段的详细性能对比、使用 AIME 2025 等新数据集进行的 OOD 测试、按难度和数学/代码类别划分的详细结果分析，使评估更加全面。
+                            </div>
+                             <div class="highlight response">
+                                <span class="highlight-title">增加详尽的安全评估</span>
+                                 作者新增了完整的安全评估章节，与 GPT-4o 等主流模型进行了多维度对比，并坦诚其模型在裸模型状态下安全等级为“中等”，但在配合官方的风险控制系统后可达到“优越”水平，并对开源使用的风险进行了提示。
+                            </div>
+                             <div class="highlight response">
+                                <span class="highlight-title">调整措辞与重构论文</span>
+                                作者接受了批评，删除了“类人思考”等拟人化和夸张的表述（如“对社会无害”），使论文语言更科学严谨。同时，他们根据建议重组了论文结构，将方法、局限性、未来工作等内容移至更合适的位置，提升了论文的规范性和可读性。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const accordions = document.querySelectorAll('.accordion');
+
+            accordions.forEach(accordion => {
+                const header = accordion.querySelector('.accordion-header');
+                const content = accordion.querySelector('.accordion-content');
+
+                header.addEventListener('click', () => {
+                    const isActive = accordion.classList.contains('active');
+                    
+                    // Close all accordions
+                    // accordions.forEach(a => {
+                    //     a.classList.remove('active');
+                    //     a.querySelector('.accordion-content').style.maxHeight = null;
+                    //     a.querySelector('.icon').textContent = '+';
+                    // });
+
+                    if (isActive) {
+                        accordion.classList.remove('active');
+                        content.style.maxHeight = null;
+                        accordion.querySelector('.icon').textContent = '+';
+                    } else {
+                        accordion.classList.add('active');
+                        content.style.maxHeight = content.scrollHeight + "px";
+                        accordion.querySelector('.icon').textContent = '×';
+                    }
+                });
+
+                // Automatically open the first accordion
+                if (accordion.classList.contains('active')) {
+                     content.style.maxHeight = content.scrollHeight + "px";
+                     accordion.querySelector('.icon').textContent = '×';
+                }
+            });
+            
+            // Initialize pipeline view
+            showDetail('zero', document.getElementById('stage-zero'));
+        });
+        
+        function toggleAhaMoment(element) {
+            const content = element.querySelector('.aha-moment-content');
+            if (content.style.display === 'block') {
+                content.style.display = 'none';
+            } else {
+                content.style.display = 'block';
+            }
+        }
+
+        const stageDetails = {
+            zero: { progress: '0%', index: 0 },
+            dev1: { progress: '25%', index: 1 },
+            dev2: { progress: '50%', index: 2 },
+            dev3: { progress: '75%', index: 3 },
+            final: { progress: '100%', index: 4 }
+        };
+
+        function showDetail(stageId, element) {
+            // Update stage active state
+            document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+            element.classList.add('active');
+
+            // Update details content
+            document.querySelectorAll('.detail-content').forEach(d => d.classList.remove('active'));
+            document.getElementById(`detail-${stageId}`).classList.add('active');
+            
+            // Update progress bar
+            document.getElementById('pipeline-progress').style.width = stageDetails[stageId].progress;
+        }
+        
+        function switchPeerTab(tabElement, tabId) {
+            // Tabs
+            const tabs = tabElement.parentElement.querySelectorAll('.peer-review-tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            tabElement.classList.add('active');
+            
+            // Content
+            const contents = tabElement.parentElement.parentElement.querySelectorAll('.peer-review-content');
+            contents.forEach(c => c.classList.remove('active'));
+            document.getElementById(`peer-${tabId}`).classList.add('active');
+
+            // Recalculate accordion height
+            const accordion = tabElement.closest('.accordion');
+            if (accordion && accordion.classList.contains('active')) {
+                const content = accordion.querySelector('.accordion-content');
+                content.style.maxHeight = content.scrollHeight + 'px';
+            }
+        }
+
+    </script>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="paper_deepseek_r1_files/paper.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
