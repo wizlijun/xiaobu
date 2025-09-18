@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自由能原理与预测加工 · 知识地图</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333;
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --accent-color: #e74c3c;
+            --light-gray: #ecf0f1;
+            --line-color: #bdc3c7;
+            --font-family: 'Helvetica Neue', 'Arial', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        #map-container {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 120px);
+            transform-origin: 0 0;
+            overflow: auto;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+        
+        header {
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            margin: 0;
+        }
+        
+        header p {
+            margin: 5px 0 15px 0;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .node {
+            position: absolute;
+            padding: 10px 15px;
+            border-radius: 50px;
+            background-color: var(--light-gray);
+            border: 2px solid var(--line-color);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            font-size: 14px;
+        }
+
+        .node:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .central-node {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: #2980b9;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 15px 25px;
+        }
+
+        .cluster-node {
+            background-color: var(--secondary-color);
+            color: white;
+            border-color: #27ae60;
+            font-size: 16px;
+        }
+        
+        .concept-node {
+            background-color: #f1c40f;
+            border-color: #f39c12;
+            color: #333;
+        }
+
+        .sub-concept-node {
+            background-color: #e67e22;
+            border-color: #d35400;
+            color: white;
+            font-size: 12px;
+        }
+        
+        .dialogue-node {
+            background-color: #9b59b6;
+            color: white;
+            border-color: #8e44ad;
+        }
+        
+        .application-node {
+             background-color: #1abc9c;
+             color: white;
+             border-color: #16a085;
+        }
+
+        #map-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        
+        .modal-content ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .modal-content li {
+            background-color: #f9f9f9;
+            border-left: 3px solid var(--secondary-color);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        
+        .modal-content .paper-title {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .modal-content .paper-author {
+            font-style: italic;
+            color: #555;
+            font-size: 0.9em;
+        }
+        
+        .modal-content .summary {
+            margin-top: 10px;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .summary strong {
+            color: var(--accent-color);
+        }
+        
+        .tag {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin-right: 5px;
+            color: white;
+        }
+        
+        .tag-fact { background-color: #3498db; }
+        .tag-view { background-color: #2ecc71; }
+
+        /* 缩放和平移控制 */
+        .map-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .control-btn {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .control-btn:hover {
+            background: #2980b9;
+            transform: scale(1.1);
+        }
+        
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .zoom-level {
+            background: var(--light-gray);
+            color: var(--text-color);
+            font-size: 12px;
+            font-weight: normal;
+            cursor: default;
+        }
+        
+        .zoom-level:hover {
+            background: var(--light-gray);
+            transform: none;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            #map-container {
+                height: calc(100vh - 100px);
+            }
+            
+            .node {
+                font-size: 12px;
+                padding: 8px 12px;
+            }
+            
+            .central-node {
+                font-size: 16px;
+                padding: 12px 20px;
+            }
+            
+            .cluster-node {
+                font-size: 14px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+                max-height: 85vh;
+            }
+            
+            header h1 {
+                font-size: 1.5em;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .node {
+                font-size: 10px;
+                padding: 6px 10px;
+            }
+            
+            .central-node {
+                font-size: 14px;
+                padding: 10px 15px;
+            }
+            
+            .cluster-node {
+                font-size: 12px;
+            }
+            
+            .sub-concept-node {
+                font-size: 10px;
+            }
+            
+            header h1 {
+                font-size: 1.3em;
+            }
+            
+            header p {
+                font-size: 0.8em;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>自由能原理与预测加工 · 知识地图</h1>
+        <p>点击知识节点，探索相关核心概念与研究文献。</p>
+    </header>
+
+    <div id="map-container">
+        <svg id="map-svg"></svg>
+        <!-- Nodes will be injected here by JavaScript -->
+        
+        <div class="map-controls">
+            <button class="control-btn" id="zoom-in" title="放大">+</button>
+            <div class="control-btn zoom-level" id="zoom-level">100%</div>
+            <button class="control-btn" id="zoom-out" title="缩小">−</button>
+            <button class="control-btn" id="reset-view" title="重置视图">⌂</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal">
+        <div class="modal-content">
+            <span class="modal-close" id="modal-close">&times;</span>
+            <div id="modal-body">
+                <!-- Modal content will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const knowledgeData = {
+            nodes: [
+                // Central Node
+                { id: 'fep', label: '自由能原理 / 主动推理', type: 'central-node', x: 50, y: 50,
+                  summary: `<div><span class="tag tag-fact">核心理论</span><p>由Karl Friston提出的认知科学、神经科学与心理科学的“大一统理论”。它主张任何自组织系统（如生物体）都致力于最小化其内部状态和世界模型之间的“自由能”，这等同于最小化“惊异”(Surprise)。<strong>主动推理</strong>是实现这一目标的具体过程，即通过改变<strong>预测</strong>（知觉）或改变<strong>世界</strong>（行动）来减少预测误差。</p></div>`,
+                  papers: [
+                      { title: '《主动推理》', author: '托马斯·帕尔, 乔瓦尼·佩祖洛, & 卡尔·J·佛里斯顿' },
+                      { title: '自由能原理与生命-心智连续性', author: '王姝彦, 郭一裕' },
+                      { title: '自由能原理对认知过程研究的方法论意义', author: '郑念' }
+                  ]
+                },
+                
+                // Clusters
+                { id: 'core_concepts', label: '理论核心', type: 'cluster-node', x: 25, y: 30 },
+                { id: 'mind_cognition', label: '心智与认知', type: 'cluster-node', x: 75, y: 30 },
+                { id: 'applications', label: '理论应用与延展', type: 'cluster-node', x: 25, y: 70 },
+                { id: 'debates', label: '理论对话与争议', type: 'cluster-node', x: 75, y: 70 },
+                
+                // Core Concepts
+                { id: 'bayesian', label: '贝叶斯推理', type: 'concept-node', x: 15, y: 15,
+                  summary: `<div><span class="tag tag-fact">数学基础</span><p>预测加工的数学基础。大脑被视为一个“贝叶斯推理机器”，它结合<strong>先验知识</strong>和当前的<strong>感官证据</strong>来更新对世界状态的<strong>后验信念</strong>，从而做出最佳推断。</p></div>`,
+                  papers: [
+                      { title: '预测心智研究的热点和前沿发展趋势', author: '刘燊' },
+                      { title: '认知整合的预测加工趋向', author: '申一涵' },
+                      { title: '自由能原理的推导与应用', author: '' }
+                  ]
+                },
+                { id: 'pem', label: '预测误差最小化', type: 'concept-node', x: 35, y: 15,
+                  summary: `<div><span class="tag tag-view">核心机制</span><p>系统通过比较<strong>自上而下</strong>的预测和<strong>自下而上</strong>的感官信号，产生“预测误差”。认知、知觉和行动的根本目标就是通过调整模型或行动来最小化这个误差。</p></div>`,
+                  papers: [
+                      { title: '预测错误最小化与幻觉', author: '孙玉婷, 周理乾' },
+                      { title: '认知整合的预测加工趋向', author: '申一涵' }
+                  ]
+                },
+                { id: 'generative_model', label: '生成模型', type: 'concept-node', x: 10, y: 45,
+                  summary: `<div><span class="tag tag-fact">关键组件</span><p>大脑内部关于世界如何产生感官信号的概率模型。它不是世界的静态“照片”，而是一个动态的、层级化的因果结构模型，用于生成预测。</p></div>`,
+                  papers: [
+                      { title: '生成主义预测加工：一种动力系统立场', author: '刘林澍, 叶浩生' },
+                      { title: '认知过程的生成模型', author: '郑念' }
+                  ]
+                },
+                { id: 'markov', label: '马尔科夫毛毯', type: 'concept-node', x: 40, y: 45,
+                  summary: `<div><span class="tag tag-fact">统计边界</span><p>一个统计学概念，用于在数学上区分系统的<strong>内部状态</strong>和<strong>外部状态</strong>。内部和外部只能通过“毛毯”上的<strong>感觉状态</strong>和<strong>行动状态</strong>间接相互作用，这为有机体的自主性提供了形式化描述。</p></div>`,
+                  papers: [
+                      { title: '认知边界的马尔可夫毯重构', author: '柴新, 王姝彦' },
+                      { title: '《主动推理》', author: '托马斯·帕尔, 等' }
+                  ]
+                },
+                 { id: 'surprise', label: '惊异/熵/奈特', type: 'sub-concept-node', x: 50, y: 10,
+                  summary: `<div><span class="tag tag-fact">核心度量</span><p><strong>惊异 (Surprise)</strong> 是对意外事件的信息论度量，等于事件概率的负对数。<strong>熵 (Entropy)</strong> 是平均的惊异。最小化自由能等同于最小化长期的平均惊异（熵）。<strong>奈特 (Nat)</strong> 是基于自然对数的信息单位。</p></div>`,
+                  papers: [
+                       { title: '《主动推理》', author: '托马斯·帕尔, 等' },
+                       { title: '自由能原理的推导与应用', author: '' }
+                  ]
+                },
+
+                // Mind & Cognition
+                { id: 'perception', label: '知觉', type: 'concept-node', x: 65, y: 15,
+                  summary: `<div><span class="tag tag-view">核心应用</span><p>在预测加工框架下，知觉不是被动接收信息，而是大脑基于生成模型对感官输入原因的主动推断和预测。<strong>知觉是“受控的幻觉”</strong>。</p></div>`,
+                  papers: [
+                       { title: '作为预测错误最小化的空间知觉', author: '孙玉婷' },
+                       { title: '当代知觉哲学问题研究', author: '王孝清' },
+                       { title: '心智能否直接知觉世界？', author: '陈琰' }
+                  ]
+                },
+                { id: 'hallucination', label: '幻觉', type: 'sub-concept-node', x: 58, y: 5,
+                  summary: `<div><span class="tag tag-view">病理学解释</span><p>幻觉被解释为<strong>失控的预测</strong>。当自上而下的先验预测权重过高，压倒了自下而上的感官证据时，就会产生与现实不符的知觉经验。</p></div>`,
+                  papers: [
+                       { title: '预测错误最小化与幻觉', author: '孙玉婷, 周理乾' }
+                  ]
+                },
+                { id: 'cog_pen', label: '认知渗透性', type: 'sub-concept-node', x: 72, y: 5,
+                  summary: `<div><span class="tag tag-view">理论推论</span><p>预测加工理论天然支持知觉的认知可渗透性，因为高阶的认知状态（如信念、期望）正是通过层级模型自上而下地影响和塑造知觉经验。</p></div>`,
+                  papers: [
+                       { title: '社会心智中的认知渗透与预测加工', author: '何静' },
+                       { title: '预测加工、认知可渗透性与读心', author: '陈巍, 胡烨' }
+                  ]
+                },
+                { id: 'social_cog', label: '社会认知/他心', type: 'concept-node', x: 85, y: 15,
+                  summary: `<div><span class="tag tag-view">重要领域</span><p>理解他人被视为一个<strong>双向预测</strong>过程。我预测你的同时，你也在预测我。通过互动，我们共同最小化预测误差，从而达成相互理解和共识。</p></div>`,
+                  papers: [
+                       { title: '社会心智：描述性预测与规范性预期', author: '何静' },
+                       { title: '预测心智进路中的社会认知观', author: '何静' }
+                  ]
+                },
+                { id: 'emotion', label: '情绪', type: 'concept-node', x: 60, y: 45,
+                  summary: `<div><span class="tag tag-view">理论解释</span><p>情绪与<strong>内感受推理</strong>密切相关。情绪效价（正面/负面情绪）被建模为自由能随时间的变化率。当预测误差减小时，我们体验到积极情绪；反之，则为消极情绪。</p></div>`,
+                  papers: [
+                       { title: '情绪作为内感受的外在行动推理', author: '于爽' },
+                       { title: '《主动推理》', author: '托马斯·帕尔, 等' }
+                  ]
+                },
+                { id: 'self', label: '自我', type: 'concept-node', x: 90, y: 45,
+                  summary: `<div><span class="tag tag-view">理论解释</span><p>自我被视为一个多层级的生成模型，整合了对身体的关切、施动者模型和身体模型。在场感、拥有感和施动感等自我体验，是这个自我模型在意识层面的反映。</p></div>`,
+                  papers: [
+                       { title: '预测心智视角下的生态学自我与主体自我', author: '孙骞谦' },
+                       { title: '自我知识理论的预测加工选项', author: '徐竹' }
+                  ]
+                },
+                
+                // Applications
+                { id: 'culture', label: '文化建构', type: 'application-node', x: 15, y: 85,
+                  summary: `<div><span class="tag tag-view">社会延展</span><p>文化（如规范、习俗、偏见）作为重要的<strong>先验知识</strong>，渗透到大脑的预测结构中，塑造了我们的社会认知和行为，构成了“文化濡化”。</p></div>`,
+                  papers: [
+                      { title: '从预测心智理论看社会认知的文化建构', author: '何静' },
+                      { title: '认知整合与文化濡化', author: '申一涵, 王姝彦' }
+                  ]
+                },
+                { id: 'digital_niche', label: '数字龛位/元宇宙', type: 'application-node', x: 35, y: 85,
+                  summary: `<div><span class="tag tag-view">未来展望</span><p>元宇宙等沉浸式媒介可被视为人类在数字时代的<strong>认知龛位</strong>。个人与媒介的互动同样遵循主动推理原则，双方围绕耦合关系的主导地位展开博弈。</p></div>`,
+                  papers: [
+                      { title: '数字龛位的主动推理：迈向元宇宙的预测心智', author: '刘林澍, 叶浩生' }
+                  ]
+                },
+                 { id: 'hmi', label: '人机交互信任', type: 'application-node', x: 50, y: 90,
+                  summary: `<div><span class="tag tag-view">技术应用</span><p>人机信任的建立可被建模为一个人与机器（作为异质智能体）之间的<strong>双向预测</strong>过程。信任的建立依赖于认知一致性、共享生成模型和反事实推理能力。</p></div>`,
+                  papers: [
+                      { title: '基于主动推理的人机交互信任建构', author: '王姝彦, 柴新' }
+                  ]
+                },
+                
+                // Debates
+                { id: '4e', label: 'vs. 4E认知/生成主义', type: 'dialogue-node', x: 65, y: 85,
+                  summary: `<div><span class="tag tag-view">理论对话</span><p>预测加工理论与4E认知（具身、嵌入、生成、延展）存在复杂的对话关系。行动导向的PP版本与生成主义高度兼容，都强调认知产生于大脑-身体-环境的动态耦合中。</p></div>`,
+                  papers: [
+                      { title: '生成主义预测加工：一种动力系统立场', author: '刘林澍, 叶浩生' },
+                      { title: '认知整合问题研究', author: '申一涵' }
+                  ]
+                },
+                { id: 'direct_perc', label: '知觉直接性问题', type: 'dialogue-node', x: 85, y: 85,
+                  summary: `<div><span class="tag tag-view">核心争议</span><p>预测加工是否意味着我们只能间接知觉世界（通过内在模型）？<strong>神经中心主义</strong>观点认为世界隐藏在“感觉纱帘”后。而<strong>行动导向</strong>观点则认为，知觉-行动循环确保了心智与世界的紧密耦合与直接接触。</p></div>`,
+                  papers: [
+                      { title: '心智能否直接知觉世界？', author: '陈琰' }
+                  ]
+                },
+                { id: 'dark_room', label: '暗室问题', type: 'dialogue-node', x: 92, y: 65,
+                  summary: `<div><span class="tag tag-view">著名悖论</span><p>一个对FEP的经典诘问：如果生物总是最小化惊异，为何它们不永远待在刺激最少、最可预测的暗室里？<strong>回应：</strong>探索行为本身就是一种最小化长期不确定性（即未来惊异）的策略。</p></div>`,
+                  papers: [
+                      { title: '试论暗室问题对预测加工理论的挑战', author: '王姝彦, 付少珏' },
+                      { title: '从生命角度看预测加工理论', author: '赵婷婷' }
+                  ]
+                }
+            ],
+            links: [
+                { source: 'fep', target: 'core_concepts' },
+                { source: 'fep', target: 'mind_cognition' },
+                { source: 'fep', target: 'applications' },
+                { source: 'fep', target: 'debates' },
+                { source: 'core_concepts', target: 'bayesian' },
+                { source: 'core_concepts', target: 'pem' },
+                { source: 'core_concepts', target: 'generative_model' },
+                { source: 'core_concepts', target: 'markov' },
+                { source: 'bayesian', target: 'surprise' },
+                { source: 'pem', target: 'surprise' },
+                { source: 'mind_cognition', target: 'perception' },
+                { source: 'mind_cognition', target: 'social_cog' },
+                { source: 'mind_cognition', target: 'emotion' },
+                { source: 'mind_cognition', target: 'self' },
+                { source: 'perception', target: 'hallucination' },
+                { source: 'perception', target: 'cog_pen' },
+                { source: 'applications', target: 'culture' },
+                { source: 'applications', target: 'digital_niche' },
+                { source: 'applications', target: 'hmi'},
+                { source: 'debates', target: '4e' },
+                { source: 'debates', target: 'direct_perc' },
+                { source: 'debates', target: 'dark_room' },
+            ]
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('map-container');
+            const svg = document.getElementById('map-svg');
+            const modal = document.getElementById('modal');
+            const modalBody = document.getElementById('modal-body');
+            const modalClose = document.getElementById('modal-close');
+            
+            // 缩放和平移控制
+            const zoomInBtn = document.getElementById('zoom-in');
+            const zoomOutBtn = document.getElementById('zoom-out');
+            const resetViewBtn = document.getElementById('reset-view');
+            const zoomLevelDisplay = document.getElementById('zoom-level');
+            
+            let currentZoom = 1;
+            let currentTranslateX = 0;
+            let currentTranslateY = 0;
+            let isDragging = false;
+            let lastMouseX = 0;
+            let lastMouseY = 0;
+            
+            const nodeElements = {};
+
+            // 缩放和平移功能函数
+            function updateTransform() {
+                container.style.transform = `translate(${currentTranslateX}px, ${currentTranslateY}px) scale(${currentZoom})`;
+                zoomLevelDisplay.textContent = Math.round(currentZoom * 100) + '%';
+            }
+
+            function zoomIn() {
+                currentZoom = Math.min(currentZoom * 1.2, 3);
+                updateTransform();
+                setTimeout(renderLines, 10);
+            }
+
+            function zoomOut() {
+                currentZoom = Math.max(currentZoom / 1.2, 0.3);
+                updateTransform();
+                setTimeout(renderLines, 10);
+            }
+
+            function resetView() {
+                currentZoom = 1;
+                currentTranslateX = 0;
+                currentTranslateY = 0;
+                updateTransform();
+                setTimeout(renderLines, 10);
+            }
+
+            // 事件监听器
+            zoomInBtn.addEventListener('click', zoomIn);
+            zoomOutBtn.addEventListener('click', zoomOut);
+            resetViewBtn.addEventListener('click', resetView);
+
+            // 鼠标拖拽平移
+            container.addEventListener('mousedown', (e) => {
+                if (e.target.classList.contains('node') || e.target.closest('.map-controls')) return;
+                isDragging = true;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                container.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const deltaX = e.clientX - lastMouseX;
+                const deltaY = e.clientY - lastMouseY;
+                currentTranslateX += deltaX;
+                currentTranslateY += deltaY;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                updateTransform();
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    container.style.cursor = '';
+                    setTimeout(renderLines, 10);
+                }
+            });
+
+            // 鼠标滚轮缩放
+            container.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                const newZoom = Math.max(0.3, Math.min(3, currentZoom * delta));
+                
+                // 以鼠标位置为中心进行缩放
+                const rect = container.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                
+                const zoomDelta = newZoom / currentZoom;
+                currentTranslateX = mouseX - (mouseX - currentTranslateX) * zoomDelta;
+                currentTranslateY = mouseY - (mouseY - currentTranslateY) * zoomDelta;
+                currentZoom = newZoom;
+                
+                updateTransform();
+                setTimeout(renderLines, 10);
+            });
+
+            // Render nodes
+            knowledgeData.nodes.forEach(node => {
+                const el = document.createElement('div');
+                el.id = 'node-' + node.id;
+                el.className = 'node ' + node.type;
+                el.innerHTML = node.label;
+                el.style.left = `${node.x}%`;
+                el.style.top = `${node.y}%`;
+                // Center the node
+                el.style.transform = 'translate(-50%, -50%)';
+                
+                el.addEventListener('click', () => {
+                    let content = `<h2>${node.label}</h2>`;
+                    if (node.summary) {
+                        content += `<div class="summary">${node.summary}</div>`;
+                    }
+                    if (node.papers && node.papers.length > 0) {
+                        content += '<h3>相关文献</h3><ul>';
+                        node.papers.forEach(paper => {
+                            content += `<li><span class="paper-title">${paper.title}</span><span class="paper-author">${paper.author}</span></li>`;
+                        });
+                        content += '</ul>';
+                    }
+                    modalBody.innerHTML = content;
+                    modal.style.display = 'flex';
+                });
+                
+                container.appendChild(el);
+                nodeElements[node.id] = el;
+            });
+            
+            // Function to render lines after nodes are in the DOM
+            function renderLines() {
+                svg.innerHTML = ''; // Clear existing lines
+                const containerRect = container.getBoundingClientRect();
+                
+                // 重新设置SVG尺寸以适应变换
+                svg.style.width = container.offsetWidth + 'px';
+                svg.style.height = container.offsetHeight + 'px';
+                
+                knowledgeData.links.forEach(link => {
+                    const sourceNode = nodeElements[link.source];
+                    const targetNode = nodeElements[link.target];
+
+                    if (sourceNode && targetNode) {
+                        const sourceRect = sourceNode.getBoundingClientRect();
+                        const targetRect = targetNode.getBoundingClientRect();
+
+                        const x1 = (sourceRect.left + sourceRect.width / 2) - containerRect.left;
+                        const y1 = (sourceRect.top + sourceRect.height / 2) - containerRect.top;
+                        const x2 = (targetRect.left + targetRect.width / 2) - containerRect.left;
+                        const y2 = (targetRect.top + targetRect.height / 2) - containerRect.top;
+
+                        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        line.setAttribute('x1', x1);
+                        line.setAttribute('y1', y1);
+                        line.setAttribute('x2', x2);
+                        line.setAttribute('y2', y2);
+                        line.setAttribute('stroke', 'var(--line-color)');
+                        line.setAttribute('stroke-width', '2');
+                        svg.appendChild(line);
+                    }
+                });
+            }
+
+            // Initial render and on window resize
+            setTimeout(renderLines, 10); // Timeout to ensure nodes are rendered
+            window.addEventListener('resize', renderLines);
+
+
+            // Modal closing logic
+            modalClose.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
