@@ -7,6 +7,8 @@ python3 parse_tags.py
 
 python3 genindex.py ~/git/xiaobu/ai https://www.laobu.com/ai/
 python3 gensitemap.py -u https://www.laobu.com
+
+python3 genrss.py -u https://www.laobu.com
 python3 genrss.py -u https://www.laobu.com -t ai
 python3 genrss.py -u https://www.laobu.com -t bushcraft
 
