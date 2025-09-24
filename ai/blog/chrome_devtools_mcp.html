@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chrome DevTools (MCP) 为你的AI代理赋能</title>
+    <style>
+        /* 现代化CSS样式 */
+        body {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fff;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+        }
+        .author-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+        }
+        .process-phase {
+            background-color: #f1f8ff;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #0366d6;
+        }
+        .scenario {
+            background-color: #f6f8fa;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 3px solid #6f42c1;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+        pre {
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+        }
+        .use-case {
+            background-color: #f6f8fa;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+        }
+        .prompt-example {
+            background-color: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-style: italic;
+            border-left: 4px solid #ffc107;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+    <h1>Chrome DevTools (MCP) 为你的AI代理赋能</h1>
+    
+    <div class="author-info">
+        <strong>作者：</strong> Mathias Bynens, Michael Hablich<br>
+        <strong>原文链接：</strong> https://developer.chrome.com/blog/chrome-devtools-mcp<br>
+        <strong>发布时间：</strong> 2025年9月23日
+    </div>
+
+    <div class="highlight">
+        今天我们推出了全新的 Chrome DevTools 模型上下文协议（MCP）服务器的公开预览版，将 Chrome DevTools 的强大功能带给AI编程助手。
+    </div>
+
+    <p>编程代理面临一个根本性问题：它们无法看到自己生成的代码在浏览器中实际运行的效果。它们实际上是在蒙着眼睛编程。</p>
+
+    <p>Chrome DevTools MCP 服务器改变了这一现状。AI编程助手现在能够直接在 Chrome 中调试网页，并从 DevTools 的调试功能和性能洞察中获益。这提高了它们在识别和修复问题时的准确性。</p>
+
+    <p>亲自体验它是如何工作的：</p>
+
+    <h2>什么是模型上下文协议（MCP）？</h2>
+    <p>模型上下文协议（MCP）是一个开源标准，用于连接大型语言模型（LLM）与外部工具和数据源。Chrome DevTools MCP 服务器为你的AI代理添加了调试能力。</p>
+
+    <div class="process-phase">
+        例如，Chrome DevTools MCP 服务器提供了一个名为 <code>performance_start_trace</code> 的工具。当被要求调查你的网站性能时，LLM 可以使用这个工具来启动 Chrome，打开你的网站，并使用 Chrome DevTools 记录性能跟踪。然后 LLM 可以分析性能跟踪来建议潜在的改进方案。通过 MCP 协议，Chrome DevTools MCP 服务器可以为你的编程代理带来新的调试功能，使其在构建网站方面表现更出色。
+    </div>
+
+    <p>如果你想了解更多关于 MCP 工作原理的信息，请查看 MCP 文档。</p>
+
+    <h2>你可以用它做什么？</h2>
+    <p>以下是一些示例提示，你可以在你选择的AI助手（如 Gemini CLI）中尝试。</p>
+
+    <div class="use-case">
+        <h3>实时验证代码更改</h3>
+        <p>使用你的AI代理生成修复方案，然后通过 Chrome DevTools MCP 自动验证解决方案是否按预期工作。</p>
+        <div class="prompt-example">
+            <strong>试试这个提示：</strong> 在浏览器中验证你的更改是否按预期工作。
+        </div>
+    </div>
+
+    <div class="use-case">
+        <h3>诊断网络和控制台错误</h3>
+        <p>让你的代理分析网络请求以发现CORS问题，或检查控制台日志来理解功能为什么不能按预期工作。</p>
+        <div class="prompt-example">
+            <strong>试试这个提示：</strong> localhost:8080 上的一些图片无法加载。发生了什么？
+        </div>
+    </div>
+
+    <div class="use-case">
+        <h3>模拟用户行为</h3>
+        <p>导航、填写表单和点击按钮来重现bug并测试复杂的用户流程——同时检查运行时环境。</p>
+        <div class="prompt-example">
+            <strong>试试这个提示：</strong> 为什么在输入邮箱地址后提交表单会失败？
+        </div>
+    </div>
+
+    <div class="use-case">
+        <h3>调试实时样式和布局问题</h3>
+        <p>要求你的AI代理连接到实时页面，检查DOM和CSS，并基于浏览器的实时数据获得修复复杂布局问题（如元素溢出）的具体建议。</p>
+        <div class="prompt-example">
+            <strong>试试这个提示：</strong> localhost:8080 的页面看起来很奇怪，有些异常。检查一下那里发生了什么。
+        </div>
+    </div>
+
+    <div class="use-case">
+        <h3>自动化性能审计</h3>
+        <p>指导你的AI代理运行性能跟踪，分析结果，并调查特定的性能问题，如高LCP数值。</p>
+        <div class="prompt-example">
+            <strong>试试这个提示：</strong> localhost:8080 加载很慢。让它加载更快。
+        </div>
+    </div>
+
+    <p>查看我们的工具参考文档，获取所有可用工具的列表。</p>
+
+    <h2>开始使用</h2>
+    <p>要尝试这个功能，请将以下配置条目添加到你的MCP客户端：</p>
+
+    <pre><code>{
+  "mcpServers": {
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["chrome-devtools-mcp@latest"]
+    }
+  }
+}</code></pre>
+
+    <p>要检查是否工作正常，在你的编程代理中运行以下提示：</p>
+
+    <div class="prompt-example">
+        请检查 web.dev 的 LCP。
+    </div>
+
+    <p>更多详情，请查看 GitHub 上的 Chrome DevTools MCP 文档。</p>
+
+    <h2>参与进来</h2>
+    <p>我们正在逐步构建 Chrome DevTools MCP，从今天发布的公开预览版开始。我们积极寻求你和社区的反馈，了解我们接下来应该添加哪些功能。无论你是使用AI编程助手的开发者，还是构建下一代AI开发工具的供应商，你的见解都将非常宝贵。如果有什么缺失或不工作的地方，请在 GitHub 上提交问题。</p>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://developer.chrome.com/blog/chrome-devtools-mcp" target="_blank">原文链接</a>
+    <h3>相关链接</h3>
+        <a href="https://modelcontextprotocol.io/" target="_blank">MCP文档</a><br>
+        <a href="https://github.com/google/chrome-devtools-mcp" target="_blank">GitHub仓库</a><br>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
