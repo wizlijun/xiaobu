@@ -7,6 +7,8 @@ python3 parse_tags.py
 
 python3 genindex.py ~/git/xiaobu/ai https://www.laobu.com/ai/
 python3 gensitemap.py -u https://www.laobu.com
+python3 genrss.py -u https://www.laobu.com -t ai
+python3 genrss.py -u https://www.laobu.com -t bushcraft
 
 
 export http_proxy=http://127.0.0.1:1087;export https_proxy=http://127.0.0.1:1087;
