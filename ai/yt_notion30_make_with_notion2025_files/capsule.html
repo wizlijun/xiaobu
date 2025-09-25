@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Make with Notion 2025 | 完整交互式摘要</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Arial", sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        }
+        header {
+            text-align: center;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        header h1 {
+            font-size: 2.5em;
+            color: #111;
+            margin-bottom: 10px;
+        }
+        header p {
+            font-size: 1.1em;
+            color: #555;
+        }
+        details {
+            background-color: #f9f9f9;
+            border: 1px solid #eaeaea;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        details[open] {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        summary {
+            font-size: 1.3em;
+            font-weight: 600;
+            padding: 20px;
+            cursor: pointer;
+            outline: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s ease;
+        }
+        summary:hover {
+            background-color: #f0f0f0;
+        }
+        summary::after {
+            content: '+';
+            font-size: 1.5em;
+            color: #999;
+            transition: transform 0.3s ease;
+        }
+        details[open] summary::after {
+            transform: rotate(45deg);
+        }
+        .content {
+            padding: 0 20px 20px 20px;
+            border-top: 1px solid #eaeaea;
+        }
+        .content p, .content ul, .content ol, .content blockquote {
+            margin: 15px 0;
+        }
+        ul, ol {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        li {
+            padding: 12px 15px;
+            border-left: 3px solid #ccc;
+            background-color: #ffffff;
+            margin-bottom: 8px;
+            border-radius: 0 8px 8px 0;
+        }
+        .fact {
+            background-color: #e6f7ff;
+            border-left-color: #1890ff;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .fact::before {
+            content: '事实 📌 ';
+            font-weight: bold;
+            color: #1890ff;
+        }
+        .opinion {
+            background-color: #fffbe6;
+            border-left-color: #faad14;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .opinion::before {
+            content: '观点 💡 ';
+            font-weight: bold;
+            color: #faad14;
+        }
+        blockquote {
+            border-left: 4px solid #ccc;
+            padding-left: 20px;
+            font-style: italic;
+            color: #555;
+        }
+        .highlight {
+            background-color: #d6f5d6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-family: "SF Mono", "Courier New", monospace;
+        }
+        h3 {
+            font-size: 1.2em;
+            margin-top: 25px;
+            color: #0056b3;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 5px;
+        }
+        .step-list li { border-color: #52c41a; }
+        .concept-list li { border-color: #faad14; }
+        .role-list li { border-color: #722ed1; }
+        .comparison-list li, .build-list li, .case-list li { position: relative; padding-left: 45px; }
+        .comparison-list li::before, .build-list li::before, .case-list li::before { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 1.5em; }
+        .comparison-list li:nth-child(1) { border-color: #722ed1; }
+        .comparison-list li:nth-child(1)::before { content: '🧠'; }
+        .comparison-list li:nth-child(2) { border-color: #1890ff; }
+        .comparison-list li:nth-child(2)::before { content: '🤝'; }
+        .comparison-list li:nth-child(3) { border-color: #52c41a; }
+        .comparison-list li:nth-child(3)::before { content: '✈️'; }
+        .build-list li:nth-child(1) { border-color: #faad14; }
+        .build-list li:nth-child(1)::before { content: '⚡'; }
+        .build-list li:nth-child(2) { border-color: #f5222d; }
+        .build-list li:nth-child(2)::before { content: '📜'; }
+        .build-list li:nth-child(3) { border-color: #13c2c2; }
+        .build-list li:nth-child(3)::before { content: '🛠️'; }
+        .case-list li { border-color: #eb2f96; }
+        .case-list li strong { display: block; font-size: 1.1em; color: #333; }
+        .availability { background-color: #f0f8ff; border: 1px solid #add8e6; padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; margin-top: 20px; }
+        footer { text-align: center; margin-top: 40px; font-size: 0.9em; color: #888; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Make with Notion 2025</h1>
+            <p>完整交互式发布会摘要</p>
+        </header>
+
+        <details>
+            <summary>Notion 3.0 发布：引入 AI Teammate</summary>
+            <div class="content">
+                <p>Notion 迎来了公司历史上的一个重大里程碑，正式发布 <span class="highlight">Notion 3.0</span>。其核心是全新的 Notion AI Agent，它不再仅仅是一个工具，而是用户的“AI 队友”。</p>
+                <div class="fact">
+                    Notion 3.0 的核心是<span class="highlight">全球首款专为团队协作设计的、最先进的知识工作 Agent</span>。
+                </div>
+                <div class="opinion">
+                    Ivan Zhao (CEO) 观点：过去，Notion 是你的笔记应用、知识库和任务追踪器。从 3.0 开始，Notion 可以为你完成工作——记笔记、主动提供答案、端到端地完成任务。这将极大减少用户的“事务性工作 (busy work)”，让时间回归到更有价值的“毕生事业 (life's work)”上。
+                </div>
+                <ul>
+                    <li style="border-color:#007aff;"><strong>产品基础</strong>: 建立在对工作上下文的全面理解、为团队协作设计的基础之上。</li>
+                    <li style="border-color:#007aff;"><strong>核心能力</strong>: 能够执行<span class="highlight">多步骤、持续、自主</span>的工作，最长可持续20分钟。</li>
+                    <li style="border-color:#007aff;"><strong>技术升级</strong>: Notion AI 从底层完全重构，能够可靠地执行实际工作，而不仅仅是生成文本。</li>
+                </ul>
+            </div>
+        </details>
+        
+        <details>
+            <summary>全新的 Notion AI Agent：个性化与多步推理</summary>
+            <div class="content">
+                <p>Notion 3.0 的 AI Agent 具备了前所未有的强大能力，能够理解复杂目标并将其分解为多个步骤执行。</p>
+                <div class="fact">
+                    <strong>多步推理能力</strong>: Agent 不再局限于单次搜索或生成，而是能够处理复杂指令，自主规划并连续执行多个动作（如搜索、分类、总结、创建文档）。
+                </div>
+                <div class="fact">
+                    <strong>个性化与记忆</strong>: 引入了<span class="highlight">指令 (Instructions)</span> 和 <span class="highlight">记忆 (Memory)</span> 功能。用户可以在一个 Notion 页面中设定 Agent 的行为偏好、风格指南、个人信息和常用模板。Agent 可以在未来的交互中自动调用这些信息。
+                </div>
+                <ul>
+                    <li style="border-color:#007aff;"><strong>全方位信息整合</strong>: Agent 接入了<span class="highlight">企业搜索 (Enterprise Search)</span>，可以从 Notion、Slack、Email、会议记录甚至公开网页中获取信息。</li>
+                    <li style="border-color:#007aff;"><strong>强大的构建块支持</strong>: Agent 能够使用 Notion 的所有构建块，如表格、复选框、Toggle 等，来创建结构化的文档。</li>
+                    <li style="border-color:#007aff;"><strong>自主学习</strong>: 用户可以直接通过对话让 Agent“记住”新的偏好，Agent 会自动更新其指令页面，无需手动编辑。</li>
+                </ul>
+            </div>
+        </details>
+        
+        <details>
+            <summary>数据库重大升级：颗粒化权限与 AI 增强</summary>
+            <div class="content">
+                <p>数据库作为 Notion 的核心功能，在 3.0 版本中获得了革命性的更新，解决了用户长久以来的痛点，并深度集成了 AI 能力。</p>
+                <div class="fact">
+                    <strong>颗粒化数据库权限 (Granular Database Permissions)</strong>: 这是 Notion 历史上第二大备受期待的功能（仅次于离线模式）。用户现在可以基于“Assignee”或“Person”属性设置权限规则，使得协作者（如客户或承包商）只能看到或编辑分配给他们的特定页面，而非整个数据库。
+                </div>
+                <div class="fact">
+                    <strong>AI 驱动的数据库操作</strong>: Agent 能够对数据库进行批量、智能的操作。
+                    <ul>
+                        <li style="border-color:#007aff;"><strong>任务分解</strong>: 将一个 PRD 文档自动分解成多个具体的任务，并填充到任务数据库中，自动分配负责人和优先级。</li>
+                        <li style="border-color:#007aff;"><strong>信息聚合</strong>: 从 Slack 等多个来源抓取 bug 报告和用户反馈，去重后自动创建任务并根据预设规则分配给相应的工程师。</li>
+                        <li style="border-color:#007aff;"><strong>AI 生成公式</strong>: 用户只需用自然语言描述需求（例如“计算距离截止日期还剩多少天，并根据紧急程度显示不同颜色”），AI 即可生成复杂的 Notion 公式。</li>
+                    </ul>
+                </div>
+                 <div class="fact">
+                    <strong>新视图与功能</strong>: 
+                    <ul>
+                    <li style="border-color:#007aff;"><span class="highlight">地图视图 (Map View)</span>: 即将推出，可将数据库中的地理位置信息在地图上进行可视化。</li>
+                    <li style="border-color:#007aff;"><span class="highlight">条件格式化 (Conditional Coloring)</span>: 已上线，可根据属性（如优先级）为数据库页面设置不同的高亮颜色。</li>
+                    </ul>
+                </div>
+            </div>
+        </details>
+
+        <details>
+            <summary>🤖 深度解析：Custom Agents 与生态集成</summary>
+            <div class="content">
+                <p>如果说个人 Agent 是一把强大的“瑞士军刀”，那么 Custom Agents 就是一支由<span class="highlight">高度专业化的“机器人专家团队”</span>组成。它们是 Notion 3.0 的一大亮点，旨在将团队的重复性、流程化的工作完全自动化。</p>
+
+                <h3>个人 Agent vs. 自定义 Agent：三大核心区别</h3>
+                <p>理解 Custom Agents 的最好方式是将其与我们已经熟悉的个人 Agent 进行对比：</p>
+                <ol class="comparison-list">
+                    <li>
+                        <strong>知识范围：从“无所不知”到“领域专家”</strong><br>
+                        个人 Agent 可以访问你授权的所有信息，知识广博但可能不够专注。而 Custom Agent 的知识可以被严格限定在<span class="highlight">特定的数据库或页面</span>，确保它只在自己的专业领域内提供高度准确和可信的回答。
+                    </li>
+                    <li>
+                        <strong>协作模式：从“单人助理”到“团队共享资产”</strong><br>
+                        个人 Agent 是你的私人助手，为你服务。Custom Agents 则可以被创建、配置并在<span class="highlight">整个团队中共享</span>，成为所有人都可以调用的公共资源，极大地提升了团队的整体战斗力。
+                    </li>
+                    <li>
+                        <strong>工作方式：从“被动响应”到“自主运行”</strong><br>
+                        个人 Agent 需要你主动发起指令才会工作。Custom Agents 实现了真正的“无人值守”，它们可以基于<span class="highlight">预设的触发器 (Triggers)</span> 或<span class="highlight">时间表 (Schedules)</span> 在后台自主、持续地工作，甚至在你睡觉时也能完成任务。
+                    </li>
+                </ol>
+
+                <h3>如何构建一个自定义 Agent？三大核心组件</h3>
+                <p>创建一个 Custom Agent 的过程非常直观，主要围绕以下三个核心部分进行配置：</p>
+                <ol class="build-list">
+                    <li>
+                        <strong>触发器 (Triggers)：唤醒 Agent 的“闹钟”</strong><br>
+                        这是 Agent 开始工作的起点。你可以设置多种触发条件，例如：
+                        <ul>
+                            <li><strong>时间表</strong>: 每天早上 9 点、每周一等。</li>
+                            <li><strong>Notion 事件</strong>: 当数据库中新增一个页面、某个属性发生变化时。</li>
+                            <li><strong>外部应用事件</strong>: 当 Slack 频道中出现新消息时。</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong>指令 (Instructions)：Agent 的“行动指南”</strong><br>
+                        在这里，你用自然语言告诉 Agent 它应该<span class="highlight">如何思考和行动</span>。你可以定义它的角色、工作流程、决策逻辑和沟通风格。更酷的是，你甚至可以直接让 Notion AI 帮你编写或优化这些指令！
+                    </li>
+                    <li>
+                        <strong>工具与权限 (Tools & Access)：Agent 的“工具箱”</strong><br>
+                        在这里，你精确控制 Agent 能够<span class="highlight">看到什么和做什么</span>。你可以授权它访问特定的数据库、读取特定的页面、调用外部应用的 API 等，确保其行为在安全可控的范围内。
+                    </li>
+                </ol>
+
+                <h3>🚀 实际应用案例：Agent 能做什么？</h3>
+                <p>发布会上展示了多个强大且有趣的 Custom Agents 案例：</p>
+                <ul class="case-list">
+                    <li>
+                        <strong>Offline Oliver：智能客服与任务经理</strong><br>
+                        这是一个多阶段进化的 Agent。<strong>阶段一</strong>：作为 Slack 问答机器人，自动回答关于“离线模式”的常见问题。<strong>阶段二</strong>：升级后，它能识别 Slack 中的新 bug 报告，自动在 Notion 任务数据库中创建任务。<strong>阶段三</strong>：它甚至能根据一个“负责人”数据库，智能地将任务分配给最合适的工程师，并且能在 Slack 对话中接收指令，<span class="highlight">自主更新自己的分配规则</span>，实现“在岗学习”。
+                    </li>
+                    <li>
+                        <strong>Grug：设计评审专家</strong><br>
+                        一个专为设计团队打造的 Agent，团队成员可以把设计稿“喂”给 Grug，它会根据预设的设计原则和知识库，提供专业的、一致的反馈和修改建议。
+                    </li>
+                    <li>
+                        <strong>个人膳食追踪器</strong><br>
+                        一个有趣的个人应用，用户可以给它发送食物的照片，它能利用图像识别技术分析食物内容，并自动记录到用户的 Notion 膳食追踪数据库中。
+                    </li>
+                    <li>
+                        <strong>舆情分析师</strong><br>
+                        这个 Agent 每天定时在互联网上（如 Reddit、Twitter）搜索关于“离线模式”的讨论，然后自动生成一份包含<span class="highlight">功能请求、情感分析、关键引述和新 bug 报告</span>的摘要文档，为产品团队节省了大量研究时间。
+                    </li>
+                </ul>
+                
+                <h3>其他集成更新</h3>
+                 <div class="fact">
+                    <strong>Notion MCP (Multi-Channel Platform) 集成</strong>: 提供了一种安全的方式，让第三方工具（如编码工具 Cursor）可以双向读写 Notion 中的信息。现在，MCP 进一步支持<span class="highlight">企业搜索连接器</span>，意味着在 Cursor 中编码时，可以直接引用来自 Slack、GitHub 的上下文。
+                </div>
+                <div class="fact">
+                    <strong>原生应用集成</strong>: 个人 Agent 新增了对 <span class="highlight">Notion Calendar</span> 和 <span class="highlight">Notion Mail</span> 的原生集成，可以根据用户的日历空闲时间和偏好，自动安排会议并发送邮件。
+                </div>
+
+                <div class="availability">
+                    <strong>可用性</strong>: Custom Agents 目前处于早期访问阶段，即将向更多用户广泛推出。
+                </div>
+            </div>
+        </details>
+
+        <details>
+            <summary>🚀 Vercel：AI如何融合文档与演示文化</summary>
+            <div class="content">
+                <p>Vercel 的 COO, Jean Grosser 分享了他们如何通过 AI 驱动的运营模式，打破传统“文档文化”与“演示文化”之间的壁垒，实现前所未有的效率。</p>
+                
+                <div class="opinion">
+                    核心观点：AI 正在催生一种全新的工作范式，文档（Docs）不再仅仅是静态记录，演示（Demos）也不再是孤立的展示。未来属于<span class="highlight">“文档即演示”</span>的时代——文档能够动态地生成、更新并包含可交互的演示，将构思与实现无缝连接。
+                </div>
+
+                <div class="fact">
+                    <strong>量化影响</strong>: 通过在 Notion 中运行其操作系统，Vercel 实现了 <span class="highlight">35%</span> 的交付速度提升，<span class="highlight">89%</span> 的质量信心，以及<span class="highlight">每人每周节省 9 小时</span>的工作时间。
+                </div>
+
+                <h3>三位一体的 AI 转型框架：人员、实践与产品</h3>
+                <ul class="concept-list">
+                    <li>
+                        <strong>👩‍💻 人员 (People): 创造 AI 驱动的新角色</strong><br>
+                        引入了全新的<span class="highlight">“Go-To-Market (GTM) 工程师”</span>角色。他们将 GTM 策略当做产品来开发，通过分析顶尖销售人员的工作流，并将其固化为由 AI Agent 驱动的自动化 playbook。
+                        <p><strong>案例</strong>: 通过 GTM 工程师的介入，Vercel 将获取一个销售机会所需的平均触达次数从 8 次减少到 4 次，同时用 1 名销售代表 + AI Agent 的模式取代了原先的 10 人团队。</p>
+                    </li>
+                    <li>
+                        <strong>🔄 实践 (Practices): 建立上下文驱动的工作流</strong><br>
+                        公司实践一种<span class="highlight">“上下文工程 (Context Engineering)”</span>文化。即系统性地捕捉工作的“为什么”和“如何做”的背景知识，而不仅仅是数据，用以训练 Agent。
+                        <p><strong>案例</strong>: Vercel 通过学习高管的邮件风格和内容，创建了一个“Jean Agent”。这个 Agent 现在能辅助甚至自主撰写高质量的对外邮件，并成为新员工的“教练”。</p>
+                    </li>
+                    <li>
+                        <strong>📦 产品 (Product): 终结固定 schema 软件</strong><br>
+                         <blockquote>“强迫用户适应其工作流的固定 schema 软件已死。”</blockquote>
+                        未来属于可组合、个性化的软件系统。就像电商领域的“Headless Commerce”一样，企业后台（系统记录）和前台（用户交互界面）将解耦，每个公司都可以根据自身需求构建独特的“系统操作”界面。
+                    </li>
+                </ul>
+            </div>
+        </details>
+
+        <details>
+            <summary>🛠️ Ramp：如何成为“构建者”驱动的 AI 高效团队</summary>
+            <div class="content">
+                <p>来自金融科技公司 Ramp 的 Ben Levik 分享了他们追求成为“全球最高效公司”的AI实践哲学，核心在于将每一位团队成员都转变为“构建者 (Builder)”。</p>
+                
+                <div class="opinion">
+                    核心理念：不要成为等待 AI 完美的“末日论者 (Doomers)”或“观望者 (Boomers)”。现在就应该动手，成为利用 AI 重塑和优化自己工作的“构建者”。AI 的真正魔力在于让你同时实现<span class="highlight">“更快 (Faster)”</span>与<span class="highlight">“更好 (Better)”</span>。
+                </div>
+
+                <h3>三阶段方法论：提示、知识与工作流</h3>
+                <ol class="step-list">
+                    <li>
+                        <strong>✍️ 第一步：提示 (Prompt) - 追求极致精确</strong><br>
+                        团队的核心技能是精确地向 AI 表达意图。Ramp 推广<span class="highlight">“提示反馈循环 (Prompt Feedback Loop)”</span>来克服“模糊性陷阱”：
+                        <ol>
+                            <li>从一个模糊的想法开始。</li>
+                            <li>让 AI 提出澄清问题以获取更多上下文。</li>
+                            <li>详细回答这些问题。</li>
+                            <li>最后，让 AI 根据你的回答综合成一个精确、强大的新提示。</li>
+                        </ol>
+                    </li>
+                    <li>
+                        <strong>🧠 第二步：知识 (Knowledge) - 打造单一可信源</strong><br>
+                        AI 的能力上限取决于其知识质量。Ramp 强调建立一个<span class="highlight">单一、 maniacally 准确、极其清晰</span>的知识源。
+                        <p><strong>实践</strong>: Ramp 利用 Notion 整合了来自 Salesforce、Zendesk 等多个系统的数据，并让数据团队像知识管理者一样，用自然语言为数据表编写详细的“说明书”，这些都成为 AI 的核心知识库。他们通过“知识反馈循环”持续优化知识库的准确性。</p>
+                    </li>
+                    <li>
+                        <strong>⚙️ 第三步：工作流 (Workflow) - 赋能非技术人员</strong><br>
+                        目标是让每个人都能构建自己的自动化流程。通过 Notion 的 Custom Agents 和第三方低代码/无代码工具（如 Gum Loop），将“提示”和“知识”串联起来，实现端到端的自动化。
+                        <p><strong>案例</strong>: Ramp 的销售团队利用自动化工作流进行深度客户研究并自动起草个性化邮件；运营团队则构建了能自动回答部分问题、并将复杂问题转给专家的智能流程。</p>
+                    </li>
+                </ol>
+            </div>
+        </details>
+
+        <footer>
+            <p>由 Gemini 根据 "Make with Notion 2025" 视频记录生成</p>
+        </footer>
+    </div>
+</body>
+</html>
