@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用 Vibe Coding 烧坏两台 Mac M4 的 SSD 实录</title>
+    <style>
+        body {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fff;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+        }
+        h3 {
+            color: #34495e;
+            margin-top: 25px;
+        }
+        .author-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+        }
+        .process-phase {
+            background-color: #f1f8ff;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #0366d6;
+        }
+        .scenario {
+            background-color: #f6f8fa;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 3px solid #6f42c1;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+        pre {
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+        }
+        blockquote {
+            background-color: #f1f8ff;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #0366d6;
+            font-style: italic;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin: 8px 0;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+    <h1>用 Vibe Coding 烧坏两台 Mac M4 的 SSD 实录</h1>
+    
+    <p>最近用 Vibe Coding 配合 index-tts 跑 AI 编程，结果烧坏了两台 Mac M4 的 SSD。一台是 Mac mini M4 24G，一台是 MacBook M4 pro 24G。很多人觉得不可思议，我也觉得不可思议。</p>
+    
+    <div class="highlight">
+        <p>做视频自动翻译的任务：<br>
+        <a href="https://www.bilibili.com/video/BV1GHnzzPEa7/">B站视频链接</a></p>
+    </div>
+    
+    <p>这让我开始思考：那些教大家买一台 MacMini 跑私有大模型的，是否真的在长时间高负荷使用？</p>
+    
+    <h2>故障现象</h2>
+    
+    <p>高压工作一阵后，wifi 都会出问题，一重启就是黑屏，需要刷机重装才能启动。</p>
+    
+    <p>去了多次苹果店天才吧，也解决不了问题。因为刷机以后可以工作，但工作一阵问题重现。电脑都在保修期，全部拿去退了换新。</p>
+    
+    <h2>群友帮忙分析原因</h2>
+    
+    <p>新软群 AI 群友帮忙分析了这个诡异问题。</p>
+    
+    <h3>swap 大量写入导致 SSD 损坏</h3>
+    
+    <p>群友李海猜测是 swap 大量写入造成了 SSD 损坏：</p>
+    
+    <blockquote>
+        苹果低内存机器的目标用户还是追求省电静音，能接受苹果把 qlc 卖成 slc 价格的那些轻量级用户。因此苹果偶尔碰到内存不够就大肆使用 swap，反正用户如果一直卡肯定就知道自己该换机器了。但是李总这边用 ai-coding，把 qlc 反复写来写去，反正都是后台执行不在意前台卡顿，结果就把苹果的硬盘写坏了（不是程序输出写的那部分坏掉，是操作系统频繁 swap 产生了大量系统盘写入）。
+    </blockquote>
+    
+    <h3>异常的磁盘写入数据</h3>
+    
+    <div class="process-phase">
+        <p>硬件监控器中，发现 <code>kernel_task</code> 写入过大：</p>
+        <ul>
+            <li>10个小时写入了 4TB</li>
+            <li>16个小时写入了 8TB</li>
+        </ul>
+        
+        <p>这个数据异常了，很有可能是 indextts 大模型跑 tts 造成的。</p>
+        
+        <p>群友 nullgate 通过 SSD 寿命估算：一个月必须烧坏 SSD。</p>
+    </div>
+    
+    <p>需要注意的是，<code>kernel_task</code> 进程本身不会主动向文件写入数据，它主要用于调节 Mac 的 CPU 温度，可能会在 CPU 过热时占用大量资源来帮助 Mac 散热。如果看到 <code>kernel_task</code> 进程在频繁地写入或占用大量资源，通常是由于其他应用程序或系统进程导致 CPU 过载，<code>kernel_task</code> 才介入进行散热工作。</p>
+    
+    <h2>问题发生原因总结</h2>
+    
+    <h3>错误的代码设计</h3>
+    
+    <p>AI Coding 自己写的 tts 调用代码，是使用了 index-tts 的 cli，一句一句循环生成时，每一次都重新加载模型，tts 生成完再退出。</p>
+    
+    <p>有时候我会并发执行多个任务，导致内存严重不足，CPU 满负荷工作，导致 swap 频繁写入，造成 SSD 损坏。</p>
+    
+    <p>因为每次都可以运行，只是慢一点，所以没打算优化程序。直到长期运行，导致 Mac 的 SSD 损坏。</p>
+    
+    <h3>解决方案</h3>
+    
+    <div class="scenario">
+        <p>后来写了几行 prompt，让 AI 重构了代码，先开启一个 tts 服务，一次性加载后，通过 api 来逐个生成，数据加载压力减少。问题似乎就解决了。</p>
+        
+        <p>还有一个次要问题是，spotlight 也频繁的工作，可能跟索引有关。通过命令行关掉了 spotlight，尽量减少负荷：</p>
+        
+        <pre><code>sudo mdutil -i off /
+sudo mdutil -i off /Volumes/Disk</code></pre>
+        
+        <p>使用 tg pro，让风扇满负荷工作，给 CPU 工作时降温。</p>
+        
+        <p>问题得以解决。</p>
+    </div>
+    
+    <h2>总结与反思</h2>
+    
+    <div class="highlight">
+        <p>Vibe Coding 写的程序可以跑，但不会保证性能问题或者是否暴力写坏硬件。还是需要工程师的反馈和观察，不断的调教，才能成为可用程序。</p>
+        
+        <p>AI coding 的锅，谁来背？</p>
+        
+        <p>一直以来认为 MacBook 质量好，可以拿来当服务器用。但实际上，以前是使用强度没那么大，现在让 AI 满负荷使用，照样会出问题。服务器的事，还是不要用个人电脑来跑。心疼那些廉价的 NAS 系统，根本没有什么工作负荷。</p>
+    </div>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="/write/20250929_vibe_coding_burned_mac_ssd.md" target="_blank">原文</a>
+    <h3>相关链接</h3>
+        <a href="https://www.bilibili.com/video/BV1GHnzzPEa7/" target="_blank">B站视频</a><br>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
