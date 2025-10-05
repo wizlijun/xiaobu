@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《营地传说与野外生存技巧》- 交互式摘要</title>
+    <style>
+        :root {
+            --primary-color: #345a4a;
+            --secondary-color: #a4c3b2;
+            --background-color: #f0f4f8;
+            --card-bg-color: #ffffff;
+            --text-color: #333;
+            --light-text-color: #555;
+            --border-color: #e0e0e0;
+            --accent-color: #e88d67;
+            --fact-color: #4a90e2;
+            --opinion-color: #f5a623;
+            --shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px 20px;
+            background-color: var(--card-bg-color);
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 30px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 2.5em;
+        }
+
+        .header h2 {
+            color: var(--light-text-color);
+            margin: 5px 0 15px;
+            font-weight: 300;
+            font-size: 1.2em;
+        }
+
+        .header .intro {
+            font-style: italic;
+            color: var(--light-text-color);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .chapter-card {
+            background-color: var(--card-bg-color);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease-in-out;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .chapter-header {
+            padding: 20px 25px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .chapter-header h3 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 1.4em;
+        }
+
+        .chapter-header .summary-line {
+            margin: 5px 0 0;
+            color: var(--light-text-color);
+            font-size: 0.9em;
+        }
+        
+        .chapter-header .arrow {
+            font-size: 1.5em;
+            transition: transform 0.3s ease-in-out;
+            color: var(--secondary-color);
+        }
+
+        .chapter-card.open .arrow {
+            transform: rotate(90deg);
+        }
+
+        .chapter-content {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out, padding 0.3s ease-in-out;
+            padding: 0 25px;
+            border-top: 1px solid transparent;
+        }
+        
+        .chapter-card.open .chapter-content {
+            max-height: 5000px; /* Large value for expansion */
+            opacity: 1;
+            padding: 20px 25px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .chapter-content h4 {
+            color: var(--accent-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 5px;
+            margin-top: 15px;
+        }
+
+        .highlight {
+            display: flex;
+            align-items: flex-start;
+            margin: 10px 0;
+            padding: 10px;
+            border-left-width: 4px;
+            border-left-style: solid;
+            border-radius: 4px;
+        }
+
+        .highlight.fact {
+            border-left-color: var(--fact-color);
+            background-color: #e7f3ff;
+        }
+
+        .highlight.opinion {
+            border-left-color: var(--opinion-color);
+            background-color: #fff8e1;
+        }
+
+        .highlight .icon {
+            font-size: 1.5em;
+            margin-right: 12px;
+            margin-top: 2px;
+        }
+        
+        .highlight.fact .icon { color: var(--fact-color); }
+        .highlight.opinion .icon { color: var(--opinion-color); }
+
+        .highlight p {
+            margin: 0;
+            flex: 1;
+        }
+
+        ul {
+            list-style-type: '› ';
+            padding-left: 20px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+
+        code {
+            background-color: #eef;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: "Courier New", Courier, monospace;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+        }
+        .legend-item .icon {
+            font-size: 1.2em;
+            margin-right: 5px;
+        }
+
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="header">
+            <h1>《营地传说与野外生存技巧》</h1>
+            <h2>作者: 丹·比尔德 (Dan Beard)</h2>
+            <p class="intro">这份交互式摘要将带您领略野外生存的精髓。点击每个章节标题，即可展开探索作者的智慧与技巧，体验从生火到搭建营地，再到与自然和谐共处的全过程。</p>
+        </header>
+
+        <div class="legend">
+            <div class="legend-item"><span class="icon" style="color: var(--fact-color);">⚙️</span> <b>事实 & 技巧:</b> 具体操作与方法。</div>
+            <div class="legend-item"><span class="icon" style="color: var(--opinion-color);">💡</span> <b>观点 & 哲学:</b> 作者的感悟与态度。</div>
+        </div>
+
+        <!-- Chapter Cards Start Here -->
+        <div class="chapter-card">
+            <div class="chapter-header">
+                <div>
+                    <h3>前言 & 作者哲学</h3>
+                    <p class="summary-line">深入自然的核心，感受野外的“大药”。</p>
+                </div>
+                <div class="arrow">›</div>
+            </div>
+            <div class="chapter-content">
+                <div class="highlight opinion">
+                    <span class="icon">💡</span>
+                    <p><b>核心观点：</b>作者认为，真正的户外爱好者是“多愁善感的人”。他提倡通过仪式感（如品尝熊肉、闻海狸香腺）来培养对“上帝创造的世界”的深厚热爱，这是一种净化和复兴灵魂的“大药”。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="chapter-card">
+            <div class="chapter-header">
+                <div>
+                    <h3>第一、二章：生火的基础</h3>
+                    <p class="summary-line">掌握摩擦与敲击两种最原始的生火方式。</p>
+                </div>
+                <div class="arrow">›</div>
+            </div>
+            <div class="chapter-content">
+                <h4>摩擦生火 (Friction)</h4>
+                <div class="highlight fact">
+                    <span class="icon">⚙️</span>
+                    <p><b>核心技巧 (弓钻法 - Bow Drill):</b> 这是最可靠的摩擦生火法。需要制作四件套：<code>弓 (Bow)</code>、<code>钻杆 (Spindle)</code>、<code>火板 (Fire-board)</code> 和 <code>手钻套 (Thimble)</code>。通过快速旋转钻杆在火板上产生炽热的木屑粉末，即为火种。</p>
+                </div>
+                <div class="highlight fact">
+                    <span class="icon">⚙️</span>
+                    <p><b>关键材料 (引火物 - Tinder):</b> 成功的关键在于准备好易燃的引火物来承接火种。最佳选择包括：碳化布 (Charred Cloth)、干透的马勃菌 (Puff Balls)、刮成细丝的雪松树皮等。</p>
+                </div>
+                <div class="highlight opinion">
+                    <span class="icon">💡</span>
+                    <p><b>作者观点：</b>学习摩擦生火在现代的实际用途不大，其真正价值在于培养克服困难、就地取材、精准行动和建立自信的能力，这是一种原始人般的生存智慧训练。</p>
+                </div>
+                <h4>敲击生火 (Percussion)</h4>
+                <div class="highlight fact">
+                    <span class="icon">⚙️</span>
+                    <p><b>核心技巧 (燧石与铁 - Flint and Steel):</b> 用一块高碳钢（如刀背、专用火镰）快速敲击坚硬的燧石（或石英、玛瑙）边缘，产生火花。将火花溅落到火绒（如碳化布、火绒菌）上，然后轻轻吹气，使其成为火种。</p>
+                </div>
+                 <div class="highlight opinion">
+                    <span class="icon">💡</span>
+                    <p><b>作者观点：</b>这是“白人的方法”，是美国拓荒者祖先们的通用生火方式，实用且可靠。</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chapter-card">
+            <div class="chapter-header">
+                <div>
+                    <h3>第三、四章：火堆的艺术</h3>
+                    <p class="summary-line">从点燃火苗到搭建高效的烹饪火堆。</p>
+                </div>
+                <div class="arrow">›</div>
+            </div>
+            <div class="chapter-content">
+                <h4>如何搭建火堆</h4>
+                <div class="highlight fact">
+                    <span class="icon">⚙️</span>
+                    <p><b>核心原则：</b>火堆需要空气才能燃烧。搭建时要从小到大堆叠燃料。先用细小的<code>引火柴 (Kindling)</code>（如羽毛棍 "feather sticks"）搭建一个<code>圆锥形 (Wigwam)</code> 或 <code>井字形 (Log Cabin)</code> 结构，确保空气流通，然后从底部点燃。</p>
+                </div>
+                <div class="highlight fact">
+                    <span class="icon">⚙️</span>
+                    <p><b>雨天生火：</b>寻找一根枯死的树木，用斧头劈开，获取其内部干燥的木芯作为引火柴。劈开的木头比圆形木柴更容易燃烧。</p>
+                </div>
+                <div class="highlight opinion">
+                    <span class="icon">💡</span>
+                    <p><b>营火哲学：</b>“通过你的营火，人们将认识你。” 一个好的火堆是营地的“跳动的心脏”，反映了露营者的技能和态度。</p>
+                </div>
+                <h4>烹饪火堆</h4>
+                <div class="highlight fact">
+                    <span class="icon">⚙️</span>
+                    <p><b>核心装备 (DIY):</b> 无需携带笨重厨具。学习用树枝制作各种<code>锅钩 (Pot-hooks)</code>来调节锅具高度。用两根绿木或石头作为<code>火塘柴 (Fire-dogs)</code>，可以稳定地架设锅具或烤肉。</p>
+                </div>
+                 <div class="highlight fact">
+                    <span class="icon">⚙️</span>
+                    <p><b>火堆类型：</b>根据烹饪需求搭建不同的火堆。<code>烤火 (Roasting Fire)</code>需要一个能反射热量的背景（如石墙或圆木墙）。<code>煎炒火 (Frying Fire)</code>需要在两根平行的圆木间生火，以获得均匀的炭火。<code>烘焙火 (Baking Fire)</code>则利用反射热量来烤面包。</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chapter-card">
+            <div class="chapter-header">
+                <div>
+                    <h3>第五、六章：营地厨房与食物</h3>
+                    <p class="summary-line">从搭建户外厨房到制作地道的野外美食。</p>
+                </div>
+                <div class="arrow">›</div>
+            </div>
+            <div class="chapter-content">
+                <h4>营地厨房</h4>
+                <div class="highlight fact">
+                    <span class="icon">⚙️</span>
+                     <p><b>核心结构：</b>学习建造各种功能的户外厨房。包括用于慢炖的<code>豆坑 (Bean Hole)</code>（一种无火烹饪器），用于烧烤的<code>烧烤坑 (Barbecue-pit)</code>，以及可以站着操作的<code>高架火塘 (Altar Fire-place)</code>以减轻背部疲劳。</p>
+                </div>
+                <div class="highlight fact">
+                    <span class="icon">⚙️</span>
+                    <p><b>无炊具烹饪：</b>掌握<code>泥烤法 (Mud-baking)</code>（将鱼或鸟类用树叶包裹，再覆上粘土放入火中烘烤），<code>木板烤鱼 (Planked fish)</code>，以及将面团缠绕在木棍上烤制的<code>扭转面包 (Twist bread)</code>。</p>
+                </div>
+                <h4>营地美食</h4>
+                <div class="highlight fact">
+                    <span class="icon">⚙️</span>
+                    <p><b>经典食谱：</b>书中详细介绍了多种拓荒者美食的制作方法，如<code>灰烤饼 (Ash Cake)</code>、<code>玉米饼 (Johnny-cake)</code>、<code>煎饼 (Flapjacks)</code>、<code>营地饼干 (Camp Biscuit)</code>，以及著名的<code>肯塔基布尔古炖菜 (Kentucky Burgoo)</code>。</p>
+                </div>
+                <div class="highlight fact">
+                    <span class="icon">⚙️</span>
+                    <p><b>特殊食材处理：</b>学习如何烹饪海狸尾、豪猪和麝鼠等不常见的野味，关键在于正确的预处理（如焯水）以去除异味。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="chapter-card">
+            <div class="chapter-header">
+                <div>
+                    <h3>第七、八章：打包与背负</h3>
+                    <p class="summary-line">驮马、驮狗与人力背负的技巧和哲学。</p>
+                </div>
+                <div class="arrow">›</div>
+            </div>
+            <div class="chapter-content">
+                <h4>驮马打包</h4>
+                <div class="highlight fact">
+                    <span class="icon">⚙️</span>
+                    <p><b>核心技巧 (钻石结 - Diamond Hitch):</b> 这是最专业、最稳固的驮马捆绑技术。需要两人协作，通过一系列复杂的绳索缠绕，将货物牢牢固定在驮鞍上，形成一个标志性的钻石形状。书中提供了详细的图文步骤。</p>
+                </div>
+                 <div class="highlight fact">
+                    <span class="icon">⚙️</span>
+                    <p><b>关键装备：</b><code>驮鞍垫 (Aparejo)</code>、<code>肚带 (Cincha)</code>、<code>肚带紧绳 (Latigo)</code>。作者建议用木桶制作一个模拟马，在家中反复练习打包技术。</p>
+                </div>
+                <h4>狗的使用与人力背负</h4>
+                <div class="highlight fact">
+                    <span class="icon">⚙️</span>
+                    <p><b>驮狗：</b>可以为中大型犬制作专用的<code>狗驮包 (Dog pack)</code>，让它分担一部分行李。打包方法简单，类似于捆绑包裹。</p>
+                </div>
+                <div class="highlight opinion">
+                    <span class="icon">💡</span>
+                    <p><b>背负哲学 (别对抗你的背包 - Don't Fight Your Pack):</b> 徒步中的疲劳和不适是必然的。对抗和抱怨只会消耗更多精力。要学会通过转移注意力、调整心态来“忘记”背包的重量，将它视为挑战而非负担。这种心态适用于生活中的一切困难。</p>
+                </div>
+                <div class="highlight fact">
+                    <span class="icon">⚙️</span>
+                    <p><b>人力背负工具：</b><code>头带 (Tump line)</code>是一种高效的背负工具，将部分重量从肩膀转移到头部和颈部，为印第安人和拓荒者所常用。此外，还有各种背包、行李袋可供选择。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="chapter-card">
+            <div class="chapter-header">
+                <div>
+                    <h3>第九至十二章：营地生活综合技能</h3>
+                    <p class="summary-line">从行前准备、营地选择到工具使用的全方位指南。</p>
+                </div>
+                <div class="arrow">›</div>
+            </div>
+            <div class="chapter-content">
+                <h4>行前准备 (Chapter IX)</h4>
+                <div class="highlight fact">
+                    <span class="icon">⚙️</span>
+                    <p><b>个人准备：</b>出发前，理发、剪指甲，最重要的是——<b>去看牙医！</b>野外的牙痛是毁灭性的。随身携带一个“拓荒者口袋”，包含安全别针、指南针、刀、磨刀石、大手帕等。</p>
+                </div>
+                <h4>选择营地 (Chapter XI)</h4>
+                <div class="highlight fact">
+                    <span class="icon">⚙️</span>
+                    <p><b>安全第一：</b>避免在孤立的高大树木下扎营（易遭雷击），也不要靠近有枯枝的老树。选择地势稍高、排水良好的地方。营地要靠近水源和燃料，但要位于沼泽的上风向以躲避蚊虫。</p>
+                </div>
+                <div class="highlight fact">
+                    <span class="icon">⚙️</span>
+                    <p><b>帐篷技巧：</b>学习单人快速搭建墙式帐篷的方法。无论天气如何，一定要在帐篷周围挖掘<code>排水沟 (Ditching)</code>。</p>
+                </div>
+                <h4>斧与锯 (Chapter XII)</h4>
+                <div class="highlight opinion">
+                    <span class="icon">💡</span>
+                    <p><b>斧头的重要性：</b>斧头是林地里最重要的工具，是拓荒者的“工具箱”。林肯是伟大的伐木工，使用斧头是美国人的一项神圣技能。</p>
+                </div>
+                <div class="highlight fact">
+                    <span class="icon">⚙️</span>
+                    <p><b>使用与安全：</b>选择重量和长度适合自己的斧头。砍伐前，务必清理周围所有可能阻碍挥斧的树枝和藤蔓。永远不要将不用的斧头随意放在地上。</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chapter-card">
+            <div class="chapter-header">
+                <div>
+                    <h3>第十三、十四章：营火会与仪式</h3>
+                    <p class="summary-line">将营火升华为充满象征意义和集体精神的仪式。</p>
+                </div>
+                <div class="arrow">›</div>
+            </div>
+            <div class="chapter-content">
+                <div class="highlight fact">
+                    <span class="icon">⚙️</span>
+                    <p><b>场地布局：</b>作者创新性地提出，营火会场地应为<code>椭圆形 (Ellipse)</code>而非传统的圆形，并将主火堆设于一端。这样可以形成类似剧院的舞台和观众席，便于交流和表演。</p>
+                </div>
+                <div class="highlight fact">
+                    <span class="icon">⚙️</span>
+                    <p><b>四方庭院：</b>场地分为东南西北四个“庭院”，每个方位都有其象征动物、颜色和意义（如东方为白狼，象征光明；南方为红獾，象征生命与行动等），为仪式提供丰富的文化背景。</p>
+                </div>
+                <div class="highlight opinion">
+                    <span class="icon">💡</span>
+                    <p><b>核心精神：</b>营火会是美国精神的体现。仪式应充满乐趣，但更要融入爱国主义、诗意和对自然的敬畏。作者提供了一整套仪式流程，包括祷文、对国旗的效忠和宣誓，旨在通过集体活动塑造品格和价值观。</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const chapterCards = document.querySelectorAll('.chapter-card');
+
+            chapterCards.forEach(card => {
+                const header = card.querySelector('.chapter-header');
+                header.addEventListener('click', () => {
+                    card.classList.toggle('open');
+                });
+            });
+        });
+    </script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_camplore_and_woodcraft_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
