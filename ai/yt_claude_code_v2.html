@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Coded 认知卡片摘要</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap');
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #f0f2f5;
+            color: #1c1e21;
+            line-height: 1.7;
+            margin: 0;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            color: #0d2c54;
+            margin: 0;
+        }
+
+        header p {
+            font-size: 1.2em;
+            color: #555;
+            margin-top: 8px;
+        }
+
+        .cognitive-card {
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 30, 80, 0.08);
+            margin-bottom: 24px;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .cognitive-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 32px rgba(0, 30, 80, 0.12);
+        }
+
+        .card-header {
+            padding: 20px 24px;
+            background-color: #f7f9fc;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #1a237e;
+        }
+        .card-header .icon {
+            font-size: 1.8em;
+            margin-right: 16px;
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+        
+        .card-body h4 {
+            font-size: 1.1em;
+            color: #333;
+            border-bottom: 2px solid #e8eaf6;
+            padding-bottom: 8px;
+            margin-top: 20px;
+            margin-bottom: 16px;
+        }
+        .card-body h4:first-child {
+            margin-top: 0;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        li {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 14px;
+            padding-left: 28px;
+            position: relative;
+        }
+
+        li::before {
+            position: absolute;
+            left: 0;
+            top: 4px;
+            font-size: 1.2em;
+        }
+
+        .fact::before { content: '✅'; }
+        .opinion::before { content: '💡'; }
+        .feature::before { content: '⚙️'; }
+        .limitation::before { content: '⚠️'; }
+        .howto::before { content: '🔧'; }
+
+        .highlight-fact {
+            font-weight: 700;
+            color: #00796b;
+            background-color: #e0f2f1;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .highlight-opinion {
+            font-style: italic;
+            color: #5e35b1;
+        }
+        
+        .highlight-term {
+            background-color: #fff59d;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .code {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            background-color: #e8eaf6;
+            padding: 3px 7px;
+            border-radius: 6px;
+            color: #3f51b5;
+            font-size: 0.9em;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Claude Coded 更新摘要</h1>
+            <p>核心功能与技术亮点认知卡片</p>
+        </header>
+
+        <!-- Card 1: Claude 4.5 Model -->
+        <div class="cognitive-card">
+            <div class="card-header">
+                <span class="icon">🚀</span>
+                <div>
+                    Claude 4.5 模型发布：性能新标杆
+                </div>
+            </div>
+            <div class="card-body">
+                <h4>核心定位与性能</h4>
+                <ul>
+                    <li class="opinion"><strong>观点:</strong> 官方称其为 <span class="highlight-opinion">“全球最强的编程模型”</span>。</li>
+                    <li class="fact"><strong>编程能力:</strong> 在权威的 <span class="highlight-term">SWE-bench</span> 验证测试中，取得了 <span class="highlight-fact">77.2%</span> 的领先分数。</li>
+                    <li class="fact"><strong>长时任务稳定性:</strong> 经观察，模型能够持续专注于复杂任务<span class="highlight-fact">超过 30 小时</span>而保持聚焦。</li>
+                </ul>
+                <h4>综合能力提升</h4>
+                <ul>
+                    <li class="fact"><strong>通用能力:</strong> 在<span class="highlight-term">推理、数学</span>及<span class="highlight-term">计算机使用</span>等多个维度均有显著提升。</li>
+                    <li class="fact"><strong>智能体测试:</strong> 在模拟人类真实计算机操作的 <span class="highlight-term">OS-World</span> 基准测试中，得分从四个月前的 42% 大幅跃升至<span class="highlight-fact">超过 61%</span>。</li>
+                    <li class="feature"><strong>实际体验:</strong> 用户可通过 <span class="highlight-term">Claude for Chrome</span> 扩展程序亲身体验这些能力，该扩展已向所有候补名单用户开放。</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Card 2: Developer Tools -->
+        <div class="cognitive-card">
+            <div class="card-header">
+                <span class="icon">💻</span>
+                <div>开发者工具 (Claude Code) 全面升级</div>
+            </div>
+            <div class="card-body">
+                <h4>1. 原生 VS Code 扩展 (Beta)</h4>
+                <ul>
+                    <li class="feature"><strong>IDE 无缝集成:</strong> 将 Claude Code 直接带入 VS Code，通过<span class="highlight-term">专用侧边栏面板</span>工作。</li>
+                    <li class="feature"><strong>实时变更可视:</strong> 以<span class="highlight-term">内联差异 (inline diffs)</span> 形式实时、清晰地展示 Claude 生成的代码修改。</li>
+                    <li class="howto"><strong>获取途径:</strong> 可在 <span class="highlight-term">VS Code Marketplace</span> 中搜索并安装。</li>
+                </ul>
+                <h4>2. 命令行工具 2.0 与“检查点”功能</h4>
+                 <ul>
+                    <li class="feature"><strong>UI/UX 优化:</strong> 命令行界面更新至 2.0 版本，带来了全新的界面、改进的<span class="highlight-term">状态可见性</span>和<span class="highlight-term">可搜索的提示历史</span>。</li>
+                    <li class="feature"><strong>革命性功能 - 检查点 (Checkpoints):</strong> 允许在执行大型、复杂任务时，随时将<span class="highlight-fact">代码和/或对话</span>安全地回滚到之前的某个状态。</li>
+                    <li class="howto"><strong>激活方式:</strong> 输入 <span class="code">/re</span> 命令或<span class="highlight-fact">连续按两次 Esc 键</span>。</li>
+                    <li class="limitation"><strong>重要限制:</strong> “检查点”功能<span class="highlight-fact">仅对 Claude 所做的编辑生效</span>，不包含用户的手动编辑或执行的 bash 命令。官方建议将其与<span class="highlight-opinion">版本控制系统 (如 Git) 结合使用</span>以实现万无一失。</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Card 3: API Enhancements -->
+        <div class="cognitive-card">
+            <div class="card-header">
+                <span class="icon">🔧</span>
+                <div>API 更新：赋能更长时、更智能的 AI 智能体</div>
+            </div>
+            <div class="card-body">
+                <h4>1. 上下文编辑 (Context Editing)</h4>
+                <ul>
+                    <li class="feature"><strong>解决痛点:</strong> 智能体在长时间运行中因工具调用累积而导致的<span class="highlight-term">上下文窗口 (Token) 溢出</span>问题。</li>
+                    <li class="feature"><strong>工作机制:</strong> 当接近 Token 限制时，API 会<span class="highlight-fact">自动识别并清除上下文中陈旧、过时的工具调用历史和结果</span>。</li>
+                    <li class="fact"><strong>核心优势:</strong> 在完整保留核心对话流程的前提下，极大地<span class="highlight-fact">延长了智能体无需人工干预的自主运行时间</span>。</li>
+                </ul>
+                <h4>2. 记忆工具 (Memory Tool)</h4>
+                <ul>
+                    <li class="feature"><strong>核心功能:</strong> 赋予 Claude <span class="highlight-term">在上下文窗口之外</span>持久化存储和检索信息的能力，实现真正的长期记忆。</li>
+                    <li class="feature"><strong>实现方式:</strong> 通过一个<span class="highlight-term">基于文件的系统</span>，Claude 可对文件进行<span class="highlight-fact">创建 (Create)、读取 (Read)、更新 (Update) 和删除 (Delete)</span> 操作。</li>
+                    <li class="fact"><strong>数据主权:</strong> 所有记忆文件都存储在<span class="highlight-fact">用户自己的、完全客户端的基础设施上</span>，确保了数据的安全与私密性，并且可以<span class="highlight-fact">跨会话保留</span>。</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Card 4: SDK & App Updates -->
+        <div class="cognitive-card">
+            <div class="card-header">
+                <span class="icon">📦</span>
+                <div>SDK 更名与 App 文件生成能力</div>
+            </div>
+            <div class="card-body">
+                <h4>Claude Agent SDK</h4>
+                <ul>
+                    <li class="fact"><strong>名称变更:</strong> 原“Claude Code SDK”已正式<span class="highlight-fact">更名为“Claude Agent SDK”</span>，以更好地反映其核心用途。</li>
+                    <li class="feature"><strong>开放能力:</strong> 向开发者开放了驱动 Claude Code 的<span class="highlight-term">核心工具、上下文管理系统和权限框架</span>，旨在帮助开发者更轻松地构建自己强大的 AI 智能体。</li>
+                </ul>
+                <h4>Claude App 文件处理能力 (预览版)</h4>
+                <ul>
+                    <li class="feature"><strong>核心能力:</strong> Claude 现在可以在 App 内<span class="highlight-term">利用代码解释器</span>来执行数据分析、内容创建和信息可视化任务。</li>
+                    <li class="howto"><strong>用户交互:</strong> 只需使用<span class="highlight-term">自然语言</span>下达指令，例如“帮我分析这份销售数据并生成一份PPT报告”。</li>
+                    <li class="fact"><strong>支持格式:</strong> 能够直接生成并供用户下载多种常用文件格式，包括 <span class="highlight-fact">Excel 表格, PowerPoint 演示文稿, Word 文档, 以及 PDF 文件</span>。</li>
+                    <li class="fact"><strong>可用范围:</strong> 该功能目前作为预览版，已向<span class="highlight-fact">所有付费订阅计划的用户</span>开放。</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.bilibili.com/video/11111" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
