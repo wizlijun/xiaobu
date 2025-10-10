@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《Duly Noted》完整交互式摘要 + 反转卡片</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2; /* A slightly softer blue */
+            --secondary-color: #50e3c2; /* A vibrant teal */
+            --background-color: #f8f9fa; /* Off-white background */
+            --content-bg: #ffffff;
+            --text-color: #343a40;
+            --light-gray: #f1f3f5;
+            --medium-gray: #dee2e6;
+            --border-radius-main: 12px;
+            --border-radius-small: 8px;
+            --box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap');
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            line-height: 1.8;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 25px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 1.1em;
+            color: #6c757d;
+        }
+
+        .main-section {
+            background-color: var(--content-bg);
+            padding: 30px;
+            border-radius: var(--border-radius-main);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 2em;
+            font-weight: 700;
+            color: var(--primary-color);
+            border-bottom: 4px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        
+        /* Details/Summary Styles */
+        details {
+            background-color: var(--background-color);
+            border: 1px solid var(--medium-gray);
+            border-radius: var(--border-radius-small);
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        details[open] {
+            box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+        }
+
+        summary {
+            font-size: 1.2em;
+            font-weight: 500;
+            color: var(--primary-color);
+            padding: 15px 20px;
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::-webkit-details-marker { display: none; }
+
+        summary::after {
+            content: '▼';
+            font-size: 0.8em;
+            color: var(--primary-color);
+            transition: transform 0.3s ease;
+        }
+
+        details[open] summary::after { transform: rotate(-180deg); }
+
+        .chapter-content {
+            padding: 0 20px 20px 20px;
+            border-top: 1px solid var(--light-gray);
+        }
+
+        .chapter-content h3 {
+            color: var(--secondary-color);
+            border-bottom: 2px solid var(--light-gray);
+            padding-bottom: 5px;
+            margin-top: 25px;
+        }
+
+        .chapter-content ul { list-style: none; padding-left: 0; }
+        .chapter-content li { position: relative; padding-left: 25px; margin-bottom: 10px; }
+        .chapter-content li::before { content: '✓'; position: absolute; left: 0; top: 0; color: var(--secondary-color); font-weight: bold; }
+        
+        .highlight-fact { background-color: #e7f5ff; padding: 2px 6px; border-radius: 4px; }
+        .highlight-opinion { background-color: #e6fcf5; padding: 2px 6px; border-radius: 4px; }
+
+        /* Flashcard Styles */
+        .cards-title {
+            font-size: 1.5em;
+            font-weight: 500;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            color: #495057;
+            text-align: center;
+            border-top: 1px solid var(--medium-gray);
+            padding-top: 30px;
+        }
+        
+        .flashcard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .flashcard {
+            background-color: transparent;
+            height: 350px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flashcard-inner {
+            position: relative; width: 100%; height: 100%;
+            transition: transform 0.6s; transform-style: preserve-3d;
+            box-shadow: var(--box-shadow); border-radius: var(--border-radius-small);
+        }
+
+        .flashcard-inner.is-flipped { transform: rotateY(180deg); }
+
+        .flashcard-front, .flashcard-back {
+            position: absolute; width: 100%; height: 100%;
+            -webkit-backface-visibility: hidden; backface-visibility: hidden;
+            border-radius: var(--border-radius-small); padding: 20px;
+            box-sizing: border-box; display: flex; flex-direction: column;
+            border: 1px solid var(--medium-gray);
+        }
+
+        .flashcard-front {
+            background-color: var(--content-bg);
+            justify-content: center; align-items: center; text-align: center;
+        }
+        
+        .flashcard-front .action-title {
+            font-size: 1.35em;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        .flashcard-back {
+            background-color: var(--light-gray); transform: rotateY(180deg);
+            overflow-y: auto;
+        }
+
+        .back-section { margin-bottom: 15px; }
+        .back-section h4 { font-weight: 700; margin: 0 0 8px 0; display: flex; align-items: center; }
+        .back-section h4.principle { color: var(--primary-color); }
+        .back-section h4.knowledge { color: var(--secondary-color); }
+        .back-section h4::before { font-size: 1.2em; margin-right: 8px; }
+        .back-section h4.principle::before { content: '💡'; }
+        .back-section h4.knowledge::before { content: '📚'; }
+        .back-section ul { list-style: none; padding: 0; margin: 0; }
+        .back-section li { position: relative; padding-left: 20px; margin-bottom: 5px; }
+        .back-section li::before { content: '•'; position: absolute; left: 5px; color: #adb5bd; }
+        
+        .tooltip { font-weight: 500; border-bottom: 2px dotted var(--secondary-color); cursor: help; }
+
+        @media (max-width: 768px) {
+            body { padding: 15px; }
+            .main-section { padding: 20px; }
+            .flashcard-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>《Duly Noted》完整交互式摘要与学习卡片</h1>
+            <p>首先阅读章节摘要，然后通过下方的反转卡片巩固学习。</p>
+        </header>
+
+        <!-- 第一部分 -->
+        <div class="main-section">
+            <h2 class="section-title">第一部分：笔记的基础 (The Foundations)</h2>
+            
+            <details>
+                <summary>导言 & 第 1 章：笔记为思考服务</summary>
+                <div class="chapter-content">
+                    <h3>核心观点</h3>
+                    <ul>
+                        <li><span class="highlight-opinion">笔记不仅仅是记忆的辅助，更是思考发生的场所。</span></li>
+                        <li>区分 <span class="tooltip">“记录笔记(Note-Taking)”</span> (为回忆) 和 <span class="tooltip">“制作笔记(Note-Making)”</span> (为创造)。</li>
+                        <li><strong>知识花园 (Knowledge Garden) 隐喻：</strong> 你的笔记系统应像花园一样，需要持续培育，它会随着时间有机生长。</li>
+                        <li><strong>与物思考 (Thinking with Things)：</strong> 思考并非完全发生在大脑中，我们通过与工具和环境的互动来思考，即 <span class="tooltip">“扩展心智”(Extended Mind)</span>。</li>
+                    </ul>
+                </div>
+            </details>
+            
+            <details>
+                <summary>第 2 章：制作简短笔记</summary>
+                <div class="chapter-content">
+                    <h3>核心观点</h3>
+                    <ul>
+                        <li><strong>原子化原则：</strong> <span class="highlight-opinion">一则笔记，一个概念。</span> 这是未来灵活连接和重组的基础。</li>
+                        <li><strong>四个基本区别：</strong> 记录 vs. 制作；<span class="tooltip">常青笔记 (Evergreen)</span> vs. 短暂笔记；自上而下 vs. 自下而上；现在的你 vs. 未来的你。</li>
+                        <li><span class="highlight-fact">实用技巧：</span> 使用 <strong>Markdown</strong> 格式，为笔记清晰命名，并采用 <strong>ISO-8601 (YYYY-MM-DD)</strong> 日期格式。</li>
+                    </ul>
+                </div>
+            </details>
+
+            <h3 class="cards-title">核心行动卡片</h3>
+            <div class="flashcard-grid">
+                <div class="flashcard">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front">
+                            <h3 class="action-title">行动：将笔记视为思考的场所，而非仅仅是记录的工具。</h3>
+                        </div>
+                        <div class="flashcard-back">
+                            <div class="back-section">
+                                <h4 class="principle">原理：扩展心智 (Extended Mind)</h4>
+                                <ul>
+                                    <li>思考并非完全发生在大脑内部，而是通过我们与环境、工具（如纸笔）的互动共同完成的。</li>
+                                </ul>
+                            </div>
+                            <div class="back-section">
+                                <h4 class="knowledge">知识点</h4>
+                                <ul>
+                                    <li>物理学家费曼认为，在纸上演算不是“记录思考”，其本身就是“思考的过程”。</li>
+                                    <li>区分<strong>记录笔记</strong>（为回忆）和<strong>制作笔记</strong>（为创造）。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flashcard">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front">
+                            <h3 class="action-title">行动：为每一个独立的概念创建一则“原子化”的简短笔记。</h3>
+                        </div>
+                        <div class="flashcard-back">
+                            <div class="back-section">
+                                <h4 class="principle">原理：模块化与可重组性</h4>
+                                <ul>
+                                    <li>原子化的笔记就像乐高积木，可以在未来以无限种方式被连接和重组，从而产生新的洞见。</li>
+                                </ul>
+                            </div>
+                            <div class="back-section">
+                                <h4 class="knowledge">知识点</h4>
+                                <ul>
+                                    <li><span class="tooltip">常青笔记 (Evergreen Notes)</span>：指那些原子化、概念导向、密集链接且不断演进的笔记。</li>
+                                    <li>避免冗长的“一本书一则笔记”，而是将书中的核心概念拆分出来。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flashcard">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front">
+                            <h3 class="action-title">行动：写笔记时，要想着是在为“未来的你”而写。</h3>
+                        </div>
+                        <div class="flashcard-back">
+                            <div class="back-section">
+                                <h4 class="principle">原理：上下文会随时间流逝</h4>
+                                <ul>
+                                    <li>几个月后，你将忘记今天的思考背景。笔记必须包含足够的上下文才能独立存在，对“未来的你”依然有价值。</li>
+                                </ul>
+                            </div>
+                            <div class="back-section">
+                                <h4 class="knowledge">知识点</h4>
+                                <ul>
+                                    <li><strong>最小可行笔记 (MVN)</strong>：包含刚好足够的上下文，使之在未来能被理解。</li>
+                                    <li>推荐使用 <strong>ISO-8601 (YYYY-MM-DD)</strong> 日期格式，以保证长期可用性。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第二部分 -->
+        <div class="main-section">
+            <h2 class="section-title">第二部分：构建与维护系统 (Building & Tending)</h2>
+            
+            <details>
+                <summary>第 3 章 & 第 4 章：连接笔记与规划花园</summary>
+                <div class="chapter-content">
+                    <h3>核心观点</h3>
+                    <ul>
+                        <li><strong>超文本 (Hypertext)：</strong> 笔记的真正力量在于它们之间的连接，形成一个类似维基百科的非线性网络结构。</li>
+                        <li><span class="highlight-fact">核心功能：</span> <strong>Wiki链接 `[[...]]`</strong> 和 <strong>反向链接 (Backlinks)</strong> 是现代笔记工具的革命性特性。</li>
+                        <li><strong>知识工作六阶段：</strong> 注意 → 捕获 → 整理 → 保留 → 培育 → 分享。</li>
+                        <li><strong>系统设计三原则：</strong> <span class="highlight-opinion">可信赖 (Trustworthy)、开放 (Open)、可寻址 (Addressable)。</span></li>
+                    </ul>
+                </div>
+            </details>
+            
+            <details>
+                <summary>第 5 章, 第 6 章 & 第 9 章：捕获、整理与照料</summary>
+                <div class="chapter-content">
+                    <h3>核心观点</h3>
+                    <ul>
+                        <li><strong>捕获技巧：</strong> 根据场景（移动中、聆听、阅读、创作）选择合适的工具和方法。使用模板 (Templates) 减少摩擦。</li>
+                        <li><strong>整理方法：</strong> <span class="highlight-fact">使用文件夹进行分割 (Filing)，使用标签进行连接 (Tagging)。</span> 推荐 <strong>PARA</strong> (项目、领域、资源、归档) 作为文件夹框架。</li>
+                        <li><strong>照料花园：</strong> 区分“工作”与“元工作”，定期清空收件箱，管理容器和标签，培养可持续的习惯。</li>
+                        <li><span class="highlight-opinion">一致性比强度更重要。</span></li>
+                    </ul>
+                </div>
+            </details>
+            
+            <h3 class="cards-title">核心行动卡片</h3>
+            <div class="flashcard-grid">
+                <div class="flashcard">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front">
+                            <h3 class="action-title">行动：使用 `[[Wiki链接]]` 将你的笔记互相连接起来。</h3>
+                        </div>
+                        <div class="flashcard-back">
+                            <div class="back-section">
+                                <h4 class="principle">原理：网络化思考</h4>
+                                <ul>
+                                    <li>知识本质上是相互关联的。通过链接，你可以构建一个反映这种复杂关系的非线性知识网络，而不是孤立的信息孤岛。</li>
+                                </ul>
+                            </div>
+                            <div class="back-section">
+                                <h4 class="knowledge">知识点</h4>
+                                <ul>
+                                    <li><span class="tooltip">超文本 (Hypertext)</span>：非顺序性的文本，读者可以通过链接自由跳转。</li>
+                                    <li><strong>反向链接 (Backlinks)</strong>：自动显示哪些笔记链接到了当前笔记，是发现隐藏关系的关键。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flashcard">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front">
+                            <h3 class="action-title">行动：规划一个包含“捕获、整理、保留、培育”等阶段的工作流。</h3>
+                        </div>
+                        <div class="flashcard-back">
+                            <div class="back-section">
+                                <h4 class="principle">原理：系统化处理</h4>
+                                <ul>
+                                    <li>一个可靠的系统能让你从“记住所有事”的压力中解放出来，专注于更高层次的思考和创造。</li>
+                                </ul>
+                            </div>
+                            <div class="back-section">
+                                <h4 class="knowledge">知识点</h4>
+                                <ul>
+                                    <li><strong>六阶段模型</strong>：注意 → 捕获 → 整理 → 保留 → 培育 → 分享。</li>
+                                    <li><strong>系统设计原则</strong>：可信赖、开放（无锁定）、可寻址。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flashcard">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front">
+                            <h3 class="action-title">行动：使用“文件夹进行分割，用标签进行连接”。</h3>
+                        </div>
+                        <div class="flashcard-back">
+                            <div class="back-section">
+                                <h4 class="principle">原理：正交组织法</h4>
+                                <ul>
+                                    <li>文件夹提供刚性的、一对一的层级结构（分割），而标签提供灵活的、多对多的网状关联（连接），二者结合可以兼顾秩序与弹性。</li>
+                                </ul>
+                            </div>
+                            <div class="back-section">
+                                <h4 class="knowledge">知识点</h4>
+                                <ul>
+                                    <li><span class="tooltip">元数据 (Metadata)</span>：描述数据的数据，标签就是一种用户自定义的元数据。</li>
+                                    <li><strong>PARA 方法</strong>：一种实用的文件夹组织框架。</li>
+                                    <li>标签纪律：少即是多，目的明确，保持一致。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第三部分 -->
+        <div class="main-section">
+            <h2 class="section-title">第三部分：从笔记到创造 (From Notes to Creation)</h2>
+            
+            <details>
+                <summary>第 7 章：激发洞见</summary>
+                <div class="chapter-content">
+                    <h3>核心观点</h3>
+                    <ul>
+                        <li><span class="highlight-opinion">洞见是“向一个更好的故事发生的意外转变”，是心智模型的升级。</span></li>
+                        <li><strong>激发策略：</strong> 跨界阅读、寻找模式与异常、切换框架（角色扮演）、切换视角（使用不同视图）、拥抱“快乐的意外”、调动身体。</li>
+                    </ul>
+                </div>
+            </details>
+            
+            <details>
+                <summary>第 8 章 & 第 10 章：分享与协作</summary>
+                <div class="chapter-content">
+                    <h3>核心观点</h3>
+                    <ul>
+                        <li><strong>分享是学习的闭环：</strong> 通过分享“半成品”来获得反馈，是完善思考的最快途径。</li>
+                        <li><span class="highlight-fact">推荐使用非线性写作工具（如 Scrivener）来组织大型写作项目。</span></li>
+                        <li><strong>与 AI 协作：</strong> 将 AI 定位为你的<span class="tooltip">“学术助理 (Amanuensis)”</span>，帮你总结、提供新视角、激发灵感，而不是代替你思考。</li>
+                        <li><strong>一切皆是混创 (Everything is a Remix)：</strong> 追踪并注明想法的来源，将“文献笔记”与“常青笔记”链接起来，建立知识溯源网络。</li>
+                    </ul>
+                </div>
+            </details>
+
+            <h3 class="cards-title">核心行动卡片</h3>
+            <div class="flashcard-grid">
+                <div class="flashcard">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front">
+                            <h3 class="action-title">行动：通过切换不同视图（如大纲、画布）来审视你的笔记，以激发洞见。</h3>
+                        </div>
+                        <div class="flashcard-back">
+                            <div class="back-section">
+                                <h4 class="principle">原理：表征重构</h4>
+                                <ul>
+                                    <li>改变信息的视觉表现形式可以帮助我们的大脑打破固有的思维定势，从新的角度发现之前未被注意到的模式、关系和缺口。</li>
+                                </ul>
+                            </div>
+                            <div class="back-section">
+                                <h4 class="knowledge">知识点</h4>
+                                <ul>
+                                    <li>洞见是“向一个更好的故事发生的意外转变”。</li>
+                                    <li><span class="tooltip">心智模型 (Mental Model)</span>：我们对世界如何运作的内在表征。洞见就是心智模型的升级。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flashcard">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front">
+                            <h3 class="action-title">行动：尽早、逐步地分享你“半成品”的想法，而不是等到“完美”再公开。</h3>
+                        </div>
+                        <div class="flashcard-back">
+                            <div class="back-section">
+                                <h4 class="principle">原理：反馈循环</h4>
+                                <ul>
+                                    <li>分享是完成学习和思考闭环的关键步骤。外部反馈是修正和强化自己想法最有效的方式之一。</li>
+                                </ul>
+                            </div>
+                            <div class="back-section">
+                                <h4 class="knowledge">知识点</h4>
+                                <ul>
+                                    <li><span class="tooltip">数字花园 (Digital Garden)</span>：一种公开分享笔记和想法的网站形式，强调持续生长而非最终定稿。</li>
+                                    <li>分享的层次：从信任的小圈子逐步扩展到更广泛的社群。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flashcard">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front">
+                            <h3 class="action-title">行动：将 AI 定位为你的“学术助理 (Amanuensis)”，而不是“捉刀者 (Ghostwriter)”。</h3>
+                        </div>
+                        <div class="flashcard-back">
+                            <div class="back-section">
+                                <h4 class="principle">原理：协同增效与人机增强</h4>
+                                <ul>
+                                    <li>将AI作为思维的催化剂和陪练伙伴，可以帮你打破僵局、提供新视角、处理重复性工作，从而让你专注于更高层次的创造性思考。</li>
+                                </ul>
+                            </div>
+                            <div class="back-section">
+                                <h4 class="knowledge">知识点</h4>
+                                <ul>
+                                    <li>警惕 <strong>AI 幻觉</strong>（一本正经地胡说八道），并始终交叉验证关键信息。</li>
+                                    <li>“一切皆是混创”，但追踪并注明想法的来源是学术诚信和深度思考的基础。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const flashcards = document.querySelectorAll('.flashcard');
+
+            flashcards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const inner = card.querySelector('.flashcard-inner');
+                    inner.classList.toggle('is-flipped');
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
