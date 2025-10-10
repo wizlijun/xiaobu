@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《高效笔记法》分章交互卡片</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --text-color: #34495e;
+            --light-text-color: #7f8c8d;
+            --bg-color: #fdfdfd;
+            --card-bg: #ffffff;
+            --card-border: #ecf0f1;
+            --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+            --card-hover-shadow: 0 7px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2em;
+            line-height: 1.7;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .main-title {
+            text-align: center;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--card-border);
+            padding-bottom: 15px;
+            margin-bottom: 1em;
+            font-weight: 300;
+            font-size: 2.5em;
+        }
+        
+        .intro-text {
+            text-align: center;
+            color: var(--light-text-color);
+            max-width: 800px;
+            margin: 0 auto 2.5em auto;
+        }
+
+        .chapter-details {
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            margin-bottom: 1.5em;
+            overflow: hidden;
+            background-color: var(--card-bg);
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .chapter-details[open] {
+            box-shadow: var(--card-shadow);
+        }
+
+        .chapter-summary {
+            font-size: 1.4em;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 1.2em 1.5em;
+            list-style: none;
+            outline: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chapter-summary::-webkit-details-marker { display: none; }
+        
+        .chapter-summary::after {
+            content: '▼';
+            font-size: 0.8em;
+            transition: transform 0.3s ease;
+        }
+        
+        .chapter-details[open] .chapter-summary::after {
+            transform: rotate(180deg);
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5em;
+            padding: 0 2em 2em 2em;
+            border-top: 1px solid var(--card-border);
+        }
+
+        /* Flashcard Styles */
+        .flashcard {
+            background-color: transparent;
+            height: 300px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: var(--card-shadow);
+            border-radius: 10px;
+        }
+
+        .flashcard:hover .card-inner {
+            transform: translateY(-5px);
+            box-shadow: var(--card-hover-shadow);
+        }
+        
+        .flipper { display: none; }
+        .flipper:checked + .card-inner { transform: rotateY(180deg); }
+        .flashcard:hover .flipper:checked + .card-inner { transform: rotateY(180deg) translateY(-5px); }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 25px;
+            box-sizing: border-box;
+            border-radius: 10px;
+            border: 1px solid var(--card-border);
+        }
+
+        .card-front { background-color: #fff; }
+        .card-back { background-color: #f7f9fc; transform: rotateY(180deg); }
+        
+        .card-heading { font-weight: bold; font-size: 1.1em; margin-bottom: 12px; }
+        .card-front .card-heading { color: var(--primary-color); }
+        .card-back .card-heading { color: var(--secondary-color); }
+        
+        .card-content { font-size: 1.05em; text-align: center; }
+        
+        .click-hint { position: absolute; bottom: 12px; right: 15px; font-size: 0.8em; color: #ccc; }
+
+        .keyword { color: var(--primary-color); font-weight: 600; }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <h1 class="main-title">《高效笔记法》分章交互式卡片</h1>
+        <p class="intro-text">本书的核心在于将学习理论付诸实践。点击下方的卡片，即可翻转查看每个行动策略背后的认知科学原理。请按章节顺序学习，构建你的高效笔记系统。</p>
+
+        <!-- Chapters 1 & 2 -->
+        <details class="chapter-details" open>
+            <summary class="chapter-summary">第1-2章：导论 & 核心原则</summary>
+            <div class="card-grid">
+                <label class="flashcard"><input type="checkbox" class="flipper"><div class="card-inner"><div class="card-front"><div class="card-heading">行动/策略</div><div class="card-content">在学习前进行 <strong class="keyword">“预热”(Priming)</strong>，思考与主题相关的问题或知识。</div><div class="click-hint">翻转</div></div><div class="card-back"><div class="card-heading">原理/知识点</div><div class="card-content">激活大脑中已有的相关知识网络，为新信息提供“挂钩”，从而降低认知负荷，加速理解和记忆。</div></div></div></label>
+                <label class="flashcard"><input type="checkbox" class="flipper"><div class="card-inner"><div class="card-front"><div class="card-heading">行动/策略</div><div class="card-content">做笔记时，专注于 <strong class="keyword">释义 (Paraphrase)</strong> 和组织信息，而非逐字抄录。</div><div class="click-hint">翻转</div></div><div class="card-back"><div class="card-heading">原理/知识点</div><div class="card-content">笔记的主要价值在于 <strong class="keyword">编码 (Encoding)</strong> 过程。将信息用自己的话重述，会强制大脑进行更深层次的处理和理解。</div></div></div></label>
+                <label class="flashcard"><input type="checkbox" class="flipper"><div class="card-inner"><div class="card-front"><div class="card-heading">行动/策略</div><div class="card-content">有意识地减少环境干扰和内心的杂念。</div><div class="click-hint">翻转</div></div><div class="card-back"><div class="card-heading">原理/知识点</div><div class="card-content"><strong class="keyword">工作记忆 (Working Memory)</strong> 的核心是注意力控制。其容量极其有限，任何干扰都会占用宝贵的认知资源。</div></div></div></label>
+            </div>
+        </details>
+
+        <!-- Chapter 3 -->
+        <details class="chapter-details">
+            <summary class="chapter-summary">第3章：划重点 (Highlighting)</summary>
+            <div class="card-grid">
+                <label class="flashcard"><input type="checkbox" class="flipper"><div class="card-inner"><div class="card-front"><div class="card-heading">行动/策略</div><div class="card-content">划重点时，严格控制数量，不超过文本的 <strong class="keyword">10%</strong>。</div><div class="click-hint">翻转</div></div><div class="card-back"><div class="card-heading">原理/知识点</div><div class="card-content">划重点的作用是 <strong class="keyword">聚焦注意力</strong>。过度划线会因失去对比度而失效，无法突出重点，导致注意力分散。</div></div></div></label>
+                <label class="flashcard"><input type="checkbox" class="flipper"><div class="card-inner"><div class="card-front"><div class="card-heading">行动/策略</div><div class="card-content">只划那些你认为重要 <strong class="keyword">且</strong> 可能忘记的内容。</div><div class="click-hint">翻转</div></div><div class="card-back"><div class="card-heading">原理/知识点</div><div class="card-content">划重点是为了辅助记忆，而不是标记已知信息。对已知内容划线是无效的认知劳动。</div></div></div></label>
+            </div>
+        </details>
+
+        <!-- Chapter 4 -->
+        <details class="chapter-details">
+            <summary class="chapter-summary">第4章：标题 (Headings)</summary>
+            <div class="card-grid">
+                <label class="flashcard"><input type="checkbox" class="flipper"><div class="card-inner"><div class="card-front"><div class="card-heading">行动/策略</div><div class="card-content">分析或自己创建能够概括段落大意的 <strong class="keyword">标题</strong>。</div><div class="click-hint">翻转</div></div><div class="card-back"><div class="card-heading">原理/知识点</div><div class="card-content">标题是 <strong class="keyword">“组织信号”</strong>，它能揭示文本结构，帮助你从“线性罗列”思维切换到更高效的 <strong class="keyword">“主题结构”</strong>思维。</div></div></div></label>
+                <label class="flashcard"><input type="checkbox" class="flipper"><div class="card-inner"><div class="card-front"><div class="card-heading">行动/策略</div><div class="card-content">通过信号词（如“首先”、“相反”、“因此”）来识别文本的内在结构。</div><div class="click-hint">翻转</div></div><div class="card-back"><div class="card-heading">原理/知识点</div><div class="card-content">文本结构通常分为：描述、集合、分类、序列、比较、问题/解决方案。识别结构有助于预测内容和选择笔记格式。</div></div></div></label>
+            </div>
+        </details>
+
+        <!-- Chapter 5 -->
+        <details class="chapter-details">
+            <summary class="chapter-summary">第5章：摘要 (Summaries)</summary>
+            <div class="card-grid">
+                <label class="flashcard"><input type="checkbox" class="flipper"><div class="card-inner"><div class="card-front"><div class="card-heading">行动/策略</div><div class="card-content">读完一个章节后，合上书，尝试用自己的话 <strong class="keyword">写出摘要</strong>。</div><div class="click-hint">翻转</div></div><div class="card-back"><div class="card-heading">原理/知识点</div><div class="card-content">这是一种 <strong class="keyword">主动检索</strong> 练习。它强迫你进行信息的 <strong class="keyword">综合与重构</strong>，而不是被动地识别，从而极大地加深理解和记忆。</div></div></div></label>
+                <label class="flashcard"><input type="checkbox" class="flipper"><div class="card-inner"><div class="card-front"><div class="card-heading">行动/策略</div><div class="card-content">在阅读前，先阅读文首的 <strong class="keyword">“概述”</strong> 或文末的 <strong class="keyword">“总结”</strong>。</div><div class="click-hint">翻转</div></div><div class="card-back"><div class="card-heading">原理/知识点</div><div class="card-content">这是一种高效的 <strong class="keyword">“预热”</strong> 方式，能为你提供一个理解全文的框架，让你在阅读时更有方向感。</div></div></div></label>
+            </div>
+        </details>
+
+        <!-- Chapter 6 -->
+        <details class="chapter-details">
+            <summary class="chapter-summary">第6章：图形摘要 (Graphic Summaries)</summary>
+            <div class="card-grid">
+                <label class="flashcard"><input type="checkbox" class="flipper"><div class="card-inner"><div class="card-front"><div class="card-heading">行动/策略</div><div class="card-content">使用 <strong class="keyword">图形组织器</strong>（如树状图、矩阵图）来整理层级复杂或需要比较的信息。</div><div class="click-hint">翻转</div></div><div class="card-back"><div class="card-heading">原理/知识点</div><div class="card-content">图形利用了 <strong class="keyword">视觉工作记忆</strong> 通道，分担了纯文字给听觉/言语通道带来的认知负荷。它能更直观地展示概念间的关系。</div></div></div></label>
+                <label class="flashcard"><input type="checkbox" class="flipper"><div class="card-inner"><div class="card-front"><div class="card-heading">行动/策略</div><div class="card-content">为因果关系或流程步骤制作 <strong class="keyword">图文并茂</strong> 的多媒体摘要。</div><div class="click-hint">翻转</div></div><div class="card-back"><div class="card-heading">原理/知识点</div><div class="card-content">基于 <strong class="keyword">双重编码理论</strong>，同时处理视觉和言语信息能创建更丰富的记忆痕迹，从而增强理解和回忆。关键是图文必须紧密协同。</div></div></div></label>
+            </div>
+        </details>
+
+        <!-- Chapters 7-8 -->
+        <details class="chapter-details">
+            <summary class="chapter-summary">第7-8章：连接与精加工策略</summary>
+            <div class="card-grid">
+                <label class="flashcard"><input type="checkbox" class="flipper"><div class="card-inner"><div class="card-front"><div class="card-heading">行动/策略</div><div class="card-content">面对一个新事实时，不断追问 <strong class="keyword">“为什么”</strong>，并尝试将其与你已知的常识（锚点）联系起来。</div><div class="click-hint">翻转</div></div><div class="card-back"><div class="card-heading">原理/知识点</div><div class="card-content">信息的意义来源于 <strong class="keyword">连接</strong>。将新知识与稳固的 <strong class="keyword">“锚点”(Anchor Points)</strong> 相连，是构建深度理解和长期记忆的根本。</div></div></div></label>
+                <label class="flashcard"><input type="checkbox" class="flipper"><div class="card-inner"><div class="card-front"><div class="card-heading">行动/策略</div><div class="card-content">使用 <strong class="keyword">“自我解释”(Self-Explanation)</strong> 策略：不断问自己“这段话对我意味着什么？”</div><div class="click-hint">翻转</div></div><div class="card-back"><div class="card-heading">原理/知识点</div><div class="card-content">这是一种灵活的 <strong class="keyword">精加工策略</strong>，它强制你将新信息整合进自己现有的知识体系中，对前备知识要求较低。</div></div></div></label>
+                <label class="flashcard"><input type="checkbox" class="flipper"><div class="card-inner"><div class="card-front"><div class="card-heading">行动/策略</div><div class="card-content">对于必须死记硬背的孤立信息（如词汇、公式），使用 <strong class="keyword">助记术 (Mnemonics)</strong>。</div><div class="click-hint">翻转</div></div><div class="card-back"><div class="card-heading">原理/知识点</div><div class="card-content">助记术通过创造人为的、有趣的连接（如图像、故事、韵律），为无意义的信息赋予一个易于提取的记忆线索。它不帮助理解，只服务于记忆。</div></div></div></label>
+            </div>
+        </details>
+        
+        <!-- Chapter 9 -->
+        <details class="chapter-details">
+            <summary class="chapter-summary">第9章：概念图与思维导图</summary>
+            <div class="card-grid">
+                <label class="flashcard"><input type="checkbox" class="flipper"><div class="card-inner"><div class="card-front"><div class="card-heading">行动/策略</div><div class="card-content">在整理复杂知识时，使用 <strong class="keyword">概念图 (Concept Map)</strong>，并仔细标注连线上的关系词。</div><div class="click-hint">翻转</div></div><div class="card-back"><div class="card-heading">原理/知识点</div><div class="card-content">概念图迫使你清晰地 <strong class="keyword">定义概念间的逻辑关系</strong>，这能暴露你的理解误区，并构建一个严谨、层级分明的知识结构。</div></div></div></label>
+                <label class="flashcard"><input type="checkbox" class="flipper"><div class="card-inner"><div class="card-front"><div class="card-heading">行动/策略</div><div class="card-content">在需要创意或快速梳理思路时，使用 <strong class="keyword">思维导图 (Mind Map)</strong> 从中心点自由发散。</div><div class="click-hint">翻转</div></div><div class="card-back"><div class="card-heading">原理/知识点</div><div class="card-content">思维导图的 <strong class="keyword">放射性结构</strong> 符合大脑的联想式思维模式，非常适合 <strong class="keyword">头脑风暴</strong> 和激发创造力，但逻辑严谨性不如概念图。</div></div></div></label>
+            </div>
+        </details>
+
+        <!-- Chapter 10 -->
+        <details class="chapter-details">
+            <summary class="chapter-summary">第10章：讲座中的笔记策略</summary>
+            <div class="card-grid">
+                <label class="flashcard"><input type="checkbox" class="flipper"><div class="card-inner"><div class="card-front"><div class="card-heading">行动/策略</div><div class="card-content">将讲座笔记视为 <strong class="keyword">“原材料”</strong>，必须在课后花时间进行 <strong class="keyword">整理和重构</strong>。</div><div class="click-hint">翻转</div></div><div class="card-back"><div class="card-heading">原理/知识点</div><div class="card-content">讲座中认知负荷极高，难以进行深度处理。因此，<strong class="keyword">“捕捉”</strong> 和 <strong class="keyword">“加工”</strong> 必须是两个独立的阶段。课后整理才是真正的学习过程。</div></div></div></label>
+                <label class="flashcard"><input type="checkbox" class="flipper"><div class="card-inner"><div class="card-front"><div class="card-heading">行动/策略</div><div class="card-content">在听讲座前，务必 <strong class="keyword">阅读相关材料</strong>。</div><div class="click-hint">翻转</div></div><div class="card-back"><div class="card-heading">原理/知识点</div><div class="card-content">预习能建立初步的知识框架，让你在听讲时能更快地识别重点、理解难点，并大大降低做笔记时的认知负荷。</div></div></div></label>
+            </div>
+        </details>
+
+        <!-- Chapter 11 -->
+        <details class="chapter-details">
+            <summary class="chapter-summary">第11章：如何使用你的笔记</summary>
+            <div class="card-grid">
+                <label class="flashcard"><input type="checkbox" class="flipper"><div class="card-inner"><div class="card-front"><div class="card-heading">行动/策略</div><div class="card-content">复习笔记时，不要只是重读。要合上笔记，努力 <strong class="keyword">回忆和复述</strong> 内容（自我测试）。</div><div class="click-hint">翻转</div></div><div class="card-back"><div class="card-heading">原理/知识点</div><div class="card-content"><strong class="keyword">测试效应 (Testing Effect)</strong>：<strong class="keyword">主动检索 (Active Retrieval)</strong> 的行为本身会极大地强化记忆痕迹，其效果远超被动地再次接触信息。</div></div></div></label>
+                <label class="flashcard"><input type="checkbox" class="flipper"><div class="card-inner"><div class="card-front"><div class="card-heading">行动/策略</div><div class="card-content">安排复习计划时，采用 <strong class="keyword">“间隔重复”</strong>，即逐渐拉长两次复习之间的时间间隔。</div><div class="click-hint">翻转</div></div><div class="card-back"><div class="card-heading">原理/知识点</div><div class="card-content"><strong class="keyword">间隔效应 (Spacing Effect)</strong>：在记忆即将开始衰退时进行复习，能最有效地巩固长期记忆。这比短期内集中复习效率高得多。</div></div></div></label>
+            </div>
+        </details>
+
+        <!-- Chapters 12-13 -->
+        <details class="chapter-details">
+            <summary class="chapter-summary">第12-13章：个体差异与策略选择</summary>
+            <div class="card-grid">
+                <label class="flashcard"><input type="checkbox" class="flipper"><div class="card-inner"><div class="card-front"><div class="card-heading">行动/策略</div><div class="card-content">分析自己的 <strong class="keyword">认知风格</strong>（如“整体型”vs“分析型”），并有意识地练习那些能弥补自己弱点的策略。</div><div class="click-hint">翻转</div></div><div class="card-back"><div class="card-heading">原理/知识点</div><div class="card-content">最有效的学习往往发生在 <strong class="keyword">“舒适区”之外</strong>。刻意练习你不擅长的思维方式，可以构建更灵活、更全面的认知能力。</div></div></div></label>
+                <label class="flashcard"><input type="checkbox" class="flipper"><div class="card-inner"><div class="card-front"><div class="card-heading">行动/策略</div><div class="card-content">根据 <strong class="keyword">文本难度、结构、你的学习目标</strong> 和 <strong class="keyword">个人风格</strong>，灵活地选择和组合笔记策略。</div><div class="click-hint">翻转</div></div><div class="card-back"><div class="card-heading">原理/知识点</div><div class="card-content">不存在“万能”的策略。高效学习者是一个 <strong class="keyword">策略的决策者</strong>，能够根据具体情境，调用最合适的工具来解决问题。</div></div></div></label>
+            </div>
+        </details>
+
+    </div>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_effective_notetaking_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
