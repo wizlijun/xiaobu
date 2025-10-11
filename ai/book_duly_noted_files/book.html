@@ -1,0 +1,4280 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>《正式记录》</title>
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'FangSong', '仿宋', 'STFangSong', '华文仿宋', serif;
+            line-height: 1.8;
+            color: #333333;
+            background-color: #fefefe;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+            font-size: 1.1rem;
+            text-align: justify;
+        }
+
+        /* 浮动目录按钮 */
+        .toc-toggle {
+            position: fixed;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1000;
+            background: rgba(96, 165, 250, 0.5);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            width: 48px;
+            height: 48px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .toc-toggle:hover {
+            background: rgba(96, 165, 250, 0.8);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        /* 浮动目录面板 */
+        .toc-sidebar {
+            position: fixed;
+            left: -320px;
+            top: 0;
+            width: 300px;
+            height: 100vh;
+            background: #ffffff;
+            border-right: 1px solid #e2e8f0;
+            box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1);
+            z-index: 999;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            padding: 2rem 1rem;
+        }
+
+        .toc-sidebar.active {
+            left: 0;
+        }
+
+        .toc-sidebar h3 {
+            font-size: 1.2rem;
+            color: #1a202c;
+            margin-bottom: 1rem;
+            text-align: center;
+            border-bottom: 2px solid #3182ce;
+            padding-bottom: 0.5rem;
+        }
+
+        /* 目录区域 - 用于插入目录内容 */
+        .toc-content {
+            /* 目录内容将插入到这里 */
+        }
+
+        /* 遮罩层 */
+        .toc-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .toc-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 简洁的目录样式 */
+        .simple-toc ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+
+        .simple-toc ul ul {
+            padding-left: 1rem;
+            margin-top: 0.25rem;
+        }
+
+        .simple-toc li {
+            margin-bottom: 0.25rem;
+        }
+
+        .simple-toc a {
+            display: block;
+            padding: 0.5rem 0.75rem;
+            color: #4a5568;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .simple-toc a:hover {
+            background-color: #edf2f7;
+            color: #3182ce;
+            transform: translateX(4px);
+        }
+
+        /* 标题样式 */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'FangSong', '仿宋', 'STFangSong', '华文仿宋', serif;
+            color: #2d3748;
+            margin-top: 2rem;
+            margin-bottom: 1.2rem;
+            line-height: 1.4;
+            font-weight: normal;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            border-bottom: 2px solid #718096;
+            padding-bottom: 0.8rem;
+            margin-top: 0;
+            margin-bottom: 2.5rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            border-bottom: 1px solid #cbd5e0;
+            padding-bottom: 0.6rem;
+            margin-top: 2.5rem;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            color: #4a5568;
+        }
+
+        h4 {
+            font-size: 1.2rem;
+            color: #4a5568;
+        }
+
+        h5 {
+            font-size: 1.1rem;
+            color: #4a5568;
+        }
+
+        h6 {
+            font-size: 1rem;
+            color: #718096;
+            font-weight: normal;
+        }
+
+        /* 段落样式 */
+        p {
+            margin-bottom: 1.5rem;
+            text-align: justify;
+            word-break: break-word;
+            text-indent: 2em;
+            font-family: 'FangSong', '仿宋', 'STFangSong', '华文仿宋', serif;
+        }
+
+        /* 链接样式 */
+        a {
+            color: #3182ce;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        a:hover {
+            color: #2c5282;
+            text-decoration: underline;
+        }
+
+        /* 图片样式 - 居中显示 */
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 2rem auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 列表样式 */
+        ul, ol {
+            margin: 1.25rem 0;
+            padding-left: 2rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        ul ul, ol ol, ul ol, ol ul {
+            margin: 0.5rem 0;
+        }
+
+        /* 代码样式 */
+        code {
+            font-family: 'Courier New', 'Monaco', 'Consolas', 'Ubuntu Mono', monospace;
+            background-color: #f8f9fa;
+            color: #d63384;
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9rem;
+        }
+
+        pre {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            overflow-x: auto;
+            font-family: 'Courier New', 'Monaco', 'Consolas', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+            border-radius: 0;
+            font-size: inherit;
+        }
+
+        /* 引用样式 */
+        blockquote {
+            border-left: 4px solid #a0aec0;
+            margin: 2rem 0;
+            padding: 1.2rem 1.8rem;
+            background-color: #f7fafc;
+            color: #4a5568;
+            font-style: italic;
+            border-radius: 0 6px 6px 0;
+            font-family: 'FangSong', '仿宋', 'STFangSong', '华文仿宋', serif;
+        }
+
+        blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background-color: #ffffff;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background-color: #f7fafc;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        tr:hover {
+            background-color: #f7fafc;
+        }
+
+        /* 分隔线 */
+        hr {
+            border: none;
+            border-top: 2px solid #e2e8f0;
+            margin: 3rem 0;
+        }
+
+        /* 页面分隔器 */
+        .page-separator {
+            border-top: 2px solid #e2e8f0;
+            margin: 3rem 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .page-separator::after {
+            content: "• • •";
+            background-color: #ffffff;
+            color: #a0aec0;
+            padding: 0 1rem;
+            position: relative;
+            top: -0.75rem;
+        }
+
+        /* 强调样式 */
+        strong, b {
+            font-weight: 700;
+            color: #1a202c;
+        }
+
+        em, i {
+            font-style: italic;
+            color: #4a5568;
+        }
+
+        /* 目标标题高亮 */
+        h1:target, h2:target, h3:target, h4:target, h5:target, h6:target {
+            background-color: #fff3cd;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1.5rem 0;
+            border-left: 4px solid #ffc107;
+            animation: highlight 2s ease-in-out;
+        }
+
+        @keyframes highlight {
+            0% {
+                background-color: #fff3cd;
+                transform: scale(1.02);
+            }
+            100% {
+                background-color: transparent;
+                transform: scale(1);
+            }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                padding: 1.5rem;
+                font-size: 1rem;
+                max-width: 100%;
+            }
+
+            .toc-toggle {
+                left: 10px;
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+
+            .toc-sidebar {
+                width: 280px;
+                left: -300px;
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.6rem;
+            }
+
+            h2 {
+                font-size: 1.4rem;
+            }
+
+            h3 {
+                font-size: 1.2rem;
+            }
+
+            h4 {
+                font-size: 1.1rem;
+            }
+
+            table {
+                font-size: 0.9rem;
+            }
+
+            th, td {
+                padding: 0.6rem 0.8rem;
+            }
+
+            pre {
+                padding: 1.2rem;
+                font-size: 0.85rem;
+            }
+
+            blockquote {
+                padding: 1rem 1.2rem;
+                margin: 1.5rem 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 1.2rem;
+                font-size: 0.95rem;
+            }
+
+            .toc-sidebar {
+                width: 260px;
+                left: -280px;
+            }
+
+            h1, h2, h3, h4, h5, h6 {
+                margin-top: 1.5rem;
+            }
+
+            ul, ol {
+                padding-left: 1.5rem;
+            }
+            
+            p {
+                text-indent: 1.5em;
+            }
+        }
+
+        /* 打印样式 */
+        @media print {
+            .toc-toggle,
+            .toc-sidebar,
+            .toc-overlay {
+                display: none !important;
+            }
+
+            body {
+                max-width: none;
+                padding: 0;
+                font-size: 12pt;
+                line-height: 1.5;
+                color: #000;
+            }
+
+            h1, h2, h3, h4, h5, h6 {
+                page-break-after: avoid;
+            }
+
+            img {
+                max-width: 100% !important;
+                page-break-inside: avoid;
+            }
+
+            blockquote, pre {
+                page-break-inside: avoid;
+            }
+
+            a {
+                color: #000;
+                text-decoration: underline;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- 浮动目录按钮 -->
+<button class="toc-toggle" onclick="toggleToc()" title="打开/关闭目录">
+        ☰
+    </button>
+<!-- 浮动目录面板 -->
+<div class="toc-sidebar" id="tocSidebar">
+<h3 id="目录">目录</h3>
+<div class="toc-content simple-toc"><ul>
+<li><ul>
+<li><ul>
+<li><a href="#目录">目录</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#正式记录">《正式记录》</a></li>
+<li><a href="#目录概览">目录概览</a></li>
+<li><a href="#前言">前言</a></li>
+<li><a href="#简介">简介</a></li>
+<li><ul>
+<li><a href="#用计算机思考">用计算机思考</a></li>
+<li><a href="#思考的花园">思考的花园</a></li>
+<li><a href="#本书包含什么">本书包含什么？</a></li>
+</ul></li>
+<li><a href="#第1章-笔记是用来思考的">第1章 笔记是用来思考的</a></li>
+<li><ul>
+<li><a href="#笔记是用来做什么的">笔记是用来做什么的?</a></li>
+<li><ul>
+<li><a href="#记忆">记忆</a></li>
+<li><a href="#誊写">誊写</a></li>
+<li><a href="#记录">记录</a></li>
+<li><a href="#学习">学习</a></li>
+<li><a href="#研究">研究</a></li>
+<li><a href="#生成">生成</a></li>
+<li><a href="#规划">规划</a></li>
+<li><a href="#沟通">沟通</a></li>
+<li><a href="#保持专注">保持专注</a></li>
+</ul></li>
+<li><a href="#笔记媒介">笔记媒介</a></li>
+<li><ul>
+<li><a href="#纸笔">纸笔</a></li>
+<li><a href="#索引卡">索引卡</a></li>
+<li><a href="#页边注">页边注</a></li>
+<li><a href="#便利贴">便利贴</a></li>
+<li><a href="#照片">照片</a></li>
+<li><a href="#音频和视频">音频和视频</a></li>
+<li><a href="#数字笔记">数字笔记</a></li>
+</ul></li>
+<li><a href="#用事物思考">用事物思考</a></li>
+<li><ul>
+<li><a href="#安装obsidian">安装Obsidian</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#当你首次启动obsidian时你可以选择创建一个新的仓库在obsidian中仓库是你存储笔记的地方你可以创建和管理任意多个仓库例如我目前管理两个仓库一个用于管理项目另一个作为我的主要长期知识库要使用obsidian你必须至少创建一个仓库">当你首次启动Obsidian时，你可以选择创建一个新的仓库。在Obsidian中，仓库是你存储笔记的地方。你可以创建和管理任意多个仓库。例如，我目前管理两个仓库：一个用于管理项目，另一个作为我的主要长期知识库。要使用Obsidian，你必须至少创建一个仓库。</a></li>
+<li><ul>
+<li><a href="#用事物思考-1">用事物思考</a></li>
+<li><a href="#著名笔记记录者">著名笔记记录者</a></li>
+<li><ul>
+<li><a href="#gretchen-anderson">Gretchen Anderson</a></li>
+</ul></li>
+<li><a href="#尾注">尾注</a></li>
+</ul></li>
+<li><a href="#第二章-简短记笔记">第二章 简短记笔记</a></li>
+<li><ul>
+<li><a href="#为每个概念写一条笔记">为每个概念写一条笔记</a></li>
+<li><a href="#基本区分">基本区分</a></li>
+<li><ul>
+<li><a href="#记笔记-vs-做笔记">记笔记 vs. 做笔记</a></li>
+<li><a href="#长青笔记-vs-临时笔记">长青笔记 vs. 临时笔记</a></li>
+<li><a href="#自上而下-vs-自下而上的结构">自上而下 vs. 自下而上的结构</a></li>
+<li><a href="#现在的你-vs-未来的你">现在的你 vs. 未来的你</a></li>
+</ul></li>
+<li><a href="#最小可行笔记">最小可行笔记</a></li>
+<li><ul>
+<li><a href="#为笔记命名">为笔记命名</a></li>
+<li><ul>
+<li><a href="#使标题具有区分性">使标题具有区分性</a></li>
+<li><a href="#使标题简短但不要太短">使标题简短,但不要太短</a></li>
+<li><a href="#使用模式并坚持使用它们">使用模式——并坚持使用它们</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#杰出的笔记记录者">杰出的笔记记录者</a></li>
+<li><a href="#结语">结语</a></li>
+</ul></li>
+<li><a href="#第3章-连接你的笔记">第3章 连接你的笔记</a></li>
+<li><ul>
+<li><a href="#超文本笔记">超文本笔记</a></li>
+<li><ul>
+<li><a href="#你应该更换应用吗">你应该更换应用吗？</a></li>
+</ul></li>
+<li><a href="#链接和节点超文本的基本元素">链接和节点：超文本的基本元素</a></li>
+<li><ul>
+<li><a href="#但你能用纸来做到这一点吗">但你能用纸来做到这一点吗?</a></li>
+</ul></li>
+<li><a href="#在你的笔记中添加链接">在你的笔记中添加链接</a></li>
+<li><a href="#链接的类型">链接的类型</a></li>
+<li><ul>
+<li><a href="#维基链接wikilinks">维基链接(Wikilinks)</a></li>
+<li><a href="#隐式链接implicit-links">隐式链接(Implicit Links)</a></li>
+<li><a href="#反向链接backlinks">反向链接(Backlinks)</a></li>
+<li><a href="#块引用block-references">块引用(Block References)</a></li>
+<li><a href="#别名aliases">别名(Aliases)</a></li>
+<li><a href="#嵌入embeddings">嵌入(Embeddings)</a></li>
+<li><a href="#空间关系spatial-relations">空间关系(Spatial Relations)</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#块链接和嵌入">块链接和嵌入</a></li>
+<li><ul>
+<li><a href="#有效超文本笔记的技巧">有效超文本笔记的技巧</a></li>
+<li><ul>
+<li><a href="#使笔记模块化">使笔记模块化</a></li>
+<li><a href="#重新训练自己在捕捉时建立链接">重新训练自己在捕捉时建立链接</a></li>
+<li><a href="#使用别名使链接更清晰">使用别名使链接更清晰</a></li>
+</ul></li>
+<li><a href="#jerry-michalski">Jerry Michalski</a></li>
+<li><a href="#尾注-1">尾注</a></li>
+</ul></li>
+<li><a href="#第四章-知识花园计划">第四章 知识花园计划</a></li>
+<li><ul>
+<li><a href="#用笔记思考的流程">用笔记思考的流程</a></li>
+<li><ul>
+<li><a href="#盘点你的笔记工具">盘点你的笔记工具</a></li>
+<li><a href="#注意">注意</a></li>
+<li><a href="#capture捕捉">Capture(捕捉)</a></li>
+<li><a href="#sort分类">Sort(分类)</a></li>
+<li><a href="#retain保留">Retain(保留)</a></li>
+<li><a href="#nurture培育">Nurture(培育)</a></li>
+<li><a href="#分享">分享</a></li>
+</ul></li>
+<li><a href="#知识花园模型">知识花园模型</a></li>
+<li><a href="#niklas-luhmann">Niklas Luhmann</a></li>
+<li><a href="#设计你的花园的核心原则">设计你的花园的核心原则</a></li>
+<li><ul>
+<li><a href="#可信赖的组件">可信赖的组件</a></li>
+<li><a href="#易进易出">易进易出</a></li>
+<li><ul>
+<li><a href="#种植一条长青笔记evergreen-note">种植一条长青笔记(Evergreen
+Note)</a></li>
+</ul></li>
+<li><a href="#可寻址的笔记">可寻址的笔记</a></li>
+</ul></li>
+<li><a href="#章节总结">章节总结</a></li>
+</ul></li>
+<li><a href="#第5章-不要让想法溜走">第5章 不要让想法溜走</a></li>
+<li><ul>
+<li><a href="#捕获用例">捕获用例</a></li>
+<li><ul>
+<li><a href="#随时捕获">随时捕获</a></li>
+<li><a href="#听的时候捕获">听的时候捕获</a></li>
+<li><a href="#阅读时捕获">阅读时捕获</a></li>
+<li><a href="#创作时捕获">创作时捕获</a></li>
+</ul></li>
+<li><a href="#捕获笔记的媒介">捕获笔记的媒介</a></li>
+<li><ul>
+<li><a href="#每种媒介都有一个收件箱">每种媒介都有一个收件箱</a></li>
+<li><a href="#使用模板减少摩擦">使用模板减少摩擦</a></li>
+</ul></li>
+<li><a href="#创建模板">创建模板</a></li>
+<li><a href="#一些最后的提示">一些最后的提示</a></li>
+<li><ul>
+<li><a href="#做好捕捉准备">做好捕捉准备</a></li>
+<li><a href="#捕捉恰到好处">捕捉恰到好处</a></li>
+<li><a href="#留意你正在关注的内容">留意你正在关注的内容</a></li>
+</ul></li>
+<li><a href="#明确你是否在记录长期保存的内容">明确你是否在记录长期保存的内容</a></li>
+<li><ul>
+<li><a href="#nicole-van-der-hoeven">Nicole van der Hoeven</a></li>
+</ul></li>
+<li><a href="#章节总结-1">章节总结</a></li>
+</ul></li>
+<li><a href="#第6章-把一切放在正确的位置">第6章 把一切放在正确的位置</a></li>
+<li><ul>
+<li><a href="#从需求到信息再回到需求">从需求到信息（再回到需求）</a></li>
+<li><a href="#在容器中存储东西">在容器中存储东西</a></li>
+<li><ul>
+<li><a href="#堆放">堆放</a></li>
+<li><a href="#归档">归档</a></li>
+</ul></li>
+<li><a href="#合理归档的建议">合理归档的建议</a></li>
+<li><ul>
+<li><a href="#清晰命名容器">清晰命名容器</a></li>
+<li><a href="#追求恰好够用的容器数量">追求恰好够用的容器数量</a></li>
+<li><a href="#把东西保存在未来的你会找到的地方">把东西保存在”未来的你”会找到的地方</a></li>
+<li><a href="#对特定信息类型使用专用应用程序">对特定信息类型使用专用应用程序</a></li>
+</ul></li>
+<li><a href="#元数据">元数据</a></li>
+<li><ul>
+<li><a href="#清空你的收件箱">清空你的收件箱</a></li>
+<li><a href="#标签">标签</a></li>
+<li><ul>
+<li><a href="#标签的常见挑战">标签的常见挑战</a></li>
+<li><a href="#如何有效使用标签">如何有效使用标签</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#其他技巧和建议">其他技巧和建议</a></li>
+<li><ul>
+<li><a href="#批量组织任务">批量组织任务</a></li>
+<li><a href="#在捕获时归档">在捕获时归档</a></li>
+<li><a href="#增加区分的对比度">增加区分的对比度</a></li>
+<li><a href="#不要过度结构化">不要过度结构化</a></li>
+</ul></li>
+<li><a href="#不要让文件夹或标签泛滥">不要让文件夹或标签泛滥</a></li>
+<li><a href="#结语-1">结语</a></li>
+</ul></li>
+<li><a href="#第7章-激发洞察">第7章 激发洞察</a></li>
+<li><ul>
+<li><a href="#什么是洞察">什么是洞察?</a></li>
+<li><a href="#模型">模型</a></li>
+<li><ul>
+<li><a href="#思维导图">思维导图</a></li>
+</ul></li>
+<li><a href="#洞察生成的工具">洞察生成的工具</a></li>
+<li><ul>
+<li><a href="#使用正确的思考工具">使用正确的思考工具</a></li>
+</ul></li>
+<li><a href="#产生洞察的策略">产生洞察的策略</a></li>
+<li><ul>
+<li><a href="#阅读跨界内容">阅读”跨界”内容</a></li>
+<li><a href="#寻找模式">寻找模式</a></li>
+<li><a href="#发现潜在联系">发现潜在联系</a></li>
+<li><a href="#突出好奇点">突出好奇点</a></li>
+<li><a href="#改变框架">改变框架</a></li>
+<li><a href="#改变视角">改变视角</a></li>
+<li><a href="#拥抱愉快的意外">拥抱愉快的意外</a></li>
+<li><a href="#调动你的身体">调动你的身体</a></li>
+<li><a href="#保持开放的心态">保持开放的心态</a></li>
+</ul></li>
+<li><a href="#尾注-2">尾注</a></li>
+</ul></li>
+<li><a href="#第-8-章-分享你的思考">第 8 章 分享你的思考</a></li>
+<li><ul>
+<li><a href="#发布的第一性原则">发布的第一性原则</a></li>
+<li><ul>
+<li><a href="#发布需要迭代">发布需要迭代</a></li>
+<li><a href="#了解你的受众">了解你的受众</a></li>
+<li><a href="#选择支持你意图的工具">选择支持你意图的工具</a></li>
+</ul></li>
+<li><a href="#制作流程">制作流程</a></li>
+<li><ul>
+<li><a href="#孕育gestating">孕育(Gestating)</a></li>
+<li><a href="#研究researching">研究(Researching)</a></li>
+<li><a href="#构建structuring">构建(Structuring)</a></li>
+<li><a href="#起草drafting">起草(Drafting)</a></li>
+<li><a href="#修订">修订</a></li>
+</ul></li>
+<li><a href="#反馈的作用">反馈的作用</a></li>
+<li><ul>
+<li><a href="#反馈的意义是什么">反馈的意义是什么？</a></li>
+<li><a href="#如何克服反馈困境">如何克服反馈困境</a></li>
+<li><a href="#你应该在哪里寻求反馈">你应该在哪里寻求反馈？</a></li>
+</ul></li>
+<li><a href="#结语-2">结语</a></li>
+</ul></li>
+<li><a href="#第九章-照料花园">第九章 照料花园</a></li>
+<li><ul>
+<li><a href="#元工作支撑过程的所有阶段">元工作支撑过程的所有阶段</a></li>
+<li><a href="#需要元工作的常见任务">需要元工作的常见任务</a></li>
+<li><ul>
+<li><a href="#管理专注的容器">管理专注的容器</a></li>
+<li><a href="#保持容器名称一致以便查找">保持容器名称一致以便查找</a></li>
+<li><a href="#掌握同步状态">掌握同步状态</a></li>
+</ul></li>
+<li><a href="#系统演进">系统演进</a></li>
+<li><a href="#选择系统组件的原则">选择系统组件的原则</a></li>
+<li><ul>
+<li><a href="#避免锁定">避免锁定</a></li>
+<li><a href="#青睐互操作性">青睐互操作性</a></li>
+<li><a href="#寻找自动化可脚本化功能">寻找自动化/可脚本化功能</a></li>
+<li><a href="#青睐值得信赖的供应商">青睐值得信赖的供应商</a></li>
+<li><a href="#寻找充满活力的社区">寻找充满活力的社区</a></li>
+<li><a href="#顺应技术特性">顺应技术特性</a></li>
+<li><a href="#避免使用全能应用">避免使用”全能”应用</a></li>
+<li><a href="#避免流程中断">避免流程中断</a></li>
+<li><a href="#从小处着手寻找满意即可的工具">从小处着手，寻找”满意即可”的工具</a></li>
+</ul></li>
+<li><a href="#管理标签">管理标签</a></li>
+<li><a href="#建立可持续的习惯">建立可持续的习惯</a></li>
+<li><ul>
+<li><a href="#一次建立一个习惯">一次建立一个习惯</a></li>
+<li><a href="#与他人合作">与他人合作</a></li>
+<li><a href="#选择合适的时间和地点">选择合适的时间和地点</a></li>
+<li><a href="#现在就做">现在就做</a></li>
+<li><a href="#偏向一致性而非强度">偏向一致性而非强度</a></li>
+<li><a href="#委托不重要的事情">委托不重要的事情</a></li>
+<li><a href="#顺应你的本性">顺应你的本性</a></li>
+<li><a href="#着眼长远">着眼长远</a></li>
+</ul></li>
+<li><a href="#尾注-3">尾注</a></li>
+</ul></li>
+<li><a href="#第10章-与他人的思维共同思考">第10章 与他人的思维共同思考</a></li>
+<li><ul>
+<li><a href="#协作如何改变笔记方式">协作如何改变笔记方式</a></li>
+<li><ul>
+<li><a href="#协作捕获">协作捕获</a></li>
+<li><a href="#协作构思">协作构思</a></li>
+<li><a href="#协作园艺">协作园艺</a></li>
+</ul></li>
+<li><a href="#如何组织共享思考空间">如何组织共享思考空间</a></li>
+<li><ul>
+<li><a href="#保持思考空间有序">保持思考空间有序</a></li>
+</ul></li>
+<li><a href="#ai-助手">AI 助手</a></li>
+<li><ul>
+<li><a href="#ai-作为编辑">AI 作为编辑</a></li>
+<li><a href="#ai-作为代笔作家">AI 作为代笔作家</a></li>
+<li><a href="#ai-作为助手amanuensis">AI 作为助手(Amanuensis)</a></li>
+<li><a href="#不必完全相信机器人的话">不必完全相信机器人的话</a></li>
+</ul></li>
+<li><a href="#万物皆混音">万物皆混音</a></li>
+<li><ul>
+<li><a href="#谁拥有产出">谁拥有产出?</a></li>
+<li><a href="#追踪你的来源">追踪你的来源</a></li>
+</ul></li>
+<li><a href="#尾注-4">尾注</a></li>
+</ul></li>
+<li><a href="#后记">后记</a></li>
+<li><a href="#索引">索引</a></li>
+<li><ul>
+<li><a href="#p">P</a></li>
+<li><a href="#q">Q</a></li>
+<li><a href="#r">R</a></li>
+<li><a href="#s">S</a></li>
+</ul></li>
+<li><a href="#致谢">致谢</a></li>
+<li><ul>
+<li><a href="#rosenfeld-media-近期书目">ROSENFELD MEDIA 近期书目</a></li>
+<li><a href="#rosenfeld-media-精选书目">ROSENFELD MEDIA 精选书目</a></li>
+<li><a href="#关于作者">关于作者</a></li>
+</ul></li>
+</ul>
+</div>
+</div>
+<!-- 遮罩层 -->
+<div class="toc-overlay" id="tocOverlay" onclick="closeToc()"></div>
+<!-- 主要内容 -->
+<header id="title-block-header">
+<h1 class="title" id="正式记录">《正式记录》</h1>
+</header>
+<p><strong>Duly Noted</strong></p>
+<p><strong>通过连接笔记扩展你的思维</strong></p>
+<p>作者：Jorge Arango</p>
+<p>Rosenfeld Media, LLC</p>
+<p>125 Maiden Lane</p>
+<p>New York, New York 10038</p>
+<p>USA</p>
+<p>网站：<a href="http://www.rosenfeldmedia.com">www.rosenfeldmedia.com</a></p>
+<p>勘误请发送至：<a href="mailto:errata@rosenfeldmedia.com">errata@rosenfeldmedia.com</a></p>
+<p>出版人：Louis Rosenfeld</p>
+<p>责任编辑：Marta Justak</p>
+<p>内页排版：Danielle Foster</p>
+<p>封面设计：Heads of State</p>
+<p>索引编制：Marilyn Augst</p>
+<p>校对：Sue Boshers</p>
+<p>© 2024 Jorge Arango</p>
+<p>版权所有</p>
+<p>ISBN: 1-959029-04-5</p>
+<p>ISBN 13: 978-1-959029-04-5</p>
+<p>LCCN: 2023945898</p>
+<p>美国印刷装订</p>
+<p>献给我的父母，Jorge和Lilines，是他们教会我学习的意义不在于积累想法，而在于更明智地行动。</p>
+<h1 id="目录概览">目录概览</h1>
+<ol type="1">
+<li>前言</li>
+<li>引言</li>
+<li>第1章 笔记是用来思考的</li>
+<li>第2章 做简短的笔记</li>
+<li>第3章 连接你的笔记</li>
+<li>第4章 规划知识花园</li>
+<li>第5章 不要让想法溜走</li>
+<li>第6章 把一切放在合适的位置</li>
+<li>第7章 激发洞见</li>
+<li>第8章 分享你的思考</li>
+<li>第9章 打理花园</li>
+<li>第10章 与其他思维一起思考</li>
+<li>尾声</li>
+<li>索引</li>
+<li>致谢</li>
+<li>关于作者</li>
+</ol>
+<h1 id="前言">前言</h1>
+<p>人类之所以能够创造科学和文明，是因为我们学会了创造和分享思考与认知的工具。无论是在纸片上、笔记本里，还是在智能手机上，记笔记都是几乎每个人都在使用的思考和认知工具。学会如何更好地使用它是一项可以习得的技能——而现在，笔记应用程序可以增强你创建”知识花园”的能力，就像文字处理软件增强你的写作能力，互联网增强你的沟通能力一样。这本书及其阐述的实践方法将大大提升你的笔记记录、意义构建和个人知识获取能力。</p>
+<p>从语言开始，然后随着书写、字母表、印刷术、个人电脑和互联网的出现而获得更强大的力量，我们的思考和认知能力与我们的知识工具共同进化。这些工具放大了我们大脑的力量，就像轮子和杠杆等物理工具放大了我们肌肉的力量一样。提升你的个人思考和认知能力的关键在于如何使用我们共同进化出来的思考工具。这就是教育的作用所在。但教育机构的变化缓慢，而技术却在快速变化。学校教授阅读和写作，但到目前为止，还没有学校教授高级笔记记录、知识花园培育或Obsidian等笔记应用程序的使用。这本书正是为了填补这一空白。</p>
+<p>《Duly
+Noted》使用非技术性语言和日常生活中的实例，阐明了在记忆、学习、创造和认知方面，有知识基础的笔记记录所具有的力量。从日常待办事项列表到撰写书籍或教授课程的详尽框架，你从本书中学到的技能可以赋能你日常生活的各个方面。你不必上大学或掌握深奥的新实践——我们都有一生的笔记记录经验。本书作者Jorge
+Arango已经掌握了将你的笔记记录习惯转变为思维强大工具所需的实践方法。</p>
+<h1 id="简介">简介</h1>
+<p>2022年3月9日,剑桥大学图书馆办公室门外神秘地出现了一个亮粉色购物袋。袋子里有一个包裹,包含两本笔记本和一张纸条,上面写着:</p>
+<blockquote>
+<p>图书管理员</p>
+<p>复活节快乐</p>
+<p>X</p>
+</blockquote>
+<p>“快乐”这个词远远不足以表达这个包裹所带来的影响。剑桥大学图书馆服务主任杰西卡·加德纳说:</p>
+<blockquote>
+<p>笔记本安全归还让我如释重负,这种感觉深刻得几乎无法充分表达。和世界各地的许多人一样,得知它们丢失时我心碎不已,现在它们回来了,我感到无比欣喜。</p>
+</blockquote>
+<p>为什么会有如此强烈的情感?袋子里装的是查尔斯·达尔文的两本笔记本,它们在二十年前失踪,引发了一场国际警方搜查。加德纳进一步阐述道:</p>
+<blockquote>
+<p>它们可能很小,只有明信片那么大,但这些笔记本对科学史的影响,以及它们在我们世界级馆藏中的重要性,都是无可估量的。</p>
+</blockquote>
+<p>分量十足!而且恰如其分:达尔文在19世纪30年代中期制作了这两本笔记本,当时他正在构思自然选择理论。其中一本包含了他著名的生命之树草图。</p>
+<figure>
+<img alt="查尔斯·达尔文1837年在”B”笔记本上绘制的进化树草图,这是2022年归还给剑桥大学的两本书之一。注意页面顶部的”我想”(I think)字样——达尔文正在将抽象的想法具体化。" src="images/000072.jpg"/>
+<figcaption aria-hidden="true">查尔斯·达尔文1837年在”B”笔记本上绘制的进化树草图,这是2022年归还给剑桥大学的两本书之一。注意页面顶部的”我想”(I
+think)字样——达尔文正在将抽象的想法具体化。</figcaption>
+</figure>
+<p>所以,这不仅仅是几本旧书,而是重要的历史文物。它们的价值并非来自物理属性——毕竟,它们只是装订成册的纸张——而是来自于它们曾作为孕育(和记录)改变世界的思想的熔炉。</p>
+<p>和其他伟大的思想家一样,达尔文用笔记来增强他的思维。这两本笔记本是他用来处理科学和个人问题的系列笔记的一部分。到1840年,他完成了这个系列,转而使用基于活页文件夹的新系统。那时,他从旧笔记本上剪下页面,将它们放入文件夹中。</p>
+<p>笔记对达尔文很重要。而且他并不孤单:列奥纳多·达·芬奇、理查德·费曼和弗吉尼亚·伍尔夫都是许多才华横溢的思想家和创作者中的一员,他们用笔记来推敲想法。他们的笔记本代表了人类思维的潜力。博物馆和收藏家重视它们并非任意而为:重要的突破就发生在它们的页面上。</p>
+<p>你也可以用笔记来扩展你的认知能力。你与生俱来的记忆力——尽管令人惊叹——是有限的:你会忘记很多事情,也会记错其他事情。你已经知道,写下想法有助于日后回忆它们。但笔记不仅仅是为了记忆:它们还能让你通过将抽象概念具体化来推敲复杂的想法。</p>
+<p>正如你将在本书中学到的,<strong>记笔记</strong>(taking
+notes)和<strong>做笔记</strong>(making
+notes)之间有一个关键区别:前者是关于捕捉想法以便回忆,而后者是关于生成新想法。我们将涵盖这两方面,但我们将特别关注<strong>用计算机做笔记</strong>。</p>
+<h2 id="用计算机思考">用计算机思考</h2>
+<p>纵观历史,大多数记笔记和做笔记的人使用纸张,纸张作为一种媒介有许多优点。但在21世纪,我们有了计算机,它以强大的新方式扩展你的思维。幸运的是它们确实如此,因为计算机也大大增加了世界上的信息量。今天有太多的东西,需要新的思考方式。</p>
+<p>用计算机来增强思考的想法并不新鲜。在他1985年的著作《思考的工具》(Tools
+for
+Thought)中,霍华德·莱因戈德追溯了该领域的历史,从查尔斯·巴贝奇和艾达·洛夫莱斯19世纪的蒸汽朋克装置,到图灵和冯·诺依曼20世纪中叶的真空管计算巨兽,再到利克莱德、恩格尔巴特和凯在20世纪下半叶的交互式计算以及尼尔森的超文本愿景。</p>
+<p>本书中你将学到的大部分内容都源于那些早期的努力。然而，长期以来，这些实现要么局限于研究项目，要么在某些情况下（如苹果开创性的
+<em>Hypercard</em>
+应用）过早推向市场。但在过去二十年中，这种情况已经改变。</p>
+<p>得益于互联网，我们现在生产和消费的信息比以往任何时候都多。越来越多的人面临信息过载。另一方面，我们也变得更习惯使用计算机。特别是网络，让超链接这一关键概念为数十亿人所熟悉。当然，现在开发、获取和学习软件比以往任何时候都更容易、更便宜。</p>
+<p>因此，你现在既有需求也有能力在前所未有的规模和范围内用计算机进行思考。像
+Delicious、Evernote 和 Microsoft OneNote
+这样的工具自世纪之交以来就已存在。但在 2020
+年前后，开始出现提供强大超文本笔记功能的新工具，这些功能在研究实验室之外从未见过。围绕个人知识管理(Personal
+Knowledge Management,
+PKM)、思考工具和”数字园艺”出现了蓬勃发展的场景。</p>
+<p>兴趣足够广泛，以至于开始出现质疑数字笔记系统实用性的文章。它们的标题诸如《个人知识管理的概念是否有缺陷？》；《笔记成了全职工作，所以我停止了》；《个人知识管理令人筋疲力尽》；以及（经典的！）《个人知识管理是废话》。</p>
+<p>反对者通常提出以下一个或多个观点：</p>
+<ul>
+<li>建立和维护笔记系统需要时间和精力。</li>
+<li>你可以做其他事情，包括写作。</li>
+<li>笔记系统不会直接产生可发布的成果。</li>
+</ul>
+<p>所有这些都是合理的，但它们误解了笔记的用途及其在创造过程中的作用。数字笔记系统不会代替你思考；虽然人工智能在过去十年中取得了长足进步（更多内容见[第10章]），但计算机还不能理解你捕获的内容。</p>
+<p>数字笔记能做的是帮助<em>你</em>更好地思考。当你做笔记时，你探索想法的范围和边界。当考虑事物如何与其他事物相关联时，你会对事物有不同的思考。重点不是为了以后储存想法或让机器为你思考，而是<em>创造一个让你更有效思考的空间</em>。</p>
+<h2 id="思考的花园">思考的花园</h2>
+<p>你应该创造什么样的空间？我喜欢这个领域中根深蒂固的一个隐喻：花园。</p>
+<p>建造和照料花园需要时间和精力。有些花园是小型的个人项目，提供的满足感多于营养。但通过认真投入，有可能建造一个既滋养<em>又</em>令人愉悦的花园。与书籍或
+YouTube
+视频等”产品”不同，花园不是用来<em>完成</em>的：重点是让它们持续下去。</p>
+<p>也就是说，园艺提供的价值超越了单纯的实用性。它是一种沉思性实践，需要耐心、管理能力和纪律——这些基本技能在我们这个增长黑客化的世界中面临退化的风险。维护植物园或知识花园就是照顾自己以外的东西，一些有生命的东西，它会让你保持活力——无论是字面意义还是隐喻意义。</p>
+<p>1965年，泰德·纳尔逊(Ted
+Nelson)指出，知识和创造性工作与使其成为可能的技术共同演变，并推测计算机可能发挥的作用。他观察到，这些系统的目的不应该是作为静态的知识存储，而是作为思考的动态媒介。正如他所说：</p>
+<blockquote>
+<p>如果真的要通过自动化系统帮助作家，它应该做的不仅仅是重新打字和转置：它应该在他早期混乱困惑的时期陪伴他，当他的想法只是碎片、片段、短语和矛盾的整体设计时。它必须通过一切可行的机械辅助帮助他完成最终草稿——让碎片易于查找，让暂时的排序、并置和比较变得更容易。</p>
+</blockquote>
+<p>历史学家和普利策奖获得者戴维·麦卡洛(David
+McCullough)说：“写作就是思考。写得好就是思考清晰。这就是为什么它如此困难。”个人知识花园不会为你写作，但它会帮助你理清零散且常常不同的想法之间的关系，陪你度过”早期混乱困惑的时期”。</p>
+<p>但同样，这是艰苦的工作。并非每个人都被召唤或适合去做这件事。</p>
+<p>那么，这本书是为谁写的？它是为任何<em>以思考为生</em>的人写的：知识工作者、内容创作者、教师、学生等等。也许他们正在寻求出于职业或学术原因掌握某个主题，或者他们梦想写一本书或制作一个
+YouTube
+频道。无论如何，他们想深入研究想法，也许还想贡献一些自己的想法。</p>
+<p>你拿起这本书的事实表明你可能在这个阵营中看到了自己。但如果你不是，考虑一下你是否会从与信息更有意识的关系中受益。每天都有更多的信息，如果没有管理它的方法，你很快就会不堪重负。</p>
+<p>此外，在职业生涯中取得进步需要不断学习新事物。如今，我们中的许多人在依赖获取、管理和部署知识的领域工作。无论你是设计师、计算机程序员、医生、教师等，你的有效性取决于你查找、吸收和生成信息的能力。</p>
+<p>而且它不必复杂。尽管底层技术非常复杂，但用数字笔记思考归结为三个简单的规则：</p>
+<ol type="1">
+<li>做简短的笔记。</li>
+<li>连接你的笔记。</li>
+<li>培育你的笔记。</li>
+</ol>
+<p>本书将向你展示如何做到这一点。</p>
+<h2 id="本书包含什么">本书包含什么？</h2>
+<p>本书内容分为十章：</p>
+<ul>
+<li>第1章，“笔记是用来思考的”，探讨笔记本身：它们是什么，有什么用处，以及它们与你制作的其他东西有何不同。</li>
+<li>第2章，“做简短的笔记”，涵盖笔记的基本原则，强调你必须了解的几个关键区别，以便更好地做笔记。</li>
+<li>第3章，“连接你的笔记”，向你展示如何连接笔记以创建思想网络。</li>
+<li>第4章，“规划知识花园”，制定构建有效笔记系统的计划：你的个人知识花园。</li>
+<li>第5章，“不要让想法溜走”，向你展示如何捕获想法，这样你就不会失去它们。</li>
+<li>第6章，“把每样东西放在合适的位置”，向你展示如何组织笔记，以便稍后找到并理解它们。</li>
+<li>第7章，“激发洞察”，解释连接的笔记如何引导你发现新想法并激发洞察。</li>
+<li>第8章，“分享你的思考”，解释如何以及为什么要分享你所学到的东西——以及通过分享来学习。</li>
+<li>第9章，“照料花园”，涵盖知识花园的除草和护理。</li>
+<li>第10章，“与其他思维一起思考”，向你展示如何与其他思维——包括人工智能——协作。</li>
+</ul>
+<p>每一章都包含侧边栏，旨在使材料更加生动并更具可操作性。这些部分按照以下分类标记：</p>
+<ul>
+<li><strong>著名笔记者</strong>部分展示个人如何使用笔记来增强思考的示例。</li>
+<li><strong>旁注</strong>提供建议和技巧，激励你在通过笔记改善思考的旅程中前进。</li>
+<li><strong>实用笔记</strong>包括操作练习，帮助你开始做连接笔记。</li>
+</ul>
+<p>在后者中，你将使用特定的数字笔记工具完成示例：Obsidian。我选择这个应用程序有多种原因：</p>
+<ul>
+<li>它功能强大且易于理解。</li>
+<li>它可在macOS、Windows、Linux和移动设备上使用。</li>
+<li>它拥有一个蓬勃发展的开发者和用户社区。</li>
+<li>它允许你直接控制数据，因此你可以轻松地将笔记移到其他地方。</li>
+<li>虽然它是专有软件，但目前个人使用免费。</li>
+</ul>
+<p>你不必使用Obsidian来利用本书中的想法。其他应用程序提供了我们将讨论的大多数功能。而且这是一个快速发展的领域：当你读到这本书时，可能已经有几个其他有趣的工具进入市场。因此，如果你愿意，可以随意使用不同的工具。</p>
+<p>如果你对这些想法不熟悉，《Duly
+Noted》将帮助你更熟练、更高效地使用信息来生成知识。如果你已经在构建和使用数字笔记系统，你将学会更有效地使用它。无论哪种情况，我希望你玩得开心。管理个人知识花园丰富并深化了我的生活。它也可以为你做到这一点。</p>
+<ol type="1">
+<li><p><code>www.cam.ac.uk/stories/TreeOfLife</code></p></li>
+<li><p><code>http://darwin-online.org.uk/EditorialIntroductions/vanWyhe_notebooks.html</code></p></li>
+<li><p>有关此区别的更多信息，请参见第2章。</p></li>
+<li><p>H. Rheingold, <em>Tools for Thought: The History and Future of
+Mind-Expanding Technology</em> (Cambridge: MIT Press, 2000).</p></li>
+<li><p>我们将在第3章中研究超链接。</p></li>
+<li><p>在《数字花园简史与精神》中，Maggie
+Appleton记录了在公共场合使用园艺作为数字笔记的隐喻。<code>https://maggieappleton.com/garden-historyAppleton</code>
+将最早的使用追溯到Mark Bernstein
+1998年的文章”超文本花园”。在我的播客采访中，Bernstein指出Xerox
+PARC的Cathy
+Marshall更早使用过。<code>https://theinformed.life/2022/10/23/episode-99-mark-bernstein/</code></p></li>
+<li><p>T. H. Nelson, “Complex Information Processing: A File Structure
+for the Complex, the Changing and the Indeterminate,” <em>ACM ’65:
+Proceedings of the 1965 20th National Conference</em>, August 1965,
+84–100.
+Nelson的性别化语言是其时代的产物；显然这些想法适用于所有人。</p></li>
+<li><p><code>www.neh.gov/about/awards/jefferson-lecture/david-mccullough-biography</code></p></li>
+<li><p>一些高级Obsidian功能，或将该工具用于商业目的，需要升级到付费计划。</p></li>
+<li><p>有关选择数字笔记工具的标准列表，请参见第9章。</p></li>
+</ol>
+<h1 id="第1章-笔记是用来思考的">第1章 笔记是用来思考的</h1>
+<p>当我还是个孩子的时候,开学是我一年中最喜欢的时光之一。有一天总是格外特别:我妈妈带我去买文具的那天。我喜欢买新钢笔、铅笔和笔记本。一本崭新的笔记本承载着清晰、有序和更好成绩的希望。我主要使用Mead
+Trapper
+Keepers,这是一种流行的活页夹品牌。它们代表了我小时候管理笔记的方式:我会在课堂上记下听到的内容,然后按时间顺序把页面塞进对应科目的部分。学习时,我会重新翻看这些笔记。偶尔,我会扔掉旧的笔记以腾出空间。</p>
+<p>到学年结束时,我有一个装满记录的活页夹。它们已经完成了使命,所以我可以扔掉它们。新的一年会带来新老师、新课程和新笔记本。我很少重新翻看旧笔记。这种基本方法是我笔记生涯的开始。从那时起我了解到,笔记不仅仅是记录和回忆的手段:它们也是思考的媒介。</p>
+<h2 id="笔记是用来做什么的">笔记是用来做什么的?</h2>
+<p>我的Mac词典将笔记定义为”对事实、主题或想法的简要记录,写下来作为记忆的辅助工具”。但与其他常用词一样,“笔记”有不止一个含义。我们也把一些金融工具称为票据(notes)。当然,音符(notes)也是音乐旋律的组成部分。但在本书中,我们指的是第一种用法:帮助我们头脑的简要书面记录。</p>
+<p>并非你写下的所有东西都是笔记。首先,如定义所说,笔记往往很简短。想想便利贴,而不是论文。意图也很重要:你做笔记主要是为了帮助你思考。有时你为他人写笔记,但大多数时候你是为自己写的。有些笔记你”匆忙记下”,而另一些你会深思熟虑。大多数笔记并非用于发表;我在写这本书时做了很多笔记,但写书的正文与做笔记是不同的。所有笔记都以不同方式增强你的思维。</p>
+<h3 id="记忆">记忆</h3>
+<p>记忆可能是做笔记最常见的原因:你听到或看到想要稍后回忆的东西。这就是为什么当你打电话给公司的服务台时,客服人员会建议你手边准备好笔和纸。这是个好建议:这样的电话会产生案例编号、日期和其他细节,如果你不写下来,很快就会忘记。</p>
+<h3 id="誊写">誊写</h3>
+<p>做笔记的一个常见原因是回忆你在讲座或视频中听到的内容。例如,参加演讲时,你可能会在笔记本电脑上打字或在笔记本上涂写。这样做有双重好处:它帮助你集中注意力,并产生一段文字来提醒你演讲者说了什么。</p>
+<h3 id="记录">记录</h3>
+<p>某些职业,如研究科学家和医生,受益于保存他们工作的记录。这是一种记忆,但更正式一些。值得单独研究,因为这些笔记在结果受到质疑时也提供了法律上可采纳的证据。从事需要这样做的职业的人对他们的笔记非常谨慎。</p>
+<h3 id="学习">学习</h3>
+<p>有时你写下东西不是因为你试图记住某个特定细节,而是因为你试图学习一个主题。学习不仅仅是记住事实。一方面,你必须在不同的抽象层次上连接想法。另一方面,学习通常发生在分散在几天、几周或几个月的课程中,就像在课堂上一样。本书讨论的大部分笔记都集中在学习上。</p>
+<h3 id="研究">研究</h3>
+<p>研究一个主题时,你想要回忆显著的事实。如果你正在采访某人,你想要记录他们说的最重要的事情。无论哪种情况,你最终都在寻求综合你学到的东西,以便做出更好的决定。笔记有助于这个过程。</p>
+<h3 id="生成">生成</h3>
+<p>有时你做笔记不是为了记住或学习什么,而是为了产生新想法。这是笔记最令人兴奋的用途之一:你的笔记本成为思考过程中的合作者。把想法写在纸上(或屏幕上)为你提供了反思的素材,从而产生你也会记录的其他想法。</p>
+<p>当你使用白板上的便利贴进行头脑风暴时,你就体验过这一点。看到白板上的笔记会激发其他想法。你移动它们以形成集群,从而激发进一步的想法。一个良性的过程随之而来。</p>
+<h3 id="规划">规划</h3>
+<p>许多人依靠他们的日程表和子弹笔记本(bullet
+journals)生活。当你有很多事情要做或跟踪时——在管理漫长而复杂的项目时经常如此——写下来会有所帮助。坐下来拿着日历和一张纸会帮助你更有效地规划,比把所有事情都记在脑子里要好。</p>
+<p>想象你要去旅行,所以你列了一个要打包物品的清单。看到清单上的物品会提醒你一开始可能遗漏的东西。你也可以考虑清单上物品的优先级。(例如,你的护照可能应该排在第一位。)可视化物品及其之间的关系有助于你为旅行做准备。</p>
+<h3 id="沟通">沟通</h3>
+<p>虽然你记笔记大多是为了自己，但有时也会留给别人看。例如，我有时会在冰箱里发现贴着便利贴的食物容器，上面写着”爸爸，别吃！“我的孩子们知道，如果没有这张纸条，他们的零食可能很快就没了。这符合”简短记录”的定义，即使它不是用来”回忆”的。这些笔记将你的周围环境变成了共享的认知空间。</p>
+<h3 id="保持专注">保持专注</h3>
+<p>在写这本书时，我在Twitter上询问人们为什么记笔记。Bastiaan van
+Rooden的回答令人印象深刻：“为了让我脑袋里的猴子慢下来。”我深有同感：许多人在手忙碌时注意力会更集中。在这种情况下，写下东西的主要好处是保持注意力集中；纸上的记号是一个不错的附带好处。</p>
+<h2 id="笔记媒介">笔记媒介</h2>
+<p>记笔记不仅有很多原因，而且有同样多的不同方式。你可以用铅笔在笔记本上涂鸦，用记号笔在便利贴上写字，在手机应用里打字，用粉笔在人行道上画画，或者在手指上系一根绳子。在紧急情况下，你甚至可以在皮肤上写字。</p>
+<figure class="img1">
+<span class="calibre1" id="calibre_link-453"></span>&lt;img
+src=“images/000011.jpg” class=“img”
+alt=“两只手的照片。其中一只手上用红色墨水写着”Louie and Pip”的名字。”
+/&gt;
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">在加州太浩城散步时，我女儿看到一家她想回去的商店。由于没有纸，她把店名写在了手上。</samp>
+</p>
+</figcaption>
+</figure>
+<p>也就是说，你可以用手头的任何东西做笔记——重要的是捕捉和保存转瞬即逝的想法和观察。话虽如此，有意识地选择会有所帮助：不同的笔记媒介适合不同的需求。</p>
+<h3 id="纸笔">纸笔</h3>
+<p>纸质笔记保持流行有充分的理由。只要稍加注意，纸张可以保存很长时间。纸张不需要电池，你也不需要特殊的应用或设备来阅读笔记；纸张本身就是媒介。纸张还便于携带且快速。<sup>[^11]</sup></p>
+<p>但纸张也有缺点。复制纸质笔记需要专用设备（例如复印机）和大量时间。虽然笔记本便于携带，但大型纸质库（例如笔记本合集）则不然。你无法搜索纸张或轻松地将笔记相互链接。而且对于装订的笔记本，你只能按照书写顺序查看笔记。（除非它们有索引，这也需要时间。）</p>
+<figure class="img1">
+<span class="calibre1" id="calibre_link-455"></span><img alt="书架的一部分照片，显示一排黑色笔记本，书脊上写着日期。" class="img" src="images/000014.jpg"/>
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">这是我收藏的纸质笔记本的一部分，跨越二十年。在大多数这些本子里找东西的唯一方法是，如果我知道写笔记的日期。</samp>
+</p>
+</figcaption>
+</figure>
+<h3 id="索引卡">索引卡</h3>
+<p>索引卡是一种方便的方式来规避笔记本的限制。由于卡片不装订在一起，你可以轻松地重新排序。它们的大小非常适合记笔记：比普通纸张小，但足够大，可以详细捕捉一个想法。而且因为它们使用厚卡纸，能够经受住操作。</p>
+<p>你可以使用盒子来保持卡片井然有序。当仔细归档时，索引卡提供了数字笔记的一个优势：随机访问。也就是说，你可以直接跳到你需要的笔记，而不必翻阅其余的。它们不需要按照书写顺序存储；你可以按字母顺序或任何其他组织方案归档它们。</p>
+<p>由于这种灵活性，索引卡是研究人员和作者的流行思考媒介，他们需要保存和参考大量笔记。Ryan
+Holiday是几本畅销书的作者，他说他基于索引卡的笔记系统：</p>
+<blockquote>
+<p>彻底改变了我的流程，大幅提高了我的创作产出。它帮助我在三年内出版了三本书（以及我有幸参与的其他书籍），撰写了无数发表在报纸和网站上的文章，每月发送我的阅读推荐，并使各种其他工作和个人成功成为可能。</p>
+</blockquote>
+<p>Holiday的系统包括单独的索引卡，每张卡上写一个想法或引文。他在每张卡的右上角写一个分类标签，并将这些卡片存放在一个大盒子里。但在进行特定项目（如一本书）时，他会使用一个专门的小盒子。<sup>[^12]</sup>
+Holiday从他的导师、作家Robert
+Greene那里学到了这种方法。其他作家，如Vladimir
+Nabokov，也使用索引卡来组织他们的工作。<sup>[^13]</sup></p>
+<h3 id="页边注">页边注</h3>
+<p>在阅读时，在书页上划线标记关键句子和写下想法是一种常见的笔记方式。显而易见的优势是笔记在上下文中完成：你在激发它们的文本附近（或上面）捕捉想法，所以以后更容易理解。但这也是它们的主要缺点：由于它们不能独立存在，这些笔记更难重新组织或与其他笔记关联。</p>
+<p>电子书在这方面有优势。数字批注可以更容易地被引用、搜索、备份和同步。但有些人喜欢用笔或荧光笔在实体书上做标记。Holiday索引卡中的许多想法来自他的阅读：他在阅读书籍和文章时会做批注，标记突出的段落，并在边缘写下想法。</p>
+<h3 id="便利贴">便利贴</h3>
+<p>就我个人而言，我不喜欢在书上写字——但我仍然想要在上下文中做笔记的优势。便利贴提供了一种解决这个困境的方法：我在阅读时会准备一本小便利贴和一支铅笔。每当我发现一个引起共鸣的想法或段落时，我会在便利贴上写几个字，然后把它贴在书的边缘，让它从页面上突出来。这样，它还可以兼作书签。</p>
+<p>当然，便利贴的用途不仅仅是为书籍做批注。它们也是工作坊、设计工作室和其他需要团队协作思考的场合的主要工具。使用便利贴，可以轻松地将墙壁、白板、窗户、桌面和其他普通表面变成临时的想法占位符。（更多内容见第10章，我们将讨论协作笔记）。</p>
+<p>便利贴的主要优势在于它们可以在几乎任何光滑的表面上贴附和重新贴附。因此，它们非常适合探索想法之间的关系。你可以按任意顺序粘贴便签，稍后再重新组织它们。也就是说，较大的便利贴不适合长期存储想法；让墙壁和白板一直贴满便签是不切实际的。（当然，这不适用于用于注释书籍的小便利贴）。</p>
+<h3 id="照片">照片</h3>
+<p>解决便利贴短暂性质的一种方法是在取下便签之前拍摄墙壁或白板的照片。虽然照片严格来说不是做标记，但它们可以是捕捉想法和观察的有效方式。例如，每当我在一个陌生的大型停车场停车时，我都会拍摄附近地标的照片，这样我以后就能找到我的车。</p>
+<figure class="img1">
+<span class="calibre1" id="calibre_link-460"></span>&lt;img
+src=“images/000015.jpg” class=“img” alt=“White markings on black
+asphalt. Letters spell out IRAFFE 44 (a portion of the word”giraffe”). ”
+/&gt;
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">我在迪士尼动物王国主题公园的停车场拍摄了这张照片。请注意，我没有费心正确取景；我不期望将这张照片用于除了找到我停车位置之外的任何其他用途。</samp>
+</p>
+</figcaption>
+</figure>
+<p>早在个人电脑出现之前，人们就已经将相机用作笔记设备。大约在二十世纪中期，胶片相机变得足够小巧、快速、方便和便宜，可以有效地在这个角色中发挥作用。在向股东的演讲中，宝丽来创始人Edwin
+Land将即时摄影的最初(1944年)概念描述为</p>
+<blockquote>
+<p>一种将成为人类一部分的摄影，你记忆的辅助工具；一种始终伴随你的东西，这样当你看到某物时，实际上可以按下一个按钮，并拥有它的准确性、复杂性、美感的记录——永远拥有它。</p>
+</blockquote>
+<p>拍摄你想记住的东西的主要优势是方便。你的口袋里可能有一部配备出色相机的手机；没有比拿出它、对准某物并拍摄更快的笔记方法了。明显的缺点是你只能捕捉你在世界上看到的东西——对于记住你在哪里停车来说很好，但对于回忆抽象想法来说就不那么好了。</p>
+<h3 id="音频和视频">音频和视频</h3>
+<p>记住你在想什么的一种方法是录下你说的话。录音设备曾经很复杂、笨重且昂贵，但智能手机已经使录音变得无处不在。软件可以转录你的录音，这样你就可以阅读和搜索你所说的内容。</p>
+<p>录音最有效地捕捉某人高保真度说的话。虽然你在手写或打字笔记时可能会丢失一些想法，但录音会逐字捕捉所有内容。这也是它的缺点：录音不会受益于你在使用较慢媒介时进行的实时综合。尽管如此，有些人喜欢录下自己”说出心声”。</p>
+<h3 id="数字笔记">数字笔记</h3>
+<p>到目前为止，我们强调的大多数笔记方法在计算机出现之前就以某种形式存在了。但现在，我们将专门关注数字笔记。近50亿人拥有智能手机，许多人还使用笔记本电脑或台式电脑。这些设备中的大多数都包含笔记应用程序，人们用它们记下各种各样的东西，从购物清单到读书笔记。</p>
+<p>许多数字笔记应用程序模仿模拟(即”现实世界”)笔记媒介的能力和表面特征。例如，Mac包含一个名为<em>Stickies</em>的应用程序，可让你在计算机桌面上放置便利贴。嗯，并不完全是：Stickies在另一系列像”桌面”一样运行的像素上放置了一系列<em>看起来像</em>便利贴的像素。</p>
+<p><code>工作笔记</code></p>
+<p>你如何做笔记？</p>
+<p>在整个讨论过程中，你可能一直在思考自己做笔记的方式。也许我的列表中遗漏了一些；这是你纠正我的机会。列出你用来做笔记的所有媒介。不用担心顺序：只需按照它们出现在你脑海中的顺序写下来。当你写下每种媒介时，想想你用它来做什么。</p>
+<p>你可能会将同一种媒介用于不同的目的。例如，我在给家人留言时使用大号便利贴，在（实体）书中标记想法时使用小号便利贴。如果你遇到这种情况，请将它们作为列表中的单独项目写下来。你的列表看起来会像这样：</p>
+<ul>
+<li>大号便利贴用于给家人留言</li>
+<li>小号便利贴用于在书中做标记</li>
+<li>Moleskine口袋笔记本用于随时记录想法</li>
+<li>白板用于跟踪待办事项</li>
+<li>等等</li>
+</ul>
+<p>花几分钟时间制作这个列表，然后阅读本节的其余部分。说真的，放下书，列出清单。不许偷看！</p>
+<p>好的，你回来了。你列出清单了，对吧？很好。我猜你可能会惊讶于自己做笔记的方式如此之多。我们用许多不同的方式记录想法，包括模拟和数字方式。你的手机上可能就有六种不同的笔记集！我们很快就会把这些东西整理好。现在，只需欣赏一下你用笔记扩展思维的丰富多样的方式。</p>
+<p>在继续之前还有一件事：我没有给你关于<em>如何</em>制作列表本身的明确说明。你在哪里以及如何写下它？你是用纸笔、手机还是电脑？你是用录音设备或应用程序口述的吗？你为什么选择那种媒介？希望在阅读完本章后，你能更有意识地做出这样的选择。</p>
+<p>这些东西并不是像白板或纸质笔记本那样真实存在的。相反，软件在复杂的信息处理系统上分层隐喻(metaphors)。你在电脑和智能手机上看到的是熟悉的表示形式，它们使你更容易使用设备，而不是其原生的二进制能量状态序列。</p>
+<p>隐喻(metaphors)通过让你使用已知的知识，使新概念更容易理解。设计师利用这一事实使应用程序更容易学习。例如，数字白板模拟物理白板，因此你与此类应用程序的初次交互会受到你在现实世界中使用白板的经验的影响。话虽如此，隐喻(metaphors)并不完美：数字笔记可以做物理笔记做不到的事情。数字笔记让你以不同的方式思考——但你必须抛弃一些舒适的隐喻(metaphors)。你需要摆脱的主要隐喻(metaphor)是按时间顺序或主题组织的纸质笔记本。</p>
+<h2 id="用事物思考">用事物思考</h2>
+<p>一个主题变得清晰起来：笔记不仅是扩展你的记忆力的方式，也是扩展其他认知能力的方式。写一个提醒买牛奶的便条是一回事，勾勒假期计划又是另一回事。两者都需要思考，但笔记能帮助你做得更好。</p>
+<p>最近的认知科学研究表明，思考并不仅仅发生在大脑中。相反，当我们与世界上的事物和其他生物互动时，我们用整个身体来思考。在《延展的心智》(The
+Extended Mind)一书中，安妮·墨菲·保罗(Annie Murphy
+Paul)回顾了该领域的进展，并得出结论：智力是交易性的：“我们的大脑、身体、空间和关系之间的流动互动。”这就是说，思考并不局限于你的神经系统，甚至不局限于你的皮肤。世界上的事物扩展和增强了你的认知。</p>
+<p>在《弄清楚》(Figure It Out)一书中，斯蒂芬·安德森(Stephen
+Anderson)和卡尔·法斯特(Karl
+Fast)解释说，你通过在世界中与事物互动来理解它们：你观察事物，推-拉-戳-移动等等，添加或删除，以及以其他方式重新配置。这个过程揭示了可能的关系和模式——你当时对事物结构的理解。</p>
+<p><code>工作笔记</code></p>
+<h3 id="安装obsidian">安装Obsidian</h3>
+<p>在2010年代末和2020年代初，出现了新的数字笔记工具，它们将以前只能通过专用软件(通常在研究环境中)才能获得的功能推向市场。其中有几个值得探索和投入。但为了使本书中的想法更具体，我们将专注于其中一个工具：<em>Obsidian</em>。</p>
+<p>Obsidian是由一个小团队创建的商业软件应用程序。截至撰写本文时，它对个人使用免费，并且在所有主要的桌面和移动计算平台上都可用。它体现了我们将在本书中探讨的关键原则，因此是一个很好的学习工具。话虽如此，你可以使用其他工具来实施这些实践。我们只是专注于Obsidian作为说明。</p>
+<p>(如果你已经在使用Obsidian或类似的笔记应用程序，可以随意跳过本节的其余部分。)</p>
+<p>首先，在你的电脑或移动设备上下载并安装Obsidian。如果是前者，你可以访问<a href="https://obsidian.md"><code>https://obsidian.md</code></a>并按照说明进行安装。如果是后者，你可以在设备的应用商店中搜索Obsidian并从那里安装。</p>
+<figure class="img1">
+<span class="calibre1" id="calibre_link-464"></span><img alt="黑色截图，标题为OBSIDIAN Version 1.1.9。标题下方有几个选项，允许用户开始使用该应用程序。" class="img2" src="images/000012.jpg"/>
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">Obsidian的第一个屏幕为你提供了几个选项。如果你是第一次使用该软件，可以选择Quick
+Start或Create a new vault。(其他选项主要供现有Obsidian用户使用。)</samp>
+</p>
+</figcaption>
+</figure>
+<h1 id="当你首次启动obsidian时你可以选择创建一个新的仓库在obsidian中仓库是你存储笔记的地方你可以创建和管理任意多个仓库例如我目前管理两个仓库一个用于管理项目另一个作为我的主要长期知识库要使用obsidian你必须至少创建一个仓库">当你首次启动Obsidian时，你可以选择创建一个新的仓库。在Obsidian中，仓库是你存储笔记的地方。你可以创建和管理任意多个仓库。例如，我目前管理两个仓库：一个用于管理项目，另一个作为我的主要长期知识库。要使用Obsidian，你必须至少创建一个仓库。</h1>
+<p>在底层，仓库只是你计算机上的一个包含纯文本文件的文件夹。因此，如果你决定停止使用，你仍然可以以通用兼容的格式访问你的数据。继续创建你的第一个仓库，并浏览Obsidian的用户界面。在下一章中，你将创建你的第一条笔记。但现在，只需熟悉这个软件。</p>
+<figure class="img1">
+<span class="calibre1" id="calibre_link-465"></span>&lt;img
+src=“images/000013.jpg” class=“img1a1”
+alt=“截图显示一个几乎空白的屏幕，有两个窗格。右侧窗格显示”没有打开的文件”以及创建文件或关闭窗口的选项。”
+/&gt;
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">创建第一个仓库后，Obsidian会在没有选择任何笔记的情况下打开。这是可以理解的，因为你还没有创建任何内容。</samp>
+</p>
+</figcaption>
+</figure>
+<p>Obsidian的用户界面左侧有一个面板，列出你可用的笔记，右侧有一个面板，显示当前打开的笔记。这里用复数是因为Obsidian允许你同时打开多条笔记，你可以以标签页或并排方式查看它们。</p>
+<h2 id="用事物思考-1">用事物思考</h2>
+<p>想象一个典型的战争电影场景：一个临时拼凑的排在策划攻击。士兵们靠近地面聚集，在没有纸和笔的情况下，在沙地上画出（真实的）线条，移动石头和树枝来代表目标和单位。指挥官可能会说：“Hutch，你和Charlie站在这里掩护，而Mack和我冲向大院。”一个士兵可能会提出问题，另一个会提出想法——所有这些都通过几块石头和泥土来促进。</p>
+<p>这个临时地图让排里的人”达成共识”。通过将战场表示为他们可以操作的有形事物，他们可以更好地思考和交流他们的计划，发现如果只是在脑海中想象可能会错过的障碍和机会。当你与同事围着白板工作时，你可能有过类似的经历。</p>
+<p>一旦你理解了你用事物思考，你就可以探索增强思维的方法。战场地图和白板是与他人协作时有用的增强工具的例子。笔记是一种类似的增强工具。与白板一样，你可以用它们进行协作思考，但它们在独自思考时也非常有用。</p>
+<p>在《天才》(Genius)这本关于理查德·费曼(Richard
+Feynman)的传记中，詹姆斯·格莱克(James
+Gleick)写到了笔记在这位物理学家工作中的作用。从很小的时候开始，费曼就在笔记本上解决问题。后来，在接受麻省理工学院历史学家查尔斯·韦纳(Charles
+Weiner)的采访时，他解释了笔记的作用。格莱克写道：</p>
+<blockquote>
+<p>他开始在工作时给他的科学笔记标注日期，这是他以前从未做过的事。韦纳曾随口说他的新部分子(parton)笔记代表了”日常工作的记录”，费曼反应强烈。“我实际上是在纸上完成这项工作的，”他说。“嗯，”韦纳说，“工作是在你的脑海中完成的，但它的记录仍然在这里。”“不，这不是记录，不是真的。这是工作。你必须在纸上工作，这就是纸。明白了吗？”</p>
+</blockquote>
+<p>强调这一点，笔记不仅仅是记录你思考的一种方式；它们是思考发生的一部分。它们是你理解和理解事物的手段。当做笔记时，你是在纸上及更远的地方思考，用描述世界某个部分如何运作的临时模型进行实验。这是一个创造性的、生成性的发现和澄清行为。</p>
+<h2 id="著名笔记记录者">著名笔记记录者</h2>
+<h3 id="gretchen-anderson">Gretchen Anderson</h3>
+<figure class="img1">
+<img alt="Gretchen Anderson的照片" class="img2a" src="images/000010.jpg"/>
+</figure>
+<p>Gretchen
+Anderson是一位产品顾问、教练和作家，常驻旧金山湾区。在撰写她的书《掌握协作》(Mastering
+Collaboration)时，Gretchen使用计算机构建了一个大纲。她用这个大纲来思考书中的高层次想法。然而，当她深入细节时，大纲变得束缚了。“我开始失去对它的把握，”她解释道。因此，她改用实体便利贴：</p>
+<blockquote>
+<p>我在家里做这个，那里没有白板……但我有很多窗户，所以在某个时候，我拿出了便利贴，用中等大小的一种颜色代表章节，用较小的不同颜色代表要点和支撑它们的故事，这样我就可以创建一张我可以一次看完的地图。有趣的是，这发生在过程的后期，也许四分之三的时候。你知道，我在责怪自己，“Gretchen，你知道你本可以早点做这个的！”……我可能无法以任何其他方式做到这一点。我从一个大纲开始，我改变了那个大纲，使它更加松散，这样我就可以把我学到的一切都放进去，然后我需要再次重新组合它，使它成为人们可以遵循的东西，而不仅仅是我学到的东西的清单。</p>
+</blockquote>
+<p>通过占据她的墙壁和窗户，Gretchen
+实际上扩展了她的思考表面。从大纲转换到二维的想法地图，让她能够一次看到所有内容，并将其”重新组合”成读者可以理解的顺序。请注意，她使用了不同颜色和尺寸的便利贴，这使她能够一眼就区分不同的结构元素。</p>
+<p>大纲很适合探索层级关系，但当你想要同时可视化大量内容时就不那么有效了。切换记笔记的方式是在复杂创意项目中摆脱困境的常见方法。不同的媒介具有不同的能力和限制：重要的是要意识到，根据你正在做的事情，你可能需要在某个时候进行切换。</p>
+<h2 id="尾注">尾注</h2>
+<p>如你所见，记笔记有很多方法，也有很多理由这样做。但归根结底，你这样做是为了扩展你的认知能力。清晰思考是你所做一切的基础，因此掌握笔记技巧将在生活的许多方面帮助你。</p>
+<p>正如我在引言中提到的，本书专注于<em>数字</em>笔记。我们将超越舒适的隐喻，探索只有通过计算机才可行的新思想探索方式。你不是在构建一个更好的活页夹，而是完全不同且更令人兴奋的东西。但我有点超前了。在你开始构建笔记系统之前，你需要了解一些基础知识。</p>
+<ol type="1">
+<li><p>D. M. Levy, <em>Scrolling Forward: Making Sense of Documents in
+the Digital Age</em> (New York: Simon and Schuster, 2001).</p></li>
+<li><p><a href="https://ryanholiday.net/the-notecard-system-the-key-for-remembering-organizing-and-using-everything-you-read/"><code>https://ryanholiday.net/the-notecard-system-the-key-for-remembering-organizing-and-using-everything-you-read/</code></a></p></li>
+<li><p>V. Nabokov, <em>Strong Opinions</em> (New York: Vintage,
+2001).</p></li>
+<li><p>关于使用便利贴进行协作思考的实践，一个很好的资源是 D. Straker,
+<em>Rapid Problem Solving with Post-It® Notes</em> (Cambridge: Da Capo
+Lifelong Books, 1997).</p></li>
+<li><p>Edwin H. Land in “<em>The Long Walk</em>,” directed by Bill
+Warriner, 1970, <a href="http://www.youtube.com/watch?v=zbmq9R0dtVg"><code>www.youtube.com/watch?v=zbmq9R0dtVg</code></a>.</p></li>
+<li><p><a href="http://www.statista.com/forecasts/1143723/smartphone-users-in-the-world"><code>www.statista.com/forecasts/1143723/smartphone-users-in-the-world</code></a></p></li>
+<li><p>A. M. Paul, <em>The Extended Mind: The Power of Thinking Outside
+the Brain</em> (New York: Eamon Dolan Books, 2021).</p></li>
+<li><p>Stephen P. Anderson and Karl Fast, <em>Figure It Out: Getting
+from Information to Understanding</em> (New York: Two Waves Books,
+2020).</p></li>
+<li><p>James Gleick, <em>Genius: The Life and Science of Richard
+Feynman</em> (New York: Vintage, 1993).</p></li>
+<li><p><a href="https://theinformed.life/2019/02/03/episode-2-gretchen-anderson/"><code>https://theinformed.life/2019/02/03/episode-2-gretchen-anderson/</code></a></p></li>
+</ol>
+<h1 id="第二章-简短记笔记">第二章 简短记笔记</h1>
+<p>纸质媒介训练你做整体性的笔记：长篇叙述式的思考和听到的内容流。但要有效地使用数字笔记进行思考，需要你学会以不同的方式思考和捕捉信息。本章将向你展示一些基本区别，帮助你更有意识地决定如何以及在哪里记笔记。</p>
+<p>首先要意识到你目前是如何做的以及目的是什么。一些笔记，比如会议记录，可以包含很多细节。其他笔记可以是纸片上的简单涂鸦。没有”对”或”错”：它们都扮演不同的角色。例如，当我坐下来写这一章的引言时，我的电脑显示屏上有一张亮粉色的便利贴。笔记上写着：</p>
+<p>查看 Hugh 关于结构的想法。</p>
+<p>前一天在复习即将到来的课程幻灯片时，我写下了这张有点神秘的笔记。在浏览演示文稿时，我意识到缺少了一些内容。我还记得我的同事
+Hugh Dubberly
+的一个演讲清楚地阐述了这些要点。所以，我给自己写了一个提醒，在回到我自己的演讲之前先查看
+Hugh 的演示文稿。</p>
+<p>后来，当我浏览 Hugh 的幻灯片时，我使用 Notability
+捕捉想法，这是一个允许我在 iPad
+上手写笔记的应用程序。这些也是笔记，但它们的意图与便利贴不同。这第二组笔记不是提醒我要做什么，而是帮助我在修改演示文稿之前理清思路。</p>
+<p>便利贴和我 iPad
+中的涂鸦都有有限的生命周期。完成幻灯片后我就可以扔掉它们。但从这次会话中出现的一个想法似乎值得长期保存，所以我把它添加到了我的长期笔记库中。那时我没有时间探索这个想法的含义，但我可以稍后再回来。</p>
+<p>我们使用”笔记”这个词来描述所有这些东西，但它们服务于不同的需求，并采取不同的形式。便签是在一张纸上手写的潦草字迹。iPad
+笔记也是手写的，但使用的是数字应用程序。两者都是一次性的。然而，我的知识库中的笔记是打字的，我期望在未来几年中不断添加内容。这些都是有意识的选择。</p>
+<h2 id="为每个概念写一条笔记">为每个概念写一条笔记</h2>
+<p>正如你在第1章中看到的，笔记不仅仅是世界上的标记；它们是扩展你思维的手段。但媒介很重要：你的思考方式取决于你如何捕捉想法。例如，便签适合每张纸记下一个想法；你不会在一张便签上潦草地写下整本书的大纲。</p>
+<p>相反，数字笔记是无限的：你可以在一条笔记上写一整本书。鉴于这种能力，你可能会想在一条笔记中捕捉关于某个主题的所有内容。这是一个错误。相反，要努力制作简短、聚焦的笔记来代表单个概念。</p>
+<p>例如，当你阅读这本书时，你可能倾向于在一条笔记中捕捉你学到的东西。但重点不是捕捉这本书，而是了解其中的想法。一个想法可能会让你想起在另一本书中发现的类似想法。如果你能从不同的角度和来源审视这个想法的变化，那就太好了。</p>
+<p>因此，先为你对这本书的整体想法开始一条简短的笔记。但当你遇到对你重要的想法时，为每个想法分别开始新的笔记。在下一章中，你将学习如何将它们链接在一起。现在，只需知道你的目标是简短、聚焦的笔记，而不是冗长、全面的笔记。</p>
+<p><strong>工作笔记</strong></p>
+<p><strong>记下这一点</strong></p>
+<p>做笔记可以帮助你记住你读过的内容。写下想法还可以让你通过用自己的话表达它们并将它们与其他想法联系起来，从而”使它们成为你自己的”。</p>
+<p>通过开始一条笔记来捕捉你在《Duly Noted》中学到的东西来练习。使用
+Obsidian，这样你就可以感受一下用这个工具记简单笔记是什么样子。要开始一条新笔记，打开
+Obsidian 并按 CMD-N（如果你使用 Windows，则按
+CTRL-N）。你也可以转到”文件”菜单并选择”新建笔记”。</p>
+<figure>
+<img alt="Obsidian 用户界面——有两个窗格：最右边的窗格基本上是空的，除了顶部的”Untitled”一词。" src="images/000016.jpg"/>
+<figcaption aria-hidden="true">Obsidian
+用户界面——有两个窗格：最右边的窗格基本上是空的，除了顶部的”Untitled”一词。</figcaption>
+</figure>
+<p>你的屏幕将显示一个名为 <em>Untitled</em>
+的选项卡和一个闪烁的光标。选择 <em>Untitled</em> 一词并将其更改为
+<em>Duly
+Noted</em>。这将更改文件名，使其更易于查找和稍后引用。更改名称后，按键盘上的
+Return（或 Enter）转到文件的第一行。</p>
+<p>你现在可以开始写下你到目前为止学到的东西。不要担心把它做得完美。这种记笔记方式的优势之一是，你可以随时回到你的笔记中，随着时间的推移扩展和编辑它们。你只需要开始。</p>
+<p>当我做阅读笔记时，我复制书的章节结构来帮助我记住我在哪里找到了哪些想法。现在，你可以只写下你到目前为止读过的章节名称。你也可以捕捉我们到目前为止讨论过的重要想法。我建议从引言中摘取三行作为本书方法的总结：</p>
+<blockquote>
+<p><code>做简短的笔记。</code></p>
+<p><code>连接你的笔记。</code></p>
+<p><code>培育你的笔记。</code></p>
+</blockquote>
+<p>你可以将这些作为笔记中的普通行来捕捉。稍后，我将向你展示如何将它们转换为指向关于每个想法的单独笔记的链接。</p>
+<p>（请注意，我稍微调整了这些句子，使它们能够独立存在。具体来说，我在第二句和第三句中用”笔记”替换了”它们”。当考虑小而聚焦的笔记时，要考虑它们如何在原始上下文之外被理解。）</p>
+<h2 id="基本区分">基本区分</h2>
+<p>了解一个主题的最有效方法之一是研究其区分点。每个主题都有相互作用的核心概念。一旦你理解了它们之间的差异，这个主题就会变得更容易理解。让我们看看对有效记笔记至关重要的四组区分。</p>
+<h3 id="记笔记-vs-做笔记">记笔记 vs. 做笔记</h3>
+<p>正如你所看到的，笔记允许你将你的思维”扩展”到大脑之外并延伸到环境中。但并非所有笔记都是相同的。这一个词——“笔记”——指的是满足不同需求的活动、实践和工具。例如，食物容器上的便签与书中的高亮标记服务于不同的目的：前者旨在向他人传递信息（“不要吃！”），而后者是为了记住你读过的内容。知道你使用”笔记”时指的是哪种意义可以帮助你更有效地思考。</p>
+<p>Fiona McPherson
+博士对记笔记(note-taking)和做笔记(note-making)做出了有益的区分。以下是我的理解：</p>
+<ul>
+<li><p><em>记笔记</em>是指你为了记住你听到或读到的内容而做笔记。例如，你可能正在听教授讲课，你写下要点以便稍后复习。另一个例子是当你在书中高亮和注释时。当你阅读时，有些想法比其他想法更突出，所以你给它们画线或在页边空白处写字，以便稍后重新访问。</p></li>
+<li><p><em>笔记制作(Note-making)</em>则完全不同：你不是从现有来源（文本、讲座、视频等）中高亮或捕捉想法，而是写下你正在思考的内容来理解你的想法。如果你曾经绘制过思维导图或为客厅家具勾画新的布置方案，那你就使用过笔记制作。</p></li>
+</ul>
+<p>我写道”你写下你正在思考的内容”，但更准确的说法是<em>你通过写下内容来思考</em>。思考不仅仅发生在大脑中然后被记录在纸上。相反，你是<em>借助</em>纸张<em>在</em>纸上思考。这些涂鸦建立了一个反馈循环：你画出一个看起来不太对的布置，但它激发了改进的想法，于是你再画一个，又一个，再一个。</p>
+<p>核心要点是这些是不同的思维模式。你<em>记</em>笔记是为了学习和回忆，但<em>制作</em>笔记是为了<em>生成</em>。两种模式需要不同的思维方式和工具。然而，我们用”笔记”来指代两者——这种语义上的怪癖可能导致你做出低效的选择。你可以轻松使用Kindle的高亮和标注功能记笔记，但那不是规划假期的最佳媒介。</p>
+<h3 id="长青笔记-vs-临时笔记">长青笔记 vs. 临时笔记</h3>
+<p>正如我在本章开头所提到的，许多笔记的保质期并不长。购物清单在你从商店回来后就失去了作用。我们将这些笔记称为<em>临时笔记</em>：它们只在短时间内有用。</p>
+<p>但并非所有笔记都是这样；有些笔记的生命周期更长。在阅读一本书时，你可能会遇到一个想要深入了解的陌生想法，于是你将它记下来。起初，你对这个主题了解不多，所以你的笔记会既稀疏又凌乱。这没关系。随着你学到更多，你可以重新访问这个笔记并添加新想法。随着时间推移，你将拥有一个关于该主题的所有知识的全面资源。</p>
+<p>Andy Matuschak称这些为<em>长青笔记(Evergreen
+notes)</em>。与临时笔记相反，长青笔记随着时间推移保持相关性。Matuschak关于撰写长青笔记的五个原则是一个出色的概念基础：</p>
+<ul>
+<li>长青笔记应该是原子化的；也就是说，每个笔记应该聚焦于一个想法。</li>
+<li>它们应该是面向概念的，意味着每个笔记应该聚焦于一个概念，而不是一本书、一位作者、一个项目等。</li>
+<li>它们应该是密集链接的；也就是说，它们应该有大量指向其他笔记的链接。</li>
+<li>你应该抵制给它们施加自上而下结构的冲动，因为它们可能与不止一个类别相关。</li>
+<li>你应该为自己写它们，而不是为了发表。（当然，它们可以作为你后来发表内容的基础。）</li>
+</ul>
+<p>长青笔记的概念对我来说是一个启示。你可能记得，我在学校学习记笔记是为了备考。一旦考试结束，笔记对我就没用了。也就是说，我把所有笔记都当作临时笔记。结果，我忘记了很多当时学到的东西。我没有动力保留旧笔记。那些活页夹占据了很多空间，而且缺乏搜索功能使得重新查找旧想法很困难。</p>
+<p>显然，计算机让这一切都不再是问题。如果你稍加用心地组织，你可以轻松地随着时间推移回到想法上，在它们基础上构建并将它们与其他想法连接起来。本书主要关注记录和组织长青笔记。这并不是要低估临时笔记延展思维的力量——但这里的重点是学习和创造，而长青笔记是这个项目的核心。</p>
+<h3 id="自上而下-vs-自下而上的结构">自上而下 vs. 自下而上的结构</h3>
+<p>我想重点关注一下Matuschak关于记录长青笔记的第四个原则：自上而下和自下而上结构之间的区别。如果你像我一样，你在成长过程中将学校笔记本结构化为几个部分：一个用于数学，一个用于历史，一个用于社会研究等。在各个部分内，笔记按时间顺序存储（即按日期）；每节课后，我会在该部分添加新的纸张。</p>
+<p>这种结构在学校很有效，因为学科界限清晰：历史和生物之间几乎没有重叠。或者至少看起来没有重叠——回想起来，有许多有趣的联系未被探索。在学科之间划定严格的界限使它们看起来比实际上更加割裂。</p>
+<p>你想要促进想法之间的联系。抵制预先设置僵化结构区分的冲动。相反，创建允许自下而上结构涌现的方案。这听起来有点夸张；我们将在第5章和第6章中讨论实际建议。现在，只需知道虽然自上而下的结构在你的花园中有一席之地，但你想要为未来的成长留出空间。</p>
+<h3 id="现在的你-vs-未来的你">现在的你 vs. 未来的你</h3>
+<p>长青笔记与临时笔记的概念意味着不同的用途。但它也意味着不同的时间窗口。购物清单只在短时间内有用，而你可能在一生中都能从某些长青笔记中找到价值。但在这两种情况下，你写下内容都不是为了”现在”。毕竟，现在这个想法——无论是买牛奶还是一个有趣的新想法——仍然在你的脑海中。你想要的是捕捉那个想法，以便你稍后需要时能够回忆起来（例如，在商店或写文章时）。</p>
+<p>因此，你的许多笔记的受众就是你自己。但这不是”现在”的你（可以说是”当下”的你），而是未来版本的你，一个脑海中有很多其他事情的你。这可能看起来像是一个深奥的区别，但重要的是要记住，你是在为另一个人写东西。即使你们有很多共同点，你们也不是同一个人。</p>
+<p>现在对你来说重要的事情，对未来的你来说可能不那么相关。相反，未来的你会更善于捕捉当下的你所忽略的信号。学习的意义之一就是将当下的你改变成一个（希望）更好的未来的你。当你建立个人知识花园时，你为未来的你创造了可能性，让他能够根据对你重要的任何标准享受更好的生活。因此，无论你何时何地期望重新审视这些内容，都要努力让事情尽可能清晰。</p>
+<h2 id="最小可行笔记">最小可行笔记</h2>
+<p>要让笔记成为有效的思考手段，你必须养成快速记录的习惯。你不是先思考然后写作；你是在写作时思考。如果保持笔记简单，你会做得更快。</p>
+<p>临时笔记可以非常简单：几个词来唤起记忆就足够了。但常青笔记需要更多的阐述。毕竟，如果你以后回到这个笔记，却无法理解它的含义，那么它就无法实现其目的。</p>
+<p>因此，你必须在保持事情尽可能简单和创建足够的上下文以便日后找到笔记并理解其含义之间取得平衡。借鉴产品管理的思路，我的目标是捕捉最小可行笔记（MVN）——即包含刚好足够的信息而不会让未来的我感到困惑的笔记。</p>
+<p>最小可行笔记提供关键数据，并配有足够的上下文来告诉你它们的内容。除了清晰的名称外，它们通常包括行动号召、下一步步骤以及你遇到这个想法的来源参考。我的笔记包括标题、捕捉日期、来源参考（例如，我发现这个想法的书）以及至少一个标签，将笔记标识为更广泛集合的一部分。</p>
+<p>我们将在第6章更详细地讨论标签，在第10章讨论参考文献。在第5章中，我将向你展示如何使用模板来自动化其中一些工作。现在，让我们专注于写下笔记的名称和日期。</p>
+<p>旁注</p>
+<p>使用 Markdown 写作</p>
+<p>正如你所看到的，Obsidian
+以纯文本格式保存你的笔记，这是可以想象的最基本、最普通的文件格式。理解纯文本的一种方法是与替代方案进行对比。大多数文字处理器，如
+Microsoft Word 或 Google
+Docs，允许你在视觉上对文本进行样式设置——即使其变为<em>斜体</em>、<strong>粗体</strong>等。在这样做时，它们将文本的视觉呈现与其内容混为一谈。</p>
+<p>纯文本文件不包含此类格式信息。顾名思义，它们只包含没有修饰的文本。以这种格式保存信息的一个优点是纯文本已经存在很长时间了；许多应用程序都可以打开并将文件保存为纯文本。对于以
+DOCX
+等高级文字处理器格式保存的文件来说，情况并非如此。但是，你可能会抗议，你有时需要带样式的文本。例如，在本节的第一段中，我正在引起你对斜体和粗体文本的注意。如果你看不到我所描述的效果，这段话就不会那么有效。因此，这里存在一个矛盾：你想要一种被普遍理解的文件格式，但你也想能够对文本进行样式设置。</p>
+<p>解决这个冲突的一种方法是用样式指令标记纯文本。这需要用读者看不到的额外字符包装单词和段落，但它为支持它的程序传达样式信息。这种方法的一个好处是，它在为需要它的用户和应用程序提供额外功能的同时保持兼容性。标记文本的方法有很多种。例如，用于编写网页的
+HTML 是一种流行的标记语言。但 HTML
+对于笔记记录并不实用：它冗长、难学且容易出错。</p>
+<p>为了应对这些问题，开发人员创建了更简单的标记语言。其中一种语言
+Markdown 已被广泛采用。Markdown 允许你实现许多与 HTML
+相同的效果，但更容易记住且更紧凑。例如，要在 Markdown
+中将短语设为斜体，你只需用星号包装它：</p>
+<blockquote>
+<p><code>Markdown allows you to *emphasize* some text.</code></p>
+</blockquote>
+<p>如果你将这句话保存在文件中并打开能够理解 Markdown
+的编辑器，“emphasize”一词将显示为斜体。正如你所看到的，Markdown
+还有一个额外的优点，即使你在不理解 Markdown
+的编辑器中打开它，它也是可以理解的。即使你不确切知道它的意思，你也很容易想象这两个星号代表某种区别。</p>
+<p>Markdown 使基本样式设置变得简单。以下是一些入门的约定：</p>
+<blockquote>
+<p><code>*italic*</code></p>
+<p><code>**bold**</code></p>
+<p><code># First-level heading</code></p>
+<p><code>## Second-level heading</code></p>
+<p><code>### Third-level heading</code></p>
+</blockquote>
+<p>无序列表：</p>
+<blockquote>
+<p><code>- Item one</code></p>
+<p><code>- Item two</code></p>
+<p><code>- Item three</code></p>
+</blockquote>
+<p>有序列表：</p>
+<blockquote>
+<p><code>1. Item one</code></p>
+<p><code>2. Item two</code></p>
+</blockquote>
+<blockquote>
+<p><samp class="sans_futura_pt_book_">3. Item three</samp></p>
+</blockquote>
+<p>看到了吗?很简单;这就是你在纯文本中可能会写这些内容的方式。正如我所说,许多笔记应用程序使用
+Markdown 作为其文本格式。</p>
+<h3 id="为笔记命名">为笔记命名</h3>
+<p>你为了以后找到笔记所能做的最重要的事情就是给它们清晰的标题。当你浏览一长串笔记时,如果它们有清晰的标题,比如<em>购物清单</em>或<em>2022-08-03
+与Claudio的会议</em>,而不是像<em>无标题</em>或<em>笔记2</em>这样的通用名称,就更容易理解它们包含什么内容。具有清晰名称的笔记也更容易使用笔记应用的搜索功能找到。</p>
+<p>一些笔记应用,例如 Apple
+Notes,使用笔记文本的第一行作为其标题。当你开始一个新笔记时,应用会给它一个通用标题(在这种情况下是<em>新笔记</em>)。但当你开始输入笔记文本时,应用会用你输入到笔记中的第一行替换这个通用标题。如果你以后改变主意,可以编辑这第一行。</p>
+<figure class="img1">
+<img alt="A screenshot of the Apple Notes app showing a blank note that's just been created." class="img" src="images/000017.jpg"/>
+</figure>
+<p>其他应用,例如 Obsidian 和
+Notion,提供了一个与笔记正文无关的专用标题字段。这在写笔记时增加了一点工作量,但它给了你拥有独立于笔记文本的标题的灵活性。一些应用还允许你指定替代标题,也称为<em>别名</em>(aliases),如果你想用另一个名称链接到该笔记,这很有用。(更多内容请参阅第三章。)</p>
+<p>所以,笔记标题很重要。但你如何写出有效的笔记标题?以下是一些有用的指导原则。</p>
+<h4 id="使标题具有区分性">使标题具有区分性</h4>
+<p>在查看标题时了解笔记的内容很重要。这要求标题清楚地将该笔记与其相邻笔记区分开来。两个相邻的笔记都叫<em>会议</em>比两个笔记分别叫<em>2022-08-03会议</em>和<em>2022-08-10会议</em>要模糊得多。显然,这种情况下的关键区分因素是日期。</p>
+<h4 id="使标题简短但不要太短">使标题简短,但不要太短</h4>
+<p>你希望保持标题的字数较少,这样你可以轻松地在列表中浏览它们。但如果你把它们做得太短,你可能无法分辨它们的内容。我的目标是标题在三到七个字之间。再长的话,它们在列表面板中会被截断。(这意味着要将关键区分因素放在标题的开头,如前面的例子所示。)</p>
+<h4 id="使用模式并坚持使用它们">使用模式——并坚持使用它们</h4>
+<p>在你捕获笔记一段时间后,你会注意到几个相同类型的笔记:会议记录、书籍注释、日记条目等。你可以建立命名模式,帮助你一眼就能识别哪个是哪个。例如,每当我遇到一个我想保留的引用时,我会将它捕获在一个标题为<em>引用—(引用的前五个左右的词)</em>的笔记中。这样,每当该笔记在另一个上下文中出现时,我可以立即知道它是关于什么的。</p>
+<figure class="img1">
+&lt;img src=“images/000018.jpg” class=“img” alt=“A screenshot from
+Obsidian showing a note that has the name”Quote – Tactics is what you do
+when there is something to do”” /&gt;
+</figure>
+<p><samp class="sans_futura_pt_demi_b_1">附注</samp></p>
+<p><span class="freightdisp_pro_black_b_1">处理日期的最佳格式</span></p>
+<p>你捕获笔记的日期是一个令人惊讶的重要信息。以后,你可能不记得笔记叫什么,或者只对它的内容有模糊的想法——但你可能知道你在五月遇到过它。所以,知道捕获日期可以帮助你以后找到它。</p>
+<p>笔记应用会为你添加日期和时间。纸张不会。多年来,我养成了在我在纸上写的任何东西的右上角写日期的习惯,无论是在笔记本还是活页纸上。(例外是便利贴,因为它们通常是短暂的或意图聚集在一起。当我给它们拍照时,我的手机会在图片上添加日期、时间和位置。)</p>
+<p>写日期有很多方法。你可以拼写出月份和日期(例如,2022年9月27日)或使用数字和斜杠(例如,9/27/2022——至少在美国是这样;其他国家的人会写27/9/2022)。</p>
+<p>不要费心使用这些方法。相反,训练自己使用 ISO-8601
+标准格式,它由代表年份的数字(使用四位数字)、一个破折号、月份(使用两位数字)、一个破折号和日期(使用两位数字)组成。因此,2022年9月27日将写成2022-09-27。</p>
+<p>虽然这种格式一开始可能看起来很尴尬,但它有几个优点。首先,它紧凑且一致:所有日期都由正好十个字符表示。其次,它对应于我们对日期层次结构的心理模型:年包含月,月包含日。但更重要的是,这种格式更容易让计算机处理。文件系统不能轻松地对以”人类友好”格式编写的日期进行排序,而
+YYYY-MM-DD 格式对计算机来说非常容易排序。</p>
+<p>虽然在计算机上使用这个习惯为什么有帮助可能很清楚,但你可能想知道为什么我在纸上也这样做。简单的原因是一致性:确定一个标准格式并在所有地方使用它是值得的。确定一个标准日期格式——即使它更适合计算机的限制而不是我的——使我能够检索与特定日期相关的所有内容。但更重要的是,它让我不必记住在哪里使用什么类型的格式。</p>
+<h2 id="杰出的笔记记录者">杰出的笔记记录者</h2>
+<p><strong>Sam Ladner</strong></p>
+<figure>
+<img alt="Sam Ladner的照片" src="images/000019.jpg"/>
+<figcaption aria-hidden="true">Sam Ladner的照片</figcaption>
+</figure>
+<p>在我的播客采访中,设计研究员、社会学家和作家Sam
+Ladner描述了她在做研究时捕获所学内容的方法。当我问Sam我们能否从社会学中学到什么来提高生产力时,她提出了”thick
+description(深描)“的概念,我理解这意味着在我们的笔记中添加足够的上下文(context),以便我们知道它们指的是什么。正如Sam所解释的,</p>
+<blockquote>
+<p>深描并不意味着每次对每件事都深入写作。它是关于选择那些在未来会有足够歧义而变得毫无意义的事物,除非你给出它周围的上下文。Clifford
+Geertz给出的经典例子是”眨眼”。如果你看到有人眨眼,这与眨眼是不同的。如果有人眨眼,那是眼睛的无意识运动。如果你没有深描,在你的笔记中,眨眼看起来就和眨眼完全一样。眨眼有文化背景、意义、信息,正如Geertz所说的意义之网。</p>
+</blockquote>
+<p>这个想法与最小可行笔记(minimally viable
+note)的概念一致:起初,你想要尽可能少的内容,但要足够让你了解笔记是关于什么以及为什么重要。捕获常青笔记时的关键问题是:你是否为未来的自己提供了足够的上下文来知道这是关于什么的?你能在六个月后回到这个笔记并从中断的地方继续吗?</p>
+<p>虽然现在记下几个词可能很方便,但如果未来的你无法理解它,这个笔记就没有多大用处。当写下你期望在未来重新访问的笔记时,添加必要的细节以减少歧义——即使现在感觉有些过度。</p>
+<h2 id="结语">结语</h2>
+<p>当我完成这一章的写作时,我在开头提到的便利贴早已不见了。但我在重新访问那些幻灯片时学到的东西现在已经捕获在我的知识花园中。我期待随着学习更多而重新访问它们。</p>
+<p>知道哪些笔记要丢弃,哪些要保留,会让你成为更好的思考者。知道如何构建常青笔记——它们需要的最小信息量——将帮助你在需要回顾时找到并理解它们。</p>
+<p>当然,这假设捕获长期笔记值得你花时间。建立知识花园需要持续的时间和精力,只有你能回答”我为什么要这样做?“这个问题。但如果你的答案涉及创作、写作、学习或任何涉及智力发展的活动,请继续阅读。</p>
+<p>在本章中,我们研究了知识花园的一个基本组成部分:简短、专注的笔记。在下一章中,我们将看看第二个基本组成部分:这些笔记之间的链接。</p>
+<ol type="1">
+<li><p>Fiona M. McPherson, <em>Effective Notetaking</em> (New Zealand:
+Wayz Press, 2012).</p></li>
+<li><p>https://notes.andymatuschak.org/</p></li>
+<li><p>John Gruber创建了Markdown,Aaron Swartz做出了贡献。</p></li>
+<li><p>www.iso.org/iso-8601-date-and-time-format.html</p></li>
+<li><p>https://theinformed.life/2022/05/22/episode-88-sam-ladner/</p></li>
+</ol>
+<h1 id="第3章-连接你的笔记">第3章 连接你的笔记</h1>
+<p>简短、专注的笔记对于高效的知识花园至关重要。但这些原子笔记(atomic
+notes)本身并不能发挥多大作用。它们的力量只有在你将它们链接在一起时才会显现。</p>
+<p>链接允许你深入研究单个想法,而不会失去与其原始上下文的联系。它还使你能够发现与其他相关上下文和想法的连接。从细粒度、链接的想法角度思考将推动你扩大理解并激发意想不到的见解。</p>
+<p>想法通过各种方式产生,有时是偶然的。它们经常激发其他想法——尽管它们如何组合在一起起初可能并不清楚。在捕获期间,你无法将它们组织成最佳可能的顺序。事实上,可能根本就没有”最佳”顺序:一个想法可能适用于多个上下文。</p>
+<p>过早的组织限制了信息的有用性。但你不必事先承诺一个组织方案。数字笔记使你能够自由地组织想法,这样你就可以找到通往知识的多条不同路径。</p>
+<p>思考一下维基百科是如何运作的。每个页面都包含指向其他页面的链接。没有明确的文件夹集合或自上而下的分类；相反，每个页面都是相互关联的想法网络的一部分。你的笔记也应该建立类似的结构。</p>
+<figure class="img1">
+<span class="calibre1" id="calibre_link-482"></span>&lt;img
+src=“images/000025.jpg” class=“img”
+alt=“标题为”自发秩序”的维基百科页面。” /&gt;
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">一个典型的维基百科页面。蓝色文字代表指向系统中其他页面的链接，这些页面与当前页面是平级关系。这个页面不是存储在自上而下的容器中，而是相互链接的页面网络的一部分。</samp>
+</p>
+</figcaption>
+</figure>
+<h2 id="超文本笔记">超文本笔记</h2>
+<p>维基百科是超文本(hypertext)的一个例子：一个想法以非线性方式链接到其他想法的信息集合。也就是说，你不是从头到尾按直线顺序阅读材料。相反，你通过点击（或轻触）链接从一个想法跳转到另一个想法，这些链接会带你到相关的想法。那里有秩序，但这是自下而上的。</p>
+<p>像维基百科一样，超文本笔记系统允许秩序在你链接笔记时自发涌现。结果是一个复杂的链接节点图，将想法连接到其他想法。任何一条笔记都可以作为特定探索的起点：笔记越多，可能性就越广泛。</p>
+<p>这不是一个新想法。1945年，万尼瓦尔·布什发表了《诚如所思》(As We May
+Think)，这是一篇有影响力的文章，主张建立非线性信息管理系统。<sup>[^26]</sup>
+泰德·纳尔逊在1965年创造了”超文本”这个词，将其定义为一种处理可以详细阐述和注释的复杂相关信息集的方法。<sup>[^27]</sup></p>
+<p>当前的超文本笔记应用，如Roam、Obsidian和Notion，将这些理论愿景带入实际应用。这些和其他超文本笔记工具允许你在原始上下文中（例如，发现它们的项目中）探索想法，并独立于该上下文，以便稍后可以重新组合和重用它们。</p>
+<figure class="img1">
+<img alt="一个图表显示四条相互连接的笔记。其中两条是绿色的，两条是棕色的。棕色笔记包含指向绿色笔记的链接。" class="img3" src="images/000020.jpg"/>
+</figure>
+<p>将想法分开保存同时相互链接，让你两全其美：既能在原始上下文中重新访问想法，又能从不同角度探索它们。捕获原子化的、相互链接的笔记还允许你将一些关系构建工作委托给计算机：通过一些前期结构，你的计算机可以找到新的连接。</p>
+<p>此外，超文本会进化。随着对想法了解的加深，你可以重新访问捕获这些想法的笔记。当你这样做时，会产生新的想法。结果更像是一个活跃的网络，而不是笔记本。正如纳尔逊所说，“这样的系统可以无限增长，逐渐包含越来越多的世界书面知识。”<sup>[^28]</sup>
+这是一种强大的学习和创造方法。</p>
+<p><code>附注</code></p>
+<h3 id="你应该更换应用吗">你应该更换应用吗？</h3>
+<p>大多数流行的笔记应用都允许你添加链接。但许多应用使这个过程变得繁琐，从而减慢你的思考速度。</p>
+<p>在大多数情况下，使用这些”传统”应用进行链接涉及选择一串文本并按下”插入链接”按钮。（或其等效按钮；该功能的确切名称在不同应用中会有所不同。）点击按钮后，应用会提示你输入目标地址。当你粘贴地址并按下”应用”（或等效按钮）时，文本字符串就变成了链接。</p>
+<figure class="img1">
+<span class="calibre1" id="calibre_link-484"></span><img alt="Evernote中的链接创建对话框。" class="img" src="images/000021.jpg"/>
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">在Evernote（一个流行的基于云的笔记应用）中添加链接。与许多传统笔记应用一样，这是一个多步骤过程，需要按下专用的”插入链接”按钮并填写一个小表单。</samp>
+</p>
+</figcaption>
+</figure>
+<p>虽然”插入链接”功能很普遍，但它在各处的工作方式并不相同。链接在某些应用中比在其他应用中更核心。某些应用需要多个步骤才能创建链接。此外，许多应用假设链接是”外部的”——即指向笔记应用之外。</p>
+<p>在构建知识花园(knowledge
+garden)时，你希望能够轻松快速地即时创建链接——尤其是指向系统中其他笔记的链接。因此，虽然你”可以”使用传统笔记应用构建超文本，但许多应用并不容易做到这一点。<sup>[^29]</sup>
+如果你当前的应用使链接变得困难，请切换到将链接作为核心功能的应用。</p>
+<h2 id="链接和节点超文本的基本元素">链接和节点：超文本的基本元素</h2>
+<p>从最基本的层面来说，超文本由节点（想法、文本、图片、视频等）和它们之间的链接组成。值得更深入地研究这两个概念。在更广泛的意义上，链接将一个事物与另一个事物联系起来。例如，你通过家族纽带与你的亲属联系在一起。但在本书中，我们讨论的是一种非常特殊的链接类型：超链接(hyperlinks)。</p>
+<p>“超链接”是超文本中一个项目与另一个项目之间的正式连接。这些连接有起点和终点。起点通常是一个单词或短语，终点是另一个文档、笔记、网页等。你从网络上已经熟悉这种模式。</p>
+<p>就像维基百科一样,超文本笔记应用允许你在笔记中创建链接。链接可以指向应用中的其他笔记,或任何提供统一资源标识符(URI)的资源,这是网络上使用的寻址方案。例如,要链接到关于超文本的维基百科页面,你需要使用以下URI:</p>
+<blockquote>
+<p><code>https://en.wikipedia.org/wiki/Hypertext</code></p>
+</blockquote>
+<p><em>节点(Nodes)</em>指的是通过链接连接的起点和目标对象(页面、文档、笔记或其他内容)。节点和链接是超文本系统的阴阳两面:两者缺一不可。它们的共同存在定义了超文本。</p>
+<p>如前所述,节点可以采取多种形式。网页可以是一个节点,笔记应用中的笔记也可以是。图像、视频或音频文件也可以是节点。一些笔记应用还允许你链接到笔记的特定部分,比如段落。这些更细粒度的目标在Obsidian和Roam等系统中被称为<em>块(Blocks)</em>。</p>
+<h3 id="但你能用纸来做到这一点吗">但你能用纸来做到这一点吗?</h3>
+<p>虽然计算机是以链接节点图的形式捕捉想法的自然媒介,但你也可以使用纸和笔来做到这一点。只是不太实用。人们已经使用带有唯一标识符的索引卡构建了复杂的纸质系统。</p>
+<p>缺点是显而易见的。存储大量纸张需要大量空间。还有专用家具和书写材料的成本和混乱。此外,这样的系统难以备份且不便携带。</p>
+<p>但更重要的是,纸质超文本将执行链接的责任放在了你身上。你必须仔细在每张卡片上写下正确的地址,并始终将它们存储在预期的位置。而且由于你必须手动跟踪连接,纸质超文本要慢得多。当然,你也无法搜索纸质超文本。</p>
+<p>所以,是的,你可以使用纸张构建超文本笔记系统。其他人已经成功做到了。但你必须了解缺点:它缓慢、不方便、笨重、昂贵且相对脆弱。</p>
+<p>所以,数字化是必然选择。但是什么<em>类型</em>的数字化?毕竟,有很多笔记应用。有些已经存在很长时间了,许多都允许你创建链接。为什么我们现在谈论链接,好像它是新事物一样?简短的答案是,像Roam
+Research、Obsidian、Logseq和Notion这样的应用使链接变得容易得多。</p>
+<p>在许多笔记应用中,链接是一个多步骤的过程:你输入文本,选择其中的一部分,转到菜单或工具栏,按下按钮,然后填写一个包含链接地址和名称的简短表单。在某些情况下,你不能轻松添加到其他笔记的链接,只能添加到外部URI。</p>
+<p>超文本导向的笔记应用假设链接是笔记过程的核心,而不是偶尔需要容纳的罕见操作。因此,它们使得在<em>写作时</em>创建链接变得容易—也就是说,无需将手指从键盘上移开去寻找菜单或工具栏,也无需填写表单。你还可以轻松指向系统中的其他笔记。</p>
+<p><code>实践笔记</code></p>
+<h2 id="在你的笔记中添加链接">在你的笔记中添加链接</h2>
+<p>许多超文本笔记应用,如Obsidian、Notion、Roam和Logseq,包含一个称为<em>维基链接(Wikilinks)</em>的功能,让你在输入时链接到现有或新建的笔记。很简单:你只需将单词或短语放在双括号中,像这样:</p>
+<blockquote>
+<p><code>[[Note two]]</code></p>
+</blockquote>
+<p>当你这样做时,应用会在系统中查找名为<em>Note
+two</em>的笔记。如果有,文本<em>Note
+two</em>就会成为指向该笔记的链接。如果没有该名称的笔记,当你点击链接时,应用会为你创建一个。无论你是在现有短语周围输入双括号,还是在输入新短语时,这都有效:当你输入第二个右括号时,应用会查找匹配项。</p>
+<p>要使其工作,短语必须<em>完全</em>匹配笔记的标题—也就是说,两者中必须存在相同的字符序列。一些应用对大小写字符的处理不同,因此<code>[[Note two]]</code>和<code>[[note two]]</code>指向不同的笔记。也就是说,许多应用会从现有笔记标题自动完成链接名称,这使得链接更容易且更一致。</p>
+<p>现在就试试。重新访问你开始捕捉关于本书想法的笔记,找到短语<code>Connect notes to other notes</code>。现在在单词<code>Connect</code>之前输入两个左括号,在<code>notes.</code>之后输入两个右括号,像这样:</p>
+<blockquote>
+<p><code>[[Connect notes to other notes.]]</code></p>
+</blockquote>
+<p>当你完成输入两个右括号时,整个句子会改变颜色,表示它现在是一个链接。但它还没有指向任何地方,因为你的系统中没有该名称的笔记。当你点击此链接时,Obsidian将创建一个名为<code>Connect notes to other notes.</code>的新笔记。你可以独立于原始笔记对其进行编辑。但请注意,如果你更改第二个笔记的名称,第一个笔记中链接的名称也会相应更改。</p>
+<h2 id="链接的类型">链接的类型</h2>
+<p>你对网络链接的工作原理很熟悉。但链接的作用远不止你在网上看到的那些。正如节点可以有多种类型，链接也有不同的类型。现代超文本笔记应用支持的不仅仅是简单的维基链接。随着这些系统变得越来越流行，你必须扩展对链接的理解。</p>
+<p>让我们回顾一下网络链接的工作原理：</p>
+<ul>
+<li>网络链接由文档作者定义</li>
+<li>它们可以从单词、短语或图片(如图标)发起</li>
+<li>目标可以是网络浏览器能显示的任何内容，可以通过URI定位</li>
+<li>点击链接会在浏览器中加载目标文档</li>
+<li>这是单向跳转：虽然你可以点击浏览器的”后退”按钮返回上一步，但大多数网页没有明确指向原始文档的链接</li>
+</ul>
+<p>这种方案的简单性促进了网络的普及，因为作者和读者都很容易学习。然而，自20世纪60年代末以来，超文本研究人员已经探索了其他几种类型的链接。其中一些现在可以在Roam
+Research、Obsidian和Logseq等超文本笔记应用中使用。以下是你应该了解的七种：</p>
+<h3 id="维基链接wikilinks">维基链接(Wikilinks)</h3>
+<p>我们已经介绍过这些，但它们值得特别提出，因为它们是这些应用工作方式的核心。维基链接类似于网络链接，你选择一个单词或短语并将其指向另一个笔记(或任何你可以通过URI访问的资源)。不同之处在于维基链接更容易、更快使用，从而实现更流畅的链接过程。</p>
+<h3 id="隐式链接implicit-links">隐式链接(Implicit Links)</h3>
+<p>与网络链接或维基链接不同，隐式链接不是由作者有意定义的。相反，系统根据元数据(如笔记的标题或创建日期)创建它们。例如，Obsidian允许你查看包含与当前笔记标题匹配的短语的笔记。(Obsidian称之为<em>未链接提及</em>)</p>
+<p>例如，你可能有一个包含短语”Duly
+Noted”的笔记，但它不是链接。如果你有另一个名为<em>Duly
+Noted</em>的笔记，你的应用会将该短语视为指向该笔记的链接，因为它完全匹配其名称。</p>
+<h3 id="反向链接backlinks">反向链接(Backlinks)</h3>
+<p>在讨论传统网络链接时，我说过网页不会明确链接回原始文档。但许多现代超文本笔记工具让你可以看到所有指向你当前查看的笔记的笔记列表。这些”反向链接”使你能够轻松发现笔记之间的关系，即使它们是由单向链接定义的。</p>
+<figure>
+<img alt="Roam Research中显示笔记反向链接的截图" src="images/000024.jpg"/>
+<figcaption aria-hidden="true">Roam
+Research中显示笔记反向链接的截图</figcaption>
+</figure>
+<p><em>Roam
+Research中的笔记在底部显示”5个链接引用”——即从其他笔记指向该笔记的反向链接。</em></p>
+<h3 id="块引用block-references">块引用(Block References)</h3>
+<p>块引用是显式链接，但它们不是指向整个文档或笔记，而是指向目标内的块(例如，单个段落或部分)。值得注意的是，HTML(网络的标记语言)支持块引用。当你点击网页中的链接并跳转到该页面的不同部分时，你就体验过它们。</p>
+<h3 id="别名aliases">别名(Aliases)</h3>
+<p>这些是指向原始项目的指针——有时使用替代拼写——在其他地方(如列表、文件夹和其他笔记)中”代表”原始项目。虽然它们的外观和行为与原始项目相同，但它们只是在不同上下文中代表原始项目的占位符。这样，你可以在多个父容器中拥有看似笔记、文档或项目的实例。</p>
+<p>一些应用(包括Obsidian)还允许你为笔记定义替代名称，这样你可以使用不同的短语链接到它们。例如，你可以将单词<code>Hypertext</code>定义为名为<code>Connect notes to other notes.</code>的笔记的别名。这样，当你使用单词<code>Hypertext</code>作为链接时，它将指向该笔记。虽然技术上不是链接，但这些类型的别名通过给笔记提供替代名称来提供一种不同的关联笔记的方式。</p>
+<h3 id="嵌入embeddings">嵌入(Embeddings)</h3>
+<p>我提到过点击网络链接会用目标文档替换你在浏览器中查看的内容。但嵌入(或”嵌入引用”)完全是另一回事。嵌入不是”带你”到目标文档，而是将目标的内容(无论是整个笔记还是一个块)插入到原始笔记的正文中。对目标的更改会反映在嵌入版本中。</p>
+<h3 id="空间关系spatial-relations">空间关系(Spatial Relations)</h3>
+<p>到目前为止我描述的所有链接都出现在文档(如笔记或网页)中。但你也可以通过在地图上布置笔记并将一些笔记移近其他笔记来定义关系。接近度暗示连接；你可以通过聚类来关联想法。当你使用Mural、Miro和FigJam等白板工具时，你就使用过空间关系。Obsidian本身包含一个名为<em>Canvas</em>的功能，可以让你定义笔记之间的空间关系。所有这些工具都允许你构建类似于空间超文本的想法亲和图。</p>
+<p><code>工作笔记</code></p>
+<h1 id="块链接和嵌入">块链接和嵌入</h1>
+<p>有时你不想链接到整个笔记，而是链接到单独的段落。这在引用长笔记中的信息时特别有用。在
+Obsidian 中，你可以通过在双括号内输入一个上尖号(^)来实现，像这样：</p>
+<blockquote>
+<p><code>[[^]]</code></p>
+</blockquote>
+<p>当你输入这些字符时，应用程序会显示一个下拉菜单，让你选择当前笔记中的一个块（或段落）。如果你输入两个上尖号而不是一个，你可以搜索你的库中的任何块。你也可以链接到其他笔记中的块。为此，你需要在上尖号之前输入笔记的名称：</p>
+<blockquote>
+<p><code>[[Some title^]]</code></p>
+</blockquote>
+<p>当你输入这个字符时，Obsidian
+会显示一个下拉选择器，显示目标笔记中的每个段落。然后你点击你想要的段落。链接会变化以包含一个数字，像这样：</p>
+<blockquote>
+<p><code>[[Some title#^1f4785]]</code></p>
+</blockquote>
+<p>这段代码是对目标笔记中特定段落（或块）的引用。如果你点击这个链接，你会跳转到目标笔记中的该位置，该块会被高亮显示。你可以自定义这些引用名称以使其更易读。</p>
+<figure>
+<img alt="Obsidian 截图，显示一个笔记被嵌入到另一个笔记中。" src="images/000026.jpg"/>
+<figcaption>
+<p>
+在 Obsidian 中嵌入笔记。
+</p>
+</figcaption>
+</figure>
+<p>虽然能够直接链接到段落非常有用，但如果你能在源笔记的正文中包含段落本身会更有用。这被称为<em>嵌入</em>(embedding)。要在
+Obsidian
+中将一个笔记嵌入到另一个笔记中，你需要在开始括号前添加一个感叹号，像这样：</p>
+<blockquote>
+<p><code>![[Some title#^1f4785]]</code></p>
+</blockquote>
+<p>这种方法的一个优点是，对目标笔记的更改将反映在嵌入的笔记中。这既适用于笔记中的块，也适用于整个笔记（即，你不需要包含对段落的上尖号引用就可以将一个笔记嵌入到另一个笔记中）。</p>
+<h2 id="有效超文本笔记的技巧">有效超文本笔记的技巧</h2>
+<p>超文本改变了你与知识的关系。但以这种方式工作需要重新思考你与笔记的关系。在继续之前，我将给你留下三个在做超文本笔记时要记住的技巧。</p>
+<h3 id="使笔记模块化">使笔记模块化</h3>
+<p>如前所述，当每个笔记探索一个想法时，笔记效果最好。抵制将所有内容都塞进一个笔记的冲动；而是创建简短、专注的笔记。</p>
+<p>例如，如果你正在阅读一本关于非洲动物的书，你会了解到许多不同的动物。与其开始一个长笔记来捕捉所有内容，不如为每种动物创建一个单独的笔记。你还可以创建一个名为<em>东非动物</em>的笔记，在其中列出并链接你读到的各种动物。</p>
+<p>你了解到的关于某个物种的某些事情值得拥有自己的笔记。例如，你可能会注意到河马是哺乳动物。与其在关于河马的笔记中写关于哺乳动物的内容，你可以链接到一个单独的笔记，在那里你探索哺乳动物。稍后，如果你了解到其他哺乳动物，如大象，你只需链接到现有的关于哺乳动物的笔记。</p>
+<h3 id="重新训练自己在捕捉时建立链接">重新训练自己在捕捉时建立链接</h3>
+<p>超文本笔记最困难的事情之一是习惯这样的想法：你不是在写一个单一的整体笔记，而是一组相关的笔记。当你开始输入你的中心思想时，相关的想法可能会出现在你脑海中。与其当场全部输入，你可以通过内联链接来开始一个单独的笔记。</p>
+<p>不要当场写下整个想法。相反，输入左双括号来开始一个维基链接(wikilink)。然后你可以快速点击新笔记来在一个单独的——但现在已链接的——笔记中捕捉那个想法。随着时间的推移，这样做会成为第二天性。</p>
+<h3 id="使用别名使链接更清晰">使用别名使链接更清晰</h3>
+<p>如你所见，维基链接要求你输入笔记的<em>确切</em>标题。因此，一个名为
+<code>Hypertext</code> 的链接指向的笔记与一个名为 <code>hypertext</code>
+的链接不同。这很令人困惑，因为它们都指的是同一个概念；唯一的区别是第一个字母的大小写。</p>
+<p>应用程序允许你为链接定义替代标签，但这会增加流程的摩擦。相反，为你期望使用不同名称调用的笔记定义别名(alias)。在这种情况下，你可以指定
+<code>Hypertext</code>、<code>Hypertexts</code>、<code>hypertext</code>
+和 <code>hypertexts</code>
+都指向同一个笔记。这样，当在各种不同的句子中使用时，链接都能正确工作。</p>
+<p><code>值得关注的笔记者</code></p>
+<h2 id="jerry-michalski">Jerry Michalski</h2>
+<figure>
+<img alt="Jerry Michalski 的照片" src="images/000022.jpg"/>
+</figure>
+<p>Jerry Michalski 是一位未来学家和顾问。1997年，他开始使用一个名为
+TheBrain 的超文本工具来捕捉和连接想法，形成一个他称为 <em>Jerry’s
+Brain</em> 的系统。截至本文撰写时，Jerry’s Brain
+包含超过五十万个条目：代表他多年来遇到的不同概念的小笔记。这些概念链接到其他概念，形成复杂的网络。在接受
+NPR 采访时，Jerry 说：</p>
+<blockquote>
+<p>这有点像思想的
+Photoshop。它是一个很好的工具，用于绘图或将事物置于上下文中并将它们相互链接。除此之外，它做不了太多。<sup>[^30]</sup></p>
+</blockquote>
+<p>它所做的是充当外部记忆——一种仅由 Jerry 策划的想法和连接组成的个人
+Google。但 Jerry’s Brain
+不仅仅擅长记忆。相反，它改变了他对事物的整体思考方式。在我的播客采访中，他描述了使用这个系统如何改变了他的思维方式：</p>
+<blockquote>
+<p>我喜欢策划 TheBrain
+的一个原因是，每天我都被迫进入[丹尼尔·卡尼曼(Daniel
+Kahneman)的]系统二思维模式：这值得记住吗？如果值得，它是什么？我该把它放在哪里？因为我的
+Brain
+中没有任何孤立的想法——至少不是有意为之——所有东西都像圣诞装饰品一样挂在某个分支上。然后就像，“好的，那我该怎么称呼它？它与什么相连？我能从中学到什么？”</p>
+<p>然后我会进一步谷歌搜索这个东西，然后我会编织一点。所以，我总是在各处做这种一点点的上下文编织，每次一点点，没有特定的顺序。这是极其随机的。就像生活冲击我一样，或者像我为当天设定的任务或其他什么。所以，当你和我进行这次播客时，我为这次播客设置了一个节点——一个想法，我回到它那里，我把它连接到你发给我的准备文档，连接到你，我已经把你放在上下文中了，我很久以前就把你放进去了。所以，这立即刷新了我的湿脑(wet
+brain)，我可以像步入溪流一样步入对话。<sup>[^31]</sup></p>
+</blockquote>
+<p>这听起来接近 Ted Nelson 在 1960 年代中期描述的超文本思维类型。</p>
+<p>TheBrain
+在一个可视化画布中呈现想法，其中位置很重要：有些代表父子关系，而其他则是兄弟关系。在它们之间导航很容易，让你可以发现想法之间的新连接。是的，你：Jerry’s
+Brain
+可以通过网络浏览器访问，并向任何人开放浏览。从这个意义上说，它不仅仅是个人记忆：它也是公共记忆。你可以在
+<a href="http://www.jerrysbrain.com"><samp class="sans_futura_pt_book_">www.jerrysbrain.com</samp></a> 探索 Jerry’s
+Brain。</p>
+<figure class="img1">
+<span class="calibre1" id="calibre_link-502"></span><img alt="A screenshot of TheBrain showing Jerry's Brain." class="img" src="images/000023.jpg"/>
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">在 Jerry’s Brain
+中渲染的一个想法。</samp>
+</p>
+</figcaption>
+</figure>
+<h2 id="尾注-1">尾注</h2>
+<p>正如你在前面章节中看到的，工具是你思维的延伸。使用正确的工具，你可以更有效地思考，而那些传统上用于组织和管理信息的工具——分为自上而下类别的线性笔记本——在我们日益复杂的世界中已经不够用了。</p>
+<p>超文本允许你找到更好地满足现代信息管理需求的知识新路径。在结构上，它们被设置用于系统思维，让你可以追踪问题的根本原因，看到新机会，发现关系，并管理信息过载。因此，连接笔记是在快速变化、复杂世界中进行意义建构的正确工具。</p>
+<p>但超文本笔记需要与以前的媒介不同的技能。你必须善于更细致地概念化想法，并考虑它们如何与其他想法链接。笔记名称和元数据变得更加重要，因为你建立了让新组织模式自下而上出现的方法。你必须放弃信息有一个”正确”顺序的想法。</p>
+<p>但这是可行的——而且值得。如果笔记是关于扩展你的认知能力，那么超文本笔记代表了迄今为止设计出的最强大的扩展手段。当熟练地管理时，连接笔记将激发洞察力并使你更有生产力。</p>
+<ol type="1">
+<li><p><span class="nn"><span class="calibre1" id="calibre_link-71" role="doc-backlink">1</span>.</span> Vannevar Bush, “As We May Think,”
+<em>The Atlantic Monthly</em> 176, no. 1 (1945): 101–108.</p></li>
+<li><p><span class="nn"><span class="calibre1" id="calibre_link-72" role="doc-backlink">2</span>.</span> Ted H. Nelson, “Complex Information
+Processing: A File Structure for the Complex, the Changing and the
+Indeterminate,” <em>ACM ’65: Proceedings of the 1965 20th National
+Conference</em>, August 1965, 84–100.</p></li>
+<li><p><span class="nn"><span class="calibre1" id="calibre_link-73" role="doc-backlink">3</span>.</span> 同上</p></li>
+<li><p><span class="nn"><span class="calibre1" id="calibre_link-74" role="doc-backlink">4</span>.</span> 本节最后修订于 2023 年 6
+月，指的是当时可用的这些应用程序版本。当你阅读此内容时，这些应用程序可能支持更高效地链接到应用程序中的其他笔记；请咨询他们的供应商。</p></li>
+<li><p><span class="nn"><span class="calibre1" id="calibre_link-75" role="doc-backlink">5</span>.</span> <a href="http://www.capeandislands.org/show/living-lab-radio-on-cai/2017-09-18/jerrys-brain-the-online-version-has-been-going-strong-for-20-years#stream/0"><samp class="sans_futura_pt_book_">www.capeandislands.org/show/living-lab-radio-on-cai/2017-09-18/jerrys-brain-the-online-version-has-been-going-strong-for-20-years#stream/0</samp></a></p></li>
+<li><p><span class="nn"><span class="calibre1" id="calibre_link-76" role="doc-backlink">6</span>.</span> <a href="https://theinformed.life/2023/04/23/episode-112-jerry-michalski/"><samp class="sans_futura_pt_book_">https://theinformed.life/2023/04/23/episode-112-jerry-michalski/</samp></a></p></li>
+</ol>
+<h1 id="第四章-知识花园计划">第四章 知识花园计划</h1>
+<p>只有当你将连接笔记作为系统中的组件来处理时，你才能发挥它们的力量。它的目标是：帮助你更好地思考。</p>
+<p>木匠工作时，如果能在需要的时候拥有合适的工具和材料，他们的工作效率最高。他们的工作室提供专注、遮蔽、通风和照明等条件。木匠配置这些场所以使工作更轻松。合适的工具、流程和场所的组合，能够营造有利于出色工作的心理状态。</p>
+<p>你也必须为出色的工作腾出空间。我所说的”空间”不一定是指物理空间(尽管拥有一个安静的工作场所会有帮助)。相反，我指的是一套支持你工作的工具和流程的集合，你可以”进入”其中进行专注的工作。</p>
+<p>我把它想象成一个花园，但我不是第一个在这个领域使用这个比喻的人。至少从20世纪90年代初开始，人们就将数字笔记与园艺和农业联系在一起。这个意象很有成效(抱歉!)，因为园艺与知识管理有着重要的共同特征：</p>
+<ul>
+<li>就像种子一样，想法开始很小，如果得到适当的照顾就会绽放。</li>
+<li>就像植物一样，培育想法需要持续、有纪律的努力。</li>
+<li>两者都能创造营养、愉悦、满足感和成就感。</li>
+<li>两者都不完全在你的控制之下；两种类型的花园都有自己的生命，你能做的最好的事情就是建立允许事物有机生长的结构，然后照料它们。</li>
+</ul>
+<p>你可能已经在使用几种笔记工具和流程，但使用方式比较随意。在本章中，我们将把它们整合成一个支持你工作的连贯系统。让我们先看看你目前拥有什么。</p>
+<h2 id="用笔记思考的流程">用笔记思考的流程</h2>
+<p>思考系统组件的最佳方式是根据它们在六个连续阶段中所扮演的角色来安排它们。它们是：</p>
+<ol type="1">
+<li>注意(Notice)</li>
+<li>捕获(Capture)</li>
+<li>分类(Sort)</li>
+<li>保留(Retain)</li>
+<li>培育(Nurture)</li>
+<li>分享(Share)</li>
+</ol>
+<p>每个阶段需要不同的工具、工作流程、实践和心态。有些阶段，比如注意和捕获，必须即时完成，通常是在分散注意力的条件下。其他阶段，比如培育和分享，需要更多的专注和反思。让我们更详细地看看它们。稍后，我们将用整章篇幅来讨论其中的一些阶段。</p>
+<p><code>实践笔记</code></p>
+<h3 id="盘点你的笔记工具">盘点你的笔记工具</h3>
+<p>你可能以各种方式做笔记：便利贴提醒、会议记录用的装订笔记本、在书上划线和批注、手机备忘录应用中的购物清单等。在配置理想的知识花园之前，盘点所有做笔记的方式会很有帮助。</p>
+<p>使用一张空白纸(或电脑上的电子表格)，制作一个包含三列的表格：</p>
+<ul>
+<li><strong>第1列：</strong> 笔记方式(例如：备忘录应用)</li>
+<li><strong>第2列：</strong> 用途(例如：购物清单)</li>
+<li><strong>第3列：</strong> 这些用途是否长期有效</li>
+</ul>
+<p>每种笔记媒介可能有多种用途。例如，你可能使用备忘录应用编写购物清单<em>和</em>想要稍后阅读的书籍名称。如果是这样，在表格中为每个单独的用途创建一个新条目。</p>
+<p>相反，你可能使用多种媒介完成同一目的。例如，除了备忘录应用，有时你可能在纸条上写购物清单。在这些情况下，也要在表格中创建新条目。它看起来会像这样：</p>
+<table>
+<thead>
+<tr>
+<th>媒介</th>
+<th>用途</th>
+<th>长期有效？</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>便利贴</td>
+<td>提醒</td>
+<td>否</td>
+</tr>
+<tr>
+<td>备忘录应用</td>
+<td>购物清单</td>
+<td>否</td>
+</tr>
+<tr>
+<td>备忘录应用</td>
+<td>待读书籍</td>
+<td>是</td>
+</tr>
+<tr>
+<td>纸条</td>
+<td>购物清单</td>
+<td>否</td>
+</tr>
+</tbody>
+</table>
+<p>至少留出15分钟来制作这个列表。目标是捕获最重要的媒介和用途(即那些在你生活中扮演关键角色的)。如果你在家里或办公室，环顾四周看看是否遗漏了什么。打开你的手机和电脑，浏览你的应用程序。你是否在使用它们中的任何一个做笔记？把它们写下来。</p>
+<p>在探索知识花园计划时，保留这个列表。你需要特别关注长期有效的笔记，因为这些笔记需要在你的系统中找到一个特殊的位置。</p>
+<h3 id="注意">注意</h3>
+<p>一个良好的思考系统从理解你的大脑如何工作开始：它如何注意到事物并产生新想法。正如你之前看到的，这不仅仅关乎你脑海中发生的事情：你的情境(例如，你的环境以及其中的事物和其他存在)会影响你的思考。</p>
+<p>在日常生活中，你会与各种事物和人互动，这些互动会激发想法。也许你收到一封邮件提醒你续签汽车登记，与同事的非正式交谈解答了一个长期困扰的问题，或者看到一本有趣新书的评论。其中一些事情可能值得回顾，而其他的则不值得。</p>
+<p>你必须磨练自己专注于重要事物的能力。并非所有事情都值得记录。一个电话号码可能值得保存，但你哼唱的那段原创旋律呢?如果你是音乐家，这段旋律可能会变成热门单曲。在这种情况下，你应该记录下来。如果不是，这段旋律可能只是小事一桩，最好让它随风而去。</p>
+<p>如何磨练你的注意力?仅仅阅读是不够的:理解心智需要观察它。你可以通过几种方式练习变得更加专注:</p>
+<ul>
+<li><strong>配置你的设备以尊重你的注意力。</strong>
+你能做的最简单的事情就是静音通知。手机上收到的大多数消息都可以等待。</li>
+<li><strong>将一天中的某些时段设置为固定的”安静时间”。</strong>
+我在早上5点到7点之间完成了这本书的大部分内容，那时我家里的大多数成员还没有醒来。</li>
+<li><strong>学习冥想。</strong>
+冥想是我发现的观察内心的最佳方法。在其众多优点中，冥想使你在各种情境下更能察觉自己的注意力状态。</li>
+</ul>
+<p>无论你如何做，注意你的心智状态——并学会区分琐碎的东西和值得保留的东西——是这个过程的第一阶段。让干扰远离，练习关注周围正在发生的事情。</p>
+<h3 id="capture捕捉">Capture(捕捉)</h3>
+<p>如果你已经培养了对心智运作方式的察觉，你会认识到它的转瞬即逝。你一遍又一遍地对自己重复那个新电话号码，但仍然——噗，它消失了!因此，下一步是捕捉你的想法和观察。</p>
+<p>捕捉必须在注意之后立即发生，以免想法溜走。理想情况下，你有纸笔在听到电话号码后不久就记录下来。这需要准备(例如，记得带上笔和袖珍笔记本)。当然，你也可以使用手机写笔记、拍照或录制简短音频片段。</p>
+<p>这种做法仍然需要知道在哪里捕捉不同类型的想法。你可能会将电话号码口述到手机上的语音备忘录应用中，但拍照可能不太有用。有些想法可以用文字捕捉，其他的必须涂鸦。一段旋律可能需要哼唱。</p>
+<p>无论如何，你必须养成在当下捕捉想法的习惯——并确定最佳方式——而不需要过多思考。在下一章中，我们将更详细地介绍如何有效捕捉想法。</p>
+<p>现在，请记住，将你的想法外化到世界上的事物中——笔记本、页边注释、录音机等——会激发进一步的想法。由此产生的反馈循环使你的笔记媒介成为你思维的延伸。</p>
+<h3 id="sort分类">Sort(分类)</h3>
+<p>如果你不断捕捉自己的想法，你很快就会在各处拥有大量笔记。你可能有不止一个应用程序、几个纸质笔记本、便签、散页纸等。此时，你已经让大脑不必记住这些想法，但你却背负着记住所有东西存储位置的负担。</p>
+<p>如果你使用纸张，你可能有一个实体收件箱来堆放待处理的东西。大多数笔记应用程序也有数字收件箱的等价物:你捕捉的最新想法的运行列表。许多人将他们的笔记保存在这样的运行列表中，但这会让以后更难找到东西。</p>
+<figure>
+<img alt="三个不同笔记应用程序的iPhone截图:Drafts、Obsidian和DEVONthink。" src="images/000027.jpg"/>
+<figcaption aria-hidden="true">三个不同笔记应用程序的iPhone截图:Drafts、Obsidian和DEVONthink。</figcaption>
+</figure>
+<p>我在三个不同笔记应用中的收件箱。每隔一段时间，我会查看这些笔记，要么丢弃它们，要么将它们移到更永久的位置。</p>
+<p>因此，流程的下一步是整理你的笔记。一些笔记将是未来采取某些行动的提醒，在这种情况下，它们应该进入你的”待办事项”管理应用程序。正如我们之前讨论的，一些笔记你会保留以备后续参考，而其他的可以丢弃。在第6章中，我们将介绍整理和分类笔记。</p>
+<h3 id="retain保留">Retain(保留)</h3>
+<p>你可以将短暂的笔记保留在原处，或者如果它们已经达到目的就删除它们。但你希望保存长青的内容。这一步的目标是将有价值的想法放入一个可信赖的知识库中，以便以后可以找到它们。只要稍加远见，你还可以为想法在未来与其他想法建立联系创造条件。</p>
+<p>虽然你可以直接将笔记捕捉到你的知识库中，但你很可能会为这些目的使用单独的应用程序。例如，我将联系信息(如电话号码和电子邮件地址)保存在Daylite这个客户关系管理(CRM)应用程序中，但我将会议记录保存在Obsidian中。每个应用程序都有使其成为这些用例最佳选择的特性。由于我对在哪里存储不同类型的信息很有纪律性，所以以后我不必考虑在哪里查找特定内容。</p>
+<h3 id="nurture培育">Nurture(培育)</h3>
+<p>在将笔记保存到可信的知识库一段时间后，你会积累大量的笔记。有些笔记有特定用途，比如联系人信息。其他笔记可能在许多不同的情境中都有用。例如，你可能学到一个新概念，它成为你工作方法中的重要组成部分。这个概念的笔记可能会成为常青笔记(evergreen)，这意味着随着时间推移，你会不断补充新学到的信息。</p>
+<p>你希望能够重新查看这些笔记，以便重新组合和重新情境化它们，从而产生新想法。从重访常青笔记中产生的任何新想法也会进入知识库。通过连接笔记，你构建了一个想法网络，扩展了你的思维范围。</p>
+<p>这正是计算机的优势所在。这个流程的前面所有阶段都可以用纸笔完成，只是不太方便。但数字笔记系统让你能够比任何其他媒介更快速、更便捷地链接想法。而且借助AI，计算机可以识别你可能遗漏的关系。我们将在第6章和第7章深入了解流程的培育阶段，并在第10章学习如何使用AI。</p>
+<h3 id="分享">分享</h3>
+<p>你可以通过博客文章、视频、推文、演讲、工作坊、书籍、在线课程等方式分享你所学到的知识。进一步延伸花园的比喻，这些就是你工作的”果实”：那些（希望能够）为世界的知识或美好增添价值的想法。</p>
+<p>分享想法的一个美妙（也令人害怕！）之处在于，它会让你接触到其他想法。人们会纠正你的错误，推荐你可能错过的书籍，或者简单地谈论他们热衷的想法。这种反馈可以产生新想法——为你的花园播下新的种子。</p>
+<p>你可以建立系统，让从所学知识和思考中——你在想法之间建立的连接——创造新事物变得更容易，并整合来自他人的反馈。第8章重点讲述流程的这个阶段。</p>
+<h2 id="知识花园模型">知识花园模型</h2>
+<p>让我们在下图中回顾整个流程：</p>
+<figure class="img1">
+<span class="calibre1" id="calibre_link-514"></span><img alt="一个流程图，展示了知识园艺的六个不同步骤：注意、捕获、分类、保留、培育和分享。" class="img2" src="images/000028.jpg"/>
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">这个图表是你知识花园的蓝图。每个阶段需要不同的工具、技术和实践方法。</samp>
+</p>
+</figcaption>
+</figure>
+<p>让我们从注意开始。如我之前提到的，你可以关闭设备上的通知。还有一些正念和冥想应用可以帮助磨练你的注意力。（我使用一个叫做<em>Waking
+Up</em>的应用。）你也可以使用像Readwise这样的应用，用想法、引语和闪卡来提示你。</p>
+<p>捕获信息需要随手可用的工具来记录想法。可以是一个小巧的口袋笔记本和笔，或者手机上的笔记应用。根据你想要捕获的内容，也可能是相机或录音设备。更可能的是，你会使用多种应用和工具的组合来捕获想法。</p>
+<p>这会导致想法和数据分散在不同的应用、笔记本、设备等地方。这是有风险的——你可能已经将想法外化了，但现在你需要记住把它存在哪里。为避免这种情况，请设置收件箱来整合这些笔记。</p>
+<p>你已经在使用收件箱了。你家里可能有一个实体收件箱，用来放纸质账单和其他信件。但最明显的类比是你的电子邮件收件箱。如果你只有一个电子邮件地址，你就只有一个地方查看新消息。（你很幸运！）但你可能会有不止一个。</p>
+<p>我使用苹果的邮件应用，因为它将我所有收到的电子邮件聚合到一个”统一”收件箱中。我知道任何发给我的电子邮件都会在那里。每天，我都会浏览这个收件箱来分类我的电子邮件。有些仅供参考。有些需要我采取行动。有些是对我向他人提出的请求的回复。</p>
+<p>它们不会在收件箱里停留很久。我会根据下一步需要做什么，将它们分类到合适的容器中。有些进入我电脑上的项目文件夹，其他的转换成任务管理应用中的任务，还有的变成日历中的约会。</p>
+<p>统一的电子邮件列表是我每天分类处理的几个收件箱之一。我在DEVONthink（一个我用来保存网页书签、PDF等的数据库应用）上也做类似的事情。每当我读到可能与某个项目（例如我的通讯或这本书）相关的内容时，我就会将它保存到DEVONthink。这些项目会出现在DEVONthink的收件箱中，我可以给它们添加标签并移动到不同的文件夹。我每周做一次这项工作。</p>
+<p>这类事情很容易做过头。许多这些应用都有自己的收件箱，所以你最终可能会有一堆收件箱需要浏览才能保持有序。我的一个操作原则是减少收件箱的数量。我通过配置我的捕获应用，将新笔记或文档保存（或复制）到一个”万能桶”应用中来实现这一点。（对我来说，那就是DEVONthink。）</p>
+<p>这包括我在纸上做的笔记。每当我在实体笔记本上记下什么时，我会用一个叫做<em>Scanner
+Pro</em>的应用拍照，它会将它们保存为PDF格式在Dropbox中。从那里，它们进入我的DEVONthink收件箱。设置这个工作流程需要一些前期工作。但在实践中，我很少需要考虑它。我知道我的DEVONthink收件箱会有来自这些应用的最新项目。从那里，我可以像处理电子邮件一样组织和分类它们。</p>
+<p>DEVONthink
+也是我的主要知识库。这里存储着大部分等待被重新发现的内容。例如，我有一个文件夹用来保存从网上找到的文章和帖子，另一个文件夹用来保存期刊和其他学术出版物的论文
+PDF。DEVONthink 还索引了我在 Obsidian 中的长青笔记(evergreen
+notes)。</p>
+<p>当我撰写博客文章或演讲稿时，我会进入这个知识库，搜索与写作主题相关的内容。这个阶段的工作包括识别想法之间的联系、寻找理解上的空白、发现相关的延伸话题等。</p>
+<p>这个过程得益于我提前为内容项目添加标签的远见以及 DEVONthink 的 AI
+功能。新想法和研究材料从综合工作中涌现出来。这些内容会重新回到系统中，成为未来工作的素材。有时，这些新联系会激发新文章的灵感——一种自下而上的工作方法。</p>
+<p>使用计算机进行这种生成性思考有明显的好处。应用程序的搜索和链接能力远超纸张。许多应用还允许你以不同方式可视化信息，在大纲视图、思维导图和其他表现形式之间切换。你可以探索不同的配置、保存快照、回滚更改、跳转到关联的想法。简而言之，使用计算机来管理和发展想法以强大的新方式扩展了你的认知能力。</p>
+<p>你还可以通过发布博客文章、在社交媒体上发帖、发送通讯等方式快速分享你的学习成果。例如,在撰写本书时,我通过博客和通讯分享了章节的早期草稿。我经常收到有用的评论,这些评论改变了我对材料的思考方式。</p>
+<p>关键在于,处理想法是一个多步骤的过程,每个步骤需要不同的工具和技术。你的知识花园不会是单一工具,而是一组协同工作以支持你思考的工具集。如果这些工具能够良好配合会更容易,所以我们将研究三个原则来确保你的花园可以作为一个整体运作。但首先,让我们看看一位知识管理大师的工作。</p>
+<p><strong>著名笔记者</strong></p>
+<h2 id="niklas-luhmann">Niklas Luhmann</h2>
+<p>图片来源：Universitätsarchiv St.Gallen | HSGH 022/000941 | CC-BY-SA
+4.0, CC BY-SA 4.0, via Wikimedia Commons <a href="https://commons.wikimedia.org/w/index.php?curid=125616346">https://commons.wikimedia.org/w/index.php?curid=125616346</a></p>
+<figure class="img1">
+<img alt="Niklas Luhmann的黑白照片。" class="img2a" src="images/000029.jpg"/>
+</figure>
+<p>Niklas Luhmann (1927-1998)
+是一位德国社会学家和学者。在他的职业生涯中,Luhmann 出版了超过 70
+本书和近 400
+篇学术论文,主题范围从法律到爱情。他的工作在多个领域产生了影响力。</p>
+<p>Luhmann 惊人生产力的关键是他使用的
+<em>zettelkasten</em>(卡片盒),这是一个基于索引卡和文件柜的笔记系统。每当他遇到重要想法时,他会将其记录在一张约索引卡大小的纸片上,每个想法一张。使用精心设计的编址方案,他会写下包含相关想法的其他卡片的引用。Luhmann
+将这些卡片存储在大型文件柜中,顺序反映了每张笔记的地址。他还将卡片编号映射到关键词索引,使他能够在需要时定位相关想法。</p>
+<p>Luhmann 的系统无疑是模拟的,但它与数字超文本笔记系统(如 Obsidian 和
+Roam)共享许多特征。他将自己的系统视为在撰写论文或书籍时咨询的”交流伙伴”。他写道:</p>
+<blockquote>
+<p>通过大量使用这种技术,会产生一种次级记忆,一个我们可以不断交流的另一个自我。事实证明,它与我们自己的记忆相似,因为它没有完整构建的整体秩序,没有层级结构,当然也没有像书籍那样的线性结构。正因为如此,它获得了独立于作者的自己的生命。</p>
+</blockquote>
+<p>在按照本书所述建立知识花园时,你也将构建一个用于发展想法的”另一个自我”。Luhmann
+指出,这样的系统需要时间来发展。只有在积累了数年相互关联的思想数据库之后,系统才会达到临界质量。所以,请耐心等待:你的知识花园会结出果实,但这需要一些时间。</p>
+<h2 id="设计你的花园的核心原则">设计你的花园的核心原则</h2>
+<p>有许多不同的笔记应用程序和方法。你为知识花园选择哪一个将取决于你的特定需求。然而,在构建系统时,有几个基本考虑因素应该记住。特别是,你的系统组件应该是<em>可信赖的</em>、<em>开放的</em>和<em>可寻址的</em>。让我们更详细地看看这些原则。</p>
+<h3 id="可信赖的组件">可信赖的组件</h3>
+<p>你的知识花园扩展了你的思维。如果你不能信任它的组件,你的思考就不会顺畅。</p>
+<p>你的笔记库应该是稳定的。当你返回时,东西应该在你离开时的位置和状态。除非有火灾或洪水等物理损坏,纸张在这方面非常出色。五个世纪后,我们仍然可以访问达芬奇的笔记本。</p>
+<p>数字笔记系统则不够稳定。应用程序和操作系统不断更迭，需要持续升级。你必须频繁备份以防系统崩溃。基于云的应用可能更有韧性，但需要持续的互联网连接。发布这些应用的组织也是潜在风险：如果公司倒闭或被收购，你可能会陷入困境。</p>
+<p>你的应用应该尊重你的隐私。想法可能是机密的，你应该只在有意的情况下分享它们。检查支撑系统组件的商业模式。谁在为它付费？它是商业应用吗？开源的？广告支持的？（避免使用广告支持的产品。）</p>
+<h3 id="易进易出">易进易出</h3>
+<p>要有效地扩展你的思维，你的知识花园必须让你能够进入心流状态(flow
+states)。如果你总是在思考向系统输入和导出信息的机制，这就不会发生。寻找能让这一切变得简单的组件。</p>
+<p>笔记应用还应该让捕获变得快速简单。你在构思和捕获之间应该有尽可能少的阻力。这是纸张相对数字的优势所在：你只需打开笔记本就可以开始涂写。但一些数字应用在捕获方面非常快速。（iPhone
+上的 Drafts 应用在快速捕获方面表现出色。）</p>
+<p>你不能信任一个把你的笔记困住的系统。寻找在你决定切换时能导出信息的方法。应用是让导出变得简单还是困难？导出的笔记是否以方便、广泛使用的格式保存？你可以批量导出笔记，还是必须一次导出一条？（这是我停止使用
+OneNote 的原因之一。）</p>
+<p><code>实践笔记</code></p>
+<h4 id="种植一条长青笔记evergreen-note">种植一条长青笔记(Evergreen
+Note)</h4>
+<p>回顾你之前制作的笔记媒介清单。你是否在捕获任何长青笔记？如果是，打开那个应用或笔记本，翻阅那里的笔记。找出一条引起你注意的笔记，可能是因为它包含一个重要想法或是你想详细阐述的内容。你将在
+Obsidian 中为那个想法开始一条长青笔记。</p>
+<p>打开 Obsidian
+并新建一条笔记。输入一个简洁而清晰地描述这个想法的标题。将你的笔记专注于捕获<em>一个</em>想法而不是几个。例如，你可能已经开始了一条笔记来记录你在阅读
+<em>Duly Noted</em>
+时学到的内容。那太宽泛了。相反，你可以开始一条名为<em>长青笔记</em>的笔记来捕获书中的这一个想法。随着时间推移，当你对长青笔记这个概念了解更多时，你可以重新访问这条笔记。</p>
+<p>这并不意味着你不能有一条专门关于 <em>Duly Noted</em>
+整体的笔记。我们稍后会讨论这个。现在，只需专注于从书中捕获单个想法。你想把它们从现有的笔记捕获收件箱中清理出来，放到
+Obsidian 中，它将作为你的可信存储库。</p>
+<h3 id="可寻址的笔记">可寻址的笔记</h3>
+<p>链接是富有成效的知识花园的基础。你的知识花园组件应该让使用链接变得快速简单。你必须能够在相关想法之间轻松导航，无论它们是在纸上——如
+Luhmann 的卡片盒(zettelkasten)——还是以数字方式捕获，如在 Obsidian 和
+DEVONthink 等应用中。</p>
+<p>至少，你系统中的每条笔记都应该有一个唯一地址（无论是网络位置还是文件系统中的链接），你可以在其他笔记中包含这个地址。点击该链接应该带你到被引用的笔记。<sup>[^40]</sup></p>
+<p>鉴于网络已经存在近三十年，这应该是理所当然的。然而，许多笔记应用——包括一些最流行的——让笔记之间的快速链接变得困难，甚至完全不可能。寻找将笔记间链接作为一等公民对待的笔记应用。</p>
+<h2 id="章节总结">章节总结</h2>
+<p>在本章中，你已经看到了构成思考系统的工具和步骤。如果你开发这样一个系统并长期坚持使用，你最终会拥有一个相互关联的想法的可信存储库。虽然我不能保证你会像
+Niklas Luhmann
+那样富有成效，但你会比那些不严格增强思维的人更有优势。</p>
+<p>但我必须强调，达到临界质量(critical
+mass)需要纪律和时间。有一段时间，捕获和组织想法会感觉像是繁忙的工作。但这项工作本身就有价值：你在外化思想这一事实会让你对自己的思考方式更加谨慎。这是练习，和其他一切一样，练习会提高你的技能。</p>
+<p>在接下来的四章中，我们将更详细地探讨流程中的步骤。我们将从培养捕获思想的纪律和工具这一关键步骤开始。</p>
+<ol type="1">
+<li><p><span class="nn"><span class="calibre1" id="calibre_link-83" role="doc-backlink">1</span>.</span>
+在我的播客采访中，长期从事超文本研究的软件设计师 Mark Bernstein
+将这个隐喻的早期使用归功于 Xerox PARC 的 Cathy Marshall。<a href="https://theinformed.life/2022/10/23/episode-99-mark-bernstein/"><code>https://theinformed.life/2022/10/23/episode-99-mark-bernstein/</code></a></p></li>
+<li><p><span class="nn"><span class="calibre1" id="calibre_link-84" role="doc-backlink">2</span>.</span> 学习做到这一点的优秀资源是 David
+Allen 的 <em>Getting Things
+Done</em>（《搞定：无压力工作的艺术》）。David Allen, <em>Getting Things
+Done: The Art of Stress-Free Productivity</em> (New York: Penguin,
+2015).</p></li>
+<li><p><span class="nn"><span class="calibre1" id="calibre_link-85" role="doc-backlink">3</span>.</span> <a href="http://www.wakingup.com"><code>www.wakingup.com</code></a></p></li>
+<li><p><span class="nn"><span class="calibre1" id="calibre_link-86" role="doc-backlink">4</span>.</span> 关于清理收件箱的更多信息，参见
+Allen (2015).</p></li>
+<li><p><a href="http://www.devontechnologies.com/apps/devonthink"><code>www.devontechnologies.com/apps/devonthink</code></a></p></li>
+<li><p>Zettelkasten
+在德语中意为”卡片盒”——一个用来存放纸条的容器。</p></li>
+<li><p>关于卢曼系统的优秀概述，以及如何将其适配到现代技术，请参见 Sönke
+Ahrens 的《如何做智能笔记》(How to Take Smart Notes)（Createspace
+Independent Publishing Platform, 2017）。</p></li>
+<li><p>Niklas Luhmann，《与卡片盒交流：一份实证报告》(Communicating with
+Slip Boxes. An Empirical Account)，1992年。</p></li>
+<li><p>这是建立数字知识花园相对于模拟知识花园的关键优势。</p></li>
+</ol>
+<h1 id="第5章-不要让想法溜走">第5章 不要让想法溜走</h1>
+<p>你的注意力很糟糕，这是一种福气。如果你在每件事上都流连忘返，你就无法正常运作。相反，你会快速地从一件事转向另一件事。有用的想法可能会在噪音中迷失；捕获它们可以让它们从你的头脑中释放出来并进入现实世界，这样你以后就可以参考它们。</p>
+<p>在他1942年的短篇小说《博闻强记的富内斯》(Funes the
+Memorious)中，豪尔赫·路易斯·博尔赫斯讲述了一个拥有非凡记忆力的人的故事。在一次严重摔倒后，伊雷内奥·富内斯醒来发现自己瘫痪了，但能够回忆起他曾经历过的一切：特定日子里云的形状、他城镇里的每一道裂缝、马匹飘逸的鬃毛，以及”葡萄藤的所有嫩芽、串和葡萄”。</p>
+<p>有时你可能希望自己拥有像富内斯那样的记忆力。但他的”天赋”是有代价的。被琐碎细节淹没，他无法超越细节进行思考:</p>
+<blockquote>
+<p>毫不费力地，富内斯学会了英语、法语、葡萄牙语、拉丁语。然而我怀疑，他不太擅长思考。思考就是忘记差异、概括、抽象。在富内斯过度充盈的世界里，除了细节什么都没有，几乎都是连续的细节。</p>
+</blockquote>
+<p>虽然富内斯是一个虚构人物，但有些人确实拥有非凡的记忆力。他们也能记住过去的微小细节，但在思考现在和未来时却很吃力。这种情况很罕见；你的记忆力可能更普通。但你可以通过在便签上潦草写下几个字来增强它。</p>
+<p>当然，认知不仅仅涉及记忆。将思想外化在创造力中也起着关键作用。例如，在写文章时，制作思维导图可以给你带来新的见解。这张图充当了一种短期记忆缓冲区，用于探索想法之间的新关系。</p>
+<p>如果思考就是”忘记差异、概括、抽象”，正如博尔赫斯所说，那么你不完美的记忆是一种福气：它让你能够在抽象层次之间跳跃，分析现在，想象新的可能性。在这些努力中，你的盟友就是不起眼的笔记。</p>
+<p>但”笔记”可以有很多含义。有时，你会随手拿起身边的东西：便签、旧信封或手背。但你可以更有意识地选择在哪里以及如何扩展你的思维。你选择在哪里捕获想法取决于你想做什么以及你所处的情境。</p>
+<h2 id="捕获用例">捕获用例</h2>
+<p>有时你在洗澡时有了一个想法。有时你想给一本书做注释。有时你理清了一篇文章的结构。这些情况都可以通过在笔记中捕获思想来增强。但每种情况的做法都不同。我认为这些是捕获想法的不同方式。让我们来看看几种常见的方式。</p>
+<h3 id="随时捕获">随时捕获</h3>
+<p>我说的”随时”不仅仅指锻炼时，而是指在你做其他事情时捕获冒出来的想法。好想法随时可能出现；你必须为它们做好准备。例如，你可能在购物时想到了即将到来的演讲的完美开场白。</p>
+<p>关键是让它变得简单，这样你就可以快速回到你正在做的事情而不会分心。拿出手机，打开应用，口述想法——完成！挑战在于你可能会做出过于简短或模糊的笔记，导致以后无法解读。</p>
+<h3 id="听的时候捕获">听的时候捕获</h3>
+<p>有时，你在参加演示、讲座、会议、播客或视频时做笔记。与其他用于回忆的笔记一样，你要捕获足够的内容来记住材料，而不会陷入细节之中。解决方法是避免完全按照演讲者所说的内容进行捕获。</p>
+<p>当捕获”要点”（而不是逐字逐句）时，理解材料的结构会有所帮助。许多演讲者在演讲开始时会强调他们的要点：记下这些要点有助于保持方向感。另一个技巧是手写笔记：许多人打字速度比手写快，这迫使他们以不同的方式倾听。</p>
+<p>你如何倾听也取决于演示是现场直播还是录制的。显然，后者允许你暂停和跳过，使得更容易回顾不清楚的要点。你也可以使用AI来转录录音。但虽然转录有其作用，最好的讲座笔记是那些你综合和内化材料的笔记。如果你专注于完全捕获所有内容，你就无法做到这一点。</p>
+<h3 id="阅读时捕获">阅读时捕获</h3>
+<p>在阅读时做笔记就像是在和作者对话——你的页边注释回应着他们的文字。这可能是与另一个想法的联系、对另一本书的引用、引起共鸣的引文，或其他内容。无论是什么，你都不想失去它。</p>
+<p>在纸质阅读时，可以在页边涂写或使用小便签纸和铅笔。后者还可以作为特定想法的书签。另一种方法是在书旁边使用笔记本。这样可以有更多空间来绘制图表等。缺点是笔记与其上下文是分离的。（建议：记录下你找到这个想法的页码。）</p>
+<p>第三种方法是在电子书和PDF上做数字笔记。大多数电子阅读设备和应用程序都允许你高亮文本并添加注释。根据你使用的应用程序，这些笔记可以同步到其他设备。因为注释是数字化的，你可以轻松地将它们传输到其他应用程序。</p>
+<p>高亮是注释书籍的重要部分。你可以使用不同的高亮颜色来标出包含关键思想、难忘引文、开放性问题等的段落。我遵循麦克弗森(McPherson)的建议，高亮不超过10%的文本，并且只标注那些你想记住但认为自己不会记住的内容。</p>
+<p>与捕获相关的许多事情一样，注释和高亮你所阅读内容的关键是让笔记足够长以保持意义，但又足够短以免分散你的注意力。实体页边距没有足够的空间让人长篇大论，但电子书没有这个限制。不要让自己不堪重负。</p>
+<h3 id="创作时捕获">创作时捕获</h3>
+<p>这种模式与我们讨论过的其他模式不同。与其说是专注于讲座或书籍并记录你的想法，或在忙碌中捕获想法，不如说你在这里是要探索想法和可能性。把它想象成”用手思考”——但实际上，是你的整个身体，连同你的环境一起。</p>
+<p>例如，我在写这本书时探索了许多大纲。我主要使用Tinderbox中的笔记来完成，这是一个功能类似于带有数字便签纸的白板的应用程序。</p>
+<p>虽然其他笔记使用场景要求快速捕获以便你能回到正在做的事情，但生成式笔记制作(generative
+note-making)则要求拓展思维。你的重点在于笔记本身：它们才是主角。选择能让你与”页面”之间流畅互动的应用程序和笔记媒介。</p>
+<figure>
+<img alt="在写作过程中使用的一个”数字白板”截图，显示了Tinderbox应用中的黄色和橙色（数字）便签纸集合" src="images/000030.jpg"/>
+<figcaption aria-hidden="true">在写作过程中使用的一个”数字白板”截图，显示了Tinderbox应用中的黄色和橙色（数字）便签纸集合</figcaption>
+</figure>
+<p><strong>实用笔记</strong></p>
+<p>[同步你的Kindle高亮]</p>
+<p>在阅读时捕获想法是记笔记的常见用例。如果你阅读电子书，可以将笔记和高亮与你的笔记库同步。这需要使用一个名为Readwise的付费服务，它可以从Kindle、Apple
+Books和Kobo等流行的阅读应用和服务中导入你的高亮和笔记。然后你可以将它们导出到Evernote、Notion、Roam和Obsidian等流行的笔记应用程序。</p>
+<figure>
+<img alt="Obsidian笔记截图，显示了《玻璃球游戏》一书的摘录片段" src="images/000032.jpg"/>
+<figcaption aria-hidden="true">Obsidian笔记截图，显示了《玻璃球游戏》一书的摘录片段</figcaption>
+</figure>
+<p><em>通过Readwise的连接器插件同步到我的Obsidian仓库的小说《玻璃球游戏》的Kindle高亮。Readwise允许你为这些同步文件定义导出模板。</em></p>
+<p>这些笔记可以包含标签。例如，如果你在书中遇到包含难忘引文的段落，可以在Kindle书籍中添加包含
+<code>#quote</code>
+标签的注释。标签会自动随笔记一起出现。之后，当你查找所有包含
+<code>#quote</code> 标签的笔记时，就会找到那个特定的Kindle高亮。</p>
+<p>许多人抵制电子书的诱惑。我也对纸质书有特殊情怀。但数字笔记很有吸引力，尤其是对于非虚构类书籍。与Readwise这样的聚合器结合使用，电子书为你提供了一种强大的方式来收集知识，同时减少干扰。</p>
+<h2 id="捕获笔记的媒介">捕获笔记的媒介</h2>
+<p>可用于捕获笔记的媒介和这样做的理由一样多。了解每种媒介的优缺点将帮助你选择在特定情况下最有效的媒介。</p>
+<p>如前所述，纸笔有很多优点。但它们也有不适用于数字媒介的局限性。例如，数字信息可以同时按多个维度组织，如按时间顺序和主题。此外，你可以存储不同类型的信息：文本、图片、音频等。数字化也更容易查找和备份。</p>
+<p>不过，许多人（包括我）更喜欢用模拟媒介来记录某些类型的笔记。理想状态是结合模拟媒介的便利性和低摩擦力，以及数字媒介的组织能力。我还没有找到能完美实现这种融合的媒介，但你可以通过扫描纸质笔记来接近这个目标。我们将在第9章介绍如何做到这一点。</p>
+<h3 id="每种媒介都有一个收件箱">每种媒介都有一个收件箱</h3>
+<p>把每种笔记媒介都看作是捕获思想流的地方。当你在笔记本上写下想法时，你会得到一页又一页按捕获顺序排列的笔记。如果你拍照、录制语音备忘录或使用默认笔记应用，情况也是如此。这些连续的流对于回顾最近的想法很有用，但它们让查找旧内容变得困难。</p>
+<p>这就像不断地把文件堆放到物理收件箱里。最终，你必须翻遍一堆堆文件才能找到需要的东西。在下一章中，我们将讨论如何将笔记分类到系统中的正确位置。现在，请记住许多笔记应用都有收件箱——收件箱中的笔记不如那些存储在你以后能轻松找到的地方的笔记有用。</p>
+<h3 id="使用模板减少摩擦">使用模板减少摩擦</h3>
+<p>在你捕获想法一段时间后，你会注意到一些模式。当你开始写一条新笔记时，你会想：“这又是其中一条。”在这种情况下，模板会显著加快你的捕获速度。它们还会提醒你在捕获特定类型想法时应该包含哪些内容。模板通过让你快速捕获思想而无需思考该思考什么来减少摩擦。</p>
+<p>例如，我保留一份”晨间笔记”日志。也就是说，每天我都会写一条笔记，记录我在思考什么、前一天学到了什么、今天计划完成什么等等。我在Drafts中捕获这些笔记，我把它用作”捕获一切”的笔记应用。为了简化捕获，我创建了一个简单的模板，包含以下部分：</p>
+<ul>
+<li>一般笔记区域</li>
+<li>我学到或改进了什么？</li>
+<li>我感激：（后面跟着三个项目符号的空格）</li>
+<li>今天的目标：（后面跟着三个项目符号的空格）</li>
+</ul>
+<p>这些日志笔记的标题始终是当前日期，使用我们在第2章中介绍的ISO-8601格式编写。（Drafts可以自动用这种格式写入日期。）我为开始这些日常日志笔记分配了一个键盘快捷键，这帮助我无需考虑格式就能捕获我的思想。</p>
+<figure class="img1">
+&lt;img src=“images/000033.jpg” class=“img”
+alt=“Drafts.app的截图，显示一条新笔记，带有日期和以下三个部分：”我学到或改进了什么？““我感激：”
+和 “今天的目标：”。” /&gt;
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">我在Drafts中的晨间笔记模板。请注意文本是Markdown格式。这是因为我只使用Drafts进行捕获。我会将生成的笔记保存到DEVONthink中的永久日志存储库，该存储库原生使用Markdown。在那里，我可以将晨间笔记中的想法与我在其他地方收集的想法连接起来。</samp>
+</p>
+</figcaption>
+</figure>
+<p><strong>练习笔记</strong></p>
+<h2 id="创建模板">创建模板</h2>
+<p>与许多高级笔记应用一样，Obsidian允许你创建模板。要启用此功能，你必须打开<em>Templates</em>插件。你可以通过打开应用程序的设置并转到<em>Core</em>插件部分来实现。在那里，你可以按名称搜索插件，或向下滚动列表到Templates插件列出的位置。在那里你可以打开它。</p>
+<figure class="img1">
+<img alt="Obsidian的Core插件配置面板。" class="img" src="images/000036.jpg"/>
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">Templates是Obsidian附带的核心插件之一。核心插件必须打开才能使用其功能。</samp>
+</p>
+</figcaption>
+</figure>
+<p>请注意，Templates插件列表旁边有一个齿轮图标。点击此图标会显示插件的配置面板。在那里，你可以调整插件工作方式的细节。最重要的配置是你想要保存模板的文件夹。</p>
+<figure class="img1">
+<img alt="Obsidian的Templates配置面板。" class="img" src="images/000035.jpg"/>
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">Templates插件配置面板。第一个字段要求输入模板的文件夹位置。请注意我的以下划线开头：这是一个技巧，使该文件夹在按字母顺序排序时出现在正常命名的文件之前。</samp>
+</p>
+</figcaption>
+</figure>
+<p>Obsidian会将保存在此位置的文件视为模板。要应用模板，请转到一条笔记并点击窗口左侧工具栏上的”插入模板”按钮。这将把模板的内容插入到该笔记中。（如果笔记不为空，它不会清除其内容——但你可能需要复制和粘贴内容以将其放置到正确的位置。）</p>
+<figure class="img1">
+<img alt="Obsidian中的插入模板按钮。" class="img2" src="images/000031.jpg"/>
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">Obsidian工具栏中的”插入模板”按钮。</samp>
+</p>
+</figcaption>
+</figure>
+<p>和普通笔记一样，你可以用 Markdown 编写模板。不过，Obsidian
+提供了一些特殊代码，可以自动插入文件名和日期等变量。这是我在记录阅读过的书籍和论文时使用的模板的
+Markdown 代码:</p>
+<blockquote>
+<p><code>--- created: {{date}} {{time}}</code></p>
+<p><code>url:</code></p>
+<p><code>---</code></p>
+<p><code>## {{title}}</code></p>
+<p><code>### Meta</code></p>
+<p><code>Title:: {{title}}</code></p>
+<p><code>Author::</code></p>
+<p><code>Publisher::</code></p>
+<p><code>Year::</code></p>
+<p><code>DOI::</code></p>
+<p><code>### Notes</code></p>
+<p><code>### Criticism and influence</code></p>
+<p><code>### References</code></p>
+<p><code>- [[{{title}} (highlights)]]</code></p>
+<p><code>- Bookends</code></p>
+<p><code>- Amazon</code></p>
+<p><code>#litnotes</code></p>
+</blockquote>
+<p>用花括号括起来的项目是变量，每当我将此模板应用到笔记时，Obsidian
+会默认插入这些变量。因此，如果我新建一个名为 <em>The Glass Bead
+Game</em> 的空白笔记并应用此模板，Obsidian 会将所有
+<code>{{title}}</code> 实例替换为 <em>The Glass Bead Game</em>。</p>
+<p>此模板中的参考文献部分是我添加 vault
+中其他笔记链接以及外部参考资料（如
+Bookends(一个引用管理应用)和该书的亚马逊页面）的地方。注意参考文献下的第一项:
+这是指向我 vault 中另一条笔记的 wikilink，格式为笔记标题后跟括号中的
+<em>highlights</em> 一词。当我将此模板应用到名为 <em>The Glass Bead
+Game</em> 的笔记时，Obsidian 会这样呈现该行:</p>
+<blockquote>
+<p><code>- [[The Glass Bead Game (highlights)]]</code></p>
+</blockquote>
+<p>正如你在本章前面看到的，我使用 Readwise 同步我的 Kindle 标注。我已将
+Readwise 配置为在它从这些标注创建的笔记名称后加上括号中的
+<em>highlights</em> 一词。在我标注电子书后，一个名为 <em>The Glass Bead
+Game (highlights)</em> 的笔记会自动出现在我的 vault
+中。因此，只要我的新笔记标题与 Readwise
+中的书名匹配，此模板就会自动将我的新笔记链接到包含该电子书标注的笔记。</p>
+<h2 id="一些最后的提示">一些最后的提示</h2>
+<p>虽然捕捉笔记看似流程中最基础的部分，但仍有更有效的做法。记住这些提示将提高你用笔记扩展思维的能力，同时保持专注当下。</p>
+<h3 id="做好捕捉准备">做好捕捉准备</h3>
+<p>有效捕捉的关键是尽可能少地捕捉，这样你可以尽快回到正在做的事情。“尽可能”意味着捕捉足够的内容，这样你以后可以回到这个想法并且能够理解它。因此，你必须在捕捉过多和过少之间取得平衡，而且要快速完成。这个过程需要优化捕捉方式，让你能在想法出现的那一刻记录下来。</p>
+<p>摄影师渴望捕捉”决定性瞬间”:
+一个能成就特别照片的准确动作或场景。为了实现这个目标，他们看重能让他们快速拍摄的相机。摄影师
+Chase Jarvis
+说过”最好的相机就是你随身携带的那台”。一个功能繁多的高级工具如果放在家里对你毫无帮助;
+不如在机会出现时手边有一个更简单的工具。</p>
+<p>同样，你应该始终有捕捉想法的工具。它不一定是笔记本;
+你的手机就是一个强大的笔记设备。你可以使用内置的备忘录应用、给自己发邮件、录制语音、拍照等等。功能强大的设备和小纸质笔记本相对便宜且容易获得。使用它们。</p>
+<h3 id="捕捉恰到好处">捕捉恰到好处</h3>
+<p>正如你在第4章看到的，有效的捕捉需要保持专注当下。然而，记下一个想法，无论是在纸上还是数字设备上，都会让你脱离当下:
+你会有片刻停止关注眼前的情况或人。等你回过神来，可能已经错过了一些内容。</p>
+<p>你希望尽快回到当前情况。这需要捕捉简短的笔记，只需几个字或一个快速草图。然而，你有多少次拿起之前写的简短笔记，却发现自己完全不知道它指的是什么?</p>
+<p>例如，想象你出去散步时看到一张音乐会海报，宣传三周后有一场你想参加的演出。你打开笔记应用并写下”9/27
+晚8点”来提醒自己。一周后当你重新查看这条笔记时，你困惑地盯着它，努力回忆它是关于什么的。</p>
+<p>多少算太少，多少算太多? 答案因人而异;
+有些人记忆力更好，所以几个字可能就够了。我的记忆力不太好，所以我倾向于捕捉比我认为需要的更多的上下文。几周后当我重新查看笔记并能无缝衔接时，我会很感激自己这样做。</p>
+<h3 id="留意你正在关注的内容">留意你正在关注的内容</h3>
+<p>McPherson认为，学习中最重要的技能可能是区分重要和不重要的信息。<sup>[^45]</sup>
+这个原则普遍适用于所有形式的笔记记录：你要专注于重要的内容。</p>
+<p>例如，如果你正在听历史讲座，演讲者说的内容比他或她穿什么更重要：关注信息本身，而不是信息传递者。此外，考虑到讲座的主题，你可以留意影响这段历史的关键事件、人物、机构和技术。</p>
+<p>如果这是一场化学讲座或团队进展会议，你会关注不同的内容。知道你在关注什么有助于你集中注意力，这样你就不会浪费时间记录无关紧要的事情。</p>
+<h2 id="明确你是否在记录长期保存的内容">明确你是否在记录长期保存的内容</h2>
+<p>我们已经介绍了常青笔记和临时笔记的区别。知道你在记录哪种笔记会改变你的记录方式。临时笔记可以更随意、更简略，而永久笔记则需要更多的关注和用心。</p>
+<p>例如，音乐会提醒只在活动前有用。相反，你可能正在阅读一本工作相关的书，并了解到一个与你产生共鸣的想法。你想把它记录下来，以便日后重温并将其与其他相关想法联系起来。这个笔记的生命周期更长，所以你可能想记录更多的上下文，这样当你将来回顾它时才能理解。</p>
+<p>另外，要考虑你是在做笔记(note-taking)还是在创造笔记(note-making)。无论哪种情况，动笔记录(或在电脑上打字)都会改变你关注的方式，让你能够过滤掉干扰。如果在笔记本上涂鸦能帮助你更好地集中注意力，你的笔记可能不会反映你听到的内容——但如果这有助于你更好地思考，那么这就是记笔记的合理理由。</p>
+<p><code>著名笔记记录者</code></p>
+<h3 id="nicole-van-der-hoeven">Nicole van der Hoeven</h3>
+<figure>
+<img alt="Nicole van der Hoeven的照片" src="images/000034.jpg"/>
+<figcaption aria-hidden="true">Nicole van der Hoeven的照片</figcaption>
+</figure>
+<p>Nicole van der Hoeven是Grafana
+Labs的开发者倡导者，这家公司开发软件开发工具。她喜欢通过博客、数字花园和YouTube”公开学习”，在YouTube上她主持一个专注于教授如何使用Obsidian的频道。她写道：</p>
+<blockquote>
+<p>我认为自己是一个知识工作者：我工作的很大一部分取决于我学习新技术的速度以及我能多清楚地将所学传授给他人……在技术领域保持相关性基本上要求你学得多、学得快，并且乐在其中。幸运的是，Obsidian在这方面表现出色。<sup>[^46]</sup></p>
+</blockquote>
+<p>我采访了Nicole，以了解更多关于她使用笔记的一个场景：玩桌面角色扮演游戏(RPG)并管理游戏。这些游戏由参与者创造，他们扮演角色，利用想象力设计冒险。一名玩家(“地下城主(dungeon
+master)”)引导故事并为队伍设置挑战。</p>
+<p>游戏可能持续几天甚至几周，地下城主必须保持连续性。拥有一个”可扩展的知识库”会很有帮助，这就是Nicole对Obsidian的描述。单独的笔记可以描述游戏世界中的不同地点，这些笔记可以链接到其他笔记，以创建队伍在世界中互动的记录。</p>
+<figure>
+<img alt="Nicole van der Hoeven的YouTube视频截图，显示了她的RPG游戏中的一个角色笔记" src="images/000037.jpg"/>
+<figcaption aria-hidden="true">Nicole van der
+Hoeven的YouTube视频截图，显示了她的RPG游戏中的一个角色笔记</figcaption>
+</figure>
+<p><em>Nicole在YouTube视频中描述她如何使用Obsidian进行RPG游戏，既作为玩家也作为地下城主的截图。</em></p>
+<p>在个人电脑出现之前，人们就已经在玩桌面角色扮演游戏了。早期玩家使用纸张记录他们的冒险。但连接式笔记工具将这种体验提升到了另一个层次。知识花园不仅仅用于学习和工作：它们也可以是游乐场。</p>
+<h2 id="章节总结-1">章节总结</h2>
+<p>David Allen是经典生产力书籍《尽管去做(Getting Things Done,
+GTD)》的作者，他提倡培养”心如止水(mind like
+water)“：一种开放接受新信息的清晰心理状态。这需要在一个可信赖的系统中记录承诺，这样大脑就可以专注于其他事情。<sup>[^47]</sup></p>
+<p>虽然GTD专注于承诺，但同样适用于其他想法。在现实世界中”固定”想法可以让你不必把所有事情都记在脑子里。知道你的思考在某个安全稳定的地方外部化，会给你一种轻松和灵活的感觉。当然，认知不仅仅关乎记忆：记录想法让你能够发展和探索它们之间的关系。</p>
+<p>有效的记录需要在记录过少和过多之间找到平衡点。随着时间的推移，记录恰到好处的上下文会变得自然——但这需要练习。但是记录一个想法并不保证你以后能找到它。这需要规划、一个合理的长期存储系统，以及使用它的纪律。</p>
+<ol type="1">
+<li><p>Jorge Luis Borges, <em>Ficciones</em> (纽约: Grove Press,
+1962).</p></li>
+<li><p>Fiona McPherson, <em>Effective Notetaking</em> (新西兰: Wayz
+Press, 2012).</p></li>
+<li><p><a href="https://readwise.io/"><code>https://readwise.io/</code></a></p></li>
+<li><p>如果你更喜欢开源替代方案，有些人使用 Zotero
+文献管理器实现类似的工作流程，它也允许你标注 PDF 并将高亮同步到 Obsidian
+和其他笔记应用。</p></li>
+<li><p>Fiona McPherson，《有效笔记》(Effective Notetaking)（新西兰：Wayz
+Press，2012）。</p></li>
+<li><p><a href="https://nicolevanderhoeven.com/blog/20210518-how-i-use-obsidian-at-work/"><code>https://nicolevanderhoeven.com/blog/20210518-how-i-use-obsidian-at-work/</code></a></p></li>
+<li><p><a href="http://www.youtube.com/watch?v=3pt6_srUZ7U&amp;t=188s"><code>www.youtube.com/watch?v=3pt6_srUZ7U&amp;t=188s</code></a></p></li>
+<li><p>David Allen，《搞定：无压力工作的艺术》(Getting Things Done: The
+Art of Stress-Free Productivity)（纽约：Penguin，2015）。</p></li>
+</ol>
+<h1 id="第6章-把一切放在正确的位置">第6章 把一切放在正确的位置</h1>
+<p>仅仅捕获想法是不够的。要让你的花园帮助你更好地思考，你还必须找到并使用这些内容。捕获的目标是保持专注和心流，而长期存储则让”未来的你”更容易找到相关想法，同时不会让”现在的你”感到不知所措。</p>
+<p>这是一个长期存在的难题。在《航海史》(The History of
+Navigation)（1704）中，John Locke
+建议旅行者仔细观察他们访问的地方，不要让观察受到他人著作的影响，</p>
+<blockquote>
+<p>因为在将他们的观察与其他人进行比较时，他们常常会发现相当大的差异。因此，让他们总是手边准备一个记事本来记下每一件值得记住的事情，然后在晚上更有条理地誊写白天记下的笔记。</p>
+</blockquote>
+<p>受会计方法的启发，早期现代学者，如
+Locke，保存不同类型的笔记本。他们使用”草稿本”(waste
+books)临时存储想法，其中一些他们会在稍后转移到更有结构的”摘抄本”(commonplace
+books)中。Locke 本人设计了一种索引想法的方法，使它们更容易找到。</p>
+<p>有许多这样的方法可以用来找到你的东西。我们已经讨论过如何将笔记链接成新兴结构，从下而上地组织信息。在本章中，我们将讨论如何从上而下组织笔记，以便你以后可以找到并使用它们。</p>
+<h2 id="从需求到信息再回到需求">从需求到信息（再回到需求）</h2>
+<p>许多人对信息感到不知所措。但有一些应对方法。其中一个值得研究的是个人信息管理(Personal
+Information Management, PIM)，它专注于帮助个人组织他们的东西。</p>
+<p>在《保持找到的东西被找到》(Keeping Found Things Found)中，William
+Jones 写道，“PIM
+活动是努力建立、使用和维护信息与需求之间的映射。”这种”映射”需求和信息的概念对于理解如何最好地组织笔记很重要。让我们来解释这些术语。</p>
+<p>想象你正在计划烹饪一道复杂的菜肴，却发现缺少关键食材。在去商店之前，你写下你需要的东西。这个清单让购物变得快速简单。但没有它，你可能会发现自己站在过道中间努力回忆需要买什么。</p>
+<p>在这个场景中，需求是获得必要的食材。完成这个任务服务于一个更高层次的需求：准备一道特定的菜肴。而完成那个任务可能又服务于一个更高层次的需求。例如，你可能正在用晚餐庆祝一个里程碑。</p>
+<p>食材清单是信息：它在你能做些什么的时候（即在商店时）提醒你需要什么。顺便说一句，如果你把清单放在口袋里，你必须记住它在哪个口袋里。信息的位置也是信息：如果你在需要时找不到清单，它就没什么用了。</p>
+<p>映射将你与正确的信息在正确的时间连接起来。一些映射是外在于你的，比如带有食材的便条。但其他映射是内在的：它们没有有形的表现形式。例如，总是把购物清单放在左后口袋是一个内在映射：如果你坚持这个习惯，你就再也不必去想它了。</p>
+<p>这个例子看起来微不足道，因为如果你二十分钟前刚把便条放在口袋里，你不太可能忘记它在口袋里。但许多信息的保质期更长：你可能下周或五年后才需要它。所以，知道在哪里找到指向东西所在位置的指针很重要。（这就是为什么索引总是在书的后面：那是我们期望它们所在的地方。）</p>
+<p>到目前为止，我们已经讨论了将信息映射到需求。但这种关系也反过来：信息激发需求。这在广告中很明显，广告旨在在你的脑海中植入欲望。但笔记也是如此。如果你曾经通过列大纲进行头脑风暴，你就经历过这一点：向大纲添加一个项目会让你想起应该在那里的其他项目。</p>
+<p>当你可以在需要时轻松找到东西时，你可以判断信息到需求的映射是否有效。但大多数时候，你只在找不到的时候才注意到——当它是你自己写的东西时尤其令人沮丧。AI
+可以提供帮助，但创建良好的映射会让你走得更远。你可以通过有意识地使用容器和元数据来做到这一点。</p>
+<h2 id="在容器中存储东西">在容器中存储东西</h2>
+<p>当你考虑整理东西时，可能会想到定义容器来存放你的东西：文件夹、计算机目录、图书馆书架等。在你的知识花园中，你将笔记放入你期望以后能找到它们的分组中。有两种基本方法可以做到这一点：堆放和归档。</p>
+<h3 id="堆放">堆放</h3>
+<p>堆放就像它听起来的那样：把东西堆成一堆。在计算机出现之前，人们在（物理）桌面上这样做：新账单会放入”收件箱”托盘或”待处理”堆中。偶尔，人们会查看这些物品并抄录、归档或丢弃它们。</p>
+<p>你的桌子上可能有几堆这样的东西。它们很方便，因为它们让东西”触手可及”。但它们无法扩展；如果你有很多堆，你会失去对东西的追踪。（物理）堆放使查找旧东西变得困难。</p>
+<p>当然，计算机也有堆放。你可能会在计算机桌面上成堆地存放文档、图片、扫描件和其他东西。如前所述，大多数笔记应用程序也有一个特殊容器，其行为类似于无底堆：收件箱。</p>
+<p>你可能使用各种应用程序来捕获笔记。这会造成额外负担，因为你必须分类处理多个收件箱。尽可能瞄准最少的收件箱数量。避免使用提供类似特性和功能的应用程序。使用自动化将笔记整合到尽可能少的堆中。</p>
+<p>在被埋没之前，你可以管理的纸张数量是有限的。计算机没有这些限制：你可以不断添加东西并使用搜索来解救你。但堆放不是长期策略；如果你不定期整理收件箱，你会得到一团无法使用的混乱。而且越混乱，就越难整理，形成恶性循环。</p>
+<h3 id="归档">归档</h3>
+<p>归档涉及将笔记存储在你以后可以找到它们的容器中。这个过程需要定义对”未来的你”有意义的类别——这很有挑战性，因为你将来会有不同的需求和兴趣。所谓”正式”，我指的是基于预定义类别的集合。想想标签悬挂文件夹：你可能有一个用于保险，另一个用于税务等。这些是你计算机中文件夹和目录的类比。</p>
+<p>与物理文件夹不同，数字容器可以包含无限的容器和子容器。也就是说，你可以将文件夹保存在文件夹内的文件夹中。数字容器一次只能有一个”父”容器：一个文件夹可以包含多个子文件夹，但不能包含在多个文件夹中。这同样适用于许多笔记应用程序中的容器。</p>
+<p><strong>附注</strong></p>
+<p><strong>常见分类框架</strong></p>
+<p>想象一下，你正在进行几个需要记录会议纪要的项目。过一段时间后，你会有很多这样的笔记。你如何分组它们，以便以后能找到？你可以采取几种方法。你可以按日期（即按时间顺序）、按参与人员或按项目进行分组。虽然看似有无穷无尽的可能性，但有两种分类法值得研究：LATCH
+和 PARA。</p>
+<p><strong>LATCH</strong></p>
+<p>信息架构师 Richard Saul Wurman
+建议有五种组织信息的方式，他用首字母缩写 LATCH 来总结：</p>
+<ul>
+<li><strong>位置(Location)</strong>，用于与特定地点相关的项目——无论是城市、国家、身体部位等。</li>
+<li><strong>字母(Alphabet)</strong>，对于大量同质信息的集合很有用。</li>
+<li><strong>时间(Time)</strong>，用于与特定时刻相关的项目，例如日志或日记。</li>
+<li><strong>类别(Category)</strong>，用于组织以某种方式相关的不同项目。想想超市的过道。</li>
+<li><strong>层次(Hierarchy)</strong>，根据项目的大小或相对重要性对事物进行分组，例如价格范围或尺寸差异。</li>
+</ul>
+<p>LATCH
+不是确定性的；有些人提出了变体。此外，类别和层次分组非常广泛。尽管如此，这可以成为你分组的一个良好起点。</p>
+<p>许多笔记应用程序允许你按字母顺序或时间顺序对项目进行排序。所以实际上，要考虑的主要维度是位置、类别和层次。无论你选择哪个，都要保持一致：如果你使用时间作为主要分类法，不要混入按类别或层次组织的文件夹。</p>
+<p><strong>PARA</strong></p>
+<p>LATCH
+的”类别”分组非常广泛。毕竟，任何东西都可以是一个类别。你如何决定如何对笔记进行分类？</p>
+<p>一种方法是按它们代表的内容类型对它们进行分组：会议纪要、读书笔记、网络书签等。另一种方法是按笔记服务的上下文对笔记进行分组：一些与项目相关，而另一些是长期参考材料。</p>
+<p>这种方法的一个例子是 Tiago Forte 的 PARA，它提出了一个四组分类：</p>
+<ul>
+<li><strong>项目(Projects)</strong>，有截止日期的</li>
+<li><strong>领域(Areas)</strong>，正在进行的</li>
+<li><strong>资源(Resources)</strong>，不属于领域或项目的材料</li>
+<li><strong>归档(Archives)</strong>，用于存储不活跃的项目、领域或资源</li>
+</ul>
+<p>为什么要保留不再活跃的东西？因为计算机有大量空间和出色的搜索功能。你可能在某个时候需要重新访问旧材料，所以保留它们不会损失太多。也就是说，你不希望它们在日常工作中分散你的注意力。</p>
+<p>也就是说，归档需要比堆放更多的提前思考。容器中的东西应该是相关的——即它们应该涵盖相同的主题或话题。你必须预先考虑这些类别。例如，银行对账单可能归入<em>财务文件</em>，食谱归入<em>健康</em>。如果你有很多类型的东西，创建一个好的分类法可能会很有挑战性。此外，分类法会随着时间而改变。</p>
+<h2 id="合理归档的建议">合理归档的建议</h2>
+<p>与个人知识管理(PKM)中的许多事情一样，容器的使用也可能过度。你很容易最终得到许多名称略有不同的文件夹，这会让你的工作更加困难。以下建议将帮助你实施合理的容器策略。</p>
+<h3 id="清晰命名容器">清晰命名容器</h3>
+<p>由于容器长期存储笔记，清晰的名称很重要。你应该能够扫描文件夹列表并快速找到你要找的那个。这需要一致的模式来突出容器之间的关键区别。</p>
+<p>避免模糊的标签。例如，标签<em>项目1</em>、<em>项目2</em>和<em>项目3</em>可能很短，但几年后，你可能不记得<em>项目2</em>指的是什么。更清晰的名称应该是<em>阿拉斯加假期</em>——或者<em>阿拉斯加假期2016</em>以区分该项目的未来变体。</p>
+<p>因为许多应用程序允许你按字母顺序对容器进行排序，所以前几个字符很重要。<em>阿拉斯加假期2016</em>将出现在<em>巴哈马假期2018</em>之前。考虑哪个区别对未来的你可能更重要：目的地(<em>阿拉斯加、巴哈马</em>)、年份，还是这是一次假期。如果是后者，请将你的文件夹命名为<em>假期阿拉斯加2016</em>和<em>假期巴哈马2018</em>，这样在按字母顺序排序时会将假期放在一起。</p>
+<h3 id="追求恰好够用的容器数量">追求恰好够用的容器数量</h3>
+<p>计算机对你可以创建多少个容器没有实际限制，所以你可能会想为想到的每个分组创建一个文件夹。这是一个错误。文件夹越多，就越难找到你要找的东西。当你整理笔记时，也更难决定每个笔记应该放在哪里。大型集合也更难维护。</p>
+<p>遵循”七加减二”规则：在任何给定容器中目标是拥有五到九个子文件夹。如果你在一个容器中看到超过九个文档或笔记，你可能需要一个新容器。结果是一个具有深度和广度的层次结构，而不是一个扁平的、有很多对等子文件夹的结构。</p>
+<figure class="img1">
+<span class="calibre1" id="calibre_link-551"></span><img alt="Two hierarchical diagrams. One shows a tree that has few sub-nodes with lots of sub-sub-nodes, and the other shows a tree with lots of sub-nodes and few sub-sub-nodes." class="img" src="images/000038.jpg"/>
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">深层与广层的层次结构。</samp>
+</p>
+</figcaption>
+</figure>
+<p>一个例外是用作非活跃或不常用材料的长期档案的容器。在这种情况下，你不关心有多少子文件夹，因为你不会日常使用它们。但要清晰地命名你的文件夹，以便在需要时能够找到它们。</p>
+<h3 id="把东西保存在未来的你会找到的地方">把东西保存在”未来的你”会找到的地方</h3>
+<p>有些笔记显然要放在特定的容器中。如果你在写关于阿拉斯加假期的内容，<em>阿拉斯加假期</em>文件夹就是显而易见的容器。但有些东西不容易预先分类。可能一个笔记跨越两个或更多类别。它应该放在哪里？</p>
+<p>说起来容易，“把它放在你以后会找到它的地方。”
+但你怎么做到这一点？“未来的你”可能会在哪里寻找这个东西？这不是一个简单的决定；现在对你来说符合逻辑的东西在一个月后可能就不合理了。</p>
+<p>我学会了跟着直觉走。每当我想知道，“我应该把这个存储在哪里？”某个地方就会浮现在脑海中。偶尔，这是一个在逻辑上没有意义但<em>感觉</em>对的位置。我的感觉是，如果这是我现在认为它应该去的地方，“未来的我”也会这样认为。这种方法还没有让我失望过。相反，每当我通过创建精心设计的自上而下的组织方案来过度思考存储时，我就会放错东西。</p>
+<p>凯文·凯利(Kevin
+Kelly)提供了关于如何决定东西应该存储在哪里的有用建议：</p>
+<blockquote>
+<p>如果你在家里找东西，终于找到了，当你用完它时，不要把它放回你找到它的地方。把它放回你最初寻找它的地方。</p>
+</blockquote>
+<p>你如何组织个人笔记不需要对其他人有意义。“跟着感觉走”同样适用于你的笔记和其他东西，而且风险更低，因为你可以使用搜索。当然，如果需要，你可以稍后移动东西。</p>
+<h3 id="对特定信息类型使用专用应用程序">对特定信息类型使用专用应用程序</h3>
+<p>LATCH和PARA可用于组织不同类型的信息：会议纪要、文档、一般笔记等。其中一些类型具有特定的结构和用途，最好在专门的应用程序中管理。</p>
+<p>事件——与特定日期和时间相关的概念——属于你的日历。联系人详细信息放入联系人管理和CRM应用程序。承诺应该在待办事项应用程序中。还有用于管理书签和文献引用的专门应用程序。</p>
+<p>将内容存储在专门的应用程序中有两个优势。首先，这些应用程序的结构设计使得存储和查找这些特定类型的信息更快。其次，将内容保存在特定应用程序中可以让你在需要时不用纠结它们可能在哪里。</p>
+<p>当然，应用程序能够互操作会很有帮助。例如，许多 macOS
+应用程序提供共享菜单，让它们可以将项目发送到其他应用程序。你应该优先选择那些在其操作系统生态中表现良好的应用程序。（遗憾的是，这是
+Obsidian
+的缺点之一：由于它被设计为跨平台应用程序，因此没有使用某些特定于操作系统的功能。）</p>
+<h2 id="元数据">元数据</h2>
+<p>容器并不是组织内容的唯一方式。你还可以定义描述笔记的属性，以便以后找到它们。常见的策略包括清晰、一致的命名和使用标签等元数据。我们在第2章讨论了命名，所以让我们专注于元数据。</p>
+<p>元数据是一个抽象的概念，但如果你想有效地组织笔记，理解它很重要。要点是：<em>元数据是提供其他数据信息的数据</em>。看，我说过它很抽象。让我们用一个例子来深入了解。</p>
+<p>想象一下，你在加利福尼亚州北部徒步旅行。你看到了壮观的景色，于是用手机拍了一张照片。多年后，一位朋友说他们计划访问该地区，所以你告诉他们这次徒步旅行。“来，”你说，“让我给你看一张照片。”
+你打开照片应用程序，转到它的地图，然后查找你在那个位置拍摄的照片。</p>
+<figure class="img1">
+<span class="calibre1" id="calibre_link-555"></span><img alt="iPhone 照片应用的三个截图。第一个显示旧金山湾区的地图，上面有照片集群。第二个显示特定照片的元数据详细信息屏幕。第三个显示允许用户调整照片日期和时间的功能。" class="img" src="images/000040.jpg"/>
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">Apple Photos
+使用元数据帮助你找到照片。该应用程序使你能够更改某些元数据，例如拍摄照片的日期和时间。</samp>
+</p>
+</figcaption>
+</figure>
+<p><samp class="sans_futura_pt_demi_b_1">练习笔记</samp></p>
+<h3 id="清空你的收件箱">清空你的收件箱</h3>
+<p>回到你在第4章中写下的笔记媒介清单。行代表你已捕获的几个堆。有些你会想保留以备后用。</p>
+<figure class="table">
+<table class="table1">
+<thead class="calibre9">
+<tr class="calibre10">
+<th class="table2" scope="col">
+<p>
+<samp class="sans_futura_pt_heavy_b_">媒介</samp>
+</p>
+</th>
+<th class="table2" scope="col">
+<p>
+<samp class="sans_futura_pt_heavy_b_">目的</samp>
+</p>
+</th>
+<th class="table2" scope="col">
+<p>
+<samp class="sans_futura_pt_heavy_b_">常青？</samp>
+</p>
+</th>
+</tr>
+</thead>
+<tbody class="calibre11">
+<tr class="calibre10">
+<td class="table3">
+<p>
+便利贴
+</p>
+</td>
+<td class="table3">
+<p>
+提醒事项
+</p>
+</td>
+<td class="table3">
+<p>
+否
+</p>
+</td>
+</tr>
+<tr class="calibre10">
+<td class="table3">
+<p>
+笔记应用
+</p>
+</td>
+<td class="table3">
+<p>
+购物清单
+</p>
+</td>
+<td class="table3">
+<p>
+否
+</p>
+</td>
+</tr>
+<tr class="calibre10">
+<td class="table3">
+<p>
+笔记应用
+</p>
+</td>
+<td class="table3">
+<p>
+待读书籍
+</p>
+</td>
+<td class="table3">
+<p>
+是
+</p>
+</td>
+</tr>
+<tr class="calibre10">
+<td class="table3">
+<p>
+纸条
+</p>
+</td>
+<td class="table3">
+<p>
+购物清单
+</p>
+</td>
+<td class="table3">
+<p>
+否
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</figure>
+<p>当你重新查看收件箱时，你会看到不同类型的笔记：有些会有其他人的联系方式，有些会有提醒事项，有些会是关于会议的笔记。将联系方式、事件和承诺转移到专门的应用程序，例如联系人管理器、日历和待办事项管理器。</p>
+<p>有些笔记，例如项目的会议记录，不适合放在这些专门的应用程序中的任何一个。考虑在你的计算机（或你的笔记应用程序）中为该项目创建一个容器。（或者，你可以创建一个文件夹来收集所有会议记录。）</p>
+<p>你的手机在拍照时捕获的不仅仅是像素。除了构成图像的像素外，手机还捕获<em>描述</em>照片的数据：其位置、日期和时间、光圈等。图片是<em>数据</em>，而所有这些其他内容—时间、位置、相机设置—是<em>元数据</em>。</p>
+<p>当你向朋友展示时，图片是你希望他们看到的；元数据则在那里帮助你在照片集合中成千上万张照片中找到这张照片。某些元数据（例如文件创建和修改日期）会自动设置。许多应用程序还允许你添加和编辑元数据，例如描述、标签、评分等。</p>
+<h3 id="标签">标签</h3>
+<p><em>标签</em>是你添加到项目以描述它们的一种元数据。你可以给物理笔记打标签，但基于纸张的标签系统很麻烦。计算机改变了这一点，因为给数字内容打标签很容易。在许多基于
+Markdown
+的应用程序中，你只需在单词前添加井号(#)字符即可将其转换为标签。</p>
+<p>理解标签优势的一种方法是将它们与文件容器进行对比。如我之前所指出的，通常每个笔记一次只存在于一个”父”容器中。标签则不同：你可以向笔记或文档添加多个标签以创建”矩阵式”分组。例如，你可以同时按项目<em>和</em>类型组织笔记。</p>
+<p>而容器将笔记分成离散的组，标签则相反：它们将笔记关联起来。例如，你可能想查看2021年12月写的所有笔记，无论它们存储在哪里。因为日期和时间是与笔记相关的元数据，你可以看到在特定月份捕获的所有笔记。</p>
+<p>许多笔记应用允许你为笔记分配标签，然后查看所有具有这些标签的笔记列表。例如，你可以添加一个名为<code>#ToDo</code>的标签，然后查看所有分配了该标签的笔记列表。它们可能在不同的文件夹中，但标签将它们汇集在一个视图中。完成每个任务后，你可以从笔记中删除标签，这会将其从列表中移除。</p>
+<p>你可以添加任意数量的标签。每次添加时，笔记都会成为同样具有该标签的笔记集合的一部分，以及包含该标签和其他标签的子集。</p>
+<h4 id="标签的常见挑战">标签的常见挑战</h4>
+<p>虽然标签很方便，但它们也有缺点。很容易过度使用。拥有太多标签会产生摩擦，因为你必须考虑添加哪个标签。你可能最终会管理同一术语的细微变体。例如，你可能使用<code>#book</code>标签来描述一本书，而在另一本书上使用<code>#books</code>。</p>
+<p>但情况可能更糟：<code>#book</code>和<code>#books</code>可能<em>不是</em>指同一件事，所以你必须记住它们之间的区别。标签也很难始终如一地使用。拼写错误可能导致意外变体的激增。（幸运的是，许多应用会自动完成标签。）</p>
+<p>另一个挑战是处理使用标签但彼此不同步的多个应用。这导致管理并行的标签集，随着个人知识管理应用的激增，这正成为一个越来越严重的问题。目前这些问题还没有充分的解决方案，除了对标签使用保持谨慎。</p>
+<h4 id="如何有效使用标签">如何有效使用标签</h4>
+<p>有效使用标签需要纪律和谨慎——但这是值得的。以下是一些帮助你更有效使用标签的建议：</p>
+<ul>
+<li><strong>少即是多。</strong>
+作为经验法则，每个项目坚持使用一到三个标签；超过这个数量，你会花费过多时间标记事物。</li>
+<li><strong>决定如何使用标签。</strong>
+它们是描述项目的内容吗？它属于什么项目？谁创建的？等等。</li>
+<li><strong>决定语法规则。</strong>
+例如，你会将代表一本书的项目标记为<code>#books</code>，因为它属于”books”组，还是<code>#book</code>，因为它描述单本书？</li>
+<li><strong>决定文本格式。</strong>
+全部小写？驼峰命名法？大驼峰命名法？平坦命名法？蛇形命名法？短横线命名法？等等。（这个选择可能不完全取决于你；有些应用更偏好某些类型。）</li>
+</ul>
+<p>以下是使用标签的几种方法：</p>
+<ul>
+<li>作为<strong>语义描述符</strong>，用于描述某物<em>是什么</em>。例如，<code>#book</code>
+= “这个项目代表一本书。”</li>
+<li>作为<strong>分组描述符</strong>，用于将项目与其他相关项目关联。例如，<code>#dulynoted</code>
+= “这个项目与我正在写的书有关。”</li>
+<li>作为<strong>状态指示器</strong>，用于设置工作流。例如，<code>#unread</code>
+= “你还没有看这个。”</li>
+<li>作为<strong>操作标志</strong>，这对工作流也很有用。例如，<code>#todo</code>
+= “这是你必须以某种方式处理的项目。”</li>
+</ul>
+<p>当然，你可以混合使用这些方案，并使用搜索、智能文件夹或群组来构建待办清单、跟踪你想读的书、组织项目等。</p>
+<p>实践笔记</p>
+<p>为你的笔记添加标签</p>
+<p>一些应用，如Apple
+Notes，为标签提供特殊字段。其他应用，如Obsidian，允许你直接在笔记文本中输入标签。你可以通过在任何单词的开头添加井号字符(#)来实现。例如，如果你想将笔记标记为关于会议的，你可以在其正文的任何位置输入单词<code>#meeting</code>。</p>
+<p>Obsidian将井号后和下一个标点符号之前的任何字母数字字符串视为标签的标记。标签不能包含空格。有几种方法可以处理这个问题。一种是将单词连在一起（例如，<code>#meetingminutes</code>）。你也可以将每个单词的首字母大写（<code>#MeetingMinutes</code>），使其更易读。</p>
+<p>如果你始终如一地使用标签，你最终会在笔记之间建立丰富的连接集。然而，你也会在数十或数百个笔记中拥有大量自由格式的文本片段，这会使更改变得更加困难。如果你想更改标签的拼写或将两个标签合并为一个，会发生什么？在第9章中，我将向你展示一个第三方插件，它可以更轻松地管理标签。</p>
+<p>例如，我通常将一些书签同时标记为<code>#book</code>（对事物是什么的语义描述）和<code>#wishlist</code>（描述我<em>为什么</em>保留它）。搜索同时具有这两个标签的书签会生成我的书籍愿望清单。如果我后来买了这本书，我要么删除<code>#wishlist</code>标签，要么删除书签。</p>
+<p>这是非常强大的功能。但正如我之前提到的，不要过度使用。避免每个项目使用超过三个左右的标签。保持组、工作流和状态指示器简单。并保持一致；这不是你想要不断创新的领域。</p>
+<h2 id="其他技巧和建议">其他技巧和建议</h2>
+<p>在本章中，我们介绍了使用容器和元数据来组织笔记的建议。以下是一些最终建议，无论哪种情况都会有所帮助。</p>
+<h3 id="批量组织任务">批量组织任务</h3>
+<p>如果定期进行整理，保持系统有序会更容易。整理频率取决于内容积累的速度。例如，我每天清理电子邮件收件箱，大约每周清理一次
+DEVONthink
+收件箱。后者大约需要一小时，但在以后查找内容时可以节省时间。</p>
+<h3 id="在捕获时归档">在捕获时归档</h3>
+<p>如果收件箱中没有太多笔记，整理起来会更容易。实现这一点的一种方法是在捕获笔记时立即归档。这并非总是可行，因为你可能很匆忙。但如果你确切知道自己在捕获什么，就可以在捕获时添加标签并将笔记保存到正确的文件夹中。</p>
+<h3 id="增加区分的对比度">增加区分的对比度</h3>
+<p>在创建文件夹或标签时，有时会遇到模糊的名称。为了明确它们，必须放大它们之间的区别。例如，“study”这个词既可以是名词也可以是动词。如果在标签或文件夹名称中使用该标签，以后可能会对其含义感到困惑。在这些情况下，考虑找一个不同的词(例如”report”)或添加一个说明性的词(例如”marketing
+study”)。</p>
+<h3 id="不要过度结构化">不要过度结构化</h3>
+<p>组织结构(即文件夹和标签)越复杂，在决定如何组织笔记时就会有越多选择，这会增加认知摩擦。保持简单和最小化：目标是一小组实用而非理论性的标签。目标不是创建一个漂亮的分类法，而是更好地思考。</p>
+<p><code>著名笔记使用者</code></p>
+<p>Kourosh Dini</p>
+<figure>
+<img alt="Kourosh Dini 的照片" src="images/000039.jpg"/>
+<figcaption aria-hidden="true">Kourosh Dini 的照片</figcaption>
+</figure>
+<p>Kourosh Dini
+是一位精神病学家和精神分析学家、作家和生产力专家，也是《用 DEVONthink
+做智能笔记》一书的作者。在我的播客采访中，Kourosh
+提供了一种使用标签的实用方法。具体来说，他建议避免”关联标签”——即添加关于笔记想到的所有内容来描述它。</p>
+<p>Kourosh
+建议不要使用关联标签，而是为每个标签设定明确的目的。例如，在研究 ADHD
+的心理动力学时，他收集了 300
+多条笔记。他将它们标记为与该项目相关。后来，他可以看到所有标记的笔记，并将它们导出到
+Scrivener 作为写作过程的素材。</p>
+<p>过去，我曾陷入这样的陷阱：写一个笔记并试图想出所有可以描述它的方式。例如，如果是我在一本关于内容策略的书中读到的想法，我可能会添加标签
+<code>#uxdesign</code>、<code>#content</code>、<code>#contentstrategy</code>、<code>#publication</code>
+等。</p>
+<p>这种方法增加了摩擦。思考标记笔记的所有方式需要时间和精力。保持一致性也很困难：我可能在某一天为一个想法添加某些标签，而在下周为类似的想法使用不同的标签集。结果，许多人完全避免使用标签——这是一个浪费的机会。</p>
+<p>与 Kourosh
+交谈后，我在标记时变得更有意识和更简洁。现在我不再试图涵盖所有可能的角度，而是用项目或主题标记大多数笔记。例如，我有一组标记为
+<code>#dulynoted</code>
+的笔记。我没有费心使用其他描述符；重要的是它们为这本书的写作提供信息。</p>
+<h2 id="不要让文件夹或标签泛滥">不要让文件夹或标签泛滥</h2>
+<p>有时，你会记下一个不适合任何地方的笔记。你会想当场创建一个新文件夹或标签。抵制这种诱惑。想想是否可能有一个更广泛的容器可以容纳它。可以有一个标记为”其他”的文件夹，也可以不标记某些项目；计算机的搜索功能通常可以帮助你找到异常值。同样，要务实。</p>
+<h2 id="结语-1">结语</h2>
+<p>如你所见，组织笔记的目标是在正确的时间找到需要的内容。你通过归档、堆放或标记来组织笔记。文件用于存储，堆用于处理，元数据可以连接存储在不同位置的项目。</p>
+<p>虽然堆和文件是互斥的(你在工作时堆放东西，完成后归档它们)，但标签可以应用于两者。知道何时使用它们将使你将来更容易查找内容。正如我的朋友
+Karl Fast 所说(我在转述)，“文件夹用于分割，标签用于连接。”</p>
+<p>底线：使用文件夹和组等容器将内容从收件箱中取出，放入更永久的位置，以便以后找到它们。使用标签连接属于同一集合但不一定在同一容器中的内容。</p>
+<p>到目前为止,我们已经涵盖了约翰·洛克(John
+Locke)及其同时代人可能认识到的组织方法——尽管他们会对我们的技术感到震惊。在下一章中,我们将看到计算机如何将思想和想法的组织提升到另一个层次。</p>
+<ol type="1">
+<li><p>John Locke, <em>The Works of John Locke: In Nine Volumes</em> (9)
+(1824).</p></li>
+<li><p>Ann M. Blair, <em>Too Much to Know: Managing Scholarly
+Information Before the Modern Age</em> (New Haven: Yale University
+Press, 2011).</p></li>
+<li><p><a href="https://jillianhess.substack.com/p/john-lockes-pursuit-of-the-perfect"><code>https://jillianhess.substack.com/p/john-lockes-pursuit-of-the-perfect</code></a></p></li>
+<li><p>William Jones, <em>Keeping Found Things Found: The Study and
+Practice of Personal Information Management</em> (Burlington: Morgan
+Kaufmann, 2010).</p></li>
+<li><p>一些应用程序,如OneNote,允许你指定一个特定的容器作为收件箱(inbox)。其他应用程序,如Notability,提供一个专用容器称为<em>未归档笔记</em>来实现此目的。</p></li>
+<li><p>如果你的操作系统和应用程序允许互操作性,这是可行的。例如,我使用Notability在iPad上手写笔记。Notability默认将笔记保存在自己的收件箱中,但我不在那里组织它们。相反,我配置应用程序将PDF备份保存到Dropbox文件夹。这些PDF每晚被复制到我的DEVONthink收件箱,我稍后在那里将它们整理到适当的文件中。</p></li>
+<li><p>这并非偶然:早期计算机设计师故意选择文件/文件夹隐喻,因为它映射到我们管理信息的现实世界经验。</p></li>
+<li><p>也就是说,一些操作系统和应用程序支持文件<em>别名</em>的概念:指向文件的指针,看起来像文件,可以放置在不同的容器中。</p></li>
+<li><p>Richard Saul Wurman, <em>Information Anxiety 2</em> (Carmel, IN:
+Que Publishing, 2001).</p></li>
+<li><p>Tiago Forte, <em>Building a Second Brain: A Proven Method to
+Organize Your Digital Life and Unlock Your Creative Potential</em> (New
+York: Simon and Schuster, 2022).</p></li>
+<li><p>G. A. Miller, “The Magical Number Seven, Plus or Minus Two: Some
+Limits on Our Capacity for Processing Information,” <em>Psychological
+Review</em>, 63, no. 2 (1956): 81–97.</p></li>
+<li><p>Kevin Kelly, <em>Excellent Advice for Living: Wisdom I Wish I’d
+Known Earlier</em> (New York: Viking, 2023).</p></li>
+<li><p>如果你处于协作情况,这个原则显然没有意义。更多内容见第10章。</p></li>
+<li><p>洛克索引笔记的方法看起来很像现代标签(tagging)。</p></li>
+<li><p><a href="http://theinformed.life/2021/01/31/episode-54-kourosh-dini/"><code>http://theinformed.life/2021/01/31/episode-54-kourosh-dini/</code></a></p></li>
+</ol>
+<h1 id="第7章-激发洞察">第7章 激发洞察</h1>
+<p>系统地捕获、链接和组织笔记需要付出努力。意义何在?意义是双重的:更善于管理信息的冲击和更好地思考。你已经知道笔记可以增强你的记忆。现在,让我们转向笔记如何帮助你产生更好的想法。具体来说,让我们看看有意识地组织信息如何激发洞察(insights)。</p>
+<p>考虑元素周期表。你可能在学校学过它:已知化学元素的矩阵,如金、铝、氢和硅——构成物质的东西。小时候,我以为这个表一直存在。但它是一个设计出来的东西——而且是相对最近的。人们花了几个世纪才认识到我们今天所知道的元素。</p>
+<figure class="img1">
+<span class="calibre1" id="calibre_link-567"></span><img class="img" src="images/000000.jpg"/>
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">元素周期表。</samp>
+</p>
+</figcaption>
+</figure>
+<p>元素周期表是19世纪化学家德米特里·门捷列夫(Dmitri
+Mendeleev)的作品。门捷列夫和他的同事注意到元素之间相互作用的模式——关系。该表体现了这些模式,这些模式是自然界固有的。它按列组织,代表族,按行组织,代表周期。族和周期中的元素共享特征。</p>
+<p>也就是说,元素周期表源于一个洞察:元素具有一些共同特征,这些特征周期性地重复。将元素排列成反映这些模式的结构揭示了进一步的洞察:一些元素”缺失”了——即,结构要求它们在那里,但它们尚未被识别。</p>
+<p>元素周期表是一个例子,说明系统地思考信息如何导致以不同方式组织信息,从而产生洞察。获得更多更好的洞察是建立知识花园(knowledge
+garden)的最终目标之一。</p>
+<h2 id="什么是洞察">什么是洞察?</h2>
+<p>回想一下你有过”啊哈！“时刻的经历：你突然理解了一个困难的概念，解决了一个难题，或者有了创造性的突破。也许回忆这个时刻会让你感觉良好。但你也可能会感到有点沮丧，因为意识到<em>你不知道自己究竟是如何做到的</em>。</p>
+<p>洞察力就像打喷嚏：你无法强迫它们发生。你可能读过这样的故事——或者你自己有过这样的经历——努力解决一个问题，却在（字面意义上的）睡了一觉后醒来发现了显而易见的解决方案。或者答案可能在你洗澡或散步时突然出现在脑海中。有时候感觉除了专注于手头的问题之外，任何事情都有用。</p>
+<p>那么，如果你无法强迫洞察力产生，你的笔记系统如何激发它们呢？要探讨这一点，我们必须更仔细地审视洞察力<em>是什么</em>。在《看见别人看不见的》一书中，Gary
+Klein 提供了洞察力的工作定义：“意外地转向更好的故事。”<sup>[^63]</sup>
+Klein
+指的是因果故事：我们如何向自己解释事情是如何发生的或可能如何发生；概念之间的因果关系。</p>
+<p>你通过对元素之间关系的新理解来解决难题。你在重新构建问题后经历了创造性突破。你在找到一个类比后理解了概念，这个类比让你能够将其整合到现有知识中。是的，我又在谈论<em>模型</em>。</p>
+<h2 id="模型">模型</h2>
+<p>模型是关于事物可能如何组织以及如何运作的想法。<sup>[^64]</sup>
+例如，考虑地球围绕太阳运转这个想法。就像元素周期表一样，你可能在很小的时候就学会了这一点，并从那时起就认为这是理所当然的。你没有直接观察到这种现象，但体验过它的影响，比如夜空中星星位置的变化。</p>
+<p>然而，你对这是如何运作的有自己的想法。这些想法包括区别（例如，地球和太阳是不同的天体，具有不同的质量、组成和特征）和关系（例如，这些天体通过引力以特定方式相互关联）。你可以想象一个图表，小圆圈围绕彼此画出椭圆路径。那就是一个模型。</p>
+<p>当你的某个模型发生转变时，你就会产生洞察力。可能是你意识到了新信息，使你能够以新的方式将两个其他概念联系起来。或者也许它改变了你对现有元素之间如何相互关联的理解。无论哪种情况，你对事物如何组织和如何运作的理解都发生了意外而突然的转变。</p>
+<p><code>侧注</code></p>
+<h3 id="思维导图">思维导图</h3>
+<p>思维导图<sup>®</sup>由 Tony Buzan 在 20 世纪 70
+年代初创立，是一种视觉化的方式，用于探索定义特定领域的概念之间的区别和关系。它就像一个二维大纲，你将关于主题的所知倾倒到页面上：它是如何组织的，它的主要组成部分，它们的名称等等。</p>
+<p>要绘制思维导图，从一张大的空白纸开始。在中心，写下你想要探索的主要想法。这个想法是你图表中的中心节点。然后你从中心节点向外画出分支，连接到主题的主要子类别。这些子节点也可以有子节点，从而形成思想之间丰富的关系网络。</p>
+<p>例如，如果你为这本书绘制思维导图，你会在页面中心写上 <em>Duly
+Noted</em>。然后思考你想探索的关于这本书的主要领域：可能是笔记工具、实践、原则等。这些将成为从
+<em>Duly Noted</em> 这个词向外辐射的分支。</p>
+<p>所以，在标记为 <em>Duly Noted</em> 的节点周围写下
+<em>Tools</em>、<em>Practices</em> 和 <em>Principles</em>
+这些词，并画线将它们连接到中心节点。然后你对每个子分支重复这个过程。例如，思考一下你到目前为止在书中学到的工具，并将它们写在标记为
+<em>Tools</em> 的节点周围。它们将成为 <em>Tools</em> 节点的分支，就像
+<em>Tools</em> 是 <em>Duly Noted</em>
+的分支一样。你可以对其他子分支做同样的事情。</p>
+<figure>
+<img alt="一个思维导图，由四个不同颜色的分支和子分支组成。" src="images/000047.jpg"/>
+<figcaption aria-hidden="true">一个思维导图，由四个不同颜色的分支和子分支组成。</figcaption>
+</figure>
+<p><em>一个最终促成这本书的工作坊的思维导图。</em></p>
+<p>使用笔和纸或在白板上贴便利贴很容易绘制思维导图。但也有思维导图应用程序，如
+Xmind 和 MindNode。“无限画布”应用 Miro
+也包含思维导图功能。虽然纸张可能更快地记录想法，但这些应用程序的一个优势是它们让你快速移动节点。</p>
+<p>视觉化地探索替代方案会改变你的思考方式。虽然思维导图可以帮助你回忆想法，但它们也有助于生成想法。绘图迫使你思考领域是如何组织的，通常会带来令人惊讶的洞察。你会发现一开始遗漏的东西，以及其他可能被过度表现的东西。</p>
+<p>也就是说：在绘制思维导图时，你正在可视化和开发一个模型。它一开始不会完美，但将其外化会有所帮助。</p>
+<p>在研究了数百个洞察力产生有意义影响的情况后，Klein
+发现了四个可以触发洞察力的条件：</p>
+<ul>
+<li>识别联系</li>
+<li>识别巧合和好奇之处</li>
+<li>识别矛盾</li>
+<li>创造性绝望</li>
+</ul>
+<p>这最后一个可以通过设定截止日期来触发；其他三个则是你可以磨练的建模技能。知识花园是练习的理想场所。你正在构建一个由精细、相互关联的想法组成的笔记系统：这是培养联系、好奇心和矛盾的完美媒介。</p>
+<h2 id="洞察生成的工具">洞察生成的工具</h2>
+<p>虽然洞察可能在任何时刻出现，但在某些条件下它们更容易出现。正如你已经看到的，你用身体、环境、工具和其他人来思考。有些比其他的更适合某些类型的思考。</p>
+<p>有时你想思考宏大的想法。但在其他时候，你想思考它们的含义或考虑如何传达它们。一些工具和方法比其他的更好地支持这些活动。</p>
+<p>写作提供了一个很好的例子：有时你在头脑风暴，而在其他时候你只是想写作。我们用”写作”这个词来描述整个过程，但头脑风暴和打字形成句子表现出不同的心态，最好由不同的工具来服务。</p>
+<p>像Microsoft Word和Google
+Docs这样的应用程序旨在允许作者撰写和格式化文本：你可以写句子、加粗或斜体化单词和短语、在段落之间复制粘贴、创建项目符号列表、插入图片、添加引文、发现语法和拼写错误等。</p>
+<p>这些都是重要的活动，但它们只涵盖了部分过程。如果你在写非小说类作品，你会在使用文字处理器之前进行研究和综合。传统的文字处理器是<em>生产</em>工具：当你知道要写什么时，它们帮助你记下文字。你可以将它们与<em>思考</em>工具进行对比——即帮助你思考你想要传达什么的工具。</p>
+<h3 id="使用正确的思考工具">使用正确的思考工具</h3>
+<p>Eastgate的Tinderbox是思考工具的一个例子。虽然你可以在Tinderbox中使用文字处理器的许多优点来撰写草稿，但这不是它的主要目的。相反，Tinderbox帮助你思考你正在写的想法。它通过关注你正在处理的概念的结构以及它们（可能）如何相互关联来实现这一点——也就是说，它是一个建模工具。</p>
+<p>当我开始创作<em>Duly
+Noted</em>时，我只有一个关于这本书内容的高层次愿景和一些支持这个愿景的想法。我在一个（纸质）笔记本上潦草地记了笔记，但还不知道它们是否会流畅以及如何流畅。有许多重要的事情我还不知道。</p>
+<p>将我所知道的倒入Tinderbox是过程中重要的早期步骤。通过让想法更加具体，我可以探索关系并识别模式和空白。这让我看到可能缺少什么，这让我设计了一个研究计划。</p>
+<figure>
+<img alt="Tinderbox应用程序显示黄色和橙色框，看起来像便签，在灰色矩形的区域上。" src="images/000051.jpg"/>
+<figcaption aria-hidden="true">Tinderbox应用程序显示黄色和橙色框，看起来像便签，在灰色矩形的区域上。</figcaption>
+</figure>
+<p>我使用Tinderbox探索这本书中想法之间的关系，它在某些方面就像数字白板上的便签。黄色笔记代表想法和故事，橙色笔记代表可能的章节标题，垂直的灰色条代表可能的章节分组。请注意，在这个阶段，我只真正考虑过第2章。</p>
+<p>在过程的后期，我制作了第二个板来探索本书的结构和节奏。我没有使用Tinderbox，而是使用Apple的Freeform应用程序制作了这第二个板。虽然Tinderbox功能更强大，但我想测试刚刚推出的Freeform。此外，从头开始让我能够重新审视早期的选择并转变我的视角。（本章稍后会详细介绍。）</p>
+<p>重点不是使用这些特定的应用程序，而是有一个可以收集想法并探索它们之间关系的地方。它根本不需要是一个应用程序：有些人用索引卡或便签来做这件事。将你的模型外化可以帮助你以不同的方式思考工作，而不是直接冲进文字处理器中写作。</p>
+<figure>
+<img alt="Freeform应用程序的截图，显示一个看起来像便签的彩色框网格。一些框中有照片，其他框旁边有一些手写文本。" src="images/000048.jpg"/>
+<figcaption aria-hidden="true">Freeform应用程序的截图，显示一个看起来像便签的彩色框网格。一些框中有照片，其他框旁边有一些手写文本。</figcaption>
+</figure>
+<p>使用Apple的Freeform应用程序构建的<em>Duly
+Noted</em>第二稿大纲。与第一稿的板一样，垂直列代表书籍章节。不同的颜色表示不同类型的内容：概念区分、练习、介绍性部分和一般注释。</p>
+<p><code>工作笔记</code></p>
+<p>画布视图</p>
+<p>通常，你只想用文字记下想法。例如，你可能在书中发现了一句难忘的引语，并想稍后记住它。传统的（即基于文本的）笔记应用程序，如Apple
+Notes、Google
+Keep和Obsidian，非常适合这种用例。但有时，你想以视觉方式捕捉想法。</p>
+<p>例如，这本书可能会让你对某个主题产生新的理解。与其用文字记录下来，你更想画一幅图来表示主要概念以及它们之间的关系。</p>
+<p>你可以在白板上用便利贴来绘制这样的模型。但也有专门为这种使用场景设计的数字工具，包括
+Tinderbox、Miro、Mural、FigJam 和 Apple 的 Freeform
+应用。但你不需要走太远就能找到思维画布：Obsidian
+也有一个模式可以让你绘制模型。要使用它，请确保启用了 Canvas
+核心插件。然后点击主工具栏中的”创建新画布”按钮。</p>
+<figure>
+<img alt="Obsidian 左侧工具栏的截图，展示了创建新画布按钮" src="images/000044.jpg"/>
+<figcaption aria-hidden="true">Obsidian
+左侧工具栏的截图，展示了创建新画布按钮</figcaption>
+</figure>
+<p>要使用 Obsidian 的画布视图，请点击主工具栏中的”创建新画布”按钮。</p>
+<p>画布界面与你在 Obsidian
+中编写常规文本笔记时看到的类似。但是，你不是在画布中输入文本，而是拖动可以是三种类型的对象：卡片（类似于便利贴）、来自你的仓库的其他笔记的引用，或来自你的仓库的媒体资源（如图片）。你会在画布底部边缘看到三个按钮，允许你将这三种对象中的任何一种拖到画布上。</p>
+<figure>
+<img alt="Obsidian 的画布视图：屏幕上有三个框，分别标记为 Obsidian、Text notes 和 Conceptual nodes。标记为 Obsidian 的框有连线连接到其他两个框。其中一条连线在中间包含短语 can capture" src="images/000045.jpg"/>
+<figcaption aria-hidden="true">Obsidian
+的画布视图：屏幕上有三个框，分别标记为 Obsidian、Text notes 和
+Conceptual nodes。标记为 Obsidian
+的框有连线连接到其他两个框。其中一条连线在中间包含短语 can
+capture</figcaption>
+</figure>
+<p>Obsidian
+画布视图中的两张卡片。注意最上面卡片底部的圆形手柄：当你将鼠标悬停在卡片上时会出现。</p>
+<p>当你将鼠标悬停在卡片上时，你会看到手柄出现在卡片的某个边缘。如果你点击并拖动这个手柄，你会看到一个箭头，可以指向画布中的另一张卡片。这是建立想法之间视觉关系的便捷方式。如果你双击其中一个箭头，你可以为链接添加标签。结果就是一个概念模型的整洁图表。</p>
+<figure>
+<img alt="显示 Obsidian 画布视图的截图。屏幕上有三个框，分别标记为 Obsidian、Text notes 和 Conceptual nodes。标记为 Obsidian 的框有连线连接到其他两个框。其中一条连线在中间包含短语 can capture" src="images/000041.jpg"/>
+<figcaption aria-hidden="true">显示 Obsidian
+画布视图的截图。屏幕上有三个框，分别标记为 Obsidian、Text notes 和
+Conceptual nodes。标记为 Obsidian
+的框有连线连接到其他两个框。其中一条连线在中间包含短语 can
+capture</figcaption>
+</figure>
+<p>你可以通过双击箭头来添加标签。</p>
+<p>有些人通过绘制思维导图(mind maps)或概念图(concept
+maps)来更容易地进行头脑风暴。Obsidian
+的画布视图提供了一种快速简便的方法，可以在你也用文本思考的同一工具中使用这种思维模式。</p>
+<h2 id="产生洞察的策略">产生洞察的策略</h2>
+<p>养成记录关联笔记的习惯会改变你与想法的关系：你开始用模型来思考。当任何想法都可以与任何其他想法连接时，你可以超越学科边界。以下是一些策略，将改变你与信息互动的方式，释放你的创造力并激发洞察。</p>
+<h3 id="阅读跨界内容">阅读”跨界”内容</h3>
+<p>许多人寻求在几个领域成为专家，无论是专业上还是个人方面。他们在这个主题上”深入研究”，阅读他们找到的所有内容或观看无数小时的
+YouTube 视频。一段时间后，他们对这个主题了解很多。</p>
+<p>虽然发展深厚的专业知识很重要，但你也应该学习看似不相关的领域。如果你从事软件工程，可以考虑学习音乐或绘画。如果你主要通过阅读学习，那就走出去参观博物馆、动物园或水族馆，或者一家不寻常的商店。改变一下。</p>
+<p>与其他人交谈。与他人合作会让你接触到多样化的观点，这将打破你的舒适区。我们将在第10章更深入地探讨协作思考。现在，只需说健康的关系是扩展你思维的强大手段就足够了。</p>
+<h3 id="寻找模式">寻找模式</h3>
+<p>关联笔记让你专注于单个想法，而无需考虑更大的图景。也就是说，你可以捕捉想法，而无需知道所有内容将如何融合在一起。之后，你可以缩小视野来查看整体。当你这样做时，你可以看到模式。例如，你可能会发现一个主题以不同的形式反复出现。</p>
+<p>虽然可以通过回顾你的笔记来感知这些模式，但一些笔记应用可以让你可视化笔记之间的连接。通过使链接节点图可见，你可以识别围绕主题或笔记类型的集群，并看到它们如何与其他类型的笔记相关联。</p>
+<p>例如，在使用 Tinderbox 和 Freeform
+可视化布局本书的内容时，我可以发现哪些章节需要比其他章节更多的工作。我还可以将想法重新排列成更明显的序列。</p>
+<h3 id="发现潜在联系">发现潜在联系</h3>
+<p>在处理笔记时，你可以将它与其他笔记关联起来，通常专注于当时能想到的联系。但也可能存在与你过去捕获但不记得的内容的连接。软件可以帮助你识别这些潜在关系。</p>
+<p>例如，在研究本书的过程中，我阅读了大量关于超文本(hypertext)的材料。我使用DEVONthink索引我的笔记，该软件包含一个AI引擎，可以根据内容建议文档之间可能存在的关系。在搜索我的资料库时，我发现了一条关于我近十年前读过的一本书的笔记——George
+P. Landow的《超文本》(Hypertext)。</p>
+<p>DEVONthink的AI建议这条笔记与ACM《Queue》杂志中Alan
+Kay访谈的摘录之间可能存在关系。其中包含Kay的一段引言，影响了我在本章中的思考：</p>
+<blockquote>
+<p>所有创造力都是笑话的延伸形式。大多数创造力是从一个语境过渡到另一个更令人惊讶的语境。</p>
+</blockquote>
+<p>语境与创造力之间存在关系的想法带来了一些启发，影响了这本书。在这种情况下，计算机并没有产生洞察。相反，它揭示了想法之间的潜在联系，其中一些是我多年前捕获但不记得的。这不仅仅是外包记忆：计算机在想法之间找到了联系。</p>
+<figure class="img1">
+<span class="calibre1" id="calibre_link-584"></span><img alt="DEVONthink应用的截图。选中了《超文本》一书的笔记，其文本显示在屏幕的一个面板中。另一个面板显示系统中可能与当前选中笔记相关的其他笔记的名称。" class="img" src="images/000046.jpg"/>
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">DEVONthink显示选中的文档。在本例中，是关于一本书的笔记。右侧面板显示我的数据库中可能以某种方式相关的文档列表。</samp>
+</p>
+</figcaption>
+</figure>
+<h3 id="突出好奇点">突出好奇点</h3>
+<p>识别想法中模式的另一面是相反的：发现异常值(outliers)。有时想法很好地融入你的其他笔记中。但有些想法显得不寻常或出乎意料——发现它们可能带来改变你思维的洞察。</p>
+<p>例如，我在Obsidian中保存与工作相关的会议记录。我创建了笔记模板，让我能快速填写每次会议的详细信息，包括参与者列表、会议相关的项目，以及标识这是与团队还是与客户会议的标签。</p>
+<p>这种格式为我服务了几年。但最近，我开始更有意识地联系朋友和同事，只是为了叙旧。这让我意识到我的笔记系统没有设置用于跟踪个人关系。</p>
+<figure class="img1">
+<span class="calibre1" id="calibre_link-586"></span><img alt="Obsidian应用的截图，显示会议记录笔记的模板。它包括会议参与者、会议记录和参考资料等部分。" class="img" src="images/000049.jpg"/>
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">会议记录的简单模板。注意参与者姓名和项目名称都在双括号中，意味着它们将被转换为指向其他笔记的链接。底部有两个标签：分别用于内部和外部会议。捕获会议记录时，我选择一个并删除另一个。</samp>
+</p>
+</figcaption>
+</figure>
+<p>我的朋友不是一个”项目”或关注领域。我不想促使自己用看待职业关系的框架来考虑他们，因为职业关系可能更具交易性。这个异常值让我反思友谊在我生活中扮演的角色，并促使我改变了捕获与朋友会议笔记的方式。</p>
+<h3 id="改变框架">改变框架</h3>
+<p>语境不仅影响创造力，还改变你理解信息的方式。继续前面的例子，你对朋友在叙旧电话中发表的评论的解释，与她在工作会议中说同样的话时的理解是不同的。你对工作中的互动带有不同的期望。</p>
+<p>改变语境的另一种方式是角色扮演(role-playing)。你可以问自己诸如”如果我是客户我会怎么做?“或”读者在这一点上会想什么?“的问题。通过从别人的角度考虑想法，你可以想象它们在不同情境中的表现，从而产生洞察。</p>
+<p>总结：在研究一个想法时，考虑你发现它的语境。然后你可以将这个想法设想在不同的语境中，看看可能出现什么新方向。保持原子化、关联的笔记让你能够轻松探索单个想法在完全不同语境中的含义。</p>
+<h3 id="改变视角">改变视角</h3>
+<p>一种久经考验的产生洞察的方法是从不同视角审视想法。有时这可能意味着实际移动你的身体从不同的有利位置看事物。但更多时候，你可以隐喻性地转换视角。</p>
+<p>想象为一篇研究论文制作大纲。你按照预期在论文中出现的顺序添加项目：首先是引言，然后是第一部分，接着是第二部分，依此类推。一些项目可能有子项目,其中一些可能还有子项目。表示这些层次结构是大纲和你之前看到的思维导图(mind
+maps)的优势之一。</p>
+<p>但大纲并不是可视化此类信息的唯一方式。例如，你也可以在白板上使用便利贴构建一个矩阵。虽然大纲和矩阵包含相同的信息，但它们呈现关系的方式不同：大纲显示父子关系，而矩阵则沿两个维度对想法进行分类。</p>
+<p>在两种模式之间转换焦点有助于激发洞察。回到研究论文的例子，你可能会将材料按主题或主旨进行可视化组织，而不是按论文的预期顺序，这会让你意识到某些主题的材料比其他主题更多。</p>
+<p>虽然在表征模式之间转换的想法听起来可能有些异想天开，但这正是我的思考工具之一Tinderbox的主要设计理念。使用Tinderbox，你可以通过大纲、地图、图表、时间线、矩阵等方式探索想法之间的关系。你可以轻松地在视图之间切换，在一个视图中所做的更改会实时出现在其他视图中。</p>
+<p>通过转换视角，你还可以改变注意力的层次。你可以在某个时刻专注于细节，稍后放大视野来纵观全局。两种视角都能让你对材料有不同的理解，在两者之间来回切换将帮助你发现推理中的空白。</p>
+<p>转换视角可能具有挑战性。你可能有自己最舒适的立场。有些人注重细节，而另一些人则喜欢停留在宏观思考中，可能会对琐碎细节感到厌烦。(我属于后者。)但培养从一种视角转换到另一种视角的能力，能让你以不同的方式看待事物。</p>
+<figure class="img1">
+<span class="calibre1" id="calibre_link-589"></span><img alt="Tinderbox应用程序：屏幕分为两部分：左侧是一个类似便利贴的黄色和橙色方框矩阵，右侧是一个大纲。" class="img" src="images/000050.jpg"/>
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">我使用Tinderbox整理了本书的大部分想法。左侧显示的是本书关键想法的地图视图。右侧显示的是相同数据的大纲。一个视图中的更改会影响另一个视图。</samp>
+</p>
+</figcaption>
+</figure>
+<h3 id="拥抱愉快的意外">拥抱愉快的意外</h3>
+<p>“意外”一词具有负面含义：它暗示事情出了差错——有时是灾难性的。你不会计划发生意外；它们会发生并可能让你偏离轨道。从这个意义上说，它们就像洞察——但显然，你希望培养洞察并避免意外。</p>
+<p>虽然许多意外确实是灾难性的，但一些小意外可以有益地转变你的思维。这就是”愉快的意外”，这个理念长期以来被各种类型的创意人士所接受。例如，亚历山大·弗莱明(Alexander
+Fleming)在注意到霉菌污染了培养皿时发现了青霉素(penicillin)。</p>
+<p>你可以有意地诱发愉快的意外。在20世纪70年代，音乐制作人和艺术家布赖恩·伊诺(Brian
+Eno)与画家彼得·施密特(Peter
+Schmidt)合作制作了一副名为《间接策略》(Oblique
+Strategies)的卡片，每张卡片上有一条指令。当音乐家、画家或作家等创意人士陷入困境时，他或她抽取一张卡片并遵循指令。</p>
+<p>在工作中引入偶然性可以产生想法和联系。在撰写本书时，我偶然发现了一些书籍、论文、人物、YouTube视频等，它们扩展了我的思维。其中一些提供了例子，而另一些则揭示了我知识中的重要空白。这些”愉快的意外”改善了我的思考。</p>
+<h3 id="调动你的身体">调动你的身体</h3>
+<p>我们已经讨论过身体在思考中的作用，但值得强调的是，知识不仅仅存在于你的头脑中。身体的其他部分起着关键作用。更加意识到——并有意识地关注——你身体的状态，会让你对洞察更加敏锐。</p>
+<p>如果你已经坐着思考了一段时间，去散散步。(你可能想带一个口袋笔记本。)或者洗个热水澡或淋浴。打开音乐，跳舞。调动你的感官：用手抚摸粗糙的织物或点燃一支香薰蜡烛。脱掉毛衣，感受皮肤上的温度变化。</p>
+<p>你的身体是你的主要工具。好好照顾它。锻炼身体，避免使用会混乱思维的物质。当你生病、疲劳或受到药物或酒精影响时，你无法有效思考——更不用说产生洞察了。</p>
+<h3 id="保持开放的心态">保持开放的心态</h3>
+<p>你可能已经注意到我迄今为止建议的策略中的一个模式：它们都需要开放的心态。虽然许多人口头上支持开放思想的理念，但他们会不经意地陷入群体思维(groupthink)。具有讽刺意味的是，知识捕获系统可能会通过使你的思维正式化(并固化)而使事情变得更糟。</p>
+<p>建立知识花园的目的是放大你的思维。但不要把放大与标准化混淆。你希望机器为你服务，而不是你为机器服务。质疑你正在构建的系统，记住它们的存在是为了服务于你的人性——而不是相反。</p>
+<p><code>著名笔记记录者</code></p>
+<p>Andy Matuschak(安迪·马图沙克)</p>
+<figure class="img1">
+<img alt="Andy Matuschak的照片。" class="img2a" src="images/000042.jpg"/>
+</figure>
+<p>Andy Matuschak
+是一位软件工程师、设计师和研究员，致力于开发”扩展人们思考和行动能力的技术”。他曾在
+Apple 帮助构建
+iOS，在可汗学院领导研发工作，现在是一名独立研究员，开发帮助人们更好思考的工具。他在
+<a href="https://notes.andymatuschak.org"><code>https://notes.andymatuschak.org</code></a>
+发布自己的工作笔记，这是超文本笔记系统的绝佳示例。</p>
+<figure class="img1">
+<span class="calibre1" id="calibre_link-593"></span><img alt="Andy Matuschak 的笔记网站，显示多个笔记并排显示在屏幕上，其中一个覆盖在其他笔记上方。" class="img" src="images/000043.jpg"/>
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">“Andy
+的工作笔记”是一个公开的超文本笔记库，使用 Matuschak
+设计和开发的巧妙用户界面。将鼠标悬停在链接上会显示链接笔记的缩略图预览，点击链接会在当前笔记右侧打开一个面板。过去的笔记堆叠在左侧。这种方案允许读者探索新路径，同时保持原始上下文可见。</samp>
+</p>
+</figcaption>
+</figure>
+<p>由于他的工作重点是研究更好的思考工具，这些公开笔记不仅值得探索其结构，也值得探索其内容。他写道：“‘更好的笔记’没有抓住重点；重要的是’更好的思考’。”这是一个关键提醒：你的笔记系统本身不是目的。相反，你的笔记应该作为增强认知能力的工具。</p>
+<h2 id="尾注-2">尾注</h2>
+<p>人们大多认为笔记是一种记忆东西的方式。但笔记也可以是产生想法的强大手段。可视化它们之间的关系并移动它们，可以让你从不同角度看问题，激发有价值的洞察。</p>
+<p>门捷列夫通过移动每个元素的卡片来探索元素之间的关系。他尝试不同的配置，直到能够发现相关模式。你也可以通过组织和重新组织想法来激发洞察，无论是在矩阵、思维导图还是图表中。视觉化地布局想法将使你能够发现模式、识别异常值，并可能识别探索中缺失的维度。</p>
+<p>最终，你的知识花园不仅仅是扩展记忆：它是更广泛思考的手段。其中大部分发生在你独自阅读、学习或构思时——这可能已经足够好了。但你可能也想分享所学内容。到目前为止，我们已经介绍了如何使用笔记来记忆和产生想法。现在，让我们转向分享这些想法，以获得使其更强大的反馈。</p>
+<ol type="1">
+<li><p>Gary Klein, <em>Seeing What Others Don’t: The Remarkable Ways We
+Gain Insights</em> (New York: PublicAffairs Books, 2013).</p></li>
+<li><p>Hugh Dubberly, “Models of Models,” <em>Interactions</em> 16, no.
+3 (2009): 54–60.</p></li>
+<li><p>书籍和讲座是与他人接触的一种形式——其中一些人可能早已去世。</p></li>
+<li><p>Stuart Feldman, “A Conversation with Alan Kay: Big Talk with the
+Creator of Smalltalk—and Much More,” <em>Queue</em> 2, no. 9 (2004):
+20–30.</p></li>
+<li><p>我最喜欢的 Oblique
+Strategy(迂回策略)谈到了快乐意外的力量。卡片上写着：<em>将你的错误视为隐藏的意图来尊重它。</em></p></li>
+<li><p>当然，这些遭遇并非完全随机；我注意到是因为我已经在思考这个主题，并准备好寻找联系。</p></li>
+<li><p><a href="https://notes.andymatuschak.org"><code>https://notes.andymatuschak.org</code></a></p></li>
+</ol>
+<h1 id="第-8-章-分享你的思考">第 8 章 分享你的思考</h1>
+<p>到目前为止，我们将思考讨论为一项个人活动。但与他人分享想法对思考至关重要。反馈以有用的方式改变你的理解。许多人在整个过程中分享小片段。但许多人也致力于分享更大的东西：一本书、一门课程、一个
+YouTube 系列等。本章重点关注通过此类较大项目分享你的思考。</p>
+<p>在他的书《沉思录》(Meditations)中,罗马皇帝马可·奥勒留(Marcus
+Aurelius)提供了理解事物的建议：</p>
+<blockquote>
+<p>总是为呈现在你脑海中的任何事物制作草图或计划，以便看到它被剥离到本质时是什么样的东西，作为一个整体和在其各个部分中；并告诉自己它的专有名称，以及它由之组成并最终将被分解成的元素的名称。</p>
+</blockquote>
+<p>马可的建议仍然相关：他建议你制作我们在第 7
+章中描述的那种模型。但他实际上不是在对你说话。《沉思录》不是为了出版。相反，这本书由皇帝写给自己的笔记组成，可能是作为回忆有价值想法的方式，也许作为一种心理练习。</p>
+<p>《沉思录》是私人笔记公开化的一个案例。大多数出版作品都是为了出版。相反，大多数人可能假设他们的笔记将保持私密。人们做笔记作为制作意图出版的东西的过程的一部分，但很少有人希望他们的工作笔记被分享。</p>
+<p>分享你所学的东西本身就有价值，但发布也通过将想法暴露给其他思想来改进它们。将你的思考放到世界上，让你能够从不同角度思考想法。人们会让你知道你遗漏了什么或哪里错了：当你想构建知识时，这是一份很好的礼物。</p>
+<h2 id="发布的第一性原则">发布的第一性原则</h2>
+<p>你创作什么——以及如何创作——取决于你的<em>意图</em>。例如，假设你想写一本书。你可能有几个原因想这样做：也许你深深关心这个主题，想为你的咨询业务带来潜在客户，或者正在寻求声望和财富。<sup>[^71]</sup></p>
+<p>你会根据动机做不同类型的笔记。如果你的目标是打造品牌，你可能会给代笔人一些笔记。但如果你在写博士论文，你会花数年时间深入研究你的主题。这两种情况需要不同的流程、工具和心态。</p>
+<h3 id="发布需要迭代">发布需要迭代</h3>
+<p>许多人认为创作供发布的作品意味着坐下来写作。然后，经过许多孤独的辛劳，就会弹出一份准备好送去印刷的稿件。虽然这对某些人来说可能是真的，但大多数写作并不是这样发生的。</p>
+<p>写作是一种思考形式。通常，工作从一个预感和一组非结构化的想法开始。从最初的混乱到值得发布的东西，需要对模型——关于主题的一组相互关联的想法——进行迭代。制作模型让你看到你知道什么以及你需要研究什么。随着你学到更多，你会改变模型。每次迭代都会推动你开发材料的不同部分。</p>
+<p>最终，你通过撰写草稿将想法具体化。第一稿都是错误的。它的目的不是完美，而是把想法从你的脑海中取出，让你能看到它们并进行更多迭代。最终，你会得到足够好的东西与他人分享。随着你获得反馈，那也会经历迭代。简而言之，这项工作需要通过不同的思考和工作方式进行迭代。在此过程中，作品越来越接近值得发布的东西。</p>
+<h3 id="了解你的受众">了解你的受众</h3>
+<p>在本书前面，我建议你为”未来的你”做笔记：存在于不同背景并有不同兴趣的你自己的一个版本。尽管未来的你在某些方面是一个不同的人，但仍然是<em>你</em>。当为自己写作时，有很多背景你可以理所当然地接受。</p>
+<p>但为出版写作时情况并非如此。根据定义，你正在努力被其他人理解，这要求你理解他们的需求和期望，并策划你的想法以在他们生活中的位置与人们会面。</p>
+<p>制作像书籍这样的重要作品需要展示一条通过想法空间的精心策划的路径。你可以将其想象为一个相关概念、故事、原则等的网络。你的工作是引导读者穿过这个空间的一个切片。一个人可能只想看轶事；另一个人可能关心实用技能；还有一个人可能想被娱乐。作为作者，你决定强调什么以及何时强调。</p>
+<figure class="img1">
+<span class="calibre1" id="calibre_link-599"></span><img alt="灰色点和连接它们的线的网络。四个点以深绿色突出显示，并用深绿色线相互连接。" class="img" src="images/000053.jpg"/>
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">在想法空间中突出显示许多可能路径中的一条。</samp>
+</p>
+</figcaption>
+</figure>
+<p>也就是说，为了有效沟通，你必须了解读者的需求：他们关心什么，他们知道和不知道什么，他们为什么接触这些材料等。然后你可以选择许多可能配置中哪一个最有效。</p>
+<h3 id="选择支持你意图的工具">选择支持你意图的工具</h3>
+<p>正如你在[第7章]中看到的，一些工具帮助你思考想法之间的关系，而其他工具更适合将这些想法组合起来发布。说到发布，一些工具更适合开发内容的样式（例如布局、排版）而不是其实质。</p>
+<p>样式和实质之间的区别感觉难以捉摸，因为许多流行的内容创建工具将它们混为一谈。PowerPoint和Keynote就是很好的例子：我见过人们通过打出充满项目符号的幻灯片来思考他们想说什么。<sup>[^72]</sup>
+当你整理思路时，你不应该关心事物最终的外观。<sup>[^73]</sup></p>
+<p>也就是说，制作供发布的重要作品需要几个阶段。每个阶段都需要不同的工具和实践，你的笔记在整个过程中扮演不同的角色。在下一节中，我们将探讨你可以集成到知识花园中的工具和流程，以支持流程中的每个阶段。</p>
+<h2 id="制作流程">制作流程</h2>
+<p>制作用于发布的东西（如书籍、演示文稿或YouTube视频）的过程遵循五个步骤：</p>
+<ol type="1">
+<li>酝酿</li>
+<li>研究</li>
+<li>构建</li>
+<li>起草</li>
+<li>修订</li>
+</ol>
+<p><code>旁注</code></p>
+<p>数字花园</p>
+<p>在本书中我一直使用<em>知识花园</em>这个短语，但还有另一种你可能听说过的笔记花园：<em>数字花园</em>。虽然这两个概念相似，但它们之间有一个重要区别：个人知识花园是私密的（因此称为”个人”），而数字花园是公开的。</p>
+<p>数字花园在某种程度上类似于博客，因为它们都是个人出版物。但博客通常以倒序时间顺序（即最新的在前）呈现一系列文章，并且经常按主题分类，而数字花园则是我在本书中描述的那种超文本——一组简短且相互关联的笔记。</p>
+<p>另一个重要区别是作者很少更新旧博客文章。但数字花园中的笔记旨在随着作者学习更多内容而演变。它们是<em>常青笔记</em>，只是公开的。知道它们会被其他人看到，迫使作者以不同的方式思考他们的想法。此外，这也让他们在早期开发阶段就能接受其他人的反馈。</p>
+<p>你在第7章看到的”Andy的工作笔记”就是一个使用定制软件的数字花园例子。Obsidian提供了一个名为Publish的服务，可以将你的库转变为公开的数字花园。还有第三方插件和脚本允许你发布笔记。而其他工具，如Notion和Roam，无需额外步骤即可发布。</p>
+<h3 id="孕育gestating">孕育(Gestating)</h3>
+<p>孕育是这个过程的开始：你对想要发布的内容有一个想法，并从最初的火花培育到发展。起初，这个想法可能是模糊和未成形的——并且是你正在探索的众多想法之一。随着时间推移，它可能成长为更大、更结构化的东西。</p>
+<p>《Duly
+Noted》经历了数年的孕育期。我最初的直觉是，构建网站和应用程序的工作（这是我的职业）可能会为组织个人信息提供有用的见解。在研究这个主题时，我意识到我可能找到了有价值的东西。</p>
+<p>每当我发现与这个想法相关的内容时，我就会记录下来。我将这些笔记存储在为这本书创建的文件夹中。我有很多这样的文件夹，每个都代表潜在的项目。它们在一个名为<em>孵化中</em>的文件夹里，我偶尔会审查。这个文件夹中的大多数想法都不会超过孕育阶段。</p>
+<h3 id="研究researching">研究(Researching)</h3>
+<p>有些想法确实超过了孕育阶段。也许你找到了证实这个想法的证据，或者当你告诉其他人时得到了热情的回应。无论如何，你决定追求这个想法。下一步是更深入地研究这个主题。</p>
+<p>长篇作品，如书籍，需要大量的前期研究。其他人对这个主题写了什么？你的经验如何反映（或不同于）其他人对这个主题的经验？还有哪些其他想法可能证实（或否定）这个假设？等等。</p>
+<p>史蒂文·约翰逊(Steven
+Johnson)，几本广受好评的非虚构类书籍的作者，也在写作前进行阅读。他为遇到的想法制作单独的笔记，并将它们保存在DEVONthink中，该软件会建议其他可能相关的笔记。这种方法使他能够发现想法之间的潜在关系。</p>
+<h3 id="构建structuring">构建(Structuring)</h3>
+<p>在收集了足够的信息后，你开始发现模式和空白。一些想法可能与其他想法聚集在一起，暗示文本中可能的分组（即章节、段落）。其他想法可能是异常值，导致不同的探索途径需要进一步研究。</p>
+<p>笔记在这个阶段也起着重要作用。但你不是为了以后记住想法而捕捉它们，而是希望将想法外化以定义它们之间的关系和区别。你可以采取两种主要方法：大纲和映射。</p>
+<p>你可能在学校学过大纲：将想法组织成层次树。映射是想法之间关系的二维表示，无论是使用白板上的便利贴还是像Freeform这样的应用程序。我们在第7章中涵盖了很多内容，所以这里不再重复。</p>
+<figure>
+<img alt="Tinderbox应用程序的截图，显示了许多黄色和橙色的方框，看起来像便利贴，排列在十二个垂直浅灰色框的区域上" src="images/000057.jpg"/>
+<figcaption aria-hidden="true">Tinderbox应用程序的截图，显示了许多黄色和橙色的方框，看起来像便利贴，排列在十二个垂直浅灰色框的区域上</figcaption>
+</figure>
+<p><em>这本书的Tinderbox文件在项目演变后期的缩小视图。注意此时我已经思考了其他几章的组织结构，尽管有些看起来仍然稀疏。这种整本书的高层次视图非常有价值。</em></p>
+<h3 id="起草drafting">起草(Drafting)</h3>
+<p>起草发生在你坐在（比喻意义上的）打字机前敲出句子时。也就是说，你将想法转化为其他人可以理解的形式。这个阶段也需要思考，你选择的工具会改变你思考的方式。这里的一个关键区别是线性工具和非线性工具之间的区别。</p>
+<p>传统的文字处理器，如Microsoft Word和Google
+Docs，假设你正在处理的是一页文本。这对于短文档效果很好，但对于长文本（如书籍）并不理想，因为长文本经常需要修改整体结构。在像Word这样的工具中，将一段文本从长文档的开头移动到结尾需要大量滚动。因此，你会不愿意移动内容。</p>
+<p>另一个选择是像 Scrivener 或 Ulysses
+这样的非线性编辑器。这些应用不是专注于创建预先结构化的文档，而是从一个前提出发：长文档由代表单个想法的短文本组成，而这些文本的顺序无法预先定义。</p>
+<p>虽然非线性编辑器让你可以像线性编辑器一样编写页面级文本，但它们也让你能够处理文档的整体结构，使你可以轻松移动内容来尝试不同的排序。Steven
+Johnson 对传统文字处理器和 Scrivener
+等工具之间的区别写下了一段令人难忘的描述：</p>
+<blockquote>
+<p>传统的文字处理器没有自然的方式来管理从直觉到叙述的演变。它们从一开始就把你锁定在滚动文档结构中。它们给你一条线，而不是一个巢。它们给你一个中世纪的卷轴，而你需要的是中国盒子。<sup>[^77]</sup></p>
+</blockquote>
+<p>当你处理大型项目时，在不同层级查看其结构会改变你思考材料的方式。像
+Scrivener 和 Ulysses
+这样的非线性编辑器让你能够专注于写作，而不必担心想法在叙述中的位置。</p>
+<p>这些工具之于 MS Word，就像 Obsidian
+之于纸质笔记本：它们让你打破线性思维，发展个别想法并以不同方式连接它们。它们还模糊了结构化和起草之间的界限，所以当你在每种模式下工作时，你必须更加注意它们。</p>
+<figure class="img1">
+<img alt="Scrivener 应用显示了本书早期草稿的文本。左侧有一个带有大纲的面板。" class="img" src="images/000054.jpg"/>
+</figure>
+<figure class="img1">
+<span class="calibre1" id="calibre_link-607"></span><img alt="Scrivener 应用显示了看起来像带有短文本的彩色索引卡片。" class="img" src="images/000055.jpg"/>
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">本章手稿在 Scrivener
+中的两种视图。第一个视图聚焦于章节的细粒度部分，而第二个显示代表章节最高层级部分的卡片。请注意，当我截取这些屏幕截图时，这原本计划是</samp><a class="calibre1" href="#calibre_link-13"><samp class="sans_futura_pt_book_">第7章</samp></a><samp class="sans_futura_pt_book_">。作者尝试不同的结构配置并不罕见；像
+Scrivener
+这样的非线性写作工具的优势之一是，即使在写作过程的后期，它们也能轻松进行此类更改。</samp>
+</p>
+</figcaption>
+</figure>
+<h3 id="修订">修订</h3>
+<p>这个过程不会以草稿结束。然后你必须获得反馈并进行必要的修正。你可以自己完成（例如，通过回顾前一天写的内容），也可以展示给其他人。<sup>[^78]</sup>
+如果你幸运地与一位出色的编辑合作（就像我一样），你会得到可操作的评论来改进作品。</p>
+<p>这个过程不只发生一次。与许多其他类型的工作一样，起草是迭代改进的：你写一个草稿或画一个图表并展示给别人。你根据听到的意见进行更改，然后再次展示。在每一轮中，作品变得更加清晰。</p>
+<p>这些反馈通常以笔记的形式出现。当分享手稿供某人审阅时，你可能会发送给他们一个
+PDF、MS Word 文件或 Google Docs
+中的文档副本。这三者都允许读者用边注来注释文档。它们可能包括关于材料的问题、改进建议、令人困惑的地方等。</p>
+<p>这些笔记在形式上类似于你阅读一本书时做的笔记。但也有重要的区别。最明显的一个是你没有做这些笔记，所以你必须提醒审阅者提供清晰的笔记。另一个重要区别是这些笔记与作品的特定部分相关联，所以你必须按线性顺序浏览它们。</p>
+<p>这使得过程变得繁琐，特别是如果有几个人提供反馈。通常，你必须浏览多个带注释的作品副本。我希望
+AI
+有朝一日能够简化提供和接收反馈的过程。但目前，请考虑这部分过程会比你预期的花费更长时间。</p>
+<p>不要在这上面吝啬时间。尽管反馈出现在过程的末尾，但它对于确保作品传达预期内容至关重要。此外，正如你将在下一节中看到的，它是学习的重要手段。如果你建立知识花园的部分原因是为了持续学习，你必须建立反馈机制。</p>
+<p><samp class="sans_futura_pt_demi_b_1">工作笔记</samp></p>
+<p><span class="freightdisp_pro_black_b_1">发布书评</span></p>
+<p>在[第2章]中，我建议你在阅读本书时开始做笔记来捕捉你的想法。这些阅读笔记本身就很有价值。但由于你可能是独自阅读，你的笔记只包含你自己的想法。如果你还能从其他人学到的东西中受益呢？</p>
+<p>拓展理解的一种方式是与他人分享你的想法。通过发布你的观点，你可以参与讨论，让你接触到对材料的不同看法。有些会拓宽或加深你的理解；其他的会让你重新评估你的立场。无论哪种情况都有益于你的思考。</p>
+<p>为发布而写笔记与为自己写笔记不同。首先，为自己写作不需要太多解释，因为你现在已经了解了这本书的背景。当公开分享时，你不能假设读者已经读过这本书，所以你必须解释基础内容：</p>
+<ul>
+<li><p>这本书讲的是什么？</p></li>
+<li><p>作者想要做什么？</p></li>
+<li><p>他们成功了吗？为什么成功/为什么没有成功？</p></li>
+</ul>
+<p>回答这些问题会迫使你思考这本书的前提。你是否理解得足够好，能够向他人解释？</p>
+<p>在建立了关于这本书主题的基本认识之后，你可以分享自己的想法。你学到了什么？书中的想法是否与你已知的其他事物产生了关联？把它们记录下来。添加对其他作品的引用。如果你已经发布了几篇这样的读书笔记，你可以交叉引用它们，慢慢建立起一个想法网络。因为这些内容是公开的，你最终会吸引那些对类似书籍感兴趣的人。</p>
+<p>发布的方式有很多。你可以开设一个博客来分享长篇思考，或者使用微博客服务（如Twitter或Mastodon）发布简短的见解。你也可以在亚马逊等图书销售网站上撰写评论。对这本书感兴趣的人更可能在那里查找，而不是在你的博客上，所以你更有可能在亚马逊上找到关于该主题的深思熟虑的观点。（当然，你也可能看到一些不那么有用的评论。）</p>
+<p>如果你正在阅读<em>Duly
+Noted</em>——无论是正面还是负面的体验——考虑在亚马逊上写一篇评论。不要只是发布”我喜欢它”这样的内容——告诉我们你<em>为什么</em>喜欢它。（或者为什么不喜欢。）重新审视你的私人笔记。哪些内容令人印象深刻？这些想法如何改变了你？为什么这很重要？</p>
+<p>浏览其他评论。有没有已经涵盖了你打算说的内容？如果有，考虑什么可能是一个新鲜的视角。在此过程中，重新审视你关于这本书的私人笔记，添加你从阅读他人评论中学到的东西。亚马逊的图书页面是关于这本书的全球反馈循环的一部分——你可以参与其中。</p>
+<h2 id="反馈的作用">反馈的作用</h2>
+<p>尽管我们强调了思考工具和生产工具之间的区别，但思考贯穿整个过程。制作和思考不是分离的活动。事实上，你通过制作来思考。将想法呈现给世界，并观察世界如何回应，会改变你对它们的看法。</p>
+<p>回想一下你制作演示文稿的时候，一张一张地做幻灯片。看到演示文稿中的想法序列可能会让你意识到缺少了一些东西。或者你可能向同事展示了幻灯片，他们建议删除一些内容。这两者都是反馈的例子。</p>
+<h3 id="反馈的意义是什么">反馈的意义是什么？</h3>
+<p>如果你和许多人一样，“反馈”这个词可能会带来负面情绪。它可能会让你想起那次你的经理问：“我能给你反馈吗？”随之而来的似乎是令人不快的批评。或者，如果你喜欢音乐，反馈可能会让你想起麦克风离扬声器太近时发出的刺耳声音。</p>
+<p>这些都不是令人愉快的联想。但反馈是系统思维中的一个重要概念，它会让你的工作变得更好。要点是因果关系：你做了某件事，然后获得关于行动结果的信息，以便你能够做出适当的反应。</p>
+<p>想象一下运球。起初，你手里握着球，感受它的纹理和紧绷度。你感受到脚下地面的坚硬。你的眼睛看到你投出的球。当它击中地面时，会发出独特的声音。它的质量也会影响你对球可能轨迹的预期。这些都是关于情况的信息。</p>
+<p>所有这一切都发生在不到一秒钟的时间里。你不会思考它。相反，你的身体根据你的感知和以前对篮球的经验知道该做什么。你行动（即投球），世界用视觉和听觉线索作出反应，帮助你预测球的运动方式。</p>
+<p>这些声音、视觉和触觉感受就是反馈。通过注意观察，你可以更熟练地行动：你调整身体以接住球，将下一次弹跳投得稍快或稍慢，等等。如果你重复这个过程很多次，你会更擅长控球——这一切都要归功于反馈。</p>
+<h3 id="如何克服反馈困境">如何克服反馈困境</h3>
+<p>学习运球——一项相对低风险的活动——是一回事，发布你的想法则是另一回事。进行公开演讲或出版一本书可能会让你感到脆弱。我们认同自己的想法，这就是为什么”反馈”这个词会引发负面情绪：它可能感觉像是被批评。</p>
+<p>所以，这里有一个困境：没有反馈，你的工作不会变好，但在工作变好之前，你可能对分享感到担忧。你必须以某种方式让这个循环运转起来。解决这个困境的一种方法是习惯于分享不成熟的想法，这需要重新定义生产过程。</p>
+<p>进行大型生产的传统方式是”埋头苦干”一段时间，将自己隔离起来，直到你有值得分享的东西。然后，当作品”足够好”时，你与其他人分享以获取反馈。这要求你从一开始就做对很多事情，因为在投入大量时间之前，你无法调整方向。</p>
+<p>另一种选择是在进行过程中分享想法，让反馈在整个过程中影响工作。例如，如果你正在写一本书，你可以建立一个博客，在你研究这些想法时分享特定的想法。读者不会期望博客文章像书籍那样经过充分思考或记录，所以他们会给你更多的自由度。如果你的博客支持，他们还可以留下评论。</p>
+<p>在写作《Duly
+Noted》时，我在社交媒体和时事通讯上分享了许多想法。那些回应我的人让我了解到哪些主题引起了共鸣，哪些反响平平。在某些情况下，人们还向我指出了我最初遗漏的想法或书籍。通过早期分享我不成熟的想法，我学到了很多关于本书主题的知识。</p>
+<h3 id="你应该在哪里寻求反馈">你应该在哪里寻求反馈？</h3>
+<p>当然，早期分享想法并不意味着你必须向全世界公开它们。你可以限制想法的受众范围，直到它们经过值得信赖的合作者的压力测试。</p>
+<p>在他的《个人知识掌握》(Personal Knowledge Mastery)框架中，Harold
+Jarche
+提倡通过分享想法来增长知识。他区分了三个分享层级，从最私密到最公开：</p>
+<ul>
+<li><strong>工作团队</strong>，为共同目标开发联合知识</li>
+<li><strong>实践社区</strong>(Communities of
+Practice)，由共享相同背景的值得信赖的个人组成</li>
+<li><strong>社交网络</strong>，将更精炼的想法暴露于其他视角</li>
+</ul>
+<p>这里有一个自然的进程：你先与信任的人对初步想法进行压力测试，以便在更广泛分享之前进行完善。你从亲密的合作者开始，然后转向与你共享背景的群体，最后面向整个世界。每一步都帮助你纠正误解，强化想法并增强信心。</p>
+<p><code>著名笔记记录者</code></p>
+<p>Maggie Appleton</p>
+<figure>
+<img alt="Maggie Appleton的照片" src="images/000052.jpg"/>
+<figcaption aria-hidden="true">Maggie Appleton的照片</figcaption>
+</figure>
+<p>Maggie Appleton
+是一位用户体验设计师、开发者和人类学家。她还发表关于人工智能、嵌入引用(Transclusion)和数字园艺(Digital
+Gardening)等主题的富有洞察力且易于理解的图解文章。</p>
+<p>后者让我注意到了 Maggie
+的工作。她关于数字园艺的文章不仅是该主题的绝佳介绍，而且 Maggie
+本身也是一名实践者：她的个人网站包含一个名为《花园》(The
+Garden)的部分，“一个我一直在打理的文章、笔记和半成熟探索的集合。”</p>
+<p>也就是说，《花园》展示了处于不同发展阶段的想法的公开笔记。你可以按主题、类型（例如笔记、文章、模式）和成长阶段（例如常青、萌芽、幼苗）筛选想法。该网站正在积极开发中；我上次查看时，最新的想法是”一天前种下的”。</p>
+<p>《花园》中的模式、文章和笔记具有不同的结构。笔记和文章是自由形式的，后者更长。另一方面，模式具有更多结构：它们有专门描述模式相关背景的部分，以及模式的主要内容。有些还有指向示例和目标受众描述的链接。</p>
+<figure>
+<img alt="Maggie Appleton的网站《花园》，显示文章索引" src="images/000056.jpg"/>
+<figcaption aria-hidden="true">Maggie
+Appleton的网站《花园》，显示文章索引</figcaption>
+</figure>
+<p>Maggie Appleton 的《花园》主页展示了其导航和过滤功能。</p>
+<p>浏览公开数字花园的挑战之一是它们可能难以导航和解析。个人自我笔记通常假定有大量背景信息，因此对其他人来说没有那么大意义。数字花园的涌现结构可能使信息难以找到。但
+Maggie
+显然花了很多心思使《花园》对新读者来说易于访问。该网站模糊了公共笔记空间和精美出版物之间的界限。</p>
+<h2 id="结语-2">结语</h2>
+<p>在我的知识花园中写笔记时，我有时会想起 Richard
+Harris，他在电影《角斗士》中扮演马可·奥勒留(Marcus
+Aurelius)，在闪烁的烛光下将想法潦草地写进笔记本。马可生活在一个不同的世界，使用相对原始的技术。但就像你我一样，他使用事物来扩展自己的思维。你可以”读懂他的思想”，因为他的笔记已被公开。</p>
+<p>大多数笔记并非如此。我在准备这本书时做了很多私人笔记。这些笔记不是重点；重点是通向你现在正在阅读的这本书的思考，它综合了多年来收集和培育的想法。我的角色一直是管理它们，策划和排序它们以（希望！）与你清晰地沟通。</p>
+<p>知道生产过程有不同的阶段——以及哪些工具和方法最能支持每个阶段——对于有效地处理这些想法至关重要。当然，分享它们并不是过程的终点：我希望从你和其他读者那里获得反馈，以拓宽和加深我的思考。</p>
+<p>你可能想知道我会如何处理这些反馈。毕竟，这本书已经完成了。显然，我会将其反馈到我的知识花园中。只要我活着，我的理解就会继续发展。在这个过程中，我会遇到新的想法和支持它们的技术。也就是说，花园本身需要不断发展。下一章将解释如何设置你的花园，使其能够改变和成长以支持你不断发展的需求。</p>
+<ol type="1">
+<li><p>Marcus Aurelius，《沉思录：附精选书信》(Meditations: With
+Selected Correspondence)（牛津：牛津大学出版社，2011年）。</p></li>
+<li><p>不要为了金钱而做。</p></li>
+<li><p>我也这样做过。</p></li>
+<li><p>这并不是说好的想法<em>永远不会</em>在过程后期出现。我在撰写”最终”草稿时也有过重要的洞察，改变了我的思路。再次强调，保持开放的心态。</p></li>
+<li><p>https://obsidian.md/publish</p></li>
+<li><p>我特指的是非虚构类书籍。我没有写作虚构作品的经验。</p></li>
+<li><p>https://stevenberlinjohnson.com/tool-for-thought-b12c170fcc24</p></li>
+<li><p>https://medium.com/s/workflow/writing-books-isnt-processing-words-f1294120e28f</p></li>
+<li><p>AI
+也可以在这方面提供帮助。但截至本文撰写时,这项技术还很新,我无法根据第一手经验来写如何从
+AI 获得反馈。</p></li>
+<li><p>这就是为什么”盯紧球”是常见的指导建议。</p></li>
+<li><p>https://jarche.com/2014/02/the-seek-sense-share-framework/</p></li>
+<li><p>https://maggieappleton.com/garden</p></li>
+</ol>
+<h1 id="第九章-照料花园">第九章 照料花园</h1>
+<p>随着时间推移,你的知识花园变得更加丰富和复杂。你学习新事物,需求发生变化,技术不断进步。诀窍在于在不浪费时间摆弄工具的情况下演化系统。目标不是更好的园艺,而是更好的思考。这需要自律。</p>
+<p>在他的经典儿童读物《小王子》中,安托万·德·圣埃克苏佩里讲述了叙述者——一名在撒哈拉沙漠迫降的飞行员——与一个神秘地从沙漠中出现的孩子之间的相遇。飞行员最终意识到这个孩子——书名中的小王子——是来自另一个星球的访客。这是一个小星球,但让他忙个不停:</p>
+<blockquote>
+<p>“这是自律的问题,”小王子后来告诉我。“当你每天早上洗漱穿衣完毕后,你必须照料你的星球。你必须确保定期拔除猴面包树,一旦你能将它们与玫瑰丛区分开来就要拔掉,因为它们很小的时候非常相似。这是非常乏味的工作,但很容易。”</p>
+</blockquote>
+<p>为什么是猴面包树?王子接着解释道:</p>
+<blockquote>
+<p>“有时候把工作推迟到以后做并无大碍。但对于猴面包树来说,这总是一场灾难。我知道有一个星球上住着一个懒人。他忽视了三棵灌木……”</p>
+</blockquote>
+<p>如果无人看管,日常琐事会变成大问题:猴面包树占领星球,杂草扼杀花朵,牙齿腐烂,电被切断,等等。你的知识花园也是如此:你必须持续地照料它。这发生在两个层面:</p>
+<ul>
+<li>系统结构和内容的日常维护</li>
+<li>系统组件的定期升级和更换</li>
+</ul>
+<p>两者都依赖于明确的原则和习惯。我们会讨论这些。但首先,有一点警告:<em>工作</em>——你试图做的事情——与<em>元工作</em>——所有支持该工作的事情——之间是有区别的。</p>
+<h2 id="元工作支撑过程的所有阶段">元工作支撑过程的所有阶段</h2>
+<p>知识园艺的陷阱之一是,很容易花更多时间<em>构建</em>系统而不是<em>使用</em>系统。我说的构建系统,是指调整设置、评估新工具和流程、重组标签等。这些都是重要的活动,但它们无法替代实际的思考工作。</p>
+<p>复杂系统需要维护和组织。当你工作时,事情很快就会变得混乱。用一个类比来说明:烹饪一顿大餐会弄乱你的厨房;如果你在完成后收拾整理,准备下一顿饭会更容易。</p>
+<p>就像厨房一样,你的知识花园是为特定目的而留出的地方:更好地思考。这个过程可能会变得混乱,你必须偶尔整理:必须清空收件箱,把书归还到书架,归档索引卡等。然后你就会在身体和精神上为下一个项目做好准备。</p>
+<p>回想一下第4章中介绍的图表;过程中的每个阶段都需要一定程度的维护。</p>
+<figure>
+<img alt="流程图展示了知识园艺的六个不同步骤:注意、捕获、分类、保留、培育和分享。" src="images/000061.jpg"/>
+<figcaption aria-hidden="true">流程图展示了知识园艺的六个不同步骤:注意、捕获、分类、保留、培育和分享。</figcaption>
+</figure>
+<p>例如,如果你使用(纸质的)口袋笔记本捕获事物,你必须偶尔查看这些笔记,寻找需要分别转移到知识库和待办事项清单中的想法和行动。当空白页用完时,你必须购买新笔记本并将旧笔记本存放在需要时可以找到的地方。</p>
+<p>排序阶段需要特别注意。如前所述，收件箱只有在它们是<em>临时</em>存放地时才能发挥作用。重点不是永久存储东西，而是保留它们直到你准备好处理它们。</p>
+<p>例如，我喜欢用纸笔做某些类型的笔记。其中一种情况是当我为播客采访某人时。之后，我用手机扫描这些笔记，它们会同步到我电脑上的一个文件夹，然后自动导入到我的
+DEVONthink 中。</p>
+<p>大约每周一次，我会浏览这个收件箱，给里面的所有内容打标签并归档。有时如果我太忙可能会跳过一周，但如果我等得太久，东西就会堆积在那里。清空收件箱会变得更繁重，这导致我推迟到以后再做。于是陷入恶性循环。</p>
+<p><samp class="sans_futura_pt_demi_b_1">侧注</samp></p>
+<p><span class="freightdisp_pro_black_b_1">如何实现”收件箱零”</span></p>
+<p>收件箱中的一些项目需要立即处理，而其他项目可以等待。还有一些是你应该尽快丢弃的垃圾。养成定期清空收件箱的习惯将帮助你保持井然有序。但你该如何做呢？</p>
+<p>诀窍是不要让东西堆积太久。你等得越久，抗拒感就越强。但与所有元工作(meta-work)一样，你不想在整理收件箱上花费太多时间。注意信息进入你生活的频率。有些收件箱比其他收件箱填充得更快。争取更频繁地清空那些收件箱，避免试图一次性清空所有收件箱的诱惑。</p>
+<p>有些人建议在一周中设定固定时间来清空收件箱。我尝试过这种方法，但对我不起作用；我每周的安排不够稳定。相反，我学会了注意清空不同收件箱需要多长时间，并在会议间隙或有点空闲时间时寻找机会。对我来说，在一天中进行小冲刺比预先安排的一次长时间会话更容易。</p>
+<p>你如何确定每个流程的正确节奏？一个关键因素是是否有其他人可能在等待后续跟进。只有我自己会受到
+DEVONthink
+收件箱中内容的影响。然而，人们可能在等待我的电子邮件收件箱中内容的回复，所以我会更频繁地处理它。另一个因素是内容进入收件箱的速度。如果你每天只添加几条笔记，每周整理收件箱就可以了。但如果你每天捕获几十条笔记，每周可能就太久了。<sup>[^83]</sup></p>
+<p>给自己一些清空收件箱的理由会有所帮助。例如，我每隔一个周日发送一份包含文章和工具链接的新闻通讯。我定期在
+DEVONthink
+中捕获这些链接，并在准备新闻通讯时给它们打标签并归档。这个项目给了我一个定期清空收件箱的截止日期。</p>
+<h2 class="h" id="需要元工作的常见任务">需要元工作的常见任务</h2>
+<p>所以，你需要相当频繁地清理收件箱。然而，这不是唯一需要元工作的任务。如果你意识到哪些事情需要维护，你就能更好地平衡专注于工作和专注于使工作得以实现的系统之间的时间。</p>
+<h3 class="h1" id="管理专注的容器">管理专注的容器</h3>
+<p>你可能还记得，你通过将项目移动到更永久的容器（如文件夹、目录和分组）来保持收件箱清空。它们暂时让你的笔记不碍事，同时仍然让你在未来能够找到它们。</p>
+<p>如果不加管理，容器也会累积。如果你每次开始一个项目就创建一个新文件夹，久而久之，你会有很多文件夹。这使得清空收件箱变得更困难，因为更多的文件夹会在决定东西应该放在哪里时增加你的认知负荷(cognitive
+load)。</p>
+<p>但项目结束并不意味着你应该丢弃它的笔记或文件。你将来可能想参考那个文件夹中的信息，所以你仍然应该保留它。</p>
+<p>解决方案是为不再活跃的事物（例如项目）保留专用容器。例如，我的 Mac
+上有一个 <em>Projects</em> 文件夹。<em>Projects</em>
+文件夹中的第一个文件夹是特殊的：它叫做
+_<em>Archived</em>。<sup>[^84]</sup>
+这是所有不活跃项目的去处。每次我完成一个项目，我就把它的文件夹从
+<em>Projects</em> 文件夹移到 <em>_Archived</em>
+子文件夹。这是一个让我感到满足的小仪式：我的承诺完成了，我准备好为其他事情腾出空间了。如果以后需要，我知道在哪里找到它，但它不会日复一日地占据我的注意力。</p>
+<h3 class="h1" id="保持容器名称一致以便查找">保持容器名称一致以便查找</h3>
+<p>正如你在第6章中看到的，一致地命名容器很重要，这样未来的你可以更容易地找到它们。因为我是顾问，我的项目文件夹命名模式如下：</p>
+<blockquote>
+<p><samp class="sans_futura_pt_book_">客户名称 - 项目名称</samp></p>
+</blockquote>
+<p>我将名称的两部分都尽可能保持简短，同时仍然具有区分性。例如，如果我为一家名为
+<em>Acme</em> 的公司重新设计网站，我会创建名为 <em>Acme - Web redesign
+2022</em> 的容器。<sup>[^85]</sup>
+我写的是复数形式的<em>容器</em>，因为我会在各个地方重复使用这个名称：我
+Mac 上的文件夹、我的待办事项跟踪器、Google Drive 等云服务。</p>
+<p>在不同应用间保持容器名称的一致性是另一项常规维护工作，有助于保持系统的有序性。这不是按照可预测时间表进行的事情，而是在需要时进行。要严格遵守：如果稍后更改了文件夹名称，请在使用它的所有其他地方也进行更改。</p>
+<h3 id="掌握同步状态">掌握同步状态</h3>
+<p>许多人使用多个设备进行笔记记录。如果你在路上，可能会在手机上捕捉想法。但在处理项目时，你可能会使用屏幕更大的设备。确保你的信息在设备之间正确同步非常重要。</p>
+<p>如果你使用基于云的SaaS(软件即服务)产品，如Notion或Roam
+Research，这不是太大的问题，因为你的信息无论如何都会存储在远程服务器上。但如果你使用基于文件的应用，如Obsidian或DEVONthink，你需要确保应用的所有实例都有最新版本的笔记。</p>
+<p>偶尔检查你的容器和收集箱，确保它们有最新版本的内容。很少有事情比意识到你正在使用旧数据更令人恼火的了——因为你的设备几天(或几周!)前就停止更新数据了。如果你没有使用基于云的应用，请时常检查应用的同步状态。</p>
+<p><strong>工作笔记</strong></p>
+<p><strong>扫描纸质笔记</strong></p>
+<p>如果你和大多数人一样，有时会在纸上记笔记。它们会带来额外的障碍：在进入你的数字知识花园之前，你必须转录或数字化它们。这可能是一件苦差事，而且等待的时间越长，情况就越糟。</p>
+<p>我尝试过许多将实体笔记输入电脑的方法。重大突破是手机扫描应用。手机配备出色的相机，可以快速完成扫描工作。配合智能软件，这个过程变得容易。作为额外好处，你可以在任何地方进行扫描。</p>
+<p>我发现最好的手机扫描应用是Readdle的Scanner
+Pro。(警告：Android上有一个来自不同公司的类似名称的应用。我不能为它担保，但该生态系统中可能有提供类似功能的应用。)我喜欢这个应用，因为它使过程快速而简单。</p>
+<p>使用桌面扫描仪时，页面平放在设备的扫描表面上。因此，数字化图像是正面捕获的。在手机上扫描时你没有这种便利。相反，你在文档上方握持设备拍照，通常是倾斜的角度。Scanner
+Pro通过找到文档边缘并调整图片的透视来使其边缘平行，从而纠正这一点。</p>
+<p>软件自动激活此功能，并在你稳定且拍摄清晰时抓拍图片。所以，你只需握持手机直到它拍照，翻页，然后再做一次。这个过程比使用平板或双面扫描仪更快。你可以以多种格式保存，如PDF和JPG，并对扫描文档应用过滤器(例如，使其成为黑白以获得最高对比度)。</p>
+<figure>
+<img alt="Scanner Pro应用中的iPhone相机视图显示笔记本页面。应用已检测到笔记本页面的边缘，屏幕中心的蓝色气泡显示”靠近一点”。" src="images/000062.jpg"/>
+<figcaption aria-hidden="true">Scanner
+Pro应用中的iPhone相机视图显示笔记本页面。应用已检测到笔记本页面的边缘，屏幕中心的蓝色气泡显示”靠近一点”。</figcaption>
+</figure>
+<p><em>在Scanner
+Pro中扫描我笔记本上的一页。应用已检测到页面边缘并建议我靠近一点，以便获得清晰的拍摄。当图像足够清晰时，它会抓拍图片并校正透视。整个过程只需几秒钟，可以在任何地方完成。</em></p>
+<p>但Scanner
+Pro最有价值的功能可能是自动OCR(光学字符识别)。OCR检测图像中的排版字符并将其保存为文本。有用的是，这也适用于手写笔记。(至少对我来说很好——我认为这个功能取决于你笔迹的清晰度。)</p>
+<h2 id="系统演进">系统演进</h2>
+<p>到目前为止，我们已经介绍了常规维护工作。但偶尔，你也会想要更改系统的组件。你的需求会随着时间而改变，新技术提供不同的功能。关键是在不破坏工作流程的情况下进行更改。</p>
+<p>回到我们的厨房类比，有时你想更换一个电器。也许你读到了一款新潮的烤箱，可以容纳更大的披萨。或者你的冰箱不能正常工作。或者——在极端情况下——你决定重做整个厨房。其中一些变化比其他变化更具破坏性。你可能一时兴起买一个新的咖啡研磨机。但更换嵌入式烤箱是一个重大项目，可能需要研究、花费大量金钱并需要专家帮助。你希望不频繁地进行此类重大更改，并且只有充分的理由才这样做。</p>
+<p>回顾我们的流程图，“大组件”是你长期保留信息的地方——你的想法永久”存放”的地方。你不想太频繁地更改这些。特别是，你不想做任何破坏指向单个笔记和文档链接的事情。</p>
+<p>就我而言，我在两个应用中保留知识库：DEVONthink和Obsidian。我选择这对应用部分原因是它们的良好互操作性(稍后详述)。但值得承认的是，其中一个应用(DEVONthink)仅在运行Apple操作系统的设备上可用。</p>
+<p>事实上，我的知识管理系统中一些重要的应用程序只能在苹果的一个操作系统上运行：macOS。因此，我可能对设置做出的最具破坏性的改变就是切换到不同的操作系统。</p>
+<p>了解系统中哪些部分是不可改变的很重要。我不会更改我的操作系统，因为那会带来太多麻烦而收益甚微。但如果你使用基于云的应用程序（如
+Roam Research 或 Notion），这可能不会成为你的限制因素。</p>
+<figure class="img1">
+<span class="calibre1" id="calibre_link-624"></span><img alt="DEVONthink 的截图显示了在 Obsidian 中创建的 Markdown 笔记。" class="img" src="images/000059.jpg"/>
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">Obsidian 将笔记作为纯 Markdown
+文件存储在用户可访问的文件夹中。DEVONthink 理解 Markdown
+并且可以索引任何用户可访问文件夹中的文件。因此，你可以在 DEVONthink
+中查看和操作 Obsidian 笔记。</samp>
+</p>
+</figcaption>
+</figure>
+<p>你如何知道是否该更换系统组件了？以下是三个换用新工具的理由：</p>
+<ul>
+<li><strong>应用程序正在停止开发，或其制造商即将倒闭。</strong>
+这显然是一个糟糕的情况；你面临着破坏而收益甚微。最好完全避免这种情况。一种方法是选择来自更大、更成熟公司的应用程序。</li>
+<li><strong>你的需求发生了变化。</strong>
+也许你已经开始在大学兼职教学，或者决定写一本书。在任何一种情况下，你当前的应用程序可能缺少你需要的功能，比如跟踪书目引用。</li>
+<li><strong>其他地方有令人兴奋的新功能。</strong>
+有时，会出现一个新应用程序，承诺能做神奇的事情。也许是一个人工智能突破，可以使归档自动化，或者是一个新的搜索引擎，让你更快地找到东西。无论如何，你想要”新鲜玩意儿”。</li>
+</ul>
+<p>这些理由按照从最紧迫到最不紧迫的顺序列出。你不能依赖一个正在停止开发的应用程序，应该尽快寻找替代品。</p>
+<p>不断变化的需求也是改变的好理由，尽管你可能要考虑你当前的应用程序是否真的无法满足你的新需求。（在网上搜索关于如何使用现有应用程序完成你想做的事情的建议可能会有用。）</p>
+<p>第三个理由应该让你暂停一下。你真的需要这个时髦的新功能吗？它真的会为你做你期望它做的事情吗？记住：在你添加了大量笔记之前，你不会从知识花园(knowledge
+gardens)中获得太多好处。这需要时间。</p>
+<p>此外，请考虑到许多创新的新应用程序是由年轻公司制作的，这些公司还没有良好的记录，在某些情况下，甚至没有可行的商业模式——这会让你回到列表中的第一点。</p>
+<p>你应该对知识管理系统的某些方面比其他方面更保守。更换主要组件会花费时间和金钱。你必须学习新的做事方式。最终，你可能会比改变之前更高效——但需要时间才能达到那里。</p>
+<p>换句话说，这些改变是元工作(meta-work)，而不是工作。一如既往，你需要在两者之间取得健康的平衡。摆弄新工具可能很有趣，但这不是你阅读本书的原因。</p>
+<h2 id="选择系统组件的原则">选择系统组件的原则</h2>
+<p>所以，你已经决定是时候更改系统的一个组件了。你如何选择一个应用程序而不是另一个？这九条原则会有所帮助：</p>
+<ul>
+<li>避免锁定。</li>
+<li>青睐互操作性。</li>
+<li>寻找自动化/可脚本化功能。</li>
+<li>青睐值得信赖的供应商。</li>
+<li>寻找充满活力的社区。</li>
+<li>顺应技术的纹理工作。</li>
+<li>避免”万能”应用程序。</li>
+<li>避免流程中断。</li>
+<li>从小处着手，寻找”满意即可”(satisfice)的工具。</li>
+</ul>
+<h3 id="避免锁定">避免锁定</h3>
+<p>寻找允许你在决定迁移时带走数据的工具。这需要让你以其他应用程序可以读取的标准格式导出你的东西。你还应该更喜欢能让你备份数据的工具。</p>
+<h3 id="青睐互操作性">青睐互操作性</h3>
+<p>寻找有文档记录的 API 和基于标准的导入/导出功能。如前所述，Markdown
+已成为连接型笔记(connected
+note-taking)的首选标记语言。至少，系统组件应该能够读取和写入 Markdown
+格式的文本。</p>
+<h3 id="寻找自动化可脚本化功能">寻找自动化/可脚本化功能</h3>
+<p>一些工具让你能够自动化日常任务。虽然你在开始时可能不会使用这些功能，但当你变得更熟练时，它们可以为你节省大量时间。寻找向操作系统的自动化功能公开特性和功能的工具。</p>
+<h3 id="青睐值得信赖的供应商">青睐值得信赖的供应商</h3>
+<p>你希望构建一个能够长期满足你需求的系统。这意味着要寻找具有值得信赖轨迹的供应商——即他们已经存在了一段时间，拥有尊重你的注意力和隐私的商业模式等。</p>
+<h3 id="寻找充满活力的社区">寻找充满活力的社区</h3>
+<p>一些工具供应商相对较新，所以他们没有长期的记录；然而，他们已经成功建立了充满活力的用户社区。寻找允许用户贡献插件和扩展的工具，并拥有热情的用户分享技巧、YouTube
+视频等。</p>
+<h3 id="顺应技术特性">顺应技术特性</h3>
+<p>有些工具比其他工具更适合某些需求。例如，数字”白板”工具，如 Mural 和
+Miro，最适合用于协作式视觉思考。相反，它们不太适合长篇文本编辑。不要试图强迫工具去做它们不擅长的事情。</p>
+<h3 id="避免使用全能应用">避免使用”全能”应用</h3>
+<p>避免使用那些承诺为你管理一切的工具。如果你选择可互操作的软件，那么你可以拥有针对特定用例的最佳小工具。与其强迫任何一个工具去做所有事情，不如使用几个优秀的专用工具——只要它们能够有效地互操作。</p>
+<h3 id="避免流程中断">避免流程中断</h3>
+<p>不要只考虑功能和能力；还要考虑新工具将如何融入你的流程。例如，如果工具有自己的收件箱，除了你已经查看的所有其他收件箱之外，你还必须定期腾出时间来清理它。这可能会给你的流程增加阻力。</p>
+<h3 id="从小处着手寻找满意即可的工具">从小处着手，寻找”满意即可”的工具</h3>
+<p>经济学家赫伯特·西蒙创造了一个有用的新词”satisficing”(满意即可)，它是满意(satisfactory)和足够(sufficing)的合成词。有些东西已经足够好了；不值得花费额外的时间和金钱去寻找更多。如果你遵循前面的原则，当你的需求超出它们时，你将能够替换系统组件。</p>
+<p>目前，使用满足你当前需求的工具即可。从小而简单的开始，然后在此基础上构建。你的知识花园应该足以满足你的近期需求，并随着时间的推移而变得更加丰富和复杂。</p>
+<p>摆弄系统组件可能很有趣，但这最终不是你构建知识花园的原因。每当你考虑更改系统组件时，问问自己：“我为什么需要这个？”你花在调整系统上的时间，本可以用来使用系统学习一些东西。</p>
+<p><code>工作笔记</code></p>
+<h2 id="管理标签">管理标签</h2>
+<p>在本章前面，我们讨论了如何管理文件夹名称。但容器并不是系统中唯一需要定期维护的元素。你还应该偶尔重新审视你的标签。</p>
+<p>我说”应该”是因为，坦率地说，我维护标签的频率低于维护容器。一方面，在系统中保留几个不规范的标签不如容器命名错误那样具有破坏性。另一方面，维护标签比调整容器需要更多的工作。</p>
+<p>一如既往，你应该避免不必要的忙碌工作。话虽如此，偶尔审查你的标签以确保一致性是很重要的。</p>
+<p>主要的挑战是，应用程序使即时创建新标签变得容易，但之后编辑它们就不那么容易了。支持标签的应用程序通常提供自动完成功能，这带来了一些一致性。但你也可以很容易地继续输入，无意中添加单词的变体。</p>
+<p>一个例子是意外添加术语的复数形式。想象一下，你给一些笔记打上
+<code>#book</code> 标签。然而，后来你把其中一个误输入为
+<code>#books</code>。应用程序将 <code>#book</code> 和
+<code>#books</code>
+视为不同的，所以你已经向分类系统中添加了一个新术语。当查看你的
+<code>#book</code> 笔记时，复数形式被排除在外。</p>
+<p>解决标签错误需要审查标签列表并纠正错误。在选择管理笔记的应用程序时，寻找能让你以列表形式调整标签的功能(即，从技术上讲，一个”受控词汇表”)。相反的情况——在单个笔记或文件中更改标签——非常耗时。</p>
+<p>Obsidian 生态系统提供了一个名为 <em>Tag Wrangler</em>
+的第三方插件，可以让你管理标签。你可以在所有笔记中重命名标签，为标签创建新页面，隐藏标签等等。这是在你的库中批量更改标签的简便方法。(话虽如此，你必须小心使用它，因为这些更改无法撤消。)</p>
+<figure class="img1">
+<span class="calibre1" id="calibre_link-635"></span>&lt;img
+src=“images/000060.jpg” class=“img” alt=“Obsidian
+应用程序的截图。有两个面板：左侧是一个标题为”命令行命令”的笔记，右侧有一个列出标签的面板。其中一个标签上打开了一个上下文菜单，提供了用户可以应用于该标签的各种操作选项。”
+/&gt;
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">Tag Wrangler 插件在 Obsidian
+的右侧边栏中创建了一个标签列表。从那里，你可以浏览和修改库中的标签。</samp>
+</p>
+</figcaption>
+</figure>
+<h2 id="建立可持续的习惯">建立可持续的习惯</h2>
+<p>到目前为止，可能已经很清楚，管理知识花园需要时间和精力。有些任务可能很有趣，比如尝试新组件。但其他任务则是琐事。新技术将帮助你自动化一些任务，但其他任务你还需要做一段时间。以不引人注目的方式完成它们的最佳方法是将它们转变为习惯。</p>
+<p><em>习惯</em>是你无需思考就能定期进行的实践。回到厨房的类比：在我家，我们使用一台没有制冰机的老式冰箱。每当我们取出冰块时，我们必须重新装满制冰盘。起初，这是一件苦差事。但我们已经习惯了几乎自动地完成它。</p>
+<p>在《原子习惯》(Atomic
+Habits)中，詹姆斯·克利尔认为，有效的习惯养成从小处开始：你首先处理一个简单的习惯，当它变得自动化后，再在此基础上搭建更困难或更复杂的习惯。克利尔解释说，持久的行为需要在三个层面上考虑你正在做的事情：</p>
+<ol type="1">
+<li><strong>结果：</strong>你想从行为改变中得到什么。例如，你可能建立一个知识花园是因为你想写一本书。</li>
+<li><strong>过程：</strong>让你能够”运作”系统的日常活动。例如，在想法出现时捕捉它们，或清理你的收件箱。</li>
+<li><strong>身份：</strong>你如何因行为改变而重新看待自己。例如，你现在把自己看作一个<em>作者</em>。</li>
+</ol>
+<p>虽然我们大多数人关注基于结果的改变，但基于身份的改变更强大、更持久。正如克利尔所说，</p>
+<blockquote>
+<p>内在动机的终极形式是当一个习惯成为你身份的一部分。说”我是那种想要这个的人”是一回事。说”我是那种就是这样的人”则完全不同。</p>
+</blockquote>
+<p>也就是说，当你从思考必须做的事情转变为思考你想成为什么样的人时，习惯会更容易坚持。想写一本书是一回事，成为一名作者则是另一回事。它们相关，但当你的身份处于危险时，你会更有动力去改变。</p>
+<p>以下是一些原则，将帮助你实施建立可持续知识花园所需的习惯。</p>
+<h3 id="一次建立一个习惯">一次建立一个习惯</h3>
+<p>不要一次改变太多事情。相反，一次专注于一个习惯。之后，当你可以不假思索地做到时，就可以添加另一个。例如，首先专注于清理收件箱。当你可以自动做到这一点时，就可以专注于在将项目移出收件箱之前添加标签。</p>
+<h3 id="与他人合作">与他人合作</h3>
+<p>不要独自行动，而是与朋友或同事一起培养习惯。公开承诺一种新的存在方式是利用身份力量的好方法。与他人分享你的进展也很有趣。（这就是为什么读书俱乐部可以帮助你读更多书。）</p>
+<h3 id="选择合适的时间和地点">选择合适的时间和地点</h3>
+<p>环境有助于建立成功的习惯。如果清理收件箱是一件苦差事，为什么不把它与一个令人愉快的地方或活动联系起来呢？例如，不要在忙碌时清理收件箱，而是在平静的早晨去咖啡店，带着温暖的饮料坐一个小时。放点音乐，开始工作。</p>
+<h3 id="现在就做">现在就做</h3>
+<p>有些事情你可以推迟到以后，比如清理收件箱。但其他事情你必须现在就做。例如，你应该在想法出现时立即捕捉它们。这需要养成两个习惯：始终带着写字的工具，并注意你的想法。同样，这些是独立的习惯；一次建立一个。</p>
+<h3 id="偏向一致性而非强度">偏向一致性而非强度</h3>
+<p>长期重复做小事比一次性付出巨大努力会获得更大的回报。在开始使用新系统时，许多人会花大量时间迁移内容并预先组织事物。然后，当他们追赶其他推迟的事情时，让系统闲置一段时间。</p>
+<p>最好以小增量的方式移动内容。例如，尝试仅在一个项目中使用新系统，同时继续像以前那样管理其他项目。然后，当你对工具感到舒适时，就可以将更多工作转移到上面。</p>
+<h3 id="委托不重要的事情">委托不重要的事情</h3>
+<p>有些事情不值得你花时间。考虑尽可能委托或自动化，这样你就可以专注于真正重要的事情，比如学习和思考。一个帮助我处理组织杂务的应用程序是Hazel，它可以根据你指定的条件在macOS中自动重命名和移动文件。（其他操作系统可能有类似的应用程序。）</p>
+<h3 id="顺应你的本性">顺应你的本性</h3>
+<p>在本章前面，我建议你顺应技术的本性。你也有自己的本性。我的意思是，有些事情对你来说会很自然，而其他事情会引起阻力。养成习惯需要改变你的行为。但这并不意味着你必须强迫自己做你不喜欢的事情。学会阅读和调整自己的节奏。</p>
+<h3 id="着眼长远">着眼长远</h3>
+<p>建立知识花园是一场长期游戏。结果不会一夜之间到来——如果你期待立竿见影的结果，根本不会发生。就像（实体）园艺一样，你最终会看到成果，但这需要耐心和坚持。</p>
+<p><code>著名笔记记录者</code></p>
+<p>Beck Tench</p>
+<figure class="img1">
+<img alt="Beck Tench的照片。" class="img2a" src="images/000058.jpg"/>
+</figure>
+<p>随着你承担不同的项目和角色，你的信息管理需求会随着时间而变化。一个例子是攻读学位时。</p>
+<p>当Beck
+Tench还是博士候选人时，她专注于保护和恢复人类注意力。在一系列简短的YouTube视频中，她分享了研究和思考论文的过程。正如Beck所说，</p>
+<blockquote>
+<p>实际的发现部分——甚至更重要的是，记住你所发现的内容并在需要时回忆起来，或者将不同发现之间的想法联系起来——真的是一件大事，是工作中非常重要的一部分。</p>
+</blockquote>
+<p>她使用了几种工具来跟踪她的研究：</p>
+<ul>
+<li>iPad上的Goodnotes应用程序用于阅读和标注PDF文件</li>
+<li>Paperpile参考文献管理软件</li>
+<li>纸质笔记本用于在阅读时捕捉见解</li>
+<li>Tinderbox用于发现见解之间的关系</li>
+<li>Google Docs用于写作</li>
+</ul>
+<p>拥有不同的工具来捕捉和管理信息并不罕见。有些工具更适合捕捉信息，有些更适合思考和连接想法，还有些则专门用于生成完成的文本。</p>
+<p>这些需求会随着你从流程的一个步骤转到下一个步骤而变化。随着你变得更加熟练，你还会学习新的技巧，从而形成新的习惯。多亏了像Beck这样慷慨的人，YouTube可以成为了解如何管理信息的绝佳资源。</p>
+<figure class="img1">
+<span class="calibre1" id="calibre_link-646"></span><img alt="Beck Tench YouTube视频中的一个画面。背景显示了一个Tinderbox屏幕，其中有几个代表笔记的形状。前景是Beck解释Tinderbox文档的视频画面。" class="img" src="images/000063.jpg"/>
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">Beck
+Tench的几个视频深入解释了她如何使用Tinderbox实现类似卡片盒(zettelkasten)的系统来管理研究见解。如果你正在尝试理解大量见解以准备撰写一本书——或者像她的情况一样——一篇博士论文，这些视频值得关注。</samp>
+</p>
+</figcaption>
+</figure>
+<h2 id="尾注-3">尾注</h2>
+<p>《小王子》中有一幅壮观的画，描绘了王子的星球被三棵巨大的猴面包树占据。作者解释说，王子本人委托绘制这幅画是为了教育孩子们：</p>
+<blockquote>
+<p>因此，按照小王子的指示，我画了那个星球。我不太喜欢摆出说教者的姿态。但猴面包树的危险如此不为人所知，而任何可能在小行星上迷路的人所面临的风险又如此巨大，以至于这一次我破例放下了我惯常的矜持。我说：“孩子们，当心猴面包树！”正是为了警告我的朋友们一种危险——这种危险他们和我一样长期未曾意识到——我才如此努力地画这幅画。我所教授的这一课值得付出这番努力。你可能会问：“为什么这本书中没有其他像猴面包树那样大的画？”答案很简单：我试过了，但做不到。当我画猴面包树时，我是被一种紧迫感所激励的。</p>
+</blockquote>
+<p>你必须在事情压倒你之前掌控它们。就像一个实体花园如果无人照料就会杂草丛生一样，如果你不花时间在元工作(meta-work)上，你的知识花园也会变得一团糟。这包括重命名和归档文件和容器、管理标签、清理收件箱，以及做许多其他琐碎的杂务。这些都不如学习和创作那么有趣，但如果你要有效地学习和创作，就必须完成它们。</p>
+<p>相反，有些元工作会带来相反的风险：它可能很有趣，但创造的价值很少。这包括摆弄新软件，这对于那些希望优化流程的人来说总是一种诱惑。</p>
+<p>无论哪种情况，关键是有意识地做事。知道你为什么做某件事可以帮助你确定它是否值得你花时间。尽可能多地自动化，无论是通过使用软件，还是通过将杂务变成你可以在没有太多认知负荷的情况下进行的习惯。</p>
+<p>一个有效的花园是随着你的需求和兴趣的变化而成长和演变的。在最后一章中，我将转向你的系统可能演变成的重要未来方向，这包括与其他思维——人类和其他——合作。</p>
+<ol type="1">
+<li><p>Antoine de Saint-Exupéry, <em>The Little Prince</em>, trans. R.
+Howard (New York: Houghton Mifflin Harcourt, 2000).</p></li>
+<li><p>这并不意味着你应该当场处理收件箱中的所有内容。有些事情需要立即跟进，但其他事情可以等待。不要使用收件箱来跟踪待办事项或承诺。关于如何有效管理你对自己和他人的承诺的优秀书籍，我推荐D.
+Allen, <em>Getting Things Done: The Art of Stress-Free Productivity</em>
+(New York: Penguin, 2015).</p></li>
+<li><p>注意单词前的下划线字符；这使我能够在按字母顺序排序文件夹的视图中将此容器保持在顶部。</p></li>
+<li><p>你可能想知道末尾的年份。我有时这样做是因为我的目标是与客户建立长期关系。在某些情况下，我在几年内帮助他们完成了类似的项目。同样，想法是使这些名称简洁而独特；在这种情况下，我希望能够轻松地将2022年的项目与我们在另一年进行的项目区分开来。</p></li>
+<li><p>https://readdle.com/scannerpro</p></li>
+<li><p>我的两个主要知识存储应用之一Obsidian是由一个小团队制作的，该团队还没有很长的历史记录。但它有一个充满活力的社区，而且——更重要的是——以开放格式存储数据，这使得它在我需要迁移时非常便携。</p></li>
+<li><p>H. A. Simon, “Rational Choice and the Structure of the
+Environment,” <em>Psychological Review</em>, 63, no. 2 (1956):
+129–138.</p></li>
+<li><p><a href="https://github.com/pjeby/tag-wrangler"><code>https://github.com/pjeby/tag-wrangler</code></a></p></li>
+<li><p>James Clear, <em>Atomic Habits: An Easy &amp; Proven Way to Build
+Good Habits &amp; Break Bad Ones</em> (New York: Penguin,
+2018).</p></li>
+<li><p><a href="http://www.youtube.com/watch?v=IOWLOMGFAEw"><code>www.youtube.com/watch?v=IOWLOMGFAEw</code></a></p></li>
+</ol>
+<h1 id="第10章-与他人的思维共同思考">第10章 与他人的思维共同思考</h1>
+<p>维护知识花园不必是一项独自进行的活动。长期以来，人们通过与他人合作来增强自己的认知能力。协作让你接收来自不同视角的反馈，从而强化和拓宽你的思维。</p>
+<p>几个世纪以来，学者们会雇佣助手来协助他们。荷兰哲学家和神学家鹿特丹的伊拉斯谟(Erasmus)(1466–1536)就是一个很好的例子。起初，当他没有太多钱时，伊拉斯谟会让年轻男孩作为类似实习生的角色来帮忙。后来，他有能力雇佣助手来执行文书工作。</p>
+<p>其中一些助手被他提升为口述笔录员(amanuenses)的角色。他们就像超级秘书，执行诸如听写、抄写文本、整理草稿、誊写潦草的笔迹、编制索引和管理书籍等任务。这是一个敏感的角色，超越了简单的职责。</p>
+<figure>
+<img alt="伊拉斯谟与他的口述笔录员之一吉尔伯特·卡辛一起工作" src="images/000003.jpg"/>
+<figcaption aria-hidden="true">伊拉斯谟与他的口述笔录员之一吉尔伯特·卡辛一起工作</figcaption>
+</figure>
+<p>我们生活在一个阶层分化较少的时代，技术已经减少了对文书助手的需求。因此，我们在更平等的层面上与他人协作。此外，他人的思想通过书籍、网站、YouTube等更容易获得。尽管历史上大多数思维伙伴都是人类，但人工智能最近也加入了这一行列。本章将向你展示如何构建支持共享生成性知识工作的空间——无论你是与其他人还是人工智能一起工作。</p>
+<h2 id="协作如何改变笔记方式">协作如何改变笔记方式</h2>
+<p>到目前为止，我讨论的许多区别也适用于协作笔记。但与他人合作需要更多的前期规划，这样每个人都可以贡献，而不会互相干扰或迷失方向。你如何做取决于你想做什么。</p>
+<h3 id="协作捕获">协作捕获</h3>
+<p>让我们从捕获你听到或看到的内容开始。这里最明显的用例是两个或更多人在会议、讲座或访谈中记录共享笔记。关键区别在于它们是共享笔记：也就是说，所有各方同时在同一份笔记上工作(而不是之后合并的单独笔记)。</p>
+<p>最简单的方法是使用Google
+Docs或Notion等协作应用程序实时记录笔记。这种方法的一个优势是它可以让你捕获更多所说的内容。你可以实时看到其他人输入的内容。过一段时间后，你们会像爵士乐队一样融合在一起。由此产生的笔记通常比单独工作的个人所做的笔记更全面、更有用。</p>
+<h3 id="协作构思">协作构思</h3>
+<p>协作构思包括头脑风暴会议和研讨会。这类工作的物理场所通常包括白板或空墙，用于捕获想法，可以通过绘图、粘贴便利贴、钉上草图等方式进行。</p>
+<p>你已经看到一些作者如何使用便利贴来构思书籍结构。这在小组中也可以做到。每个人都”在同一页面上”，被会议中产生的想法包围。参与者可以指向想法、移动它们、将它们分组、探索空白、探索替代方案等。</p>
+<p>像Miro、Mural和FigJam这样的基于云的”无限画布”应用程序使远程协作构思变得可行。与物理房间不同，软件白板可以在研讨会结束后保留，使长期构思成为可能，而且它们还提供了几乎无限的空间。</p>
+<h3 id="协作园艺">协作园艺</h3>
+<p>头脑风暴会议是共同理解和对齐的一种手段。但它们往往是一次性的，通常旨在推动项目向前发展。但也有协作知识花园：用于长期培育想法的共享环境。有些是公开的，但大多数保留在组织的围墙(呃，网络)内。</p>
+<p>例如，<em>Scaling Synthesis</em>是由Rob Haisfield、Joel Chan和Brendan
+Langen共同撰写的”动态超文本笔记本”。他们的目标是”找到支持去中心化话语图谱(discourse
+graph)中综合和创新的数据结构和界面”——也就是说，他们正在使用共享的公共超文本来思考如何使用共享超文本进行协作思考。</p>
+<p>这样的实验很少见。协作综合想法需要大量共享上下文和实时更新。你更可能在
+Notion 或 SharePoint
+等应用中体验过此类系统,组织用它们来记录项目、人力资源政策、IT
+流程等。用户可以以看起来更像知识花园而非自上而下发布的网站的方式共享和编辑信息。</p>
+<h2 id="如何组织共享思考空间">如何组织共享思考空间</h2>
+<p>当你独自工作时,可以按照对你有意义的任何顺序组织事物。但当你协作时,应该考虑其他人如何查找和使用内容。就像在陌生、杂乱的房间里很难完成任何事情一样,在杂乱的思考空间中也很难协作。这就是信息架构(IA)可以提供帮助的地方。</p>
+<p>信息架构是一门专注于组织和标记信息以使其更易于查找、使用和理解的设计学科。它需要理解人们如何思考特定类型的信息。例如,骨科外科医生对身体信息的分类方式与舞者不同。设计可供任一受众使用的系统需要理解他们的需求和期望。</p>
+<p><strong>侧注</strong></p>
+<h3 id="保持思考空间有序">保持思考空间有序</h3>
+<p>在思考发生的地方,空间本身的设置会影响思考<em>如何</em>发生。当你独自思考时,你可以容忍(甚至可能在其中茁壮成长)一个杂乱的工作空间。但你带入过程的人越多,空间结构就越重要。有序的空间使协作思考更容易。</p>
+<p>虽然这适用于物理空间,但也适用于 Miro 看板或 Google
+文档。人们可能同时会面或偶尔进来留下评论和笔记、移动内容、画线连接彼此的想法等。因此,很容易失去上下文线索。</p>
+<p>因此,你必须更有意识地组织和维护数字协作空间。你应该在思考工作与日常维护之间交替进行。指定某人作为空间的维护者。向新协作者介绍空间结构,并鼓励他们保持其有序。</p>
+<p>虽然我不期望你在组织共享思考环境时会做繁重的信息架构工作,但至少应该考虑协作者的视角。他们期望内容如何分组?类别应该叫什么?这些内容会多久变化一次?</p>
+<p>例如,我经常使用数字看板来分享设计项目的进度。它们包括专门用于项目阶段的部分,如研究、建模和构思。在这些部分中,我为不同类型的成果(用户画像、内容审计、网页草图等)留出区域。每个区域都有大标签,即使缩小时也易于识别。我鼓励参与者从左到右添加新内容,这样最新的工作很容易找到。</p>
+<p>这些看板会随着需求变化而演变。例如,项目可能需要更多空间用于草图。但只要你坚持清晰标记的结构和一些组织原则,看板就能适应变化而不会变得混乱。(显然,这需要我们在第9章中讨论的那种主动维护。)</p>
+<h2 id="ai-助手">AI 助手</h2>
+<p>到目前为止,我讨论协作时假设你是在与其他人协作。但技术进步已使这一假设过时。现在可以使用人工智能来增强你的思考。今天的
+AI 系统不是像我们一样的思维,但这并不意味着它们没有用处。</p>
+<p>在深入探讨 AI
+如何增强你的思考之前,我要预先声明本书的这一部分不会经得起时间考验。当你读到这里时,接下来几节中展示的某些(如果不是全部)技术可能看起来很原始。因此,我不会推荐特定工具,而是专注于更可能经得起时间考验的原则和方法。</p>
+<p>你可能已经注意到我用的是复数”intelligences”(智能)。AI
+是一个广义术语,涵盖帮助人们进行知识工作的不同技术。有些已经存在了几十年,但最近围绕突破的兴奋主要集中在称为<em>生成式
+AI</em>
+的新型系统上,它们接受常见句子形式的文本提示并产生”创造性”输出—通常是成功的。</p>
+<p>成功的案例在模仿人类能力方面令人惊叹。在撰写本文时,关于创意所有权、作者责任、社会影响等存在许多悬而未决的问题,但很明显这些系统—尽管不完美—可以帮助你更好地思考。问题是,如何做到?</p>
+<p>一种方法是考虑这些系统在从”完全没有影响”到”完全替代”的连续体上的作用。</p>
+<figure>
+<img alt="一条两端有箭头的线:一端箭头标有”无影响”,另一端标有”替代”" src="images/000067.jpg"/>
+<figcaption aria-hidden="true">一条两端有箭头的线:一端箭头标有”无影响”,另一端标有”替代”</figcaption>
+</figure>
+<p>“无影响”一端是 AI
+之前的世界:什么都不变。显然,这个立场现在已经没有意义了。另一个极端(“完全替代”)尚不可行—或者在我看来也不可取。毕竟,建立知识花园的目的是更好地思考,而不是让别人(某物?)替你思考。因此,你要寻找这两者之间的某个点。</p>
+<p>有几个值得探讨的定位。我已经确定了三个，我将它们映射到之前由人类扮演的三个角色：</p>
+<ul>
+<li>AI 作为编辑</li>
+<li>AI 作为代笔作家</li>
+<li>AI 作为助手</li>
+</ul>
+<p>让我们更详细地研究它们。</p>
+<h3 id="ai-作为编辑">AI 作为编辑</h3>
+<p>使用 AI 作为编辑意味着让 AI
+检查你的工作，这可能包括查找拼写和语法错误。</p>
+<figure class="img1">
+&lt;img src=“images/000068.jpg” class=“img1a1”
+alt=“一条两端带箭头的线：一个箭头标注”无影响”，另一个标注”完全替代”。靠近”无影响”一侧，有一条垂直线穿过连续体，标签为”编辑”。”
+/&gt;
+</figure>
+<p>例如，许多人使用语法和拼写工具来检查他们的工作。更先进的系统可以提醒你推理中的漏洞或逻辑谬误(logical
+fallacies)。这样的工具会提供建议，让你决定如何处理它们。长期使用会磨练你的推理能力。</p>
+<p>事实上，使用 Grammarly
+改进了我的写作，帮助我识别作品中反复出现的缺陷——这是一个比理论上学习语法规则更相关和更有说服力的情境(context)。我期待一个推理检查器（“Thinkerly”？）也能同样提升我清晰论证的能力。伦理问题比语法检查器更棘手，但也差不多。</p>
+<h3 id="ai-作为代笔作家">AI 作为代笔作家</h3>
+<p>在这个定位中，AI 根据简短的提示为你创建完成的作品。</p>
+<figure class="img1">
+&lt;img src=“images/000069.jpg” class=“img1a1”
+alt=“一条两端带箭头的线：一个箭头标注”无影响”，另一个标注”完全替代”。靠近”完全替代”一侧，有一条垂直线穿过连续体，标签为”代笔作家”。”
+/&gt;
+</figure>
+<p>像 ChatGPT
+这样的系统可以写一首关于特定主题的十四行诗(sonnet)，或者就某个立场的优点撰写文章。这很不可思议——也有点可怕，因为大规模生产的宣传(propaganda)具有内在的社会危害。这个定位存在许多伦理问题，所以我不以这种方式使用
+AI 工具。</p>
+<h3 id="ai-作为助手amanuensis">AI 作为助手(Amanuensis)</h3>
+<p>这个定位最让我兴奋。我认为它介于中间某处。</p>
+<figure class="img1">
+&lt;img src=“images/000070.jpg” class=“img1a1”
+alt=“一条两端带箭头的线：一个箭头标注”无影响”，另一个标注”完全替代”。在两个极端的中间，有一条垂直线穿过连续体，标签为”助手”。”
+/&gt;
+</figure>
+<p>正如你在本章开头看到的，过去的学者雇佣与他们的思维和需求相协调的助手。AI
+可以用作数字助手：即时可用的研究助手和讨论对象(sounding
+boards)。你可以向它们提出问题，有时还可以提供写作片段，并要求总结或进一步阅读的建议。它们的回应可以帮助澄清你的思考。</p>
+<p>例如，我让 ChatGPT 总结这一节的早期草稿。以下是它的回应：</p>
+<blockquote>
+<p>本文作者对 AI 特别是 ChatGPT 持谨慎乐观的态度。他们讨论了使用 AI
+辅助基于文本的作业的伦理影响，并提出了在写作过程中使用 AI
+的三种方式：作为编辑、代笔作家或助手。作者认为，虽然完全替代人类写作尚不可行或不可取，但
+AI 可以成为写作过程中的宝贵工具。</p>
+</blockquote>
+<p>这次互动验证了我写作的清晰度。虽然我不打算将 AI
+生成的文本作为我自己的作品（即代笔作家定位），但我可以通过与数字助手互动来增强我的思考，它们可以建议不同的探索途径、研究材料，甚至是我可能遗漏的词语和想法。（例如，上面的”讨论对象”这个短语就是
+ChatGPT 建议的。）</p>
+<p>AI
+还可以帮助你识别想法之间的潜在联系，并保持空间的组织性。它们可以分析你的笔记，建议与其他笔记的联系、可能的容器(containers)，并根据你以前的笔记回答问题。</p>
+<p>尽管这些文字是我用手指敲出来的，但它们背后的思考是一种混合产物。我认为这没问题——甚至可能是必要的，考虑到我们目前的信息过载状态。但谁知道呢？无论如何，我们正在以奇怪而有趣的方式模糊作者身份和增强之间的界限。</p>
+<figure class="img1">
+<span class="calibre1" id="calibre_link-659"></span><img alt="DEVONthink 应用显示三个窗格。中间窗格显示一篇文章的文本。最右侧的窗格显示（除其他内容外）可能相关文章的列表。" class="img" src="images/000064.jpg"/>
+<figcaption>
+<p>
+<samp class="sans_futura_pt_book_">DEVONthink 具有一个 AI
+引擎，可以根据文档的内容建议数据库中可能存储该文档的容器。</samp>
+</p>
+</figcaption>
+</figure>
+<h3 id="不必完全相信机器人的话">不必完全相信机器人的话</h3>
+<p>使用生成式 AI
+进行思维增强的一个常见反对意见是它们有时会”说谎”——即产生听起来权威但却是错误的断言。这是一个真实的风险，由这些系统的工作方式导致：它们的思考方式与你我不同。相反，它们根据大型数据集中的统计关系将词语串联在一起。</p>
+<p>有效使用这些系统需要理解它们适合做什么——以及不适合做什么。我最感兴趣的是将它们用作创意伙伴。有时，我的思路很清晰，工作很直接：我有一个成熟的想法，然后开始打字。但通常，我有一个模糊的概念，需要一个更好的模型或例子。</p>
+<p>在这些情况下，与他人交谈通常会有所帮助。我会提出不成熟的想法，对方会提出我没有考虑过的角度。“你考虑过这个吗？”他们会问。或者他们会说类似”那让我想起了一个故事……“的话。</p>
+<p>这些对话经常会产生有价值的收获。对方并不是在为我思考；他们是在为拼图贡献碎片。把碎片拼在一起是我的工作。虽然AI（还）不能组装拼图，但它们可以建议碎片。</p>
+<p><code>工作笔记</code></p>
+<p><span class="freightdisp_pro_black_b_1">用AI处理阅读笔记</span></p>
+<p>多年来，我一直保持着阅读日志。每当我读完一本书，我都会写一篇笔记，记录对这本书的高层次思考。后来——有时是几年后——我会重新查看这些笔记来回忆我读过的内容。起初，它们很简短：最多一两行。多年来，它们变得更加详细。最近，我开始使用生成式AI来帮忙。以下是我的做法。</p>
+<p>当我读完一本书时，我会开始一篇笔记，包含书名、作者、出版社和出版年份。然后我写一个摘要，接着是我的观察。对于非虚构类作品，我自己写摘要。但对于小说，我现在让AI来做。机器人的摘要提醒我作品的情节和主题，使我更容易回忆起突出的想法。</p>
+<p>例如，我最近读了《战争与和平》。这是一本长书；以我悠闲的速度，花了几个月时间。到最后，我被细节和人物淹没了。我用通常的模板开始笔记。然后我让AI给出摘要。这是它产生的内容：</p>
+<blockquote>
+<p>《战争与和平》是列夫·托尔斯泰的小说，首次出版于1869年。它记录了五个贵族家庭——罗斯托夫家、博尔孔斯基家、别祖霍夫家、库拉金家和德鲁别茨科伊家——在法国入侵俄国期间的生活。小说探讨了俄罗斯文化和社会、政治、家庭生活、宗教以及历史意义等主题。它还刻画了大量相互关联的人物，并详细描绘了19世纪拿破仑入侵时期的俄罗斯社会。</p>
+</blockquote>
+<p>这段文字被放入我笔记的开头，前面加上一个标签，表明后面的内容是由机器人写的。这让我避免在未来无意中将其作为自己的作品。</p>
+<p>这段内容帮助我回忆起书中的主题：“俄罗斯文化和社会、政治、家庭生活、宗教以及历史的意义。”最后一个主题让我想起我在读这本书时的一个想法：重大历史发展是高度偶然的；历史赋予拿破仑这样的人物的能动性超过了他们应得的。所以，我也在笔记中记录了那个想法。</p>
+<p>这是AI的一个很好的用途。首先，我并不是让系统为我阅读；那样做没什么意义。其次，这个用例不太容易产生幻觉；如果系统编造内容，我会知道，因为我知道这本书讲的是什么。即使AI胡说八道，我也会发现。（我已经读过这本书了！）纠正机器人的错误迫使我检查原文或其他来源，这本身就很有价值。</p>
+<p>到目前为止，这种方法效果很好，但我才刚开始使用。此外，这种方法可能最适合像《战争与和平》这样的知名作品。AI摘要的质量取决于其训练语料库，关于经典作品的写作比更晦涩的作品要多。</p>
+<p>虽然你可以使用ChatGPT来做这件事，但有一个名为<em>Text
+Generator</em>的第三方Obsidian插件，可以让你直接在笔记中调用GPT语言模型。安装插件后，你在笔记中输入一行文字（例如，“列夫·托尔斯泰的小说《战争与和平》是关于”），然后按一个按钮。几秒钟后，GPT的摘要就会出现在笔记中。（其他笔记应用程序，如Notion，也存在类似功能。）</p>
+<p>同样，重点不是让AI为我阅读；那没有乐趣。显然，摘要也无法公正地呈现整部作品。但这并不意味着这里没有价值。从比空白屏幕上闪烁的光标更多的东西开始是很好的。不是草稿，而是记忆提示——一种增强，而不是替代。</p>
+<p>目前，我使用AI的主要用途是作为对话伙伴。我的提示不是”用y的风格为我写一篇关于x的文章”，而是”x的一个好例子是什么？“系统然后会提出我没有考虑过的想法或故事。</p>
+<p>这很有效，但需要注意的是，有时这些想法或故事可能在事实上是错误的。（人有时也会出错！）但这没关系，因为我不打算将AI的输出作为事实；我只是用它们来激发我的创造力。</p>
+<p>写作就是思考。虽然我不指望使用像ChatGPT这样的系统为我写作，但撰写完成的文本并不是写作的全部。发展想法是过程中的重要部分，生成式AI可以在这个角色中充当智力伙伴——尽管有时不太可靠。我能与它们交流想法这一事实澄清了我的思维，有时还会为我指出新的方向。这本身就很有价值。</p>
+<h2 id="万物皆混音"><span class="freightdisp_pro_black_b_">万物皆混音</span></h2>
+<p>如你之前所见，许多思考工作都是协作性的——即使表面上看起来不是这样。当你阅读这些文字时，你和我正在以某种方式合作：我向你提供想法，其中一些你会变成自己的。大多数不是我的想法：我也与其他人合作，将它们带到你的注意力中。我见过其中一些人，但大多数人早已去世；我们的合作是通过他们发表的作品进行的。</p>
+<p>也就是说,真正的新想法是罕见的。你的思维模型由其他人发展的想法组成,而这些人又从其他人那里发展了这些想法。你通过添加细微差别或不同的观点来内化这些想法并使它们成为你自己的。通过分享这些想法,你邀请其他人加入对话。<sup>[^97]</sup></p>
+<h3 id="谁拥有产出">谁拥有产出?</h3>
+<p>生成式AI的一个有争议的方面是,它们是在其他人的想法上训练的,这让人怀疑其”原创”产出的所有权。在某些方面,这也是你的大脑的工作方式;AI只是在更大的规模上这样做。</p>
+<p>在许多情况下,你会在不知不觉中使用其他人的想法。我不知道我第一次在哪里听到”不知不觉”这个词,但我当然没有发明它。如果我必须引用每个词的来源,我们就无法协作;我们的对话会很快演变成无底洞(和毫无意义)的归属讨论。</p>
+<p>话虽如此,可信度和公平性要求你引用来源。例如,在本书中,我添加了脚注和引用,引用了我发现所讨论内容的其他书籍和资源。这些引用传达了一个潜在的信息:我没有编造我正在分享的模型;它们是其他人发展的想法的拼凑。我的工作是综合和澄清它们以帮助你做事。</p>
+<h3 id="追踪你的来源">追踪你的来源</h3>
+<p>引用来源归结为记录你在哪里找到了东西。这是捕获原子笔记的一个原因:你的知识花园可以包括一个关于书籍或论文的笔记,以及许多关于你在该资源中发现的想法的其他笔记。通过将想法链接到它们的来源,你可以追踪它们的出处。稍后,在写文章、博客文章、书籍或视频时,你可以引用原始来源。</p>
+<p>这是我从Niklas Luhmann那里学到的一个想法,通过Sönke
+Ahrens的书《如何做智能笔记》(How to Take Smart Notes):</p>
+<blockquote>
+<p>严格来说,Luhmann有两个卡片盒:一个书目盒,包含参考文献和关于文献内容的简要说明,以及一个主盒,他在其中收集和生成他的想法,主要是回应他所读的内容……每当他读到东西时,他会在卡片的一面写下书目信息,在另一面对内容做简要说明(Schmidt
+2013, 170)。这些笔记最终会进入书目卡片盒。<sup>[^98]</sup></p>
+</blockquote>
+<p>Ahrens区分了”文献笔记”——阅读时记录的笔记——以及”瞬时笔记”(fleeting
+notes)和”永久笔记”(permanent
+notes),这两者我们在第2章中都讨论过。<sup>[^99]</sup>
+文献笔记是捕获你从特定来源学到的东西的重要手段。Ahrens这样解释它们:</p>
+<blockquote>
+<p>每当你读到东西时,记下关于内容的笔记。写下你不想忘记的东西,或者认为你可能会在自己的思考或写作中使用的东西。保持非常简短,非常有选择性,并使用你自己的话。对引用特别有选择性——不要复制它们来跳过真正理解它们含义的步骤。将这些笔记与书目详细信息一起保存在一个地方——你的参考系统中。</p>
+</blockquote>
+<p>每当我读到一本影响我思考的书或论文时,我会开始一个新笔记,在其中捕获关于它的总体想法。但我也会为从书中获得的具体想法开始单独的笔记,并将它们链接到书的笔记。我为这些笔记使用不同的模板:我称前者为文献笔记,后者为常青笔记(evergreen
+notes)。每个模板都包含标签(<code>#litnotes</code>和<code>#evergreen</code>),将它们标识为这样。</p>
+<p>例如,我有一个关于《如何做智能笔记》的笔记,其中包括关于书本身的数据、作者、出版时间、指向其Amazon页面的链接,以及它在Bookends中的标识符(我用来管理参考文献的软件)。这个笔记还包括我对这本书的整体看法。但我也有几个常青笔记,捕获了我在这本书中学到的想法。这些笔记链接回书的总体笔记。</p>
+<figure>
+<img alt="一个显示六个看起来像笔记的方框的图表,用深灰色线条连接。三个方框是绿色的,标记为”想法1”、“想法2”和”想法3”。其他的是棕色的,标记为”书A”、“书B”和”论文C”。" src="images/000065.jpg"/>
+<figcaption aria-hidden="true">一个显示六个看起来像笔记的方框的图表,用深灰色线条连接。三个方框是绿色的,标记为”想法1”、“想法2”和”想法3”。其他的是棕色的,标记为”书A”、“书B”和”论文C”。</figcaption>
+</figure>
+<p>结果是一个丰富的想法和参考文献网络。当我稍后回过头来使用或发展一个想法时,我可以引用它的来源。当然,我可以向笔记添加到其他相关论文或书籍的链接,揭示想法和作品之间的联系。花园成为想法相遇和交叉授粉的场所,往往产生有价值的成果。</p>
+<p><strong>著名的笔记记录者</strong></p>
+<p><strong>Jeremias Drexel</strong></p>
+<p><code>Jeremias Drexel S.J.肖像 (1660),通过维基共享资源</code></p>
+<figure>
+<img alt="Jeremias Drexler的古老插图。" src="images/000066.jpg"/>
+<figcaption aria-hidden="true">Jeremias Drexler的古老插图。</figcaption>
+</figure>
+<p>随着印刷机的出现,书籍和小册子变得便宜且广泛传播,使独立学者更容易获取信息。随着要处理的信息越来越多,他们必须想出更好的方法来管理想法。其中一位学者是传教士和作家Jeremias
+Drexel(1581-1638),他关于笔记记录的著作直到19世纪初仍然具有影响力。</p>
+<p>Drexel
+是一位狂热的读者和笔记记录者，他自豪地宣称自己一天能从100甚至600位作者那里做笔记。他认为做笔记以两种方式帮助记忆：首先，因为写出一段文字有助于你记住它；其次，因为笔记本身可以作为你以后可以回顾的记录。</p>
+<p>Ann M. Blair，早期现代信息管理技术的学者，这样描述 Drexel
+的方法：</p>
+<blockquote>
+<p>他建议至少保持三本四开大小的笔记本——一本用于书目参考，另一本用于修辞学上有趣的段落，第三本用于历史实例——每本都在一个单独的、较小的笔记本中提供字母索引。Drexel
+还建议为每个笔记本制定两个索引，以便将世俗主题与神圣主题分开，并为不同领域保留单独的笔记本，包括医学、法律、数学、哲学或神学。</p>
+</blockquote>
+<p>不断增多的笔记意味着学者可以跟踪他们已经写过的内容。因此，索引成为一种宝贵的记忆辅助工具。处理新出现的大量信息需要新的方法和技巧。正如
+Blair 所说，</p>
+<blockquote>
+<p>早期现代教育家和学者的成就之一是首次大规模地尝试笔记的批量存储，以及使它们可用的分类和检索方法。</p>
+</blockquote>
+<p>也就是说，我们不是第一批应对信息爆炸的人。Drexel
+和他的同时代人学会了不仅应对这些材料，而且在其中蓬勃发展。我怀疑他会认可——并赞赏——使用超文本笔记软件构建知识花园的动力。</p>
+<h2 id="尾注-4">尾注</h2>
+<p>尽管它可能看起来孤独，但知识工作是一项协作事业。与其他思想一起思考不仅发生在实时；你从书籍和其他媒体中获得大量想法——这是一种时间延迟的协作形式。</p>
+<p>曾经，Erasmus
+有八个人的团队协助知识工作。许多人负担不起这笔费用。但技术已经消除了知识工作中许多最机械方面的需要。而
+AI 也承诺在许多更高层次的任务上提供帮助。</p>
+<p>当前的 AI
+还不能承担需要判断的任务，但技术在不断改进。也许当你读到这些文字时，数字助手将以我和我的同时代人几乎无法想象的方式帮助你思考。</p>
+<p>当你构建知识花园时，寻找机会向他人学习并与他人合作。相反，考虑分享你所学到的东西。你是世界丰富的智力多样性的一部分。最终的知识花园跨越整个世界——你今天就可以播种它。</p>
+<ol type="1">
+<li><p>关于早期现代时代知识工作的优秀论述，请参阅 A.M. Blair，《Too Much
+to Know: Managing Scholarly Information Before the Modern Age》（New
+Haven: Yale University Press，2010）。</p></li>
+<li><p><a href="https://scalingsynthesis.com"><code>https://scalingsynthesis.com</code></a></p></li>
+<li><p><a href="https://scalingsynthesis.com/c-synthesis-is-hard-to-do-with-people-who-dont-share-context-with-you/"><code>https://scalingsynthesis.com/c-synthesis-is-hard-to-do-with-people-who-dont-share-context-with-you/</code></a></p></li>
+<li><p>Louis Rosenfeld, Peter Morville, and Jorge Arango，《Information
+Architecture for the Web and Beyond》（Sebastopol: O’Reilly
+Media，2015）。</p></li>
+<li><p>AI 本身可能正在将别人的文本冒充为自己的文本。这是明确区分 AI
+编写的文本与你自己的文本的另一个原因。</p></li>
+<li><p>在写完这一部分后，我了解到《Everything Is a
+Remix》视频系列，该系列专注于将先前作品重新组合作为一种创作努力。更多信息，请参阅
+<a href="http://www.everythingisaremix.info"><code>www.everythingisaremix.info</code></a></p></li>
+<li><p>Sönke Ahrens，《How to Take Smart Notes》（Createspace
+Independent Publishing Platform，2017）。</p></li>
+<li><p>我更喜欢用”常青”这个词来表示永久笔记，以保持有机隐喻的延续。</p></li>
+<li><p>Blair (2010)</p></li>
+<li><p>同上</p></li>
+</ol>
+<h1 id="后记">后记</h1>
+<p>一本书是一段学习之旅。这对读者来说显然是真实的，但对作者来说也是如此。多年来，我一直在研究《Duly
+Noted》中的想法和实践。与你分享它们迫使我组织和综合我的思考。</p>
+<p>一个关键要点是，我最初认为是一套复杂的技术和实践归结为三个简单的规则：</p>
+<ol type="1">
+<li>做简短的笔记。</li>
+<li>连接你的笔记。</li>
+<li>培育你的笔记。</li>
+</ol>
+<p>在这些规则中，“笔记”是想法的代表。你不是在构建一个笔记系统，而是一种捕捉、探索和生成想法的方式。</p>
+<p>清晰思考对于过上美好生活至关重要。当我们沉浸在那些旨在争夺注意力的环境中时，清晰思考就变得困难。构建个人知识花园是一个邀请，让你能够掌控生活中的信息，从而更巧妙地使用它们。</p>
+<p>你的需求会随时间而变化。你会遇到新的想法和新的人。新技术将为这个组合带来令人惊叹的新能力。带着一些纪律以及探索和游戏的精神，你的花园将演变成一个思考空间，将所有这些融合在一起，并在你的余生中滋养你。</p>
+<p>你已经拥有了开始所需的一切。现在去创造一些美好的东西吧。</p>
+<h1 id="索引">索引</h1>
+<ul>
+<li><p><code>A</code></p></li>
+<li><p>意外收获(accidents, happy)，在产生洞察中的作用，119–120</p></li>
+<li><p>可寻址笔记(addressable notes)，在设计知识花园中，65</p></li>
+<li><p>Ahrens, Sönke，61，175–176</p></li>
+<li><p>AI（人工智能）助手，168–174</p></li>
+<li><p>作为抄写员(amanuensis)，170，179</p></li>
+<li><p>生成式AI角色的连续体，168</p></li>
+<li><p>作为编辑，169</p></li>
+<li><p>伦理关切，169</p></li>
+<li><p>在出版制作中修订的反馈，132</p></li>
+<li><p>生成式思维，60</p></li>
+<li><p>作为代笔人(ghostwriter)，169</p></li>
+<li><p>重混输出的所有权，174–175</p></li>
+<li><p>将AI用作创意合作伙伴，171，174</p></li>
+<li><p>使用AI制作读书笔记，172–173</p></li>
+<li><p>别名(aliases)</p></li>
+<li><p>笔记的替代名称，27，43，47</p></li>
+<li><p>文件别名，88</p></li>
+<li><p>Allen, David，56，83，145</p></li>
+<li><p>抄写员(amanuenses)，164，170，179</p></li>
+<li><p>亚马逊，书评，134</p></li>
+<li><p>Anderson, Gretchen，15–16</p></li>
+<li><p>Anderson, Stephen，11</p></li>
+<li><p>“Andy’s working notes”，121–122，127</p></li>
+<li><p>Anki，59</p></li>
+<li><p>书籍批注(annotation)，7，70</p></li>
+<li><p>Apple Freeform，110，111</p></li>
+<li><p>Apple Mail，59</p></li>
+<li><p>Apple Notes</p></li>
+<li><p>命名笔记，27</p></li>
+<li><p>标签，98</p></li>
+<li><p>基于文本的笔记，111</p></li>
+<li><p>苹果操作系统，macOS，150</p></li>
+<li><p>Apple Photos，94–95</p></li>
+<li><p>Appleton, Maggie，xiii，137–138</p></li>
+<li><p>应用程序。<em>参见</em> 软件</p></li>
+<li><p>Arango, Jorge，166</p></li>
+<li><p>档案(archives)，用于存储，90，92，99</p></li>
+<li><p>“As We May Think”（Bush），35</p></li>
+<li><p>助理，文书助理，用于知识工作，163–164</p></li>
+<li><p>关联标签(associational tagging)，100</p></li>
+<li><p><em>Atomic Habits</em>（Clear），157</p></li>
+<li><p>专注力(attentiveness)</p></li>
+<li><p>捕获技巧，80</p></li>
+<li><p>与注意(noticing)，54–55，59</p></li>
+<li><p>受众，了解受众，在为出版而写作中，125–126</p></li>
+<li><p>音频录音，作为笔记媒介，9</p></li>
+<li><p><code>B</code></p></li>
+<li><p>反向链接(backlinks)（链接类型），42</p></li>
+<li><p>猴面包树(baobabs)，与纪律，141–142，162</p></li>
+<li><p>篮球运球，与反馈，135</p></li>
+<li><p>Bernstein, Mark，xiii，52</p></li>
+<li><p>书目详情(bibliographic details)，跟踪，175–177</p></li>
+<li><p>Blair, Ann M.，86，164，178</p></li>
+<li><p>块引用(block references)（链接类型），42，44</p></li>
+<li><p>块(blocks)，定义，38</p></li>
+<li><p>博客(blogs)，127，134，136</p></li>
+<li><p>身体（你的）</p></li>
+<li><p>调动身体，以产生洞察，120</p></li>
+<li><p>用手思考，70</p></li>
+<li><p>书评，发布，133–134</p></li>
+<li><p>Bookends，78，176</p></li>
+<li><p>书籍，批注，7，70</p></li>
+<li><p>Borges, Jorge Luis，67–68</p></li>
+<li><p>自下而上与自上而下的结构，23，86</p></li>
+<li><p>头脑风暴(brainstorming)，108，165</p></li>
+<li><p><em>A Brief History &amp; Ethos of the Digital
+Garden</em>（Appleton），xiii</p></li>
+<li><p><em>Building a Second Brain</em>（Forte），90</p></li>
+<li><p>Bush, Vannevar，35</p></li>
+<li><p><code>C</code></p></li>
+<li><p>剑桥大学图书馆，ix–x</p></li>
+<li><p>捕获思想和观察，55，59，63</p></li>
+<li><p>流程维护，144</p></li>
+<li><p>捕获想法，67–83</p></li>
+<li><p>创建模板，75–78</p></li>
+<li><p>捕获笔记的媒介，73–74</p></li>
+<li><p>记忆与细节，67–68</p></li>
+<li><p>捕获想法的案例，68–72</p></li>
+<li><p>在奔跑中，69</p></li>
+<li><p>在创作时，70</p></li>
+<li><p>在聆听时，69</p></li>
+<li><p>在阅读时，69–70，71–72</p></li>
+<li><p>捕获技巧，78–80</p></li>
+<li><p>做好准备，78–79</p></li>
+<li><p>恰到好处，79</p></li>
+<li><p>注意，80</p></li>
+<li><p>永久笔记还是临时笔记？，80</p></li>
+<li><p>因果故事，概念之间的因果关系，105</p></li>
+<li><p>Chan, Joel，166</p></li>
+<li><p>ChatGPT，169，170，173</p></li>
+<li><p>引用来源(citing provenance)，175–177</p></li>
+<li><p>Clear, James，157</p></li>
+<li><p>知识工作的文书助理，163–164</p></li>
+<li><p>协作(collaboration)，163</p></li>
+<li><p>协作捕获，165</p></li>
+<li><p>协作构思，165</p></li>
+<li><p>协作知识园艺，166</p></li>
+<li><p>组织共享思考空间，166–168</p></li>
+<li><p>承诺(commitments)，存储位置，93，145</p></li>
+<li><p>沟通，作为笔记目的，4</p></li>
+<li><p>社区(communities)</p></li>
+<li><p>应用用户社区，151，153</p></li>
+<li><p>实践社区，用于分享，136</p></li>
+<li><p><em>Complex Information
+Processing</em>（Nelson），xiii–xiv，35</p></li>
+<li><p>计算机，用计算机思考，xi–xv</p></li>
+<li><p>概念(concepts)，每个想法一条笔记，18–19，46</p></li>
+<li><p>连接笔记，33–50</p></li>
+<li><p>添加链接，36–37，40</p></li>
+<li><p>可寻址笔记，65</p></li>
+<li><p>超文本笔记(hypertext note-taking)，xii，34–35，46–47</p></li>
+<li><p>Jerry’s Brain，47–49</p></li>
+<li><p>链接与组织，33–34</p></li>
+<li><p>超文本中的链接和节点，38–39，41–45</p></li>
+<li><p>连接(connections)，寻找，以产生洞察，115</p></li>
+<li><p>联系信息，存储位置，57，93</p></li>
+<li><p>容器(containers)</p></li>
+<li><p>一致的名称以便查找，147</p></li>
+<li><p>管理以保持专注，146</p></li>
+<li><p>在仓库中保留笔记，57，60，63</p></li>
+<li><p>在容器中存储笔记，87–88，91–93</p></li>
+<li><p>上下文(contexts)</p></li>
+<li><p>与创造力的联系，115</p></li>
+<li><p>在产生洞察中，117</p></li>
+<li><p>“A Conversation with Alan Kay”（Feldman），115</p></li>
+<li><p>Cousin, Gilbert，164</p></li>
+<li><p>创造力(creativity)</p></li>
+<li><p>在创作时捕获，70</p></li>
+<li><p>与上下文的联系，115</p></li>
+<li><p>与意外收获，119</p></li>
+<li><p>将AI用作对话伙伴，174</p></li>
+<li><p>好奇心(curiosities)，在产生洞察中，116–117</p></li>
+<li><p><code>D</code></p></li>
+<li><p>Darwin, Charles，丢失的笔记本，ix–xi</p></li>
+<li><p>数据库应用程序。<em>参见</em> DEVONthink</p></li>
+<li><p>日期格式，29–30，74</p></li>
+<li><p>Daylite，57</p></li>
+<li><p>DEVONthink</p></li>
+<li><p>AI引擎功能，171</p></li>
+<li><p>作者使用，59–60，74，88，145</p></li>
+<li><p>寻找联系以生成洞见(insights)，[115–116]</p></li>
+<li><p>操作系统和Markdown，[150–151]</p></li>
+<li><p>在设备间同步信息，[147]</p></li>
+<li><p>标签(tagging)，[100]</p></li>
+<li><p>数字协作空间。<em>参见</em> [与他人思想共同思考]</p></li>
+<li><p>数字花园(digital gardens)，[127], [137–138]</p></li>
+<li><p>数字笔记系统的目的，[xii–xiii]。<em>另见</em> [软件]</p></li>
+<li><p>数字笔记，作为笔记记录的媒介，[9], [11], [73]</p></li>
+<li><p>Dini, Kourosh，[100]</p></li>
+<li><p>起草(drafting)，在出版制作流程中，[129–131]</p></li>
+<li><p>Drafts 应用程序 (iPhone)，[63], [74]</p></li>
+<li><p>Drexel, Jeremias，[177–178]</p></li>
+<li><p>Dubberly, Hugh，[18], [105]</p></li>
+<li><p><samp class="sans_futura_pt_demi_b_">E</samp></p></li>
+<li><p>电子书，同步笔记至存储库(repository)，[71–72], [78]</p></li>
+<li><p>轻松进入，轻松退出，在设计知识花园时，[63]</p></li>
+<li><p>编辑</p></li>
+<li><p>AI 作为编辑，[169]</p></li>
+<li><p>线性和非线性编辑器，[130]</p></li>
+<li><p>文字处理器作为生产工具，[108], [130]</p></li>
+<li><p><em>Effective Notetaking</em> (McPherson)，[21], [70],
+[80]</p></li>
+<li><p>电子邮件收件箱，[59]</p></li>
+<li><p>嵌入(embeddings)（链接类型），[43], [45]</p></li>
+<li><p>章末注释（章节总结）</p></li>
+<li><p>捕获想法，[83]</p></li>
+<li><p>协作和与他人思想共同思考，[179]</p></li>
+<li><p>生成想法和激发洞见，[122]</p></li>
+<li><p>超文本和连接笔记，[50]</p></li>
+<li><p>制作简短笔记，[32]</p></li>
+<li><p>笔记是用于思考的，[16]</p></li>
+<li><p>通过归档、堆放或标签组织笔记，[101]</p></li>
+<li><p>规划知识花园，[65]</p></li>
+<li><p>发布和分享你的思考，[139]</p></li>
+<li><p>打理花园，[162]</p></li>
+<li><p>Engelbart, Douglas，[viii]</p></li>
+<li><p>Eno, Brian，[119]</p></li>
+<li><p>Erasmus of Rotterdam，[163–164], [179]</p></li>
+<li><p>事件，存储位置，[93]</p></li>
+<li><p>长青笔记(evergreen notes)</p></li>
+<li><p>捕获技巧，[80]</p></li>
+<li><p>在 Obsidian 上开始新笔记，[64]</p></li>
+<li><p>追踪来源，[176]</p></li>
+<li><p>与临时笔记(transient notes)对比，[22–23]</p></li>
+<li><p>Evernote，添加链接，[36]</p></li>
+<li><p>“全能”应用程序，[154]</p></li>
+<li><p><em>Everything Is a Remix</em> (视频系列)，[174]</p></li>
+<li><p>考试，笔记用途，[22]</p></li>
+<li><p><em>Excellent Advice for Living</em> (Kelly)，[93]</p></li>
+<li><p>导出</p></li>
+<li><p>电子书笔记至存储库，[71–72]</p></li>
+<li><p>从应用程序导出笔记，[63], [153]</p></li>
+<li><p><em>The Extended Mind</em> (Paul)，[11]</p></li>
+<li><p><samp class="sans_futura_pt_demi_b_">F</samp></p></li>
+<li><p>Fast, Karl，[11], [101]</p></li>
+<li><p>反馈(feedback)，[132], [134–136]</p></li>
+<li><p>Feldman, Stuart，[115]</p></li>
+<li><p>Feynman, Richard，[14]</p></li>
+<li><p>摆弄(fidgeting)，作为笔记记录的目的，[4]</p></li>
+<li><p>FigJam，[111], [165]</p></li>
+<li><p><em>Figure It Out</em> (Anderson and Fast)，[11]</p></li>
+<li><p>归档笔记，在容器中，[88], [91–93]</p></li>
+<li><p>Fleming, Alexander，[119]</p></li>
+<li><p>文件夹和目录</p></li>
+<li><p>维护，[146–147]</p></li>
+<li><p>在容器中排序笔记，[88], [91–93], [99], [101]</p></li>
+<li><p>Forte, Tiago，[90]</p></li>
+<li><p><em>Funes the Memorious</em> (Borges)，[67–68]</p></li>
+<li><p>未来的你 vs. 现在的你，[23–24]</p></li>
+<li><p>存储笔记以供未来访问，[85], [92–93]</p></li>
+<li><p><samp class="sans_futura_pt_demi_b_">G</samp></p></li>
+<li><p><em>The Garden</em> (Appleton)，[137–138]</p></li>
+<li><p>思考的花园，[xiii–xv]。<em>另见</em> [打理花园]</p></li>
+<li><p>园艺隐喻(gardening metaphor)，[xiii], [52]</p></li>
+<li><p>花园。<em>另见</em> [知识花园]</p></li>
+<li><p>协作式知识花园，[166]</p></li>
+<li><p>数字花园，[127], [137–138]</p></li>
+<li><p>Gardner, Jessica，[ix]</p></li>
+<li><p>Geertz, Clifford，[31]</p></li>
+<li><p>生成想法，作为笔记记录的目的，[3]</p></li>
+<li><p>生成式人工智能(generative AIs)，[168]。<em>另见</em>
+[AI（人工智能）助手]</p></li>
+<li><p><em>Genius: The Life and Science of Richard Feynman</em>
+(Gleick)，[14]</p></li>
+<li><p>酝酿(gestation)，在出版制作流程中，[128]</p></li>
+<li><p><em>Getting Things Done</em> (Allen)，[56], [83], [145]</p></li>
+<li><p>AI 代笔(ghostwriting)，[169]</p></li>
+<li><p><em>Gladiator</em> (电影)，[139]</p></li>
+<li><p>Gleick, James，[14]</p></li>
+<li><p>Goodnotes，[160]</p></li>
+<li><p>Google Docs，[108], [130], [160], [167]</p></li>
+<li><p>Google Keep，[111]</p></li>
+<li><p>GPT 语言模型，[169], [170], [172–173]</p></li>
+<li><p>Grammarly，[169]</p></li>
+<li><p>Greene, Robert，[6]</p></li>
+<li><p><samp class="sans_futura_pt_demi_b_">H</samp></p></li>
+<li><p>H/LAMT，[viii]</p></li>
+<li><p>习惯，养成，[157–159], [161]</p></li>
+<li><p>Haisfield, Rob，[166]</p></li>
+<li><p>意外收获(happy accidents)，在生成洞见时，[119–120]</p></li>
+<li><p>Harris, Richard，[139]</p></li>
+<li><p>Hazel，[159]</p></li>
+<li><p>高亮标注(highlighting)，在为书籍添加注释时，[7], [70]</p></li>
+<li><p><em>The History of Navigation</em> (Locke)，[85]</p></li>
+<li><p>van der Hoeven, Nicole，[81–82]</p></li>
+<li><p>Holiday, Ryan，[6], [7]</p></li>
+<li><p><em>How to Take Smart Notes</em> (Ahrens)，[61],
+[175–176]</p></li>
+<li><p>HTML，[25–26], [42]</p></li>
+<li><p>超链接(hyperlinks)，定义，[38]</p></li>
+<li><p>“Hypertext Gardens” (Bernstein)，[xiii]</p></li>
+<li><p><em>Hypertext</em> (Landow)，[115–116]</p></li>
+<li><p>超文本笔记记录(hypertext note-taking)，[xii], [34–35],
+[46–47]。<em>另见</em> [连接笔记]</p></li>
+<li><p>超文本(hypertexts)</p></li>
+<li><p>链接和节点，[38–39], [41–45]</p></li>
+<li><p>活动超文本笔记本，<em>Scaling Synthesis</em>，[166]</p></li>
+<li><p>术语起源，[35]</p></li>
+<li><p><samp class="sans_futura_pt_demi_b_">I</samp></p></li>
+<li><p>想法，作为笔记，[181]。<em>另见</em> [捕获想法]</p></li>
+<li><p>隐式链接(implicit links)（链接类型），[41–42]</p></li>
+<li><p>收件箱(inboxes)</p></li>
+<li><p>清空，[95], [144–145]</p></li>
+<li><p>在捕获笔记的媒介中，[73]</p></li>
+<li><p>将笔记堆放在收件箱中，[87–88]</p></li>
+<li><p>用于整理笔记，[56], [59–60]</p></li>
+<li><p>索引卡片(index cards)</p></li>
+<li><p>作为笔记记录的媒介，[6]</p></li>
+<li><p>使用链接节点的纸质系统，[39]</p></li>
+<li><p>卡片盒(slip box, zettelkasten)系统，[61–62], [65], [175]</p></li>
+<li><p>索引(indexes)</p></li>
+<li><p>索引的开端，[178]</p></li>
+<li><p>查找信息，[87]</p></li>
+<li><p>“无限画布(infinite canvas)”应用程序，[107], [165], [167]</p></li>
+<li><p>信息</p></li>
+<li><p>在信息和需求之间建立映射，[86–87]</p></li>
+<li><p>在专用应用程序中存储不同类型的信息，[57], [93], [95]</p></li>
+<li><p><em>Information Anxiety 2</em> (Wurman)，[89]</p></li>
+<li><p><em>Information Architecture for the Web and Beyond</em>
+(Rosenfeld, Morville, and Arango)，[166]</p></li>
+<li><p>信息架构(information architecture, IA)，[166–167]</p></li>
+<li><p>信息管理系统，非线性的，[34–35]</p></li>
+<li><p>激发洞见(insights)，[103–122]</p></li>
+<li><p>触发洞见的条件，[108]</p></li>
+<li><p>定义，[104–105]</p></li>
+<li><p>思维导图(mind maps)，[106–107]</p></li>
+<li><p>模型(models)，[105], [108]</p></li>
+<li><p>元素周期表示例，[103–104]</p></li>
+<li><p>洞见生成工具，[108–113]</p></li>
+<li><p>生成洞见的技巧，[114–120]</p></li>
+<li><p>改变情境(contexts)，[117]</p></li>
+<li><p>改变视角(perspectives)，[118]</p></li>
+<li><p>拥抱意外收获，[119–120]</p></li>
+<li><p>调动你的身体，[120]</p></li>
+<li><p>保持开放心态，[120]</p></li>
+<li><p>寻找异常值(outliers)，[116–117]</p></li>
+<li><p>寻找模式(patterns)，[114–115]</p></li>
+<li><p>在字里行间阅读，[114]</p></li>
+<li><p>发现潜在联系，[115]</p></li>
+<li><p>ISO-8601，日期格式，[29–30], [74]</p></li>
+<li><p><samp class="sans_futura_pt_demi_b_">J</samp></p></li>
+<li><p>Jarche, Harold，[136]</p></li>
+<li><p>Jarvis, Chase，[79]</p></li>
+<li><p>Jerry’s Brain，[47–49]</p></li>
+<li><p>Johnson, Steven，[128]，[130]</p></li>
+<li><p>Jones, William，[86]</p></li>
+<li><p><samp class="sans_futura_pt_demi_b_">K</samp></p></li>
+<li><p>Kahneman, Daniel，[48]</p></li>
+<li><p>Kay, Alan，[115]</p></li>
+<li><p><em>Keeping Found Things Found</em>（Jones），[86]</p></li>
+<li><p>Kelly, Kevin，[93]</p></li>
+<li><p>Keynote，[126]</p></li>
+<li><p>Kindle，将笔记同步到知识库，[71–72]，[78]</p></li>
+<li><p>Klein, Gary，[105]，[108]</p></li>
+<li><p><span id="calibre_link-347">知识花园。<em>另见</em>
+[打理花园]</span></p></li>
+<li><p>园艺隐喻，[xiii]，[52]</p></li>
+<li><p>私人vs.公开数字花园，[127]</p></li>
+<li><p>构建目的，[32]，[51–52]，[65]</p></li>
+<li><p><span id="calibre_link-392">知识花园，规划，[51–65]</span></p></li>
+<li><p>可寻址笔记，[65]</p></li>
+<li><p>捕获，[55]，[59]，[63]。<em>另见</em> [捕获想法]</p></li>
+<li><p>易进易出，[63]</p></li>
+<li><p>觉察，[54–55]，[59]</p></li>
+<li><p>培育，[57]，[60]</p></li>
+<li><p>设计原则，[62–65]</p></li>
+<li><p>用笔记思考的流程，[52]，[58]，[143]</p></li>
+<li><p>保留，[57]，[60]</p></li>
+<li><p>分享，[57–58]，[60–61]。<em>另见</em> [分享你的思考]</p></li>
+<li><p>整理，[56]，[59]。<em>另见</em> [整理和存储笔记]</p></li>
+<li><p>可信赖的组件，[63]</p></li>
+<li><p>知识工作，文书助理，[163–164]</p></li>
+<li><p>[]{#calibre_link-673 aria-label=” Page 188. ” type=“pagebreak”
+role=“doc-pagebreak”}<samp class="sans_futura_pt_demi_b_">L</samp></p></li>
+<li><p>Ladner, Sam，[31]</p></li>
+<li><p>Land, Edwin，[8]</p></li>
+<li><p>Landow, George P.，[115–116]</p></li>
+<li><p>Langen, Brendan，[166]</p></li>
+<li><p>LATCH，用于组织信息，[89–90]</p></li>
+<li><p>学习，作为笔记的目的，[3]</p></li>
+<li><p>Levy, D. M.，[5]</p></li>
+<li><p>链接。<em>另见</em> [连接笔记]</p></li>
+<li><p>添加链接，[36–37]，[40]</p></li>
+<li><p>链接和组织，[33–34]</p></li>
+<li><p>超文本中的链接和节点，[38–39]，[41–45]</p></li>
+<li><p>链接类型，[41–43]</p></li>
+<li><p>别名(aliases)，[27]，[43]，[47]</p></li>
+<li><p>反向链接(backlinks)，[42]</p></li>
+<li><p>块引用(block references)，[42]，[44]</p></li>
+<li><p>嵌入(embeddings)，[43]，[45]</p></li>
+<li><p>隐式链接(implicit links)，[41–42]</p></li>
+<li><p>空间关系(spatial relations)，[43]</p></li>
+<li><p>网页链接(web links)，[41]</p></li>
+<li><p>维基链接(wikilinks)，[40]，[41]</p></li>
+<li><p>倾听，倾听时捕获，[69]</p></li>
+<li><p>文献笔记(literature notes)，[175–177]</p></li>
+<li><p><em>小王子</em>（Saint-Exupéry），[141–142]，[162]</p></li>
+<li><p>Locke, John，[85–86]，[96]，[101]</p></li>
+<li><p>Logseq，[39]，[40]，[41]</p></li>
+<li><p><em>漫长的行走</em>（Warriner），[8]</p></li>
+<li><p>Luhmann, Niklas，[61–62]，[65]，[175]</p></li>
+<li><p><samp class="sans_futura_pt_demi_b_">M</samp></p></li>
+<li><p>macOS，[150]</p></li>
+<li><p>“神奇数字七，加减二”（Miller），[92]</p></li>
+<li><p>维护</p></li>
+<li><p>数字协作空间的维护，[167]</p></li>
+<li><p>知识花园的维护，[142]。<em>另见</em> [打理花园]</p></li>
+<li><p>映射</p></li>
+<li><p>信息与需求之间的映射，[86–87]</p></li>
+<li><p>思维导图(mind maps)，[106–107]</p></li>
+<li><p>结构化映射，在出版制作中，[129]</p></li>
+<li><p>Marcus Aurelius，[123–124]，[139]</p></li>
+<li><p>边注，批注，[7]，[69–70]</p></li>
+<li><p>Markdown</p></li>
+<li><p>捕获想法，[74]，[77–78]</p></li>
+<li><p>作为首选标记语言，[151]，[153]</p></li>
+<li><p>标签，[96]</p></li>
+<li><p>文本样式，[25–26]</p></li>
+<li><p>Marshall, Cathy，[xiii]，[52]</p></li>
+<li><p><em>掌握协作</em>（G. Anderson），[15–16]</p></li>
+<li><p>Mastodon，[134]</p></li>
+<li><p>Matuschak, Andy，[22]，[23]，[121–122]，[127]</p></li>
+<li><p>McCullough, David，[xiv]</p></li>
+<li><p>McPherson, Fiona，[21]，[70]，[80]</p></li>
+<li><p>捕获笔记的媒介，[73–74]</p></li>
+<li><p><span id="calibre_link-390">笔记媒介，[4–11]</span></p></li>
+<li><p>数字笔记，[9]，[11]，[73]</p></li>
+<li><p>索引卡，[6]</p></li>
+<li><p>页边空白，[7]</p></li>
+<li><p>纸和笔，[5]，[73]</p></li>
+<li><p>[]{#calibre_link-674 aria-label=” Page 189. ” type=“pagebreak”
+role=“doc-pagebreak”}照片，[8–9]</p></li>
+<li><p>录音，音频和视频，[9]</p></li>
+<li><p>便利贴，[7]</p></li>
+<li><p>冥想，[55]，[59]</p></li>
+<li><p><em>沉思录</em>（Marcus Aurelius），[123–124]，[139]</p></li>
+<li><p>会议纪要</p></li>
+<li><p>保留，[57]，[89]，[95]，[98]</p></li>
+<li><p>在Obsidian中的模板，[116–117]</p></li>
+<li><p>记忆力，非凡的，[67–68]</p></li>
+<li><p>Mendeleev, Dmitri，[104]，[122]</p></li>
+<li><p>元工作(meta-work)，[142–145]，[146–147]</p></li>
+<li><p>元数据(metadata)，[94–98]</p></li>
+<li><p>隐喻，[11]，[52]</p></li>
+<li><p>Michalski, Jerry，[47–49]</p></li>
+<li><p>Microsoft Word，[108]，[130]</p></li>
+<li><p>Miller, G. A.，[92]</p></li>
+<li><p>保持开放心态以产生洞察，[120]</p></li>
+<li><p>思维导图，[106–107]</p></li>
+<li><p>正念(mindfulness)，[59]</p></li>
+<li><p>MindNode，[107]</p></li>
+<li><p>最小可行笔记，[24]，[31]</p></li>
+<li><p>Miro，[107]，[111]，[154]，[165]，[167]</p></li>
+<li><p>模型，[105]，[108]，[109]，[111]</p></li>
+<li><p>迭代，用于出版，[124–125]</p></li>
+<li><p>“模型的模型”（Dubberly），[105]</p></li>
+<li><p>“晨间笔记”日志，[74]</p></li>
+<li><p>Morville, Peter，[166]</p></li>
+<li><p>Mural，[111]，[154]，[165]</p></li>
+<li><p><samp class="sans_futura_pt_demi_b_">N</samp></p></li>
+<li><p>Nabokov, Vladimir，[6]</p></li>
+<li><p>为笔记命名，[27–28]，[74]</p></li>
+<li><p>Nelson, Ted，[xiii–xiv]，[35]，[49]</p></li>
+<li><p>节点(nodes)，在超文本中，定义，[38]</p></li>
+<li><p>非线性信息管理系统，[34–35]</p></li>
+<li><p>Notability应用（iPad），[18]，[88]</p></li>
+<li><p>杰出的笔记记录者</p></li>
+<li><p>Anderson, Gretchen，[15–16]</p></li>
+<li><p>Appleton, Maggie，[137–138]</p></li>
+<li><p>Dini, Kourosh，[100]</p></li>
+<li><p>Drexler, Jeremias，[177–178]</p></li>
+<li><p>van der Hoeven, Nicole，[81–82]</p></li>
+<li><p>Ladner, Sam，[31]</p></li>
+<li><p>Luhmann, Niklas，[61–62]</p></li>
+<li><p>Matuschak, Andy，[121–122]</p></li>
+<li><p>Michalski, Jerry，[47–49]</p></li>
+<li><p>Tench, Beck，[160–161]</p></li>
+<li><p>笔记制作(note-making)，定义，[xi]，[21]</p></li>
+<li><p><span id="calibre_link-419">笔记记录(note-taking)</span></p></li>
+<li><p>协作式笔记，[165–166]</p></li>
+<li><p>与笔记制作的比较，[xi]，[21]</p></li>
+<li><p>定义，[21]</p></li>
+<li><p>媒介，[4–11]，[73–74]。<em>另见</em> <a href="#笔记媒介">笔记媒介</a></p></li>
+<li><p>简单规则，[181]</p></li>
+<li><p>软件。<em>见</em> [软件]</p></li>
+<li><p>作为思考工具，[vii–viii]</p></li>
+<li><p>笔记</p></li>
+<li><p>连接你的笔记。<em>见</em> [连接笔记]</p></li>
+<li><p>创建知识花园。<em>见</em> [知识花园，规划]</p></li>
+<li><p>定义，[2]</p></li>
+<li><p>做简短笔记。<em>见</em> [简短笔记]</p></li>
+<li><p>激发洞察。<em>见</em> [洞察，激发]</p></li>
+<li><p><span id="calibre_link-421">[]{#calibre_link-675 aria-label=”
+Page 190. ” type=“pagebreak”
+role=“doc-pagebreak”}笔记，用于思考，[1–16]。<em>另见</em>
+[思考]</span></p></li>
+<li><p>笔记媒介，[4–11]</p></li>
+<li><p>笔记的目的，[2–4]</p></li>
+<li><p>用实物思考，[11]，[14]</p></li>
+<li><p>记笔记的方式，[10]</p></li>
+<li><p>笔记，用笔记思考的流程，[52]，[58]，[143]</p></li>
+<li><p>捕获，[55]，[59]，[63]。<em>另见</em> [捕获想法]</p></li>
+<li><p>觉察，[54–55]，[59]</p></li>
+<li><p>培育，[57]，[60]</p></li>
+<li><p>保留，[57]，[60]</p></li>
+<li><p>分享，[57–58]，[60–61]。<em>另见</em> [分享你的思考]</p></li>
+<li><p>整理，[56]，[59]。<em>另见</em> [整理和存储笔记]</p></li>
+<li><p>觉察和专注，[54–55]，[59]</p></li>
+<li><p>Notion</p></li>
+<li><p>GPT语言模型，[173]</p></li>
+<li><p>链接笔记，[35]，[39]，[40]</p></li>
+<li><p>笔记命名，[27]</p></li>
+<li><p>发布笔记，[127]</p></li>
+<li><p>共享协作系统，[166]</p></li>
+<li><p>在设备间同步信息，[71]，[147]</p></li>
+<li><p>培育笔记，[57]，[60]</p></li>
+<li><p><samp class="sans_futura_pt_demi_b_">O</samp></p></li>
+<li><p>斜向策略（卡片组），[119]</p></li>
+<li><p>Obsidian</p></li>
+<li><p>作为作者的选择，[xvi]</p></li>
+<li><p>块链接和嵌入，[44–45]</p></li>
+<li><p>画布视图，[43], [111–113]</p></li>
+<li><p>核心插件，[75–76]</p></li>
+<li><p>插入模板，[76]</p></li>
+<li><p>安装，[12–13]</p></li>
+<li><p>互操作性，[93], [150–151]</p></li>
+<li><p>链接笔记，[35], [39], [40], [41], [43]</p></li>
+<li><p>用于会议记录，[57], [98], [116–117]</p></li>
+<li><p>命名笔记，[27]</p></li>
+<li><p>纯文本标记，[25–26]</p></li>
+<li><p>发布功能，[127]</p></li>
+<li><p>在角色扮演游戏中的应用，[81–82]</p></li>
+<li><p>创建新笔记，[19–20], [64]</p></li>
+<li><p>设备间信息同步，[71–72], [147]</p></li>
+<li><p>Tag Wrangler 插件，[156]</p></li>
+<li><p>标签，[98]</p></li>
+<li><p>模板，[75–78], [116–117]</p></li>
+<li><p>Text Generator 插件，[173]</p></li>
+<li><p>仓库(vault)，[13]</p></li>
+<li><p>OCR（光学字符识别），[149]</p></li>
+<li><p>在路上，随时捕获，[69]</p></li>
+<li><p>OneNote，[63], [88]</p></li>
+<li><p>开放思维，用于产生洞察，[120]</p></li>
+<li><p>整理笔记。<em>另见</em> [分类和存储笔记]; [分类笔记]</p></li>
+<li><p>非线性顺序，自下而上，[34–35]</p></li>
+<li><p>组织共享思考空间，[166–168]</p></li>
+<li><p>异常值，用于产生洞察，[116–117]</p></li>
+<li><p>大纲</p></li>
+<li><p>用于层级关系，[15–16]</p></li>
+<li><p>Markdown 风格，[26]</p></li>
+<li><p>出版制作中的结构化，[129]</p></li>
+<li><p>混编输出的所有权，[174–175]</p></li>
+</ul>
+<h2 id="p">P</h2>
+<ul>
+<li>纸笔</li>
+<li>作为笔记媒介，[5], [73]</li>
+<li>使用纸笔，用事物思考，[14]</li>
+<li>纸质系统</li>
+<li>链接节点，[39]</li>
+<li>扫描纸质笔记，[60], [148–149]</li>
+<li>作为可信和稳定的组件，[63]</li>
+<li>Paperpile，[160]</li>
+<li>PARA，用于组织信息，[90]</li>
+<li>模式</li>
+<li>在数字花园中，[137]</li>
+<li>用于产生洞察，[114–115]</li>
+<li>在文件夹命名中，[147]</li>
+<li>在笔记命名中，[28]</li>
+<li>Paul, Annie Murphy，[11]</li>
+<li>元素周期表，[103–104]</li>
+<li>永久笔记。<em>见</em> [常青笔记]</li>
+<li>个人计算，早期历史，[viii]</li>
+<li>个人信息管理(PIM)，[86]</li>
+<li>个人知识管理(PKM)，[xii–xiii]</li>
+<li>《个人知识精通》(Jarche)，[136]</li>
+<li>视角，用于产生洞察，[118]</li>
+<li>手机扫描应用，[60], [148–149]</li>
+<li>照片</li>
+<li>作为笔记媒介，[8–9]</li>
+<li>带有元数据，[94–95]</li>
+<li>堆叠(piling)，[87–88]</li>
+<li>规划，作为笔记目的，[3]</li>
+<li>PowerPoint，[126]</li>
+<li>现在的你与未来的你，[23–24], [85]</li>
+<li>隐私，数字笔记系统的，[63]</li>
+<li>出版制作流程，[126], [128–132]</li>
+<li>起草，[129–131]</li>
+<li>酝酿，[128]</li>
+<li>研究，[128]</li>
+<li>修订，[132]</li>
+<li>结构化，[129]</li>
+<li><em>项目</em> 文件夹，[146], [147]</li>
+<li>他人想法的来源，[175–177]</li>
+<li>出版原则，[124–126]</li>
+<li>发布。<em>见</em> [分享你的思考]</li>
+</ul>
+<h2 id="q">Q</h2>
+<ul>
+<li>安静时间，[55]</li>
+<li>引用，[28], [72], [176]</li>
+</ul>
+<h2 id="r">R</h2>
+<ul>
+<li>随机访问，索引卡和数字笔记的，[6]</li>
+<li>《用便利贴快速解决问题》(Straker)，[7]</li>
+<li>“理性选择与环境结构”(Simon)，[154]</li>
+<li>Readdle Scanner Pro，[60], [148–149]</li>
+<li>阅读</li>
+<li>阅读时捕获笔记，[69–70], [71–72]</li>
+<li>跳出框架阅读，[114]</li>
+<li>Readwise，[59], [71–72], [78]</li>
+<li>记录，作为笔记目的，[2]</li>
+<li>录音，音频和视频，作为笔记媒介，[9]</li>
+<li>记忆，作为笔记目的，[2]</li>
+<li>想法的混编，[174–175]</li>
+<li>仓库(repository)。<em>见</em> [容器]</li>
+<li>研究</li>
+<li>作为笔记目的，[3]</li>
+<li>在出版制作流程中，[128]</li>
+<li>在仓库中保留笔记，[57], [60], [63]。<em>另见</em>
+[分类和存储笔记]</li>
+<li>修订，在出版制作流程中，[132]</li>
+<li>Rheingold, Howard，[vii–viii], [xi–xii]</li>
+<li>Roam Research</li>
+<li>链接笔记，[35], [39], [40], [41], [42]</li>
+<li>发布笔记，[127]</li>
+<li>设备间信息同步，[71], [147]</li>
+<li>角色扮演游戏(RPG)，Obsidian 在其中的应用，[81–82]</li>
+<li>van Rooden, Bastiaan，[4]</li>
+<li>Rosenfeld, Louis，[166]</li>
+</ul>
+<h2 id="s">S</h2>
+<ul>
+<li><p>Saint-Exupéry, Antoine de，[141–142], [162]</p></li>
+<li><p>满意即可(satisfice)，工具的，[154]</p></li>
+<li><p>《扩展综合》(Haisfield, Chan, and Langen)，[166]</p></li>
+<li><p>扫描纸质笔记，[60], [148–149]</p></li>
+<li><p>Schmidt, Peter，[119]</p></li>
+<li><p>Scrivener，[100], [130], [131]</p></li>
+<li><p>《向前滚动：在数字时代理解文档》(Levy)，[5]</p></li>
+<li><p>《看到他人看不到的》(Klein)，[105]</p></li>
+<li><p>“七加减二”规则，[92]</p></li>
+<li><p>SharePoint，[166]</p></li>
+<li><p>分享层级，[136]</p></li>
+<li><p>分享笔记，[57–58], [60–61]</p></li>
+<li><p>协作捕获，[165]</p></li>
+<li><p>分享你的思考，[123–139]</p></li>
+<li><p>数字花园，[127], [137–138]</p></li>
+<li><p>反馈，[134–136]</p></li>
+<li><p>《沉思录》，私人笔记的公开，[123–124], [139]</p></li>
+<li><p>制作流程，[126], [128–132]。<em>另见</em> [出版制作流程]</p></li>
+<li><p>出版原则，[124–126]</p></li>
+<li><p>发布书评，[133–134]</p></li>
+<li><p>简短笔记，[17–32]</p></li>
+<li><p>日期格式，[29–30], [74]</p></li>
+<li><p>区分，[20–24]</p></li>
+<li><p>常青笔记与临时笔记，[22–23]</p></li>
+<li><p>最小可行笔记，[24], [31]</p></li>
+<li><p>命名笔记，[27–28]</p></li>
+<li><p>笔记记录与笔记制作，[xi], [21]</p></li>
+<li><p>每个概念一条笔记，[18–19], [46]</p></li>
+<li><p>纯文本与样式文本，[25–26]</p></li>
+<li><p>现在的你与未来的你，[23–24]</p></li>
+<li><p>自上而下与自下而上的结构，[23], [86]</p></li>
+<li><p>侧边笔记（建议和提示）</p></li>
+<li><p>向笔记添加链接，[36–37]</p></li>
+<li><p>日期格式，[29–30], [74]</p></li>
+<li><p>数字花园，[127], [137–138]</p></li>
+<li><p>收件箱清零(Inbox Zero)，与维护，[144–145]</p></li>
+<li><p>保持数字协作空间有序，[167]</p></li>
+<li><p>思维导图，[106–107]</p></li>
+<li><p>使用 LATCH 和 PARA 组织，[89–90]</p></li>
+<li><p>使用 Markdown 写作，[25–26]</p></li>
+<li><p>Simon, Herbert，[154]</p></li>
+<li><p>卡片盒(zettelkasten)，[61–62], [65], [161], [175]</p></li>
+<li><p>社交网络，用于分享，[136]</p></li>
+<li><p>软件。<em>另见</em> [工具]</p></li>
+<li><p>使用专用应用，[93], [95], [154]</p></li>
+<li><p>数字笔记系统的目的，[xii–xiii]</p></li>
+<li><p>应用程序的互操作性(interoperability)，[93], [150–151],
+[153]</p></li>
+<li><p>用于发布，[126], [127], [129–132]</p></li>
+<li><p>系统组件选择，[152–154]</p></li>
+<li><p>系统演进，[150–152]</p></li>
+<li><p>可信赖的组件，[63], [153]</p></li>
+<li><p>太阳系，作为模型，[105]</p></li>
+<li><p>笔记的排序和存储，[85–101]</p></li>
+<li><p>容器。<em>见</em> [容器]</p></li>
+<li><p>早期笔记记录，[85–86]</p></li>
+<li><p>归档，[88], [91–93]</p></li>
+<li><p>分组框架，[89–90]</p></li>
+<li><p>需求与信息之间的映射，[86–87]</p></li>
+<li><p>元数据(metadata)，[94–96]</p></li>
+<li><p>组织技巧，[99], [101]</p></li>
+<li><p>堆放，[87–88]</p></li>
+<li><p>标签，[96–98], [101]</p></li>
+<li><p>笔记排序，[56], [59]</p></li>
+<li><p>流程维护，[144–145]</p></li>
+<li><p>意见征询者(sounding boards)，[170]</p></li>
+<li><p>来源，追踪和引用出处，[175–177]</p></li>
+<li><p>空间关系（链接类型），[43]</p></li>
+<li><p>拼写检查器，[169]</p></li>
+<li><p>Stickies，Mac应用程序，[9]</p></li>
+<li><p>便利贴，[7], [15–16]</p></li>
+<li><p>存储笔记。<em>见</em> [笔记的排序和存储]</p></li>
+<li><p>Straker, D.，[7]</p></li>
+<li><p>《强烈意见》(Nabokov)，[6]</p></li>
+<li><p>结构化，在出版制作过程中，[129], [137]</p></li>
+<li><p>设备间信息同步，[71–72], [147]</p></li>
+</ul>
+<p><code>T</code></p>
+<ul>
+<li>标签</li>
+<li>在电子书中，[72]</li>
+<li>管理，[155–156]</li>
+<li>Obsidian标签，[98]</li>
+<li>标签作为元数据，[96]</li>
+<li>使用技巧，[96–98], [101]</li>
+<li>记笔记。<em>见</em> [笔记记录]</li>
+<li>《使用DEVONthink做智能笔记》(Dini)，[100]</li>
+<li>模板</li>
+<li>用于捕获笔记，[73–74], [75–78]</li>
+<li>用于会议纪要，[116–117]</li>
+<li>Tench, Beck，[160–161]</li>
+<li>打理花园，[141–162]</li>
+<li>一致的容器名称，[147]</li>
+<li>纪律建议，[141–142], [162]</li>
+<li>习惯养成，[157–159]</li>
+<li>管理文件夹，[146]</li>
+<li>管理标签，[155–156]</li>
+<li>维护的元工作(meta-work)，[142–145]</li>
+<li>扫描纸质笔记，[60], [148–149]</li>
+<li>同步你的信息，[147]</li>
+<li>系统组件选择，[152–154]</li>
+<li>系统演进，[150–152]</li>
+<li>文本格式</li>
+<li>Markdown纯文本和样式文本，[25–26]</li>
+<li>用于标签，[97], [98]</li>
+<li>TheBrain，[47–49]</li>
+<li>厚描述(thick description)，[31]</li>
+<li>思考。<em>另见</em> [洞察的激发]; [用于思考的笔记]</li>
+<li>用计算机思考，[xi–xv]</li>
+<li>将你的想法外化，[55], [59], [68], [110], [129]</li>
+<li>思考的花园，[xiii–xv]</li>
+<li>笔记记录作为思考工具，[vii–viii]</li>
+<li>用事物思考，[11], [14]</li>
+<li>洞察生成工具，[108–110]</li>
+<li>写作即思考，[xiv], [21], [174]</li>
+<li>用你的双手思考，[70]</li>
+<li>用笔记思考，流程，[52], [58], [143]</li>
+<li>捕获，[55], [59], [63]。<em>另见</em> [捕获想法]</li>
+<li>注意，[54–55], [59]</li>
+<li>培育，[57], [60]</li>
+<li>保留，[57], [60]</li>
+<li>分享，[57–58], [60–61]。<em>另见</em> [分享你的思考]</li>
+<li>排序，[56], [59]。<em>另见</em> [笔记的排序和存储]</li>
+<li>与其他思想者共同思考，[163–179]</li>
+<li>AI助手，[168–174]</li>
+<li>协作捕获，[165]</li>
+<li>协作构思，[165]</li>
+<li>协作知识园艺，[166]</li>
+<li>伊拉斯谟和他的文书助手，[163–164]</li>
+<li>组织共享思考空间，[166–168]</li>
+<li>重混输出的所有权，[174–175]</li>
+<li>追踪你的来源，[175–177]</li>
+<li>Tinderbox，[70], [109], [111], [118–119], [129], [160–161]</li>
+<li>标题，用于笔记，[27–28], [74]</li>
+<li>Tolstoy, Leo，[172]</li>
+<li>《知识过载》(Blair)，[86], [164]</li>
+<li>工具。<em>另见</em> [软件]</li>
+<li>用于洞察生成，[108–110]</li>
+<li>笔记记录作为思考工具，[vii–viii]</li>
+<li>笔记记录工具，盘点，[53–54]</li>
+<li>“满意即可”的工具，[154]</li>
+<li>《思想工具》(Rheingold)，[xi–xii]</li>
+<li>自上而下vs.自下而上的结构，[23], [86]</li>
+<li>追踪你的来源，[175–177]</li>
+<li>嵌入引用(transclusions)，[43]</li>
+<li>转录</li>
+<li>在听的同时捕获，[69]</li>
+<li>作为笔记记录目的，[2]</li>
+<li>临时笔记vs.长青笔记(evergreen notes)，[22–23], [80]</li>
+<li>生命之树，达尔文的，[ix–x]</li>
+<li>知识花园的可信赖系统组件，[63], [153]</li>
+<li>Twitter，[134]</li>
+</ul>
+<p><code>U</code></p>
+<ul>
+<li>Ulysses，[130]</li>
+<li>统一资源标识符(URI)，[38]</li>
+<li>未链接的提及（隐式链接），[41]</li>
+<li>用户社区，应用程序的，[151], [153]</li>
+</ul>
+<p><code>V</code></p>
+<ul>
+<li>视频录制，作为笔记记录媒介，[9]</li>
+</ul>
+<p><code>W</code></p>
+<ul>
+<li>Waking Up，[59]</li>
+<li>《战争与和平》(Tolstoy)，[172–173]</li>
+<li>Warriner, Bill，[8]</li>
+<li>网页链接（链接类型），[41]</li>
+<li>Weiner, Charles，[14]</li>
+<li>维基链接(wikilinks)，[40], [41]</li>
+<li>维基百科，页面之间的链接，[34], [38]</li>
+<li>愿望清单，用标签生成，[98]</li>
+<li>文字处理器，作为制作工具，[108], [130]</li>
+<li>工作，与元工作相比，[142]</li>
+<li>工作团队，用于分享，[136]</li>
+<li>工作笔记（操作练习）</li>
+<li>用维基链接为笔记添加链接，[40]</li>
+<li>AI阅读笔记，[172–173]</li>
+<li>清理你的收件箱，[95], [144–145]</li>
+<li>你如何记笔记？，[10]</li>
+<li>管理标签，[155–156]</li>
+<li>Obsidian</li>
+<li>块链接和嵌入，[44–45]</li>
+<li>画布视图，[111–113]</li>
+<li>安装，[12–13]</li>
+<li>开始新笔记，[19–20]</li>
+<li>开始长青笔记，[64]</li>
+<li>标签，[98]</li>
+<li>模板创建，[75–78]</li>
+<li>发布书评，[133–134]</li>
+<li>扫描纸质笔记，[148–149]</li>
+<li>同步Kindle笔记到仓库，[71–72]</li>
+<li>盘点笔记记录工具，[53–54]</li>
+<li>写作</li>
+<li>和洞察生成，[108], [111]</li>
+<li>即思考，[xiv], [21], [174]</li>
+<li>使用AI。<em>见</em> [AI（人工智能）助手]</li>
+<li>Wurman, Richard Saul，[89]</li>
+</ul>
+<p><code>X</code></p>
+<ul>
+<li>Xmind，[107]</li>
+</ul>
+<p><code>Y</code></p>
+<ul>
+<li>YouTube，[161]</li>
+<li>YYYY-MM-DD日期格式，[29–30], [74]</li>
+</ul>
+<p><code>Z</code></p>
+<ul>
+<li>卡片盒(zettelkasten)（slip box），[61–62], [65], [161], [175]</li>
+<li>Zotero引文管理器，[72]</li>
+</ul>
+<h1 id="致谢">致谢</h1>
+<p>如果没有我的朋友兼同事 Karl Fast
+的贡献，这本书不会以现在的形式存在。在写作过程的前、中、后期，Karl
+一直是灵感的源泉。这里任何看起来特别清晰的想法都可能来自我们的对话。谢谢你，Karl！</p>
+<p>除了 Karl，Andy Polaine 和 Nicole van der Hoeven
+对早期草稿进行了深入审阅。作为经验丰富的连接笔记使用者(connected
+note-takers)，他们的评论被证明是实用的、鼓舞人心的和令人安心的——在所有这些都需要的时候。以下人士也提供了反馈和鼓励：Giancarlo
+Andreani、David Bill、David Daly、Noah Fang、Dave Gray、José
+Gutiérrez、Tara Kimura、Grace Lau、Liz Massey、David Price、Dawn
+Russell、Daniel Vieira Souza、Maxime Stinnett、Riccardo
+Tommasini、Shivanand Reddy Yerva 和 Adam Zeiner。</p>
+<p>二十年前，Howard Rheingold 的书《Tools for
+Thought》启发我将计算机视为思维延伸技术。认识 Howard 是《Duly
+Noted》给我的礼物之一；他慷慨而富有洞察力的前言是这位作者的梦想成真。谢谢你，Howard！</p>
+<p>我有幸在我的播客《The Informed
+Life》中采访了一百多位专家。他们关于”如何组织信息以完成任务”的见解影响了我的思考。我特别感谢在这些页面中出现或被引用的那些人：Sönke
+Ahrens、Gretchen Anderson、Maggie Appleton、Mark Bernstein、Kourosh
+Dini、Sam Ladner、Jerry Michalski、Annie Murphy Paul、Beck Tench 和
+Nicole van der Hoeven。我也感谢 Andy
+Matuschak——我还没有采访过他——感谢他富有启发性的工作，以及审阅第7章中关于他的简短部分。</p>
+<p>Marta Justak
+不仅是作者所能期望的最好的编辑——在一起完成两本书后，她也是一位好朋友。谢谢你，Marta！Lou
+Rosenfeld 和 Rosenfeld Media
+团队在设计和出版这个快速变化的交叉领域是稳定性和专业性的支柱。这本书是一个异类；我感谢他们允许我测试他们投资组合的边界。</p>
+<p>Jimena、Julia、Ada 和
+Elias：谢谢你们给我空间来培育这个花园。我在这里度过的每一分钟都从我们在一起的时间中减去——这是非常高的成本。</p>
+<p>《Duly
+Noted》封面上有我的名字，但像所有书籍一样，它是其他人想法的混音(remix)。我感谢他们所有人。我努力正确地归属和表述他们——并且可能在某些时候失败了。如果是这样，我恳求你——以及他们——的原谅。像所有知识花园一样，我的花园仍在进行中。</p>
+<p><img src="images/000009.jpg"/></p>
+<p>亲爱的读者，</p>
+<p>非常感谢您购买这本书。在它和我们在 Rosenfeld Media
+创造的每一个产品背后都有一个故事。</p>
+<p>自1990年代初以来，我一直是用户体验(User
+Experience)顾问、会议演讲者、工作坊讲师和作者。（我可能最为人所知的是与人合著了《Information
+Architecture for the Web and
+Beyond》。）在这些角色中的每一个，我都因错失应用用户体验原则和实践的机会而感到沮丧。</p>
+<p>我在2005年创办了 Rosenfeld
+Media，目标是出版那些设计和开发表明出版商可以践行其所宣扬的书籍。从那时起，我们已经扩展到制作行业领先的会议和工作坊。在所有情况下，用户体验帮助我们创造了更好、更成功的产品——正如你所期望的那样。从采用用户研究来驱动我们的书籍和会议项目的设计，到与我们的会议演讲者密切合作他们的演讲，再到深切关心客户服务，我们每天都在践行我们所宣扬的。</p>
+<p>请访问 <a href="http://rosenfeldmedia.com"><code>rosenfeldmedia.com</code></a>
+了解更多关于我们为您制作的<strong>会议</strong>、<strong>工作坊</strong>、<strong>免费社区</strong>和<strong>其他优秀资源</strong>。并将您的想法、建议和关注发送给我：<a href="mailto://louis@rosenfeldmedia.com">louis@rosenfeldmedia.com</a></p>
+<p>我很想听到您的声音，希望您喜欢这本书！</p>
+<p><img src="images/000007.jpg"/></p>
+<p>Lou Rosenfeld，出版人</p>
+<p><img src="images/000008.jpg"/></p>
+<h2 id="rosenfeld-media-近期书目">ROSENFELD MEDIA 近期书目</h2>
+<p><img src="images/000001.jpg"/></p>
+<p>获得 Rosenfeld Media 图书的优惠折扣：访问 <a href="http://rfld.me/deal"><code>rfld.me/deal</code></a> 了解更多。</p>
+<h2 id="rosenfeld-media-精选书目">ROSENFELD MEDIA 精选书目</h2>
+<p><img src="images/000002.jpg"/></p>
+<p>在 <a href="http://rosenfeldmedia.com/books"><code>rosenfeldmedia.com/books</code></a>
+查看我们的完整目录</p>
+<h2 id="关于作者">关于作者</h2>
+<p><img src="images/000006.jpg"/></p>
+<p><strong><span class="purple">JORGE ARANGO</span></strong>
+是一位信息架构师、作家和教育工作者。近三十年来,他为从非营利组织到财富500强企业的各类组织架构数字体验,并将复杂内容变得清晰易懂。他著有《Living
+in Information: Responsible Design for Digital
+Places》,并与他人合著了《Information Architecture for the Web and
+Beyond》。除了设计咨询实践外,Jorge还主持《The Informed
+Life》播客,撰写博客,并在加州艺术学院任教。您可以通过<a href="https://jarango.com"><samp class="sans_futura_pt_book_">https://jarango.com</samp></a>了解更多关于Jorge的信息。</p>
+<figure class="img1">
+<img class="img" src="images/000005.jpg"/>
+</figure>
+<script>
+        function toggleToc() {
+            const sidebar = document.getElementById('tocSidebar');
+            const overlay = document.getElementById('tocOverlay');
+            
+            if (sidebar.classList.contains('active')) {
+                closeToc();
+            } else {
+                openToc();
+            }
+        }
+
+        function openToc() {
+            const sidebar = document.getElementById('tocSidebar');
+            const overlay = document.getElementById('tocOverlay');
+            
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeToc() {
+            const sidebar = document.getElementById('tocSidebar');
+            const overlay = document.getElementById('tocOverlay');
+            
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // ESC键关闭目录
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeToc();
+            }
+        });
+
+        // 点击目录链接后自动关闭目录（移动端）
+        document.addEventListener('click', function(e) {
+            if (e.target.matches('.simple-toc a') && window.innerWidth <= 768) {
+                setTimeout(closeToc, 300);
+            }
+        });
+    </script>
+</body>
+</html>
