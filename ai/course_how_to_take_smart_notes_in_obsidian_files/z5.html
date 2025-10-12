@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课程摘要：第五章 - 利用 DataView 自动化和聚焦</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --primary-color: #4a90e2;
+            --secondary-color: #f0f8ff;
+            --border-color: #e0e0e0;
+            --highlight-bg: #fffbe5;
+            --code-bg: #f5f5f5;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            line-height: 1.7;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .container {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        header {
+            background-color: var(--secondary-color);
+            padding: 25px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 2em;
+        }
+        
+        header p {
+            margin: 5px 0 0;
+            color: #555;
+            font-size: 1.1em;
+        }
+
+        .controls {
+            padding: 15px;
+            text-align: right;
+            background-color: #fafafa;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .toggle-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .toggle-btn:hover {
+            opacity: 0.85;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        details {
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.2s;
+        }
+        
+        details:last-of-type {
+            border-bottom: none;
+        }
+
+        details[open] {
+            background-color: var(--secondary-color);
+        }
+
+        summary {
+            padding: 20px;
+            font-weight: bold;
+            font-size: 1.2em;
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+        
+        summary:hover {
+            background-color: #f7f7f7;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::after {
+            content: '+';
+            font-size: 1.5em;
+            color: var(--primary-color);
+            transition: transform 0.2s;
+        }
+
+        details[open] summary::after {
+            transform: rotate(45deg);
+        }
+
+        .content {
+            padding: 0 25px 25px;
+        }
+
+        .card {
+            background-color: var(--bg-color);
+            border: 1px solid #e5e5e5;
+            border-left: 4px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px var(--shadow-color);
+        }
+        
+        .card h3 {
+            margin-top: 0;
+            color: #333;
+            display: flex;
+            align-items: center;
+        }
+
+        .card h3 .icon {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .highlight-fact {
+            background-color: var(--highlight-bg);
+            border: 1px solid #f0e68c;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .highlight-philosophy {
+            background-color: #e6f7ff;
+            border-left: 3px solid #1890ff;
+            padding: 10px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-style: italic;
+        }
+
+        .highlight-warning {
+            background-color: #fff2f0;
+            border-left: 3px solid #ff4d4f;
+            padding: 10px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        code {
+            background-color: var(--code-bg);
+            color: #d63384;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+        }
+        
+        pre {
+            background-color: var(--code-bg);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+        }
+        
+        pre code {
+            color: #333;
+            padding: 0;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>第五章核心要点</h1>
+            <p>利用 DataView 自动化工作流，保持思考的专注</p>
+        </header>
+
+        <div class="controls">
+            <button id="toggleAll" class="toggle-btn">全部展开/折叠</button>
+        </div>
+
+        <details>
+            <summary>5.0 DataView 简介：你的自动化助手</summary>
+            <div class="content">
+                <div class="card">
+                    <h3><span class="icon">💡</span>核心观点</h3>
+                    <p>将可自动化的工作委托给 Obsidian 的 DataView 插件，<span class="highlight-fact">让我们专注于推进思考，而不是完善系统</span>。DataView 能帮助我们跟踪零散线索，实现简单任务的自动化。</p>
+                    <ul>
+                        <li><strong>适用人群</strong>：随着知识库变复杂、项目增多，DataView 的价值越大。</li>
+                        <li><strong>无代码门槛</strong>：课程提供模板，无需编程知识即可使用和适配。</li>
+                        <li><strong>核心目标</strong>：学习如何利用 DataView <span class="highlight-fact">服务于 Zettelkasten 工作流</span>，而非仅仅学习工具本身。</li>
+                    </ul>
+                </div>
+            </div>
+        </details>
+
+        <details>
+            <summary>5.1 & 5.2 基础应用：自动化列表与链接管理</summary>
+            <div class="content">
+                <div class="card">
+                    <h3><span class="icon">⚙️</span>核心方法：自动化索引</h3>
+                    <p>使用简单的 <code>list</code> 命令，根据标签自动生成笔记列表。</p>
+                    <pre><code>
+list
+from #person
+sort file.name asc
+                    </code></pre>
+                    <p><strong>应用场景</strong>：创建人物索引、优质文章列表、最佳想法集、项目 MOC 等。</p>
+                </div>
+                <div class="card">
+                    <h3><span class="icon">⚙️</span>核心方法：管理未处理的反向链接</h3>
+                    <p>在复杂的枢纽（Hub）或索引笔记中，自动找出<span class="highlight-fact">哪些链接到当前笔记的笔记，还未被手动整理进笔记正文</span>。</p>
+                    <p><strong>逻辑要点</strong>：列出所有链接到当前笔记（<code>from [[本笔记]]</code>）的笔记，但排除掉那些已经被当前笔记链接出去的笔记（<code>!outgoing([[本笔记]])</code>）。这能帮你高效地查漏补缺。</p>
+                </div>
+            </div>
+        </details>
+
+        <details>
+            <summary>5.3 进阶应用：创建全局“开放循环”仪表盘</summary>
+            <div class="content">
+                <div class="card">
+                    <h3><span class="icon">💡</span>核心观点</h3>
+                    <p>使用 DataView 表格（<code>table</code>），创建一个全局概览，<span class="highlight-fact">集中展示所有项目中带有 <code>#continue</code> 标签的“开放循环”</span>。这极大地降低了开始工作时的认知摩擦，并释放了大脑的记忆负担。</p>
+                </div>
+                <div class="card">
+                    <h3><span class="icon">⚙️</span>核心方法：结构化仪表盘</h3>
+                    <p>将开放循环按信息流阶段分类，创建不同的表格：</p>
+                    <ul>
+                        <li><strong>输入 (Input)</strong>: 待添加、待阅读、待提取的文献或想法。</li>
+                        <li><strong>内部 (Internal)</strong>: 永久笔记间的互动，如待比较、待整理、待拆分的笔记。</li>
+                        <li><strong>输出 (Output)</strong>: 潜在的输出项目候选，按成熟度排列。</li>
+                    </ul>
+                </div>
+                <div class="highlight-philosophy">
+                    <strong>核心理念：“待办堆当如河流，而非水桶”</strong><br>
+                    不要把积压的工作看作一个需要清空的容器。把它看作从你身边流过的溪流。你不需要捕捉每一滴水。错过一些想法是正常的，这有助于保持专注，避免被无限的待办事项压垮。<br>
+                    <strong>实现方式</strong>：为“输入”类的表格设置<span class="highlight-fact">30天或60天的时间限制</span>。长时间未处理的任务会自动从列表中消失，减轻心理负担。
+                </div>
+                <div class="card">
+                    <h3><span class="icon">⚙️</span>技术要点</h3>
+                    <ul>
+                        <li><strong>临时/文献笔记</strong>: 使用<span class="highlight-fact">带复选框的 <code>#continue</code> 标签</span>。完成任务后勾选复选框，任务就会从 DataView 表格中消失。</li>
+                        <li><strong>永久笔记</strong>: 不使用复选框。完成任务后，<span class="highlight-fact">直接删除 <code>#continue</code> 标签</span>，保持核心笔记的整洁。</li>
+                        <li><strong>上下文信息</strong>: 在表格中显示父级笔记（<code>up::</code>）、文件大小、链接数量或“未触及天数”等元数据，以便快速判断任务的性质和优先级。</li>
+                    </ul>
+                </div>
+            </div>
+        </details>
+
+        <details>
+            <summary>5.4 项目管理与核心理念</summary>
+            <div class="content">
+                 <div class="card">
+                    <h3><span class="icon">💡</span>核心观点：输出驱动</h3>
+                    <p>Zettelkasten 的终极目标是<span class="highlight-fact">从内部自发涌现出成熟的项目想法</span>，而不是仅仅作为存放外部想法的工具。这些内生的想法建立在坚实的基础上——即你已经用自己的话语完成的思考和阐述。</p>
+                </div>
+                <div class="card">
+                    <h3><span class="icon">⚙️</span>核心方法：项目概览</h3>
+                    <p>当同时进行多个项目时，创建一个专门的“项目概览”笔记。使用 DataView 脚本<span class="highlight-fact">自动列出所有在项目文件夹中但尚未被手动整理到概览页的项目</span>，确保没有遗漏。</p>
+                </div>
+                <div class="highlight-warning">
+                    <strong>⚠️ 重要提醒</strong><br>
+                    当你重命名笔记标题或标签时，DataView 查询代码中的链接或标签<span class="highlight-fact">不会自动更新</span>。如果一个查询突然失效，请务必手动检查代码中的名称是否正确。
+                </div>
+            </div>
+        </detais>
+
+        <details>
+            <summary>5.5 高级工作流：整合 Readwise</summary>
+            <div class="content">
+                <div class="card">
+                    <h3><span class="icon">⚙️</span>核心方法：双笔记系统</h3>
+                    <p>解决 Readwise 自动导入的便捷性与 Zettelkasten 严谨性之间的矛盾。</p>
+                    <ol>
+                        <li><strong>Readwise 笔记 (自动生成)</strong>: 让 Readwise 插件自动创建笔记 (如 <code>rw-文章标题</code>)。<span class="highlight-fact">不要移动或重命名这些笔记</span>，以保证自动同步新高亮。将它们视为外部、非正式的灵感来源。</li>
+                        <li><strong>正式文献笔记 (手动创建)</strong>: 当你决定要正式引用某个 Readwise 源时，使用 Zotero 等工具创建<span class="highlight-fact">一个标准的、可引用的文献笔记</span> (如 <code>@citekey</code>)。</li>
+                        <li><strong>建立连接</strong>: 在 Readwise 笔记中，添加一行 <code>Citekey:: [[@citekey]]</code>，将其链接到对应的正式文献笔记。</li>
+                        <li><strong>嵌入内容</strong>: 在正式文献笔记中，使用嵌入语法 <code>![[rw-文章标题]]</code> <span class="highlight-fact">将 Readwise 笔记的实时内容嵌入进来</span>。</li>
+                    </ol>
+                </div>
+                <div class="card">
+                    <h3><span class="icon">💡</span>最终效果</h3>
+                    <p>这个流程实现了两全其美：</p>
+                    <ul>
+                        <li>你保留了 Readwise 自动同步新高亮的强大功能。</li>
+                        <li>所有新高亮都会自动出现在你的正式文献笔记中，方便你集中处理和整合。</li>
+                        <li>你的 Zettelkasten 核心区域只包含经过筛选和处理的、结构化的正式笔记，保持了系统的纯净和一致性。</li>
+                    </ul>
+                    <p><strong>处理方式</strong>: 对于大部分 Readwise 笔记，像处理临时笔记一样，处理完后勾选复选框即可；对于少数需要深度整合的，才执行上述双笔记流程。</p>
+                </div>
+            </div>
+        </details>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleAllBtn = document.getElementById('toggleAll');
+            const allDetails = document.querySelectorAll('details');
+
+            toggleAllBtn.addEventListener('click', () => {
+                const isOneOpen = Array.from(allDetails).some(detail => detail.hasAttribute('open'));
+                
+                allDetails.forEach(detail => {
+                    if (isOneOpen) {
+                        detail.removeAttribute('open');
+                    } else {
+                        detail.setAttribute('open', '');
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>

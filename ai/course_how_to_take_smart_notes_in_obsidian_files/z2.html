@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第二章课程摘要：Zettelkasten核心实践</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333;
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --accent-color: #e8f4ff;
+            --highlight-fact: #fffbe6;
+            --highlight-method: #e6fffa;
+            --highlight-opinion: #fdeaea;
+            --border-color: #dee2e6;
+            --header-bg: #f8f9fa;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            line-height: 1.7;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: var(--bg-color);
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        
+        header p {
+            color: var(--secondary-color);
+            font-size: 1.1em;
+        }
+
+        .controls {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .control-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .control-btn:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .accordion-item {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: box-shadow 0.3s;
+        }
+        .accordion-item:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .accordion-header {
+            background-color: var(--header-bg);
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .accordion-header .arrow {
+            transition: transform 0.3s;
+            font-weight: bold;
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, padding 0.5s ease-out;
+            padding: 0 20px;
+        }
+        
+        .accordion-content.active {
+             /* A large enough value */
+        }
+        
+        .accordion-header.active .arrow {
+            transform: rotate(90deg);
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        li {
+            margin-bottom: 12px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        li::before {
+            content: '🔹';
+            position: absolute;
+            left: 0;
+            color: var(--primary-color);
+            font-size: 0.9em;
+        }
+
+        .highlight {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .fact { background-color: var(--highlight-fact); }
+        .method { background-color: var(--highlight-method); }
+        .opinion { background-color: var(--highlight-opinion); }
+        
+        .term {
+            font-weight: bold;
+            color: #d9534f;
+            cursor: help;
+            border-bottom: 1px dotted #d9534f;
+        }
+
+        /* Modal for vocabulary */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s;
+        }
+        
+        .modal-header {
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        .close-btn {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-btn:hover, .close-btn:focus {
+            color: black;
+            text-decoration: none;
+        }
+
+        @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+        @keyframes slideIn { from {transform: translateY(-50px);} to {transform: translateY(0);} }
+        
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container { padding: 10px; }
+            header h1 { font-size: 1.8em; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>第二章：Zettelkasten核心实践摘要</h1>
+            <p>从基本原则到 Obsidian 中的具体工作流程</p>
+        </header>
+
+        <div class="controls">
+            <button class="control-btn" onclick="toggleAll(true)">全部展开</button>
+            <button class="control-btn" onclick="toggleAll(false)">全部折叠</button>
+        </div>
+
+        <div class="accordion">
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    <span>2.0 Zettelkasten 的核心理念</span>
+                    <span class="arrow">▶</span>
+                </div>
+                <div class="accordion-content">
+                    <ul>
+                        <li><span class="opinion">核心观点：</span>个人知识管理系统（PKM）是一个<span class="fact">随时间发展的、永远不会完成的系统</span>。它反映了思考的迭代和非线性本质。</li>
+                        <li><span class="method">核心方法：</span>目标是成为<span class="highlight method">“笔记专家”，而不是“笔记规则的遵循者”</span>。理解原则，然后根据自己的需求调整甚至改变规则。</li>
+                        <li><span class="fact">逻辑要点：</span>思考和写作的过程不是线性的（从A到B），而是充满迭代、研究、修正和重新组织的循环。Zettelkasten 拥抱这一过程。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    <span>2.1 永久笔记 (Permanent Notes) - 系统的基石</span>
+                    <span class="arrow">▶</span>
+                </div>
+                <div class="accordion-content">
+                    <ul>
+                        <li><span class="fact">核心目标：</span>建立一个高质量、高反应性的笔记集合，当添加新信息时能<span class="fact">激发新想法</span>。达到“临界质量”后，系统开始“起飞”。</li>
+                        <li><span class="method">写作原则：</span>永久笔记记录的是<span class="highlight method">你对某事的理解</span>。要求清晰、准确、简洁，使用完整句子，诚实地面对自己的理解程度。为未来的自己写作。</li>
+                        <li><span class="method">标题技巧：</span>使用<span class="highlight method">清晰的描述性标题</span>，而非编号。标题本身就是一种反馈循环，帮助你检查笔记内容是否聚焦。</li>
+                        <li><span class="opinion">原子性与分子性：</span>笔记应是<span class="term" data-term="atomic">原子化</span>的（一个核心思想），但作者更倾向于在单个Obsidian文件中创建<span class="highlight opinion">“分子笔记”</span>，即由多个原子笔记（段落）组成的<span class="term" data-term="sequence">笔记序列</span>，以保留上下文。</li>
+                        <li><span class="method">关键技巧：</span>通过使用“因此、但是、相比之下”等词语来<span class="highlight method">澄清笔记间的关系</span>。一个强大的技巧是<span class="highlight method">“颠倒问题”</span>（例如，从“我为什么拖延”到“拖延解决了什么问题”），以开辟新的探究路径。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    <span>2.2 闪念笔记 (Fleeting Notes) - 快速捕捉</span>
+                    <span class="arrow">▶</span>
+                </div>
+                <div class="accordion-content">
+                    <ul>
+                        <li><span class="fact">核心理念：</span>快速、无规则地捕捉随时冒出的想法，存放于一个或少数几个<span class="fact">“收件箱”</span>中，并定期处理。</li>
+                        <li><span class="method">处理原则：</span><span class="highlight method">不要直接复制粘贴</span>。处理闪念笔记意味着将其<span class="highlight method">“翻译”</span>到你现有永久笔记的上下文中，思考它增加了什么、与什么矛盾或完善了什么。</li>
+                        <li><span class="opinion">作者的强烈建议：</span><span class="highlight opinion">永远不要只收集别人的想法</span>。在收集时，至少添加一句你自己的评论或想法，从“消费者”转变为“创造者”。</li>
+                        <li><span class="method">Obsidian实践：</span>使用<span class="highlight method">“每日笔记”</span>作为闪念笔记的收件箱。将其存放在单独的文件夹中，以免“稀释”高质量的永久笔记。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    <span>2.3 文献笔记 (Literature Notes) - 与他人思想对话</span>
+                    <span class="arrow">▶</span>
+                </div>
+                <div class="accordion-content">
+                    <ul>
+                        <li><span class="fact">核心区别：</span>文献笔记关注<span class="fact">准确表达他人思想</span>；永久笔记关注<span class="fact">准确表达你的思想</span>。</li>
+                        <li><span class="method">四种层级：</span>根据需求选择不同复杂度的文献笔记：<span class="highlight method">① 纯引用</span>、<span class="highlight method">② 简单笔记</span>（一两句总结）、<span class="highlight method">③ 要点列表</span>（卢曼常用，高效）、<span class="highlight method">④ 详细摘录</span>（用于学习和理解复杂文本）。</li>
+                        <li><span class="method">高亮的作用：</span>高亮是<span class="highlight method">非常有用的“中间步骤”</span>，而非最终成果。它像闪念笔记一样，需要尽快处理，否则会失去上下文。</li>
+                        <li><span class="opinion">最重要的智力技能：</span><span class="highlight opinion">用自己的话准确、真实地转述他人的观点</span>。这是通过写详细文献笔记可以刻意练习的核心能力。</li>
+                        <li><span class="method">处理文献笔记：</span>关键是<span class="highlight method">视角转换</span>。不要停留在文献的框架内，而是从你<span class="term" data-term="p-notes">永久笔记</span>的视角出发，思考文献中的信息如何能推进你自己的想法。</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    <span>2.4 链接 (Linking) - 构建网络</span>
+                    <span class="arrow">▶</span>
+                </div>
+                <div class="accordion-content">
+                    <ul>
+                        <li><span class="fact">核心区别：</span>
+                            <ul>
+                                <li><strong><span class="term" data-term="forward-link">正向链接</span> (Forward Linking):</strong> 在写作时不中断心流，快速链接到想到的笔记或<span class="term" data-term="index">索引笔记</span>。</li>
+                                <li><strong><span class="term" data-term="backlink">反向链接</span> (Backlinking):</strong> <span class="fact">一种刻意的、深思熟虑的行为</span>。打开目标笔记，思考新信息如何影响它，并写下阐述，从而真正地扩展思想。</li>
+                            </ul>
+                        </li>
+                        <li><span class="opinion">作者偏好的实践：</span>在同一个Obsidian文件中，用<span class="highlight opinion">段落来组织笔记序列</span>。这比“一个笔记一个文件”更能保留上下文，同时通过链接到块来维持原子性。</li>
+                        <li><span class="method">链接的艺术：</span><span class="highlight method">将链接嵌入描述性句子中</span>，以解释其相关性。这是最通用且强大的方法。</li>
+                        <li><span class="method">发展自己的“链接文化”：</span>作者无意识地形成了软性区分：将不太重要的相关链接用管道符号 `|` 隐藏标题，而将构成思想主线的核心链接则明确展示 `[[完整标题]]`。</li>
+                        <li><span class="fact">概览与起点：</span>使用简单的<span class="fact">链接列表</span>来创建特定主题的概览，尤其是在<span class="term" data-term="hub">枢纽 (Hubs)</span> 和索引笔记中。这是开始一个新主题的好方法。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Structure -->
+    <div id="vocabModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-term"></h2>
+                <span class="close-btn">&times;</span>
+            </div>
+            <p id="modal-definition"></p>
+        </div>
+    </div>
+
+    <script>
+        const accordionItems = document.querySelectorAll('.accordion-item');
+        
+        accordionItems.forEach(item => {
+            const header = item.querySelector('.accordion-header');
+            const content = item.querySelector('.accordion-content');
+            
+            header.addEventListener('click', () => {
+                const isActive = header.classList.contains('active');
+                
+                // Close all others
+                // accordionItems.forEach(i => {
+                //     i.querySelector('.accordion-header').classList.remove('active');
+                //     i.querySelector('.accordion-content').style.maxHeight = '0';
+                //     i.querySelector('.accordion-content').style.padding = '0 20px';
+                // });
+
+                if (!isActive) {
+                    header.classList.add('active');
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    content.style.padding = '20px';
+                } else {
+                    header.classList.remove('active');
+                    content.style.maxHeight = '0';
+                    content.style.padding = '0 20px';
+                }
+            });
+        });
+
+        function toggleAll(expand) {
+            accordionItems.forEach(item => {
+                const header = item.querySelector('.accordion-header');
+                const content = item.querySelector('.accordion-content');
+                if (expand) {
+                    header.classList.add('active');
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    content.style.padding = '20px';
+                } else {
+                    header.classList.remove('active');
+                    content.style.maxHeight = '0';
+                    content.style.padding = '0 20px';
+                }
+            });
+        }
+
+        // Vocabulary Modal Logic
+        const modal = document.getElementById('vocabModal');
+        const modalTerm = document.getElementById('modal-term');
+        const modalDefinition = document.getElementById('modal-definition');
+        const closeBtn = document.querySelector('.close-btn');
+
+        const vocabulary = {
+            'atomic': {
+                term: '原子笔记 (Atomic Notes)',
+                definition: '指一个笔记只包含一个独立、清晰、完整的核心思想。这样做的目的是为了方便未来在不同情境下链接和重组。'
+            },
+            'sequence': {
+                term: '笔记序列 (Note Sequence)',
+                definition: '指一系列相互关联、逻辑递进的笔记，它们共同构成一个完整的思绪或论证。在实体卡片盒中通过编号连接，在Obsidian中可以通过在同一文件内按段落排列或通过链接实现。'
+            },
+            'p-notes': {
+                term: '永久笔记 (Permanent Notes)',
+                definition: 'Zettelkasten系统的核心。这些是经过深思熟虑、用自己的话写下的、原子化的想法，它们被链接到现有的笔记网络中，旨在长期保存和激发新思想。'
+            },
+            'forward-link': {
+                term: '正向链接 (Forward Linking)',
+                definition: '在撰写笔记时，为了不打断思路而快速创建的链接。通常链接到一个已知的概念或索引，其目的主要是快速捕捉联系，而非深入阐述。'
+            },
+            'backlink': {
+                term: '反向链接 (Backlinking)',
+                definition: '一种刻意、需要思考的链接行为。作者会主动打开被链接的笔记，思考新旧信息的关系，并写下文字来阐述这个链接，从而扩展已有的思想。这是一种主动的“思想建设”。'
+            },
+            'index': {
+                term: '索引笔记 (Index Note)',
+                definition: '一种功能性笔记，通常标题为一个关键词（如“心理学”）。它本身内容很少，主要作用是收集所有与该关键词相关的笔记的反向链接，作为一个主题的入口。'
+            },
+            'hub': {
+                term: '枢纽 (Hub)',
+                definition: '比索引笔记更进一步，是一个为特定主题提供最佳入口或概览的笔记。它可能包含对该主题核心问题的阐述、关键笔记的链接列表，以及相关的文献列表，是结构化的主题导航页。'
+            }
+        };
+
+        document.querySelectorAll('.term').forEach(termEl => {
+            termEl.addEventListener('click', () => {
+                const termKey = termEl.dataset.term;
+                if (vocabulary[termKey]) {
+                    modalTerm.textContent = vocabulary[termKey].term;
+                    modalDefinition.textContent = vocabulary[termKey].definition;
+                    modal.style.display = 'block';
+                }
+            });
+        });
+
+        closeBtn.onclick = () => {
+            modal.style.display = 'none';
+        }
+
+        window.onclick = (event) => {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
