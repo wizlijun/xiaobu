@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zettelkasten 课程学习笔记</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+        :root {
+            --bg-color: #ffffff;
+            --container-bg: #f9fafb;
+            --text-color: #1f2937;
+            --primary-color: #3b82f6;
+            --primary-light: #eff6ff;
+            --secondary-color: #6b7280;
+            --border-color: #e5e7eb;
+            --shadow-color: rgba(0, 0, 0, 0.07);
+            --principle-color: #3b82f6;
+            --method-color: #10b981;
+            --concept-color: #f97316;
+            --warning-color: #ef4444;
+            --cta-color: #f59e0b; /* Button color */
+            --cta-hover-color: #d97706; /* Button hover color */
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.8;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        /* --- CTA Button Styles --- */
+        .cta-container {
+            text-align: center;
+            margin: 20px 0 40px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 18px 40px;
+            font-size: 1.5em; /* Large font size */
+            font-weight: 700;
+            color: #ffffff;
+            background-color: var(--cta-color);
+            border-radius: 50px; /* Pill shape */
+            text-decoration: none;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .cta-button:hover {
+            background-color: var(--cta-hover-color);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+        /* --- End CTA Button Styles --- */
+
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.8em;
+            font-weight: 700;
+            color: #111827;
+        }
+        
+        /* --- Course Intro Section --- */
+        .course-intro {
+            background-color: var(--primary-light);
+            padding: 25px 30px;
+            border-radius: 12px;
+            margin-bottom: 40px;
+            border: 1px solid #dbeafe;
+            text-align: left;
+        }
+        .course-intro p {
+            margin-bottom: 15px;
+            color: #374151;
+        }
+        .course-intro ul {
+            list-style-type: none;
+            padding-left: 0;
+            margin: 15px 0;
+        }
+        .course-intro li {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .course-intro li::before {
+            content: '✓';
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-right: 12px;
+            margin-top: 1px;
+        }
+        .course-intro .final-cta {
+            font-weight: 500;
+            color: #1d4ed8;
+        }
+        /* --- End Course Intro Section --- */
+        
+        .controls {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .control-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+        }
+        .control-btn:hover {
+            opacity: 0.85;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+        }
+
+        .chapter-section {
+            background-color: var(--container-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            overflow: hidden;
+            transition: all 0.4s ease-in-out;
+        }
+
+        .chapter-header {
+            padding: 20px 25px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--bg-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .chapter-header h2 {
+            margin: 0;
+            font-size: 1.5em;
+            font-weight: 500;
+            color: #111827;
+        }
+        
+        .chapter-header .arrow {
+            font-size: 1.5em;
+            transition: transform 0.3s ease;
+            color: var(--primary-color);
+        }
+
+        .chapter-section.active .arrow { transform: rotate(90deg); }
+
+        .chapter-content {
+            padding: 0 25px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.7s cubic-bezier(0, 1, 0, 1), padding 0.7s ease;
+        }
+
+        .chapter-section.active .chapter-content {
+            max-height: 10000px; /* Large value */
+            padding: 25px;
+            transition: max-height 1.2s ease-in-out, padding 0.5s ease;
+        }
+        
+        .point {
+            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+        }
+
+        .point.principle { border-left: 5px solid var(--principle-color); }
+        .point.method { border-left: 5px solid var(--method-color); }
+        .point.concept { border-left: 5px solid var(--concept-color); }
+        .point.warning { border-left: 5px solid var(--warning-color); }
+
+        .point strong {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+            font-weight: 700;
+        }
+        
+        .point.principle strong { color: var(--principle-color); }
+        .point.method strong { color: var(--method-color); }
+        .point.concept strong { color: var(--concept-color); }
+        .point.warning strong { color: var(--warning-color); }
+
+        .point-term, code {
+            background-color: #eef2ff;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+            font-size: 0.9em;
+            color: var(--primary-color);
+            border: 1px solid #dbeafe;
+        }
+        
+        .comparison-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .comparison-table th, .comparison-table td { border: 1px solid var(--border-color); padding: 12px; text-align: left; }
+        .comparison-table th { background-color: var(--primary-light); color: var(--primary-color); font-size: 1.1em; }
+
+        .quote { border-left: 4px solid var(--primary-color); margin: 15px 0; padding: 10px 20px; background-color: var(--primary-light); font-style: italic; color: #374151; border-radius: 0 8px 8px 0; }
+
+        footer { text-align: center; margin-top: 50px; font-size: 0.9em; color: var(--secondary-color); }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <div class="cta-container">
+            <a href="https://appzpimmklbess8.h5.wisapp.cn/pages/course/index?id=5&sharelid=160&fromUser=403&inviteNo=000D0" class="cta-button" target="_blank" rel="noopener noreferrer">
+                购买完整中文视频课程
+            </a>
+        </div>
+
+        <header>
+            <h1>Zettelkasten 课程学习笔记</h1>
+        </header>
+        
+        <div class="course-intro">
+            <p>本笔记提炼自德国学者 Sönke Ahrens 亲授的 《How to Take Smart Notes》 视频课程。课程系统讲解了社会学大师卢曼的卡片盒笔记法，帮助你用科学方式把零散笔记变成高质量成果。</p>
+            <p>课程结合强大的 Obsidian 工具，带你从核心理念到具体实践，全面掌握构建“第二大脑”的完整方法。</p>
+            <ul>
+                <li><strong>90 多节循序渐进的视频：</strong> 深度剖析，细节满满。</li>
+                <li><strong>原作者亲自示范：</strong> 理论结合实际，清晰易懂。</li>
+                <li><strong>终身更新访问权：</strong> 一次投入，持续受益。</li>
+                <li>让学习、研究与创作都更高效、更有条理。</li>
+            </ul>
+            <p>原价 299 美元，现面向中国学生与知识工作者开放官方渠道。想真正把笔记转化为生产力？</p>
+            <p class="final-cta">立即加入，开启你的智慧笔记之旅。</p>
+        </div>
+
+
+        <div class="controls">
+            <button id="toggleAllBtn" class="control-btn">全部展开/折叠</button>
+        </div>
+
+        <!-- Chapter 0: Introduction -->
+        <div class="chapter-section">
+            <div class="chapter-header">
+                <h2>前言：核心哲学与课程概览</h2>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="chapter-content">
+                <div class="point principle">
+                    <strong>核心哲学：为思考服务，拒绝完美主义</strong>
+                    <p>高效使用 Obsidian 的秘诀，是<strong>忽略它能做的大部分事情</strong>。本课程聚焦于最重要的内容：你的想法，以及如何捕捉、组合和发展它们。卡片盒具有未来适应性，不是因为它完美无缺，而是因为它能<strong>随着我们的思考不断演进</strong>。它永远是一个“进行中的工作”。</p>
+                </div>
+                <div class="point principle">
+                    <strong>结构即思考，输出为导向</strong>
+                    <p>管理日益增长的复杂性，并非是额外的维护工作，它本身就是<strong>思考和写作过程最关键、最有趣的部分</strong>。笔记的结构，应该反映我们思想的结构。创建输出（文章、书籍等）不是知识管理的最后一步，整个卡片盒系统<strong>从一开始就为产出而设计</strong>。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chapter 1: Setup & Basics -->
+        <div class="chapter-section">
+            <div class="chapter-header">
+                <h2>第一章：基础设置与核心功能</h2>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="chapter-content">
+                <div class="point concept">
+                    <strong>库 (Vault) 与文件夹</strong>
+                    <p>一个“库”是您电脑上的一个独立文件夹，包含所有笔记和设置。<strong>建议：</strong>为 Zettelkasten 只使用一个主库，以保证所有笔记都能互联互通。文件夹不用于按“主题”分类，而是用于按“笔记类型”分离（如：<code>永久笔记</code>、<code>文献笔记</code>、<code>每日笔记</code>），以保护核心库的纯净度。</p>
+                </div>
+                <div class="point method">
+                    <strong>核心功能实践</strong>
+                    <ul>
+                        <li><b>双向链接</b>: Obsidian 的灵魂。用 <code>[[笔记标题]]</code> 创建链接，系统会自动记录反向链接，让思想网络化。</li>
+                        <li><b>元数据</b>: 极简使用。最重要的是 <code>别名 (Alias)</code>，它解决了双语、同义词和缩写问题，极大增强了链接的灵活性。</li>
+                        <li><b>笔记标题</b>: 为永久笔记创建<strong>描述性、观点性的长标题</strong> (如 <code>Zettelkasten有助于进入心流状态</code>)。这种标题会激发问题，促进思考。</li>
+                    </ul>
+                </div>
+                 <div class="point warning">
+                    <strong>关于标签 (Tags) 的核心方法论</strong>
+                    <p><strong>不要</strong>用标签来分类内容 (如 <code>#社会学</code>)。这会导致“收集者陷阱”。</p>
+                    <p><strong>正确用法：</strong>将标签用于<strong>工作流管理</strong>。例如：<code>#continue/extract</code> (标记未完成的思考)、<code>#output/develop</code> (标记输出阶段)。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chapter 2: Core Practices -->
+        <div class="chapter-section">
+            <div class="chapter-header">
+                <h2>第二章：核心实践 - 笔记类型与链接艺术</h2>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="chapter-content">
+                 <div class="point concept">
+                    <strong>关键笔记类型区分</strong>
+                    <ul>
+                        <li><span class="point-term">闪念笔记 (Fleeting)</span>: 想法的临时“提醒物”，需尽快处理，“每日笔记”是其理想载体。</li>
+                        <li><span class="point-term">文献笔记 (Literature)</span>: 用“自己的话”理解和转述外部信息，是连接他人思想与自己知识网络的桥梁。</li>
+                        <li><span class="point-term">永久笔记 (Permanent)</span>: 系统的核心。原子化、高内聚、强连接的知识单元，为未来的自己清晰地阐述一个想法。</li>
+                        <li><span class="point-term">项目笔记 (Project)</span>: 为具体输出而生，是知识从非线性网络走向线性手稿的过渡区。</li>
+                    </ul>
+                </div>
+                <div class="point method">
+                    <strong>链接的两种模式：联想 vs. 思考</strong>
+                    <ul>
+                        <li><b>正向链接 (Forward-linking)</b>: 写作时的“联想式”链接。为了不打断心流，快速创建的链接。</li>
+                        <li><b>反向链接 (Back-linking)</b>: 一种“刻意的思考行为”。它要求你进入目标笔记的上下文，从该笔记出发，阐述新信息如何对其进行扩展或反驳。这超越了简单连接，是真正地在发展思想。</li>
+                    </ul>
+                </div>
+                <div class="point method">
+                    <strong>构建笔记序列：上下文的力量</strong>
+                    <p>最佳实践是：<b>在一个 Obsidian 文件中，用多个段落承载一个完整的笔记序列</b>。每个段落是一个独立的“原子笔记”，但它们共同存在提供了强大的上下文，模拟了在桌上铺开一叠相关卡片的效果。</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chapter 3: Managing Complexity -->
+        <div class="chapter-section">
+            <div class="chapter-header">
+                <h2>第三章：驾驭复杂性 - 枢纽、MOC 与索引</h2>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="chapter-content">
+                <div class="point concept">
+                    <strong>枢纽 (Hubs)：思想的汇聚点</strong>
+                    <p>枢纽是笔记网络中自然形成的“引力中心”，通常由一个普通笔记演化而来。它的功能是提供一个结构化的概览，连接一个主题下的多个相关笔记。整理枢纽的过程，本身就是一种发现知识缺口和矛盾的高阶思考活动。</p>
+                </div>
+                 <div class="point concept">
+                    <strong>内容地图 (MOCs) 与索引笔记 (Index Notes)</strong>
+                    <ul>
+                        <li><b>内容地图 (Map of Content, MOC)</b>: 是<b>枢纽的枢纽</b>。当多个主题（枢纽）之间产生联系时，你需要一个更高层次的笔记来组织和思考这些集群之间的关系。</li>
+                        <li><b>索引笔记 (Index Note)</b>: 通常只有一个单词或人名作为标题。它的核心价值在于其反向链接列表，收集了所有提到该特定<b>术语</b>的笔记。</li>
+                    </ul>
+                </div>
+                <div class="point principle">
+                    <strong>核心理念辨析：枢纽 vs. 索引</strong>
+                    <div class="quote">“枢纽就像<strong>家谱</strong>。它们向你展示家庭成员之间的关系，即使有些人姓名不同。索引笔记更像<strong>电话簿</strong>。它们把所有同名的人归到一起，无论他们的实际关系如何。”</div>
+                    <table class="comparison-table">
+                        <thead><tr><th>特性</th><th>枢纽 (Hub)</th><th>索引 (Index)</th></tr></thead>
+                        <tbody>
+                            <tr><td><strong>组织原则</strong></td><td>内容相关性、主题聚集</td><td>术语、字母顺序</td></tr>
+                            <tr><td><strong>构建方式</strong></td><td>有机生长，深度思考的结果</td><td>联想式添加，维护成本低</td></tr>
+                            <tr><td><strong>功能</strong></td><td>提供主题概览，促进思想融合</td><td>快速查找，按术语定位</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="point warning">
+                    <strong>避免四大陷阱</strong>
+                    <ol>
+                        <li><b>收集者陷阱</b>: 避免为了收集而收集。核心问题应是：“这对我的哪些项目有意义？”</li>
+                        <li><b>将系统视为大脑镜像</b>: 它是交流伙伴，不是大脑副本。专注于你理解的边界。</li>
+                        <li><b>试图穷尽所有可能性</b>: 学会标记“开放循环”，接受想法的富足。</li>
+                        <li><b>追求完美</b>: Zettelkasten 本质上是“进行中的工作”，这正是其活力所在。</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chapter 4: Output -->
+        <div class="chapter-section">
+            <div class="chapter-header">
+                <h2>第四章：从 Zettelkasten 到产出</h2>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="chapter-content">
+                <div class="point principle">
+                    <strong>思维转换：从非线性到线性</strong>
+                    <p>这是从笔记到手稿的关键。Zettelkasten 是非线性的、为自己服务的；手稿是线性的、为读者服务的。当决定输出时，必须进行心理上的切换：从与自己的思想网络交流，<b>转变为与未来的读者交流</b>。</p>
+                </div>
+                <div class="point method">
+                    <strong>项目笔记工作流</strong>
+                    <ol>
+                        <li><b>识别产出</b>: 当一个枢纽足够成熟时，用 <code>#output/develop</code> 等标签标记。</li>
+                        <li><b>创建项目笔记</b>: 在专门的项目文件夹中创建笔记，它不再是 Zettelkasten 的一部分。</li>
+                        <li><b>复制粘贴</b>: 强烈鼓励从永久笔记中复制内容到项目笔记并进行修改。</li>
+                        <li><b>单一笔记原则</b>: 项目早期坚持使用单个项目笔记，便于大规模调整结构。</li>
+                        <li><b>管理开放循环</b>: 使用 <code>#cont</code> 标签（而非 `to-do`）来标记待办思路，培养“富足而非匮乏”的心态。</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chapter 5: Automation -->
+        <div class="chapter-section">
+            <div class="chapter-header">
+                <h2>第五章：利用 DataView 自动化工作流</h2>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="chapter-content">
+                <div class="point method">
+                    <strong>DataView 的核心应用</strong>
+                    <p>将可自动化的工作委托给 DataView 插件，让你专注于思考。无需编程知识，使用课程提供的模板即可。</p>
+                    <ul>
+                        <li><b>自动化索引</b>: 自动生成所有带 <code>#index</code> 标签的笔记列表。</li>
+                        <li><b>创建“开放循环”仪表盘</b>: 创建一个全局概览，集中展示所有项目中带有 <code>#continue</code> 标签的“开放循环”。</li>
+                        <li><b>构建输出管道</b>: 创建一个视图，展示所有标记为 <code>#output/...</code> 的枢纽，让你对所有潜在的写作项目一目了然。</li>
+                    </ul>
+                </div>
+                <div class="point principle">
+                    <strong>核心理念：“待办堆当如河流，而非水桶”</strong>
+                    <p>不要把积压的工作看作一个需要清空的容器。把它看作从你身边流过的溪流。你不需要捕捉每一滴水。为“输入”类的表格设置时间限制，长时间未处理的任务会自动从列表中消失，减轻心理负担。</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chapter 6: Conclusion -->
+        <div class="chapter-section">
+            <div class="chapter-header">
+                <h2>第六章：高级哲学与总结</h2>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="chapter-content">
+                <div class="point principle">
+                    <strong>结构是演化的快照，而非固定的牢笼</strong>
+                    <p>我们从一个看似“自上而下”的概览页开始，但关键在于，这个结构（如起始页、MOC）并非硬编码的。它注定会随着你的思维而改变和演化。进步不仅仅是增加信息，更是重构已有的知识。</p>
+                </div>
+                <div class="point principle">
+                    <strong>拥抱“有益的斗争”，玩一场“无限游戏”</strong>
+                    <p>这个系统不是为了让写作变得“轻松”，而是为了让你能更好地进行<b>“有益的斗争” (fruitful struggle)</b>。与思想搏斗、解决矛盾，这正是智力成长的核心。</p>
+                    <div class="quote">“把你的Zettelkasten想象成一个会与你一起成长的对话伙伴。它帮助你创造的输出不是最终目标，而是你持续智力发展的快照。这种发展没有结束日期，这就是我们所说的无限游戏。”</div>
+                </div>
+            </div>
+        </div>
+
+
+        <footer>
+            <p>该交互式摘要整合了课程全部核心理念与实践方法。</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sections = document.querySelectorAll('.chapter-section');
+            const toggleAllBtn = document.getElementById('toggleAllBtn');
+
+            const toggleSection = (section) => {
+                section.classList.toggle('active');
+            };
+
+            sections.forEach(section => {
+                const header = section.querySelector('.chapter-header');
+                header.addEventListener('click', () => toggleSection(section));
+            });
+
+            toggleAllBtn.addEventListener('click', () => {
+                const isOneOpen = Array.from(sections).some(s => s.classList.contains('active'));
+                sections.forEach(s => {
+                    if (isOneOpen) {
+                        s.classList.remove('active');
+                    } else {
+                        s.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://appzpimmklbess8.h5.wisapp.cn/pages/course/index?id=5&sharelid=160&fromUser=403&inviteNo=000D0" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
