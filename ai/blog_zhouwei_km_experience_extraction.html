@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互动摘要：AI环境下的经验萃取</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --bg-color: #ffffff;
+            --card-bg-color: #f8f9fa;
+            --border-color: #dee2e6;
+            --text-color: #212529;
+            --light-text-color: #6c757d;
+            --fact-bg: #e0f7fa;
+            --opinion-bg: #fff9c4;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            line-height: 1.7;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 15px;
+            font-size: 16px;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 2.2em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        header .meta {
+            font-size: 0.9em;
+            color: var(--light-text-color);
+        }
+
+        .intro-box {
+            background-color: #e9f5ff;
+            border-left: 5px solid var(--primary-color);
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .intro-box:hover {
+            transform: scale(1.02);
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 25px;
+        }
+
+        .tab-button {
+            padding: 12px 20px;
+            font-size: 1.1em;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            background: none;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            color: var(--secondary-color);
+        }
+
+        .tab-button.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .summary-line {
+            font-size: 1.2em;
+            font-weight: 700;
+            text-align: center;
+            padding: 15px;
+            background-color: var(--card-bg-color);
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .summary-line span {
+            color: var(--primary-color);
+        }
+
+        .interactive-card {
+            background-color: var(--card-bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .card-header {
+            font-size: 1.3em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .reveal-button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: #fff;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            padding-right: 40px;
+        }
+        .reveal-button:hover {
+            background-color: #f1f3f5;
+            border-color: var(--primary-color);
+        }
+
+        .reveal-button::after {
+            content: '+';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        .reveal-button.open::after {
+            content: '−';
+        }
+
+
+        .reveal-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, padding 0.5s ease-out;
+            padding: 0 15px;
+        }
+
+        .reveal-content p {
+            margin: 10px 0;
+        }
+
+        .fact, .opinion {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .fact { background-color: var(--fact-bg); }
+        .opinion { background-color: var(--opinion-bg); }
+
+        /* Special interactive card for section 3 */
+        .toggle-card {
+            display: flex;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .toggle-option {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .toggle-option h4 { margin-top: 0; }
+        .toggle-option.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .toggle-option.inactive {
+            background-color: #e9ecef;
+        }
+        .toggle-description {
+            padding: 15px;
+            background-color: #fff;
+            border-top: 1px solid var(--border-color);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>AI时代的经验萃取</h1>
+            <div class="meta">作者：周伟 | 公众号：知识管理学社</div>
+        </header>
+
+        <div class="intro-box">
+            <strong>核心前提：</strong> “没有知识的输入，就没有智能化的AI应用。”<br>
+            在AI时代，从人的<span class="fact">隐性经验</span>中提取知识，变得比以往任何时候都更加重要。
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="openTab(event, 'tab1')">1. 如何为AI所用？</button>
+            <button class="tab-button" onclick="openTab(event, 'tab2')">2. 挖掘"不可用"经验</button>
+            <button class="tab-button" onclick="openTab(event, 'tab3')">3. 如何提升效率？</button>
+        </div>
+
+        <!-- Tab 1: How to be used by AI -->
+        <div id="tab1" class="tab-content active">
+            <div class="summary-line">一句话秒懂：就是把人的<span>“优秀经验”</span>变成AI能直接使用的<span>“智能组件”</span>。</div>
+            
+            <div class="interactive-card">
+                <div class="card-header">🎯 从应用效果看：AI需要什么？</div>
+                <button class="reveal-button" onclick="toggleReveal(this)">
+                    💬 观点：AI要扮演“智慧大脑”
+                </button>
+                <div class="reveal-content">
+                    <p>因此，萃取的经验必须达到<span class="fact">💡 绩优员工甚至专家</span>的水平。</p>
+                </div>
+                
+                <button class="reveal-button" onclick="toggleReveal(this)">
+                    💡 事实：什么样的经验才合格？
+                </button>
+                <div class="reveal-content">
+                    <ul>
+                        <li>源自绩优员工或专家</li>
+                        <li>经过长时间和多次任务的验证</li>
+                        <li>可以被快速验证和推广</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="interactive-card">
+                <div class="card-header">⚙️ 从实现方案看：如何转化？</div>
+                <p>经验知识通过专业技术，可以变成AI的“组件”被调用。点击下方查看具体形式：</p>
+                <button class="reveal-button" onclick="toggleReveal(this)">
+                    💡 方式1：RAG知识库
+                </button>
+                <div class="reveal-content">
+                    <p>作为问答机器人的知识来源，让AI的回答有据可依。</p>
+                </div>
+
+                <button class="reveal-button" onclick="toggleReveal(this)">
+                    💡 方式2：智能体的“大脑”
+                </button>
+                <div class="reveal-content">
+                    <p>融合到智能体的提示词(Prompt)或程序算法中，指导AI如何行动。</p>
+                </div>
+
+                <button class="reveal-button" onclick="toggleReveal(this)">
+                   💡 方式3：AI应用的插件
+                </button>
+                <div class="reveal-content">
+                    <p>被封装成一个可以直接调用的功能模块或工具。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Mining "unusable" experience -->
+        <div id="tab2" class="tab-content">
+            <div class="summary-line">一句话秒懂：利用AI强大的计算力，发现那些<span>人类凭直觉和经验难以发现的</span>“隐藏规律”。</div>
+
+            <div class="interactive-card">
+                <div class="card-header">🤔 什么是“不可用”经验？</div>
+                <p>有些经验潜藏在海量数据中，人类难以察觉和利用。AI却可以！</p>
+                <button class="reveal-button" onclick="toggleReveal(this)">
+                    💡 点击查看经典案例：AlphaGo
+                </button>
+                <div class="reveal-content">
+                    <p>AlphaGo通过学习<span class="fact">数千万步人类棋谱</span>，掌握了人类没想到的围棋技法（即“不可用”经验），从而战胜了人类顶尖棋手。</p>
+                </div>
+            </div>
+
+            <div class="interactive-card">
+                <div class="card-header">🚀 企业如何应用？</div>
+                 <p>💬 这个原理是通用的！企业可以利用AI来...</p>
+                 <button class="reveal-button" onclick="toggleReveal(this)">
+                    挖掘“竞争管理”经验
+                </button>
+                <div class="reveal-content">
+                    <p>实时跟踪分析海量竞对情报，辅助制定应对策略。</p>
+                </div>
+                 <button class="reveal-button" onclick="toggleReveal(this)">
+                    挖掘“市场洞察”经验
+                </button>
+                <div class="reveal-content">
+                    <p>从海量外部信息中，洞察行业趋势和企业机会。</p>
+                </div>
+                 <button class="reveal-button" onclick="toggleReveal(this)">
+                    挖掘“爆品打造”经验
+                </button>
+                <div class="reveal-content">
+                    <p>分析爆品相关的各种要素，建立可复制的“爆品模型”。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: How to be more efficient -->
+        <div id="tab3" class="tab-content">
+             <div class="summary-line">一句话秒懂：最高效的方式不是写文档给人看，而是让经验<span>直接“注入”AI</span>，实现<span>“边用边学”</span>。</div>
+            
+            <div class="interactive-card">
+                <div class="card-header">🤔 如何让经验萃取更高效？</div>
+                <p>点击下方卡片，对比两种模式：</p>
+                <div class="toggle-card">
+                    <div id="toggle-trad" class="toggle-option inactive" onclick="switchToggle('trad')">
+                        <h4>传统模式</h4>
+                    </div>
+                    <div id="toggle-ai" class="toggle-option active" onclick="switchToggle('ai')">
+                        <h4>AI原生模式</h4>
+                    </div>
+                </div>
+                <div id="desc-trad" class="toggle-description" style="display: none;">
+                    <strong>路径：</strong> 经验 → 萃取工具 → 文档 → 人阅读应用<br>
+                    <strong>评价：</strong> 💬 仍是传统工作流，有一定价值，但效率不高。
+                </div>
+                 <div id="desc-ai" class="toggle-description" style="display: block;">
+                    <strong>路径：</strong> 经验 → 直接注入AI应用 → 成为AI组件 → 边用边优化<br>
+                    <strong>评价：</strong> 💬 更高效的模式，实现“作业辅助即萃取”。
+                </div>
+            </div>
+
+            <div class="interactive-card">
+                <div class="card-header">💡 “作业辅助即萃取”是什么？</div>
+                 <button class="reveal-button" onclick="toggleReveal(this)">
+                    点击查看实际例子
+                </button>
+                <div class="reveal-content">
+                   <p>1. 把<span class="fact">销冠经验</span>直接应用到“AI销售助手”。</p>
+                   <p>2. AI销售助手在辅助新销售时，会根据用户的采纳和修改情况，<span class="fact">自动反思和优化</span>它所使用的销冠知识。</p>
+                   <p><strong>结果：</strong>经验在使用中得到了萃取和迭代，形成了一个完美的闭环！</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openTab(evt, tabName) {
+            let i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+
+        function toggleReveal(button) {
+            button.classList.toggle('open');
+            const content = button.nextElementSibling;
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+                content.style.padding = "0 15px";
+            } else {
+                content.style.maxHeight = content.scrollHeight + "px";
+                content.style.padding = "10px 15px";
+            }
+        }
+
+        function switchToggle(mode) {
+            const tradButton = document.getElementById('toggle-trad');
+            const aiButton = document.getElementById('toggle-ai');
+            const tradDesc = document.getElementById('desc-trad');
+            const aiDesc = document.getElementById('desc-ai');
+
+            if (mode === 'trad') {
+                tradButton.classList.add('active');
+                tradButton.classList.remove('inactive');
+                aiButton.classList.remove('active');
+                aiButton.classList.add('inactive');
+                tradDesc.style.display = 'block';
+                aiDesc.style.display = 'none';
+            } else {
+                aiButton.classList.add('active');
+                aiButton.classList.remove('inactive');
+                tradButton.classList.remove('active');
+                tradButton.classList.add('inactive');
+                aiDesc.style.display = 'block';
+                tradDesc.style.display = 'none';
+            }
+        }
+    </script>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://mp.weixin.qq.com/s/2xhhlHqAScojYCnNYxfq9Q" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
