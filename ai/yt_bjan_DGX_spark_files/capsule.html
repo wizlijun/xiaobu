@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nvidia DGX Spark 终极评测整合版</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --primary-color: #007bff;
+        --nvidia-green: #76b900;
+        --background-color: #f4f7f9;
+        --card-background: #ffffff;
+        --text-color: #333;
+        --shadow: 0 6px 15px rgba(0,0,0,0.08);
+        --border-radius: 20px;
+    }
+    html {
+        scroll-behavior: smooth;
+    }
+    body {
+        font-family: 'Noto Sans SC', sans-serif;
+        background-color: var(--background-color);
+        margin: 0;
+        padding: 15px;
+        color: var(--text-color);
+    }
+    .container {
+        max-width: 600px;
+        margin: auto;
+    }
+    header {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+    header h1 {
+        font-size: 2.2em;
+        font-weight: 900;
+        color: var(--text-color);
+        margin: 0;
+    }
+    header .subtitle {
+        font-size: 1.1em;
+        color: #555;
+    }
+    .profile-card {
+        background: linear-gradient(135deg, #e0f7fa, #ffffff);
+        padding: 20px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    .profile-card img {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        border: 4px solid var(--card-background);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .profile-card h3 {
+        margin: 10px 0 5px;
+        color: var(--primary-color);
+    }
+    .profile-card p {
+        margin: 0;
+        font-style: italic;
+        color: #666;
+    }
+
+    /* --- Buying Guide Card --- */
+    .guide-card {
+        background: var(--card-background);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 25px;
+        border-top: 8px solid var(--nvidia-green);
+        margin-bottom: 40px;
+    }
+    .guide-header { text-align: center; margin-bottom: 25px; }
+    .guide-header .emoji { font-size: 3.5em; animation: bounce 1.5s infinite; }
+    .guide-header h1 { font-size: 1.8em; font-weight: 900; margin: 10px 0 5px; }
+    .guide-header p { font-size: 1.1em; color: #555; margin: 0; }
+    .guide-section { margin-bottom: 25px; }
+    .guide-section h2 { display: flex; align-items: center; font-size: 1.4em; margin-bottom: 15px; }
+    .guide-section .icon { font-size: 1.8em; margin-right: 12px; }
+    #recommended h2 { color: #28a745; }
+    #not-recommended h2 { color: #dc3545; }
+    #value-check h2 { color: #ff9800; }
+    .guide-section ul { list-style: none; padding-left: 5px; }
+    .guide-section li { background-color: #f8f9fa; padding: 12px 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid; font-size: 1.05em; line-height: 1.5; }
+    #recommended li { border-color: #28a745; }
+    #not-recommended li { border-color: #dc3545; }
+    .value-box { background: linear-gradient(135deg, #fff3cd, #ffe8a1); padding: 20px; border-radius: 15px; text-align: center; border: 2px dashed #ffc107; }
+    .value-box .price-tag { font-size: 2.5em; font-weight: 900; color: #dc3545; margin: 0; }
+    .value-box .verdict { font-size: 1.2em; font-weight: bold; margin: 5px 0 15px; }
+    .smart-choice { background-color: #e2f0d9; padding: 15px; border-radius: 10px; margin-top: 15px; }
+    .smart-choice h4 { margin: 0 0 10px; color: #385723; text-align: center; }
+    .smart-choice p { margin: 0; font-size: 1em; text-align: center; line-height: 1.6; }
+    .smart-choice strong { color: #548235; }
+    @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-20px);} 60% {transform: translateY(-10px);} }
+
+    /* --- Detailed Timeline Cards --- */
+    .details-divider { text-align: center; margin-bottom: 25px; }
+    .details-divider h2 { font-weight: 900; }
+    .details-divider p { color: #666; }
+    .timeline { position: relative; padding-left: 25px; border-left: 3px solid #dbe6ee; }
+    .card { background: var(--card-background); border-radius: var(--border-radius); margin-bottom: 25px; box-shadow: var(--shadow); overflow: hidden; position: relative; padding-left: 15px; border-left: 5px solid transparent; transition: all 0.3s ease; }
+    .card-header { padding: 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+    .card-header h3 { margin: 0; font-size: 1.5em; }
+    .card-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-out, padding 0.5s ease; padding: 0 20px; }
+    .card.active .card-content { max-height: 2000px; padding: 0 20px 20px; }
+    .arrow { font-size: 1.5em; font-weight: bold; transition: transform 0.3s ease; }
+    .card.active .arrow { transform: rotate(90deg); }
+    .card ul { list-style: none; padding: 0; }
+    .card li { padding: 8px 0; display: flex; align-items: flex-start; }
+    .card li::before { content: '👉'; margin-right: 10px; font-size: 1.2em; }
+    .fact { color: #0056b3; font-weight: bold; }
+    .opinion { color: #17a2b8; font-style: italic; }
+    .critique { color: #dc3545; font-weight: bold; }
+    #unboxing { border-color: #ffc107; }
+    #setup { border-color: #17a2b8; }
+    #creative { border-color: #6f42c1; }
+    #llm { border-color: #28a745; }
+    #showdown { border-color: #fd7e14; }
+    .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: center; }
+    .comparison-grid h4 { margin-bottom: 5px; color: var(--nvidia-green); }
+    .comparison-grid .stat { font-size: 1.2em; font-weight: bold; }
+    .vs { grid-column: 1 / -1; font-size: 2em; font-weight: bold; color: #e83e8c; }
+    hr { border: 1px dashed #eee; margin: 20px 0; }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>DGX Spark 终极评测 🚀</h1>
+        <p class="subtitle">来自 The Layer 的 Bjan 带你一探究竟！</p>
+    </header>
+
+    <div class="profile-card">
+        <img src="https://storage.googleapis.com/gemini-prod/images/41f05459-7112-4f51-8313-1014e7a77e23" alt="Bjan">
+        <h3>Bjan, 我们的评测官</h3>
+        <p>"自掏腰包，只为给你最真实的答案！"</p>
+    </div>
+
+    <!-- ========= 核心购买决策指南 ========= -->
+    <div class="guide-card">
+        <div class="guide-header">
+            <div class="emoji">🤔</div>
+            <h1>DGX Spark 购买指南</h1>
+            <p>Bjan 的终极建议，帮你做决定！</p>
+        </div>
+        <div class="guide-section" id="recommended">
+            <h2><span class="icon">✅</span>果断入手，如果你是…</h2>
+            <ul>
+                <li><strong>Nvidia 生态开发者：</strong>专为大型 DGX 集群写代码？那它就是你桌面上最便宜、最完美的开发测试伙伴！</li>
+                <li><strong>AI 视频/图像创作者：</strong>想要一个开箱即用、无需折腾的 AI 创作工具？CUDA 的成熟生态让它在这方面稳操胜券。</li>
+            </ul>
+        </div>
+        <div class="guide-section" id="not-recommended">
+            <h2><span class="icon">❌</span>谨慎考虑，如果你是…</h2>
+            <ul>
+                <li><strong>广大的 AI 爱好者/普通消费者：</strong>想玩玩大模型，体验一下 AI？市面上有太多性价比远超它的选择。</li>
+                <li><strong>预算敏感型玩家：</strong>每一分钱都想花在刀刃上？这台机器的溢价可能会让你“肉疼”。</li>
+            </ul>
+        </div>
+        <div class="guide-section" id="value-check">
+            <h2><span class="icon">💰</span>钱包还好吗？性价比大拷问</h2>
+            <div class="value-box">
+                <p class="price-tag">$4,000</p>
+                <p class="verdict">作者辣评：性价比极低！</p>
+                <div class="smart-choice">
+                    <h4>💡 Bjan 的省钱妙计 💡</h4>
+                    <p>一台 <strong>AMD Strix Halo</strong> (~$1800)<br>+<br>一张 <strong>顶级游戏显卡</strong> (~$2000)<br><strong>= 相似的总价，更强的灵活性！</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ========= 详细评测内容 ========= -->
+    <div class="details-divider">
+        <h2>想了解更多细节？</h2>
+        <p>👇 点开下面的卡片，深入评测全过程 👇</p>
+    </div>
+    
+    <div class="timeline">
+        <div class="card" id="unboxing">
+            <div class="card-header" onclick="toggleCard(this.parentElement)">
+                <h3>🎁 开箱初体验</h3><span class="arrow">›</span>
+            </div>
+            <div class="card-content">
+                <ul>
+                    <li><span class="opinion">“这金灿灿的设计太酷了，简直是桌面上的珠宝！”</span> 但小心，它是个<span class="critique">指纹收集器！</span></li>
+                    <li><span class="fact">手感超棒！</span> 全金属机身，又小又沉，质感满分。</li>
+                    <li><span class="critique">那个电源适配器也太大了吧！</span> 简直是主机的“巨型挂件”。</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card" id="setup">
+            <div class="card-header" onclick="toggleCard(this.parentElement)">
+                <h3>⛺ 系统设置</h3><span class="arrow">›</span>
+            </div>
+            <div class="card-content">
+                <ul>
+                    <li><span class="opinion">设置界面动画丝滑，赏心悦目。</span> 就是系统更新时像个“闷葫芦”，<span class="critique">啥也不提示，干等。</span></li>
+                    <li>核心配置一览：<span class="fact">128GB 统一内存</span> + <span class="fact">4.1TB 固态硬盘</span>，容量管够！</li>
+                    <li><span class="fact">安静得出奇！</span> 待机和轻度使用时，你几乎听不到它的声音。</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card" id="creative">
+            <div class="card-header" onclick="toggleCard(this.parentElement)">
+                <h3>🎨 AI创作能力</h3><span class="arrow">›</span>
+            </div>
+            <div class="card-content">
+                <ul>
+                    <li><span class="opinion">视频生成是绝对的强项！</span> 跑起复杂的模型，生成的视频质量惊艳。</li>
+                    <li>归功于成熟的 <span class="fact">CUDA 生态</span>，它在AI绘画和视频领域就是“即插即用”的省心选手。</li>
+                    <li><span class="critique">高负载下有点“发烧” 🌡️</span>，机箱表面温度不低。长期拷机，散热能力让人有点小担心。</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card" id="llm">
+            <div class="card-header" onclick="toggleCard(this.parentElement)">
+                <h3>🧠 大模型表现</h3><span class="arrow">›</span>
+            </div>
+            <div class="card-content">
+                <ul>
+                    <li>跑 Llama 70B 这种大模型，速度大约 <span class="fact">4.4 tokens/秒</span>。<span class="opinion">不算快，但能跑起来就是胜利！</span></li>
+                    <li><span class="critique">处理超长文本（Prefill）是短板，</span> 速度被高带宽台式机秒杀。</li>
+                    <li><span class="fact">能效比之王！🔌</span> 满负荷工作功耗仅 <span class="fact">48瓦</span>，而台式机动辄600瓦+，又省电又安静。</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card" id="showdown">
+            <div class="card-header" onclick="toggleCard(this.parentElement)">
+                <h3>🥊 终极对决 vs AMD</h3><span class="arrow">›</span>
+            </div>
+            <div class="card-content">
+                <p><span class="opinion">同为128GB统一内存，谁才是LLM之王？</span></p>
+                <hr>
+                <h4>Round 1: Llama 3.3 70B</h4>
+                <div class="comparison-grid">
+                    <div><h4>DGX Spark</h4><span class="stat">4.67 t/s</span></div>
+                    <div><h4>Strix Halo</h4><span class="stat">4.97 t/s</span></div>
+                    <div class="vs">平分秋色！</div>
+                </div>
+                <hr>
+                <h4>Round 2: Qwen 3 Coder (代码)</h4>
+                <div class="comparison-grid">
+                    <div><h4>DGX Spark</h4><span class="stat">38.03 t/s</span></div>
+                    <div><h4>Strix Halo</h4><span class="stat">35.13 t/s</span></div>
+                    <div class="vs">Spark 微弱胜出！</div>
+                </div>
+                <hr>
+                <p><span class="fact">结论：在跑大模型上，俩机器性能惊人地相似，简直是“孪生兄弟”！</span></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleCard(cardElement) {
+        cardElement.classList.toggle('active');
+    }
+</script>
+
+</body>
+</html>
