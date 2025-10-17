@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atlassian Service Collection 核心摘要</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+        body {
+            font-family: 'Noto Sans SC', 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 25px 40px;
+        }
+
+        h1, h2, h3 {
+            color: #0052cc;
+            font-weight: 500;
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 2px solid #e6f0ff;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            margin-top: 30px;
+            font-size: 1.5em;
+        }
+        
+        h3 {
+             font-size: 1.2em;
+        }
+
+        .speakers {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .speaker-card {
+            background-color: #e6f0ff;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            width: 220px;
+            border: 1px solid #b3d4ff;
+        }
+
+        .speaker-card .name {
+            font-weight: 700;
+            color: #0052cc;
+            margin: 0 0 5px 0;
+        }
+
+        .speaker-card .title {
+            font-size: 0.9em;
+            color: #42526e;
+            margin: 0;
+        }
+
+        .accordion .item {
+            border-bottom: 1px solid #e6f0ff;
+        }
+        
+        .accordion .item:last-child {
+            border-bottom: none;
+        }
+
+        .accordion-header {
+            background-color: #f7faff;
+            padding: 18px 20px;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            border: none;
+            outline: none;
+            transition: background-color 0.3s ease;
+            font-size: 1.1em;
+            font-weight: 500;
+            color: #091e42;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .accordion-header:hover, .accordion-header.active {
+            background-color: #e6f0ff;
+        }
+
+        .accordion-header::after {
+            content: '+';
+            font-size: 1.5em;
+            color: #0052cc;
+            font-weight: 300;
+            transition: transform 0.3s ease;
+        }
+
+        .accordion-header.active::after {
+            content: '−';
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background-color: white;
+            padding: 0 20px;
+        }
+        
+        .content-inner {
+            padding: 15px 0;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 20px;
+        }
+
+        ul li {
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 12px;
+        }
+
+        ul li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            top: 2px;
+            color: #0065ff;
+            font-weight: bold;
+        }
+
+        .highlight {
+            padding: 12px 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 4px solid;
+        }
+
+        .fact {
+            background-color: #e6f0ff;
+            border-color: #0052cc;
+        }
+
+        .fact::before {
+            content: '💡 事实/发布: ';
+            font-weight: bold;
+            color: #0052cc;
+        }
+        
+        .opinion {
+            background-color: #e9f5e9;
+            border-color: #36b37e;
+        }
+
+        .opinion::before {
+            content: '💬 观点/愿景: ';
+            font-weight: bold;
+            color: #006644;
+        }
+
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Atlassian Service Collection 核心摘要</h1>
+
+        <div class="speakers">
+            <div class="speaker-card">
+                <p class="name">Molly Brunstein</p>
+                <p class="title">Atlassian 服务套件产品营销主管</p>
+            </div>
+            <div class="speaker-card">
+                <p class="name">Edwin</p>
+                <p class="title">Atlassian 客户服务管理产品负责人</p>
+            </div>
+            <div class="speaker-card">
+                <p class="name">Shamik</p>
+                <p class="title">Atlassian Jira Service Management 产品负责人</p>
+            </div>
+        </div>
+
+        <div class="accordion">
+            <div class="item">
+                <button class="accordion-header">引言：为何需要新一代服务管理？</button>
+                <div class="accordion-content">
+                    <div class="content-inner">
+                        <h3>当前痛点</h3>
+                        <ul>
+                            <li>团队、工具和数据相互孤立，导致信息不流通。</li>
+                            <li>缺乏共享上下文，问题解决耗时过长，用户体验差。</li>
+                            <li>无论是客户发现Bug、员工无法登录电脑，还是运维团队处理故障，都面临同样的协作困境。</li>
+                        </ul>
+                        <div class="opinion highlight">
+                            我们设想一个不同的未来：服务团队拥有充分的可见性、协作能力和上下文，能够在问题升级为危机之前就主动解决。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="item">
+                <button class="accordion-header">产品发布：什么是 Atlassian Service Collection？</button>
+                <div class="accordion-content">
+                    <div class="content-inner">
+                        <h3>核心定义</h3>
+                        <ul>
+                            <li>这是一种将服务管理理念带给公司中每个团队（HR、IT、运营、客服等）的全新方式。</li>
+                            <li>它不仅仅是应用的集合，更是 Atlassian 工作体系的一部分，旨在连接整个组织的项目、知识和服务。</li>
+                        </ul>
+                        <div class="fact highlight">
+                           该套件整合了 <strong>Jira Service Management</strong>、全新的<strong>客户服务管理 (CSM)</strong> 应用、<strong>资产 (Assets)</strong>、AI 引擎 <strong>Rovo</strong> 以及 Atlassian 平台。
+                        </div>
+                         <div class="fact highlight">
+                           重磅消息：现有 <strong>Jira Service Management Cloud Premium 和 Enterprise</strong> 订阅客户将<strong>免费获得</strong>该服务套件的其余新增功能。
+                        </div>
+                        <h3>AI 核心：团队协作图谱 (Teamwork Graph)</h3>
+                        <ul>
+                            <li>Atlassian AI 的独特优势源于“团队协作图谱”。</li>
+                            <li>它映射了组织内人员、工作和工具之间的关系，为 AI 提供了丰富的上下文，让团队不仅响应更快，而且更智能。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="item">
+                <button class="accordion-header">深度解析 (1): 全新客户服务管理 (CSM) 应用</button>
+                <div class="accordion-content">
+                    <div class="content-inner">
+                       <div class="opinion highlight">
+                           我们的解决方案旨在打破客服团队与产品、研发团队之间的信息孤岛，为每一次服务互动提供正确的上下文。
+                       </div>
+                        <h3>四大核心功能</h3>
+                        <ul>
+                            <li><strong>全渠道支持 (Omnichannel Support):</strong>
+                               <ul>
+                                   <li><strong>可定制的帮助中心:</strong> 使用 Atlassian Studio 和类似 Confluence 的编辑器轻松构建符合品牌形象的门户。</li>
+                                   <li><strong>语音集成:</strong> 与 Amazon Connect 集成，电话语音请求可自动创建工单，并附带完整的通话录音和文字记录。</li>
+                                   <li><strong>嵌入式小部件:</strong> 可将帮助小部件放置在任何网站甚至产品内部。</li>
+                               </ul>
+                            </li>
+                            <li><strong>AI 智能代理 (由 Rovo 驱动):</strong>
+                               <ul>
+                                   <li>能理解上下文，并根据用户身份提供个性化回答。</li>
+                                   <li>利用“团队协作图谱”连接实时数据，如从 Statuspage 获取当前故障信息。</li>
+                                   <li>可通过第三方集成执行操作，例如直接锁定客户的银行卡。</li>
+                               </ul>
+                            </li>
+                             <li><strong>AI 训练与评估:</strong>
+                               <ul>
+                                   <li><strong>对话审查器:</strong> 允许人工审查 AI 的对话并提供反馈以优化其表现。</li>
+                                   <li><strong>离线评估:</strong> 通过与标准“黄金数据集”进行比对，量化 AI 模型的改进程度。</li>
+                               </ul>
+                            </li>
+                            <li><strong>无缝的人机协作:</strong>
+                               <ul>
+                                   <li>AI 可在检测到用户负面情绪或问题复杂时，智能地将对话升级给人工坐席。</li>
+                                   <li>在升级前，AI 会在对话中主动收集必要信息并预先填写表单，保留所有聊天记录，避免信息丢失。</li>
+                               </ul>
+                            </li>
+                        </ul>
+                         <h3>面向开发的高效协作</h3>
+                         <ul>
+                             <li>客服团队可一键将需要技术介入的工单无缝转发到研发团队的 Jira 项目中。</li>
+                             <li>研发团队可在专门的收件箱中审查、处理或拒绝升级请求，形成高效闭环。</li>
+                         </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="item">
+                <button class="accordion-header">深度解析 (2): Jira Service Management (JSM) 创新</button>
+                <div class="accordion-content">
+                    <div class="content-inner">
+                        <h3>场景一：赋能内部团队 (如 HR 新员工入职)</h3>
+                        <ul>
+                            <li>流程可由外部系统 (如 Workday) 触发。</li>
+                            <li>Rovo AI 代理与招聘经理通过对话式交互，共同制定和调整入职计划。</li>
+                            <li>AI 自动将任务（如配置电脑、准备工位）分配给相应的 IT、行政等团队。</li>
+                            <li>所有任务项都汇总在一个 JSM 主工单中，进度一目了然。</li>
+                            <li>全新的 HR 仪表盘可提供员工满意度、工作负载等洞察。</li>
+                        </ul>
+                         <h3>场景二：重塑智能运维 (AIOps) 和事件管理</h3>
+                        <ul>
+                            <li><strong>移动端智能告警:</strong> AI 驱动的告警分组功能，大幅降低移动端的告警噪音。</li>
+                            <li><strong>AI 根因分析 (RCA):</strong> Rovo Ops 能够自动分析近期的部署、代码变更和功能开关，快速定位最可能的根本原因并提供修复建议。</li>
+                            <li><strong>统一的可观测性:</strong> 集成 New Relic、Dynatrace 等第三方工具的数据，无需切换平台即可验证根因。</li>
+                            <li><strong>简化的沟通:</strong> 将 Statuspage 的通信能力直接集成到 JSM 中，方便向内外部干系人发布事件更新。</li>
+                            <li><strong>自动化编排 (Orchestration):</strong> 通过“指南手册 (Playbook)”一键执行诊断和修复脚本（如在 AWS 上回滚）。</li>
+                        </ul>
+                        <div class="fact highlight">
+                            备受期待的<strong>全新变更日历 (Change Calendar)</strong> 正式发布，它以直观的视图展示所有计划中的变更，帮助团队有效预防变更冲突。
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="item">
+                <button class="accordion-header">深度解析 (3): 资产 (Assets) 的演进</button>
+                <div class="accordion-content">
+                    <div class="content-inner">
+                         <div class="opinion highlight">
+                           让你的数据，以你的方式，在任何需要的地方无缝连接。
+                       </div>
+                        <div class="fact highlight">
+                           <strong>平台级能力:</strong> 资产 (Assets) 即将成为 Atlassian 平台的通用能力，意味着所有 Atlassian 客户都可以在 Jira Software、Confluence 等产品中追踪和引用任何重要资产。
+                        </div>
+                        <ul>
+                            <li>Service Collection 仍然是处理复杂 CMDB 和 IT 资产管理 (ITAM) 场景的首选解决方案。</li>
+                        </ul>
+                         <h3>关键新功能</h3>
+                         <div class="fact highlight">
+                            <strong>数据管理器 (Data Manager)</strong> 现已正式发布 (GA)，它可以从近20个外部数据源中收集、清理和同步资产数据。
+                         </div>
+                         <ul>
+                            <li>全新的导入工具，无需再依赖手动导入 CSV 或编写自定义脚本。</li>
+                            <li>即将支持定时导入功能。</li>
+                            <li>全新的资产仪表盘，提供更灵活的数据可视化选项。</li>
+                        </ul>
+                        <h3>性能与规模</h3>
+                        <ul>
+                            <li>很快将支持存储高达 <strong>1000 万个</strong>业务对象。</li>
+                            <li>数据导入和查询速度得到显著提升。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+             <div class="item">
+                <button class="accordion-header">合规性与总结</button>
+                <div class="accordion-content">
+                    <div class="content-inner">
+                        <ul>
+                            <li>Atlassian 持续投入，已为产品交付了一系列新的合规和监管标准认证，以支持企业的日常工作。</li>
+                            <li>Service Collection 将逐步覆盖更多认证标准。</li>
+                        </ul>
+                        <h3>行动号召</h3>
+                        <ul>
+                            <li>访问官方网站，立即免费试用 Atlassian Service Collection。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const accordionHeaders = document.querySelectorAll('.accordion-header');
+
+        accordionHeaders.forEach(header => {
+            header.addEventListener('click', () => {
+                const content = header.nextElementSibling;
+                header.classList.toggle('active');
+
+                if (content.style.maxHeight) {
+                    content.style.maxHeight = null;
+                } else {
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                }
+            });
+        });
+    </script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.bilibili.com/video/BV1BAWyzaEq7/" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
