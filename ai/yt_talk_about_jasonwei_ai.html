@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI讲座摘要：Jason Wei</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #fdfdfd;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+        }
+        .bio-section {
+            display: flex;
+            align-items: center;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+        .bio-text {
+            padding-left: 20px;
+        }
+        .bio-text h1 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 2.2em;
+        }
+        .bio-text .title {
+            font-size: 1.2em;
+            color: #34495e;
+            margin-top: 5px;
+        }
+        .bio-text .affiliation {
+            font-size: 1em;
+            color: #7f8c8d;
+        }
+         .bio-text .contributions {
+            margin-top: 10px;
+            font-size: 0.95em;
+            color: #555;
+        }
+        .summary-section h2 {
+            cursor: pointer;
+            padding: 18px 22px;
+            background-color: #f8f9fa;
+            border-left: 5px solid #3498db;
+            margin-top: 20px;
+            border-radius: 5px;
+            transition: background-color 0.3s, box-shadow 0.3s;
+            font-size: 1.5em;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        .summary-section h2:hover {
+            background-color: #eef5fb;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .summary-section .content {
+            padding: 0 22px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, padding 0.5s ease-out;
+            background-color: #fff;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .summary-section .content p, .summary-section .content ul {
+            margin-top: 0;
+            padding: 15px 0 15px 20px;
+        }
+        .summary-section .content ul li {
+            margin-bottom: 12px;
+        }
+        .highlight-fact {
+            background-color: #e8f4fd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+            border-bottom: 1px solid #bde0fe;
+        }
+        .highlight-opinion {
+            background-color: #fef5e7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-style: italic;
+            border-bottom: 1px solid #fedd9a;
+        }
+        .action-advice {
+            background-color: #e6f9f1;
+            border: 1px solid #a3e9d1;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .action-advice h3 {
+            margin-top: 0;
+            color: #006a4e;
+            font-size: 1.2em;
+        }
+        .action-advice ul {
+            padding-left: 20px;
+            margin-bottom: 0;
+        }
+        .action-advice ul li {
+            margin-bottom: 8px;
+        }
+        .keywords {
+            margin-top: 15px;
+            padding-bottom: 15px;
+        }
+        .keyword {
+            display: inline-block;
+            background-color: #ecf0f1;
+            color: #34495e;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        h2::after {
+            content: ' ▼';
+            float: right;
+            transition: transform 0.3s;
+            font-size: 0.8em;
+            line-height: 1.8;
+        }
+        h2.active::after {
+            transform: rotate(180deg);
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="bio-section">
+        <div class="bio-text">
+            <h1>Jason Wei</h1>
+            <p class="title">人工智能研究员</p>
+            <p class="affiliation">
+                <strong>当前:</strong> Meta 超级智能实验室 (Meta Superintelligence Labs)<br>
+                <strong>曾任:</strong> OpenAI (2023-2025), 谷歌大脑 (Google Brain) (2020-2023)
+            </p>
+            <div class="contributions">
+                <strong>核心贡献:</strong> 以其在大型语言模型(LLMs)领域的开创性工作而闻名，极大地推动了<span class="highlight-fact">思维链(Chain-of-Thought)提示</span>, <span class="highlight-fact">指令微调(Instruction Tuning)</span> 及 <span class="highlight-fact">LLMs的涌现能力(Emergent Abilities)</span>等关键技术的普及。他也是OpenAI <span class="highlight-fact">o1模型</span>的共同创建者之一。
+            </div>
+        </div>
+    </div>
+
+    <div class="summary-section">
+        <h2 id="section1">理念一：智能商品化 (Intelligence as a Commodity)</h2>
+        <div class="content">
+            <p><span class="highlight-opinion">核心观点：获取智能和知识的成本与可及性正被推向趋近于零。</span></p>
+            <ul>
+                <li><strong>AI进展的两个阶段:</strong>
+                    <ul>
+                        <li><span class="highlight-fact">第一阶段 (前沿拓展):</span> 当AI尚不能很好地完成某项任务时，研究者致力于解锁新能力。例如，过去五年在MMLU等基准测试上的性能逐步提升。</li>
+                        <li><span class="highlight-fact">第二阶段 (商品化):</span> 一旦某项能力被实现，其使用成本会迅速下降。数据显示，达到特定MMLU性能水平的成本每年都在降低。</li>
+                    </ul>
+                </li>
+                <li><strong>持续降价的动力:</strong> <span class="highlight-fact">自适应计算(Adaptive Compute)</span>的成功，使得我们可以根据任务难度动态调整计算资源，简单任务的成本可以无限降低。</li>
+                <li><strong>知识获取的即时性:</strong> 获取公共信息的时间已从过去的数小时乃至数天，缩短至几乎瞬时。AI智能体甚至能解决需要访问专业数据库的复杂问题。</li>
+            </ul>
+            <div class="action-advice">
+                <h3>💡 行动建议</h3>
+                <ul>
+                    <li><strong>拥抱知识民主化：</strong>利用低成本的AI工具，进入过去因知识壁垒而难以企及的领域，如编程、生物黑客（biohacking）、专业研究等。</li>
+                    <li><strong>关注价值转移：</strong>既然公共信息变得廉价，应更加重视<span class="highlight-opinion">私有信息、内幕知识和独特人脉</span>的价值，这些将成为新的竞争优势。</li>
+                    <li><strong>构建个性化体验：</strong>未来的机会在于创造“个性化互联网”，为用户提供即时、精准、定制化的信息和服务，而不是通用的公共信息。</li>
+                </ul>
+            </div>
+             <div class="keywords">
+                <span class="keyword">自适应计算</span>
+                <span class="keyword">成本降低</span>
+                <span class="keyword">知识即时性</span>
+                <span class="keyword">大众化</span>
+                <span class="keyword">价值转移</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="summary-section">
+        <h2 id="section2">理念二：验证者定律 (Verifier's Law)</h2>
+        <div class="content">
+            <p><span class="highlight-opinion">核心观点：训练AI解决某个任务的能力，与验证该任务的难易程度成正比。任何易于验证的可解任务，最终都将被AI攻克。</span></p>
+            <ul>
+                <li><strong>验证的不对称性 (Asymmetry of Verification):</strong> 很多任务“验证”远比“生成”容易（如数独）。AI在拥有清晰、快速、可扩展、低噪声、连续奖励的验证机制的任务上，进展会极其迅速。</li>
+                <li><strong>反向不对称性：</strong>也存在验证比生成更难的任务（如事实核查），AI在这些领域的进展会更慢，甚至可能产生大量难以验证的“貌似正确”的内容。</li>
+                <li><strong>实践案例:</strong> <span class="highlight-fact">AlphaDev</span>等项目通过为问题构建一个强大的验证器，然后让AI进行海量试错和优化，最终解决了顶尖的人类也难以解决的问题。</li>
+            </ul>
+            <div class="action-advice">
+                <h3>💡 行动建议</h3>
+                <ul>
+                    <li><strong>成为“验证器”的创造者：</strong>如果你想利用AI，关键在于为你所在的领域<span class="highlight-opinion">建立可量化的、可自动评估的衡量标准</span>。一旦某件事物可被精确衡量，它就能被AI优化。这本身就是一个巨大的商业机会。</li>
+                    <li><strong>选择赛道：</strong>优先选择那些工作成果容易被客观、快速验证的领域进行创业或深耕，因为这些是AI最先能够产生巨大影响的地方。</li>
+                    <li><strong>职业规划预警：</strong>如果你的核心工作是执行那些有明确对错之分、且结果易于验证的任务，那么你需要为这些任务被高度自动化做好准备。</li>
+                </ul>
+            </div>
+            <div class="keywords">
+                <span class="keyword">不对称验证</span>
+                <span class="keyword">可衡量性</span>
+                <span class="keyword">AlphaDev</span>
+                <span class="keyword">自动化</span>
+                <span class="keyword">评估方法</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="summary-section">
+        <h2 id="section3">理念三：智能的锯齿状前沿 (The Jagged Edge of Intelligence)</h2>
+        <div class="content">
+            <p><span class="highlight-opinion">核心观点：AI在不同任务上的能力和进步速度存在巨大差异，不会出现所有能力瞬间爆发的“快速起飞”(Fast Takeoff) 式超级智能。</span></p>
+            <ul>
+                 <li><strong>拒绝“快速起飞”论:</strong> AI的能力图谱是“锯齿状”的，在某些任务上是“超人”，在另一些任务上则“很笨”。其自我完善的过程也将是渐进的，而非瞬间完成。</li>
+                <li><strong>预测AI进步速度的三大启发式规则:</strong>
+                    <ol>
+                        <li><span class="highlight-fact">数字 vs. 物理 (Digital vs. Physical):</span> 数字世界任务进展飞快，物理世界任务（如机器人）进展缓慢。</li>
+                        <li><span class="highlight-fact">对人类的难易度:</span> 通常，对人类容易的任务对AI也容易（但有例外）。</li>
+                        <li><span class="highlight-fact">数据丰富度:</span> AI在数据丰富的领域表现更好。</li>
+                    </ol>
+                </li>
+                <li><strong>行业影响预测:</strong> 软件开发等行业将受AI极大加速，而理发、管道维修、传统手工艺等行业在可预见的未来受影响较小。</li>
+            </ul>
+             <div class="action-advice">
+                <h3>💡 行动建议</h3>
+                <ul>
+                    <li><strong>战略性地选择你的领域：</strong>运用“数字vs物理”、“人类难易度”和“数据丰裕度”这三个维度来评估你所在的行业或你想学习的技能。将你的精力投入到那些AI难以替代的领域（通常涉及物理操作、复杂人际交互、数据稀疏等）。</li>
+                    <li><strong>成为“人机协作”的桥梁：</strong>不要害怕AI，而是要成为驾驭AI的专家。在那些AI即将颠覆的数字领域，学习如何与AI高效协作，利用AI放大你的能力。</li>
+                    <li><strong>保持灵活和批判性思维：</strong>认识到AI能力的“锯齿状”特性，不要盲目相信AI在所有问题上都能给出完美答案。培养识别AI能力边界和潜在弱点的能力。</li>
+                </ul>
+            </div>
+             <div class="keywords">
+                <span class="keyword">锯齿状前沿</span>
+                <span class="keyword">快速起飞</span>
+                <span class="keyword">数字vs物理</span>
+                <span class="keyword">数据依赖</span>
+                <span class="keyword">人机协作</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.querySelectorAll('.summary-section h2').forEach(header => {
+        header.addEventListener('click', () => {
+            const content = header.nextElementSibling;
+            header.classList.toggle('active');
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+                // Collapse padding
+                content.style.paddingTop = '0';
+                content.style.paddingBottom = '0';
+            } else {
+                // Expand padding before setting maxHeight
+                content.style.paddingTop = '15px';
+                content.style.paddingBottom = '15px';
+                content.style.maxHeight = content.scrollHeight + "px";
+            }
+        });
+    });
+</script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.bilibili.com/video/BV1zbshzcEVY/" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
