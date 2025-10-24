@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>交互式摘要：下一代 AI 友好型文本编辑器</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --primary-color: #007bff;
+            --border-color: #e0e0e0;
+            --section-bg: #f9f9f9;
+            --highlight-fact: #e6f7ff; /* Light Blue */
+            --highlight-vision: #f6ffed; /* Light Green */
+            --highlight-product: #fffbe6; /* Light Yellow */
+            --highlight-keyword: #f0f0f0; /* Light Grey */
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--bg-color);
+            border-radius: 12px;
+            padding: 2em;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        h1, h2 {
+            color: #222;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            font-weight: 500;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.2em;
+            margin-bottom: 1em;
+        }
+
+        details {
+            background: var(--section-bg);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: all 0.3s ease-in-out;
+        }
+
+        details[open] {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        summary {
+            font-size: 1.2em;
+            font-weight: 500;
+            padding: 1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        summary:hover {
+            background-color: #f0f0f0;
+        }
+
+        summary::after {
+            content: '+';
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--primary-color);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        details[open] summary::after {
+            transform: rotate(45deg);
+        }
+
+        .details-content {
+            padding: 0 1.5rem 1.5rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .vision-statement {
+            background: #e9f5ff;
+            border-left: 4px solid var(--primary-color);
+            padding: 1em;
+            margin: 1em 0;
+            font-style: italic;
+            border-radius: 4px;
+        }
+
+        .highlight {
+            padding: 0.1em 0.4em;
+            border-radius: 4px;
+            cursor: help;
+            transition: all 0.2s;
+        }
+
+        .fact { background-color: var(--highlight-fact); }
+        .vision { background-color: var(--highlight-vision); }
+        .product { background-color: var(--highlight-product); }
+        .keyword { background-color: var(--highlight-keyword); font-family: 'Courier New', Courier, monospace; }
+        
+        .highlight:hover {
+            filter: brightness(95%);
+            transform: translateY(-1px);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 2em;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.9em;
+        }
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 5px;
+            border: 1px solid #ccc;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5em 0;
+        }
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: 500;
+        }
+        tr:nth-child(even) {
+            background-color: #fdfdfd;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 0.8em;
+        }
+
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>下一代 AI 友好型文本编辑器：趋势与展望</h1>
+        <p style="text-align: center; font-size: 1.1em; color: #555;">本文档为原文的动态交互摘要，旨在以超轻认知负荷的形式，提炼全部核心要点。点击各主题展开详细内容。</p>
+
+        <div class="legend">
+            <div class="legend-item"><span class="legend-color" style="background-color: var(--highlight-fact);"></span> 事实 & 数据</div>
+            <div class="legend-item"><span class="legend-color" style="background-color: var(--highlight-vision);"></span> 愿景 & 观点</div>
+            <div class="legend-item"><span class="legend-color" style="background-color: var(--highlight-product);"></span> 产品 & 工具</div>
+            <div class="legend-item"><span class="legend-color" style="background-color: var(--highlight-keyword);"></span> 专业词汇</div>
+        </div>
+
+        <details open>
+            <summary>引言：AI 与编辑器融合的新潮流</summary>
+            <div class="details-content">
+                <p>当前，AI正以前所未有的速度融入文本与代码编辑器。其核心目标是：<span class="vision highlight">让编辑体验更智能高效，解放用户专注于更高层次的创造</span>。</p>
+                <ul>
+                    <li><strong>文档领域：</strong><span class="product highlight">Notion AI</span> 将生成式 AI 无缝嵌入笔记，支持写作、润色、总结等任务。<span class="product highlight">微软 365 Copilot</span> 也为 Office 提供智能草稿和修改建议。</li>
+                    <li><strong>编码领域：</strong><span class="product highlight">Cursor IDE</span> 深度集成 AI 模型，巩固其霸主地位。<span class="product highlight">Claude Code</span> 展示了强大的自主编码能力。<span class="product highlight">OpenAI Codex</span> 则通过多端融合提供服务。</li>
+                </ul>
+                <h2>主流 AI 编码助手对比</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>工具</th>
+                            <th>形态</th>
+                            <th>上下文窗口</th>
+                            <th>模型支持</th>
+                            <th>典型优势</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="product highlight">Cursor IDE</span></td>
+                            <td>VS Code 分支的本地 IDE</td>
+                            <td><span class="fact highlight">20K～100K 词元</span></td>
+                            <td>GPT-4o, Claude 4, Gemini 等</td>
+                            <td>IDE 深度集成，实时代码辅助</td>
+                        </tr>
+                        <tr>
+                            <td><span class="product highlight">Claude Code</span></td>
+                            <td>终端 CLI 工具</td>
+                            <td><span class="fact highlight">最大 200K 词元</span></td>
+                            <td>Claude 4 系列模型</td>
+                            <td>自主任务执行，批量修改能力强</td>
+                        </tr>
+                        <tr>
+                            <td><span class="product highlight">OpenAI Codex</span></td>
+                            <td>Web/CLI/IDE 扩展</td>
+                            <td><span class="fact highlight">128K 词元</span></td>
+                            <td>GPT-4o, 专用Codex模型</td>
+                            <td>云端协作与代码生成</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>这些工具体现两大趋势：<span class="fact highlight">更深入的工程环境集成</span> 与 <span class="fact highlight">更强大的上下文感知</span>。</p>
+            </div>
+        </details>
+
+        <details>
+            <summary>1. 工程化脚本能力：让编辑器更“聪明”</summary>
+            <div class="details-content">
+                <p class="vision-statement"><strong>愿景：</strong> <span class="vision highlight">下一代编辑器将是融合了工程化脚本能力的平台，能调用编译器和终端等工具，实现强大的自动化操作。</span></p>
+                <ul>
+                    <li><strong>文件与版本控制：</strong> AI 可模拟 <span class="keyword highlight">git diff</span> 操作，结构化地展示变更，实现“边改边审”。<span class="product highlight">Cline</span> 等工具支持自主创建文件并追踪修改历史。</li>
+                    <li><strong>命令行执行：</strong> AI 助手可在后台执行 <span class="keyword highlight">Shell</span> 命令（如 <span class="keyword highlight">grep</span> 搜索），并根据输出来调整建议，自动完成脚本式的重复劳动。</li>
+                    <li><strong>AST 解析与精确编辑：</strong> 通过将代码解析为<span class="keyword highlight">抽象语法树 (AST)</span>，AI 能<span class="fact highlight">精确地定位和修改代码结构而不破坏语法</span>。<span class="product highlight">微软 GenAIScript</span> 项目利用此技术实现大规模、稳定的批量修改。</li>
+                    <li><strong>应用案例 <span class="product highlight">Cursor IDE</span>：</strong> <span class="fact highlight">集成了 MCP 协议，让 AI “看到”开发者的所有上下文（文件、目录、终端）</span>。其 Agent 模式能自动运行测试、重构代码，甚至与 GitHub PR 集成。</li>
+                </ul>
+            </div>
+        </details>
+        
+        <details>
+            <summary>2. 结构化匹配与上下文感知：让编辑器“读懂”文档</summary>
+            <div class="details-content">
+                <p class="vision-statement"><strong>愿景：</strong> <span class="vision highlight">编辑器将拥有对全文语义结构的深刻理解，实现上下文感知的智能编辑，就像 <span class="product highlight">Claude Code</span> 理解代码一样。</span></p>
+                <ul>
+                    <li><strong>文档语义图谱：</strong> <span class="vision highlight">AI 编辑器可解析文档大纲和引用，构建“文档知识图谱”，从而在续写时能参考前文，确保逻辑连贯。</span></li>
+                    <li><strong>结构化内容匹配：</strong> 利用语义图谱，AI 可执行高级操作，如“列出全文所有定义术语的句子”，比简单的正则搜索更智能。</li>
+                    <li><strong>上下文感知补全：</strong> AI 会根据文档部分（如引言、讨论）的角色，<span class="fact highlight">提供不同语气和风格的补全建议</span>。例如，<span class="product highlight">Notion AI</span> 已能根据当前页面内容提供高度相关的建议。</li>
+                    <li><strong>跨文档上下文：</strong> <span class="vision highlight">对于知识库类写作，编辑器可以理解文档间的链接关系，在生成内容时自动添加引用或超链接。</span></li>
+                </ul>
+            </div>
+        </details>
+
+        <details>
+            <summary>3. 智能增量编辑：LLM 只改你所改</summary>
+            <div class="details-content">
+                <p class="vision-statement"><strong>愿景：</strong> <span class="vision highlight">改变 AI 对整个文档进行操作的低效模式，让 <span class="keyword highlight">LLM</span> 仅关注变动区域，返回“编辑指令”而非完整结果，从而大幅降低成本、提升效率。</span></p>
+                <ul>
+                    <li><strong>问题现状：</strong> 传统方法让 AI 返回修改后的全文，相当于付费让模型“高价复制粘贴”未变动的内容，成本高、速度慢。</li>
+                    <li><strong>解决方案 (Edit Trick)：</strong>
+                        <ol>
+                            <li>向 <span class="keyword highlight">LLM</span> 发送原文，并要求它只生成修改指令。</li>
+                            <li><span class="keyword highlight">LLM</span> 返回一个编辑操作列表（如：<span class="keyword highlight">s/旧短语/新短语/g</span>）。</li>
+                            <li>编辑器在本地应用这些指令，完成修改。</li>
+                        </ol>
+                    </li>
+                    <li><strong>显著优势：</strong> <span class="fact highlight">实际测试表明，该模式可减少 86% 的输出 token，节省约 70% 的成本，并将处理时间加快近 80%（例如从30秒缩短到6秒）。</span></li>
+                    <li><strong>未来应用：</strong> <span class="vision highlight">可广泛用于文档润色、代码小变更、协同编辑冲突合并等场景，让 AI 编辑更细粒度、更可控。</span></li>
+                </ul>
+            </div>
+        </details>
+        
+        <details>
+            <summary>4. AI 协同的对比、合并、批量替换与审校</summary>
+            <div class="details-content">
+                <p class="vision-statement"><strong>愿景：</strong> <span class="vision highlight">AI 将扮演“智能编辑助手”，深度参与版本对比、合并、批量替换、审校和格式调整等繁琐任务，减少机械劳动。</span></p>
+                <ul>
+                    <li><strong>版本对比与合并：</strong> AI 可利用对语义的理解<span class="fact highlight">自动解决简单的合并冲突</span>，并对复杂冲突提供解决建议。在文档合并时，AI 甚至能说明理由（如“保留了版本A的数据，采纳了版本B的措辞”）。</li>
+                    <li><strong>批量查找替换：</strong> AI 可执行“批量理解替换”，如<span class="vision highlight">“将全文所有被动语态改为主动语态”</span>，比传统的正则替换强大得多。</li>
+                    <li><strong>文档审校：</strong> <span class="product highlight">Notion AI</span> 已能实时润色文本，纠正语法错误。下一代编辑器将无缝融入此能力，提供随写随审的反馈。</li>
+                    <li><strong>模板生成与填充：</strong> <span class="product highlight">Obsidian</span> 的 <span class="product highlight">Smart Templates</span> 插件已能利用 AI 动态生成结构化内容。<span class="vision highlight">未来编辑器可根据用户输入的要点，智能填充模板生成初稿。</span></li>
+                </ul>
+            </div>
+        </details>
+
+        <details>
+            <summary>5. 本地与云端协同、插件扩展与多模态</summary>
+            <div class="details-content">
+                 <p class="vision-statement"><strong>愿景：</strong> <span class="vision highlight">下一代编辑器将是开放平台，能在本地与云端协同，通过插件无缝集成多种 AI 模型，并具备处理表格、图片等多模态数据的能力。</span></p>
+                 <ul>
+                     <li><strong>本地+云端协同：</strong> <span class="vision highlight">允许本地运行小模型（保障隐私），同时在需要时调用云端强力模型（追求性能）</span>。<span class="product highlight">VS Code</span> 的远程开发模式已展示了本地与远程环境间 AI 功能的无缝同步。</li>
+                     <li><strong>大模型插件集成：</strong> 编辑器提供统一的 AI 接口，<span class="fact highlight">用户可通过插件接入不同的模型后端（如 <span class="product highlight">Ollama</span>, <span class="product highlight">OpenAI</span>, <span class="product highlight">Claude</span>）</span>。这使用户可以自由选择模型，避免被单一供应商绑定。</li>
+                     <li><strong>多模态数据交互：</strong>
+                         <ul>
+                             <li><strong>表格：</strong> AI 可读取表格数据，协助撰写分析文字。</li>
+                             <li><strong>图像：</strong> AI 可根据文本描述生成流程图，或“看懂”截图并生成说明文字。</li>
+                             <li><strong>音视频：</strong> AI 可直接从音频转录文字，或从演示视频中提取代码片段。</li>
+                         </ul>
+                     </li>
+                     <li><strong>案例启发：</strong> <span class="product highlight">ByteDance</span> 的 <span class="product highlight">Trae AI</span> 编辑器已支持<span class="fact highlight">将图像作为提示输入模型</span>，展示了多模态交互的潜力。</li>
+                 </ul>
+            </div>
+        </details>
+        
+        <details>
+            <summary>结论：下一代编辑器的蓝图</summary>
+            <div class="details-content">
+                <p>“下一代 AI 友好型文本编辑器”将远超传统工具，成为集智能编译器、对话助手、协同工具于一身的平台，其关键特征包括：</p>
+                <ul>
+                    <li><span class="vision highlight"><strong>深度工程融合：</strong> 利用工程手段实现可靠的自动化处理。</span></li>
+                    <li><span class="vision highlight"><strong>语义级理解：</strong> 真正“读懂内容”，提供深层智能建议。</span></li>
+                    <li><span class="vision highlight"><strong>增量高效编辑：</strong> 以最小成本和最快速度完成精确修改。</span></li>
+                    <li><span class="vision highlight"><strong>协作增强：</strong> 全流程参与协作，减轻人类机械劳动负担。</span></li>
+                    <li><span class="vision highlight"><strong>开放扩展：</strong> 支持模型和功能插件化，处理多模态内容，打造可持续进化的生态。</span></li>
+                </ul>
+                <p>最终，<span class="vision highlight">AI 将成为编辑过程的内在组成部分，让创作者专注于创意和思想本身，将繁琐的部分放心地交给 AI 伙伴。</span></p>
+            </div>
+        </details>
+
+    </div>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="course_carve_a_cooking_spoon_files/course.pdf" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
