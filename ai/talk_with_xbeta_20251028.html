@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jun 与 xBeta 的 AI 对谈全景摘要</title>
+    <style>
+        :root {
+            --bg-color: #fdfdfd;
+            --primary-text-color: #2c3e50;
+            --secondary-text-color: #34495e;
+            --accent-color: #3498db;
+            --jun-color: #4A90E2;
+            --xbeta-color: #50E3C2;
+            --fact-border-color: #2ecc71;
+            --opinion-bg-color: rgba(241, 196, 15, 0.15);
+            --section-bg-color: #ffffff;
+            --border-color: #ecf0f1;
+            --border-radius: 12px;
+            --shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
+            line-height: 1.8;
+            background-color: var(--bg-color);
+            color: var(--primary-text-color);
+            margin: 0;
+            padding: 25px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 45px;
+            border-bottom: 3px solid var(--border-color);
+            padding-bottom: 25px;
+        }
+
+        header h1 {
+            font-size: 2.8em;
+            color: var(--accent-color);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        header p {
+            font-size: 1.2em;
+            color: var(--secondary-text-color);
+        }
+
+        .topic-section {
+            background-color: var(--section-bg-color);
+            border-radius: var(--border-radius);
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease-in-out;
+            overflow: hidden;
+        }
+        
+        details {
+            padding: 25px 30px;
+        }
+
+        summary {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: var(--accent-color);
+            cursor: pointer;
+            list-style: none;
+            position: relative;
+            padding-left: 35px;
+            transition: color 0.2s;
+        }
+        
+        summary:hover {
+            color: #2980b9;
+        }
+        
+        summary::-webkit-details-marker { display: none; }
+
+        summary::before {
+            content: '▶';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%) scale(0.8);
+            font-weight: bold;
+            color: var(--accent-color);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        details[open] > summary::before {
+            transform: translateY(-50%) rotate(90deg) scale(0.8);
+        }
+
+        .content-point {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px dashed var(--border-color);
+        }
+        
+        details > .content-point:first-of-type {
+            margin-top: 20px;
+            padding-top: 0;
+            border-top: none;
+        }
+
+
+        .speaker {
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 6px;
+            color: white;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+
+        .speaker-jun { background-color: var(--jun-color); }
+        .speaker-xbeta { background-color: var(--xbeta-color); }
+
+        .fact, .opinion {
+            padding: 12px 18px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .fact {
+            border-left: 5px solid var(--fact-border-color);
+            background-color: rgba(46, 204, 113, 0.08);
+        }
+        
+        .opinion {
+            border-left: 5px solid #f1c40f;
+            background-color: var(--opinion-bg-color);
+        }
+        
+        .tag {
+            font-size: 0.9em;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .tag-fact { color: var(--fact-border-color); }
+        .tag-opinion { color: #d35400; }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            border-bottom: 2px dotted var(--accent-color);
+            cursor: help;
+            font-weight: 600;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 240px;
+            background-color: var(--secondary-text-color);
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 135%;
+            left: 50%;
+            margin-left: -120px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9rem;
+            font-weight: normal;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Jun 与 xBeta 的 AI 对谈全景摘要</h1>
+            <p>一场关于AI在语音处理、工作流重塑、人机协作及未来内容形态的深度对话</p>
+        </header>
+
+        <main>
+
+            <section class="topic-section">
+                <details>
+                    <summary>1. 基于语音的新型AI业务与价值</summary>
+                    <div class="content-point">
+                        <span class="speaker speaker-jun">Jun</span>
+                        <div class="opinion">
+                            <span class="tag tag-opinion">观点:</span> 新的业务机会在于直接处理原始音视频，进行摘要和转写。这比传统的网络爬虫更有价值，因为会议、聊天等非结构化语音中蕴含着大量未被开发的信息，而大模型处理这类信息“极其高效”。
+                        </div>
+                        <div class="fact">
+                            <span class="tag tag-fact">事实:</span> 市场正在掀起一股“录音卡”热潮，钉钉等大厂都在布局。这并非全新概念，讯飞、印象笔记（2022年）都曾推出过类似产品，但当时市场反响平平。
+                        </div>
+                        <div class="opinion">
+                             <span class="tag tag-opinion">观点:</span> 这一波浪潮的核心竞争力已不再是硬件，而是背后的AI模型和应用场景。未来的竞争是模型和场景的竞争。
+                        </div>
+                    </div>
+                </details>
+            </section>
+            
+            <section class="topic-section">
+                <details>
+                    <summary>2. AI的核心挑战与人类的关键能力</summary>
+                    <div class="content-point">
+                        <span class="speaker speaker-jun">Jun</span>
+                        <div class="fact">
+                            <span class="tag tag-fact">事实:</span> 当前的AI模型能出色完成目标清晰的简单任务，但一旦将多个简单任务揉合在一起，处理复杂问题时，AI就显得很“傻”。
+                        </div>
+                         <div class="opinion">
+                            <span class="tag tag-opinion">观点:</span> 人类与AI的核心差异在于“复杂任务的拆解能力”。有经验的专家（如CTO）能凭借其大脑中的架构和经验，将复杂项目分解为AI可以独立执行的简单模块。这种能力是一种宝贵的<span class="tooltip">元认知<span class="tooltiptext">Metacognition，即“关于认知的认知”，指的是对自己的思维过程进行认知和监控的能力。</span></span>技能。
+                        </div>
+                    </div>
+                    <div class="content-point">
+                        <span class="speaker speaker-xbeta">xBeta</span>
+                        <div class="opinion">
+                             <span class="tag tag-opinion">观点:</span> 任务拆解的本质与经济学中的“分工”思想异曲同工。通过拆解，可以将原本需要“天才”才能完成的复杂工作，转化为普通执行者（无论是人还是AI）都能胜任的简单流程。
+                        </div>
+                        <div class="fact">
+                            <span class="tag tag-fact">案例:</span> xBeta分享了1998年将“翻译香港银行名称和地址”这个复杂任务，成功拆解为“找熟悉香港的人翻译地名”和“找熟悉金融的人翻译银行名”两个简单任务并解决的亲身经历。
+                        </div>
+                    </div>
+                </details>
+            </section>
+
+            <section class="topic-section">
+                <details>
+                    <summary>3. 人机协作的新范式：人人都是项目经理</summary>
+                     <div class="content-point">
+                        <span class="speaker speaker-xbeta">xBeta</span>
+                        <div class="opinion">
+                             <span class="tag tag-opinion">观点:</span> AI正在从一个被动的“工具”转变为主动的“虚拟员工”或“伙伴”。这意味着未来每个人都可能需要管理几个虚拟下属，对个人的角色提出了根本性转变：从被动的“被分配者”转变为主动的“管理者”。
+                        </div>
+                    </div>
+                    <div class="content-point">
+                        <span class="speaker speaker-jun">Jun</span>
+                        <div class="opinion">
+                            <span class="tag tag-opinion">观点:</span> 这种转变下，项目经理可能比纯技术人员更擅长驾驭AI，因为他们天然具备沟通、分配和拆解任务的能力。反而，许多程序员虽然逻辑能力强，但因缺乏“为他人清晰下达指令”的能力，可能在AI时代面临被淘汰的风险。
+                        </div>
+                    </div>
+                </details>
+            </section>
+
+            <section class="topic-section">
+                <details>
+                    <summary>4. 对企业内部Wiki的革命</summary>
+                    <div class="content-point">
+                        <span class="speaker speaker-jun">Jun</span>
+                        <div class="opinion">
+                            <span class="tag tag-opinion">颠覆性观点:</span> 未来基于语音的工作流将彻底颠覆传统以文档为核心的知识管理体系（如Wiki）。目标是“自己革自己的命”，不能等别人来革。
+                        </div>
+                        <div class="fact">
+                            <span class="tag tag-fact">工作流变革:</span>
+                            <ul>
+                                <li><b>旧模式：</b>先由人工撰写文档（Wiki），再将会议录音作为附件。文档是核心，语音是补充。</li>
+                                <li><b>新模式：</b>以语音对话为源头和核心，所有文档、需求、任务都由AI从对话中自动生成，人只负责最终确认。</li>
+                            </ul>
+                        </div>
+                         <div class="opinion">
+                             <span class="tag tag-opinion">价值:</span> 这种模式将“直接跳过人工写文档”这一环节，极大地改变了工作行为，其效果已经“非常好”。
+                        </div>
+                    </div>
+                </details>
+            </section>
+
+             <section class="topic-section">
+                <details>
+                    <summary>5. 内容载体的演变：从文本到音视频</summary>
+                     <div class="content-point">
+                        <span class="speaker speaker-jun">Jun</span>
+                        <div class="fact">
+                            <span class="tag tag-fact">个人行为转变:</span> Jun坦言自己现在获取深度信息的主要方式已不再是阅读文章，而是观看经AI翻译的国外优质视频和访谈，因为许多行业领袖已不再撰写长文。
+                        </div>
+                        <div class="opinion">
+                             <span class="tag tag-opinion">观点:</span> 知识的载体已经发生了根本性迁移，从文本（博客）演变为音视频（播客、访谈）。这并非内容质量的降级，而是载体的变化。人类协作的基础本就是口头沟通，技术只是让这种原始高效的方式得以大规模传播。
+                        </div>
+                    </div>
+                     <div class="content-point">
+                        <span class="speaker speaker-xbeta">xBeta</span>
+                        <div class="opinion">
+                             <span class="tag tag-opinion">观点:</span> 视频和音频的流行，本质上是降低了内容创作的门槛。“说”的能力比“写”的能力在人群中更普遍。同时，音视频的后期处理（如剪辑）是劳力密集型工作，可以低成本外包给AI或助理，而修改文章则需要比作者更高水平的编辑。
+                        </div>
+                    </div>
+                </details>
+            </section>
+
+            <section class="topic-section">
+                <details>
+                    <summary>6. AI音频处理的实践工作流与挑战</summary>
+                     <div class="content-point">
+                        <span class="speaker speaker-xbeta">xBeta</span>
+                         <div class="fact">
+                            <span class="tag tag-fact">具体需求:</span> 能否将一段30分钟的聊天音频，通过AI自动、智能地剪辑成一段15分钟的精华版音频？
+                        </div>
+                    </div>
+                    <div class="content-point">
+                        <span class="speaker speaker-jun">Jun</span>
+                        <div class="opinion">
+                             <span class="tag tag-opinion">观点:</span> 直接对音频进行剪辑的技术挑战很大，因为它会像有损压缩一样，丢失大量必要的上下文和背景信息，导致最终成品不连贯。
+                        </div>
+                        <div class="fact">
+                            <span class="tag tag-fact">推荐工作流:</span> 最佳实践是分三步走：
+                            <ol>
+                                <li><b>语音转文字 (STT):</b> 先将原始音频完整转录为文本。</li>
+                                <li><b>AI文本处理:</b> 让大模型对文本进行润色、总结和精简。</li>
+                                <li><b>文本转语音 (TTS):</b> 使用<span class="tooltip">音色克隆<span class="tooltiptext">Text-to-Speech技术的一种，可以学习并模仿特定人物的声音来朗读文本。</span></span>技术，用原始发言者的声音将处理后的文本重新生成为音频。</li>
+                            </ol>
+                        </div>
+                         <div class="opinion">
+                             <span class="tag tag-opinion">挑战:</span> 这个流程的最大挑战是，AI在润色文本时可能会抹去每个人的语言风格和个性，导致生成的对话听起来像是两个风格统一的“播音员”。解决方案是使用更精细的<span class="tooltip">Prompt<span class="tooltiptext">Prompt是给AI模型的指令或提示。一个好的Prompt可以精确地引导AI生成符合要求的结果。</span></span>，明确指示AI在生成时保留或模仿特定人物的说话风格。
+                        </div>
+                    </div>
+                </details>
+            </section>
+
+            <section class="topic-section">
+                <details>
+                    <summary>7. 个人利用AI编程的初步探索</summary>
+                    <div class="content-point">
+                        <span class="speaker speaker-xbeta">xBeta</span>
+                        <div class="fact">
+                            <span class="tag tag-fact">作为非程序员的体验:</span> xBeta分享了他使用AI辅助编程的两次重要感悟。
+                        </div>
+                        <div class="opinion">
+                             <span class="tag tag-opinion">感悟一：理解边际效应递减:</span> 亲身体会到软件开发中“增加一点点功能，代码量可能要翻好几倍”的现实，从而更能理解开发者为何某些功能不做或做得不好。
+                        </div>
+                        <div class="opinion">
+                            <span class="tag tag-opinion">感悟二：克服数据格式焦虑:</span> AI赋予了普通人处理专业数据格式的能力。以前看到<span class="tooltip">JSON<span class="tooltiptext">JavaScript Object Notation，一种轻量级的数据交换格式，在程序员中很常用，但对非技术人员不直观。</span></span>这样的格式会束手无策，现在相信借助AI可以轻松转换和利用，数据的开放性大大增强。
+                        </div>
+                    </div>
+                </details>
+            </section>
+            
+            <section class="topic-section">
+                <details>
+                    <summary>8. AI模型选择与Prompt优化技巧</summary>
+                    <div class="content-point">
+                        <span class="speaker speaker-jun">Jun</span>
+                        <div class="fact">
+                            <span class="tag tag-fact">模型选择策略:</span>
+                            <ul>
+                                <li><b>长文本/内容处理:</b> 优先使用 <span class="tooltip">Gemini<span class="tooltiptext">Google开发的大语言模型。Jun使用的是拥有100万Token超大上下文窗口的版本，非常适合处理长篇内容。</span></span>，因其无与伦比的上下文窗口。</li>
+                                <li><b>代码编写:</b> 曾倾向于使用 Claude，但近期因严格的用量限制而体验下降。</li>
+                                <li><b>日常聊天/快速问答:</b> 使用 ChatGPT。</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="content-point">
+                        <span class="speaker speaker-xbeta">xBeta & Jun</span>
+                        <div class="opinion">
+                            <span class="tag tag-opinion">Prompt高级技巧：“反向工程”:</span> 与其自己绞尽脑汁编写完美的Prompt，不如采用“示例学习法”，这是一种更高效的捷径。
+                        </div>
+                        <div class="fact">
+                            <span class="tag tag-fact">操作步骤:</span>
+                            <ol>
+                                <li>向AI提供一份原始输入（Input），例如会议录音的逐字稿。</li>
+                                <li>再向AI提供一份你手动整理好的、符合你最终要求的输出（Output），例如一篇完美的会议纪要。</li>
+                                <li>命令AI：“请分析输入和输出之间的差异，为我生成一个能够实现这种转换的、可复用的Prompt。”</li>
+                            </ol>
+                            这个由AI生成的Prompt可能非常复杂，人类甚至不必完全理解，可以直接当做一个高效的“黑盒”工具在未来的任务中使用。
+                        </div>
+                    </div>
+                </details>
+            </section>
+
+            <section class="topic-section">
+                <details>
+                    <summary>9. AI工具链的实际操作与策略</summary>
+                    <div class="content-point">
+                        <span class="speaker speaker-jun">Jun</span>
+                        <div class="opinion">
+                            <span class="tag tag-opinion">观点:</span> 在处理复杂任务时，倾向于使用Gemini的AI Studio界面而非NotebookLM。因为AI Studio是纯粹的<span class="tooltip">长上下文模式<span class="tooltiptext">将所有相关信息一次性放入模型的“记忆”中进行处理，信息保真度高。</span></span>，人工可控性强；而NotebookLM更依赖<span class="tooltip">RAG<span class="tooltiptext">Retrieval-Augmented Generation，检索增强生成。模型会先从知识库中检索相关片段，再进行回答。这个检索过程可能丢失信息。</span></span>，信息在检索过程中可能被压缩或丢失，导致幻觉。
+                        </div>
+                         <div class="fact">
+                            <span class="tag tag-fact">环境管理策略:</span> 为了保证稳定使用和账号安全，会使用一个独立的、“干净”的浏览器专门登录和访问AI服务，并确保网络环境稳定。
+                        </div>
+                         <div class="opinion">
+                            <span class="tag tag-opinion">上下文管理策略:</span> 为了让AI更好地“理解”一个长期项目，会将该项目所有的会议记录和讨论都放在同一个Chat会话中。这样，整个会话历史就构成了项目庞大而连续的上下文，AI的处理会越来越精准。
+                        </div>
+                    </div>
+                </details>
+            </section>
+
+            <section class="topic-section">
+                <details>
+                    <summary>10. AI的未来：多模态与哲学思考</summary>
+                    <div class="content-point">
+                        <span class="speaker speaker-jun">Jun</span>
+                         <div class="opinion">
+                             <span class="tag tag-opinion">技术前沿—多模态:</span> 从语音到文本的转换会丢失大量宝贵的<span class="tooltip">多模态信息<span class="tooltiptext">指信息中超越文本的部分，如语音中的情绪、语调、重音、节奏等。</span></span>。未来的先进技术将直接在原始音频（或视频）层面进行处理，保留所有这些非文本信息，从而在翻译或编辑时，能够复现原始的情感和语境，效果远超当前工作流。
+                        </div>
+                    </div>
+                    <div class="content-point">
+                        <span class="speaker speaker-xbeta">xBeta</span>
+                        <div class="opinion">
+                             <span class="tag tag-opinion">哲学反思:</span> 人工智能的发展促使我们反思人类智能的本质。人类知识本身就是模糊、带权重且充满矛盾的，这与早期计算机的精确二进制逻辑截然不同。AI的神经网络正是在模拟这种“模拟电路”式的模糊性。语音中的语调、重音等，正是为AI提供了宝贵的“权重”，帮助其更高效地理解真实意图。
+                        </div>
+                        <div class="fact">
+                            <span class="tag tag-fact">科幻脑洞:</span> xBeta提出了两个科幻小说级的想法：
+                            <ul>
+                                <li>AI发展到算力极限后，发现无法突破，最终选择重新创造碳基生命，利用其“低效”的进化模式来探索新的智慧可能，形成一个循环。</li>
+                                <li>当人类完全解开DNA和RNA的编码后，可能会发现DNA是核心程序，而大量功能未知的RNA其实是创造者留下的“注释”。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </details>
+            </section>
+
+        </main>
+    </div>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://xbeta.info" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
