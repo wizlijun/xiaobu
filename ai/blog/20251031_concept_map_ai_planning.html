@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实战使用概念图和 AI 协作做规划</title>
+    <style>
+        body {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fff;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+        }
+        h3 {
+            color: #34495e;
+            margin-top: 20px;
+        }
+        .author-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+        }
+        .process-phase {
+            background-color: #f1f8ff;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #0366d6;
+        }
+        .scenario {
+            background-color: #f6f8fa;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 3px solid #6f42c1;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+        pre {
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+        ul {
+            padding-left: 25px;
+        }
+        li {
+            margin: 8px 0;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+    <h1>实战使用概念图和 AI 协作做规划</h1>
+
+    <p>最近有机会再次做一个长期项目的规划。在多轮沟通完后，有了清晰的结论。但很明显脑子不够用，明明都是确定性的讨论结果，但如何把他们系统化表达出来，然后跟大家对齐。</p>
+
+    <p>要是换到以前，一定是抓耳挠腮封闭好几天，才能画完图。这一次，我把整个流程记录下来，分享一下如何用概念图 + AI 把想法变成可协作的文档。</p>
+
+    <h2>我的工具使用背景</h2>
+
+    <div class="author-info">
+        <p>基于我的工具使用背景：</p>
+        <ul>
+            <li>25 年生产力工具使用和研发经验</li>
+            <li>6 年概念图表达思想</li>
+            <li>5 年 Roam 笔记经验</li>
+            <li>3 年 LLM 使用经验</li>
+            <li>半年 AI Coding 经验</li>
+        </ul>
+    </div>
+
+    <div class="highlight">
+        <p>我一直强调好的工具发明后，只有长期和磨合，才能达到好的效果。</p>
+    </div>
+
+    <h2>完整的工作流程</h2>
+
+    <div class="process-phase">
+        <h3>1. 收集一手素材</h3>
+        <p>与有经验的人、团队相关人大量的沟通。沟通信息都是一手素材。</p>
+    </div>
+
+    <div class="process-phase">
+        <h3>2. 长期的积累</h3>
+        <p>这一块跟长期工作和观察、阅读、思考有关。是必须的，一定为了工作长期深入研究和解决问题才行。光东看西看不会深入。</p>
+    </div>
+
+    <div class="process-phase">
+        <h3>3. 收敛提炼阶段：手绘大概</h3>
+        <p>这主要是一个启动仪式，让思想收敛。</p>
+        <img src="20251031_concept_map_ai_planning_files/page0.png" alt="手绘草图">
+    </div>
+
+    <div class="process-phase">
+        <h3>4. 转移到概念图画布工具</h3>
+        <p>把脑子里所有概念和相互关系表达为 Graph。因为使用频率低，没有找专门的工具。Obsidian 中的画布就可以用，但是还有很多可改进。例如格式就不透明。</p>
+        <img src="20251031_concept_map_ai_planning_files/page1.png" alt="Obsidian 画布概念图">
+        <p>这个图已经代表我的思想了。</p>
+    </div>
+
+    <div class="process-phase">
+        <h3>5. 转换为标准的可计算格式</h3>
+        <p>使用最强大模型，将完全看不懂的文件源码转换为标准的 <code>.mmd</code> 图表达格式。</p>
+        <img src="20251031_concept_map_ai_planning_files/page2.png" alt="Mermaid 格式概念图">
+        <p>这个可以直接被 AI 计算和解读，也方便协作。实际上别人也看不懂，只能说适合做演示和 git 做版本控制。这些代码已经代表我的思想可计算了。</p>
+    </div>
+
+    <div class="process-phase">
+        <h3>6. 生成协作文档大纲</h3>
+        <p>使用这个图，和之前零零散散的文档、会议摘要一起。给他需要输出的协作文档清单式大纲模板。即可生成大纲。我在上面检查，逐个确认。</p>
+        <img src="20251031_concept_map_ai_planning_files/page3.png" alt="生成的文档大纲">
+        <p>已经可以做到 95% 的一次性正确了，有的问题也是之前思考不够严谨带来的。</p>
+    </div>
+
+    <div class="process-phase">
+        <h3>7. 生成 Wiki 友好的文档</h3>
+        <p>为了给人协作，生成 wiki 友好的 HTML，粘贴到公司 wiki。</p>
+        <img src="20251031_concept_map_ai_planning_files/page4.png" alt="Wiki 格式文档">
+    </div>
+
+    <div class="process-phase">
+        <h3>8. 生成演示文稿</h3>
+        <p>为了开会呈现友好，生成 HTML5 的 PPT，开会时直接使用。</p>
+        <img src="20251031_concept_map_ai_planning_files/page5.png" alt="HTML5 PPT">
+    </div>
+
+    <div class="process-phase">
+        <h3>9. 会议反馈与迭代</h3>
+        <p>会议过程中，在大纲上做反馈记录。回头再补充概念图。再生成最终的文档。</p>
+    </div>
+
+    <h2>AI 的遵从性</h2>
+
+    <div class="scenario">
+        <p>整个过程，AI 表现出来惊人的遵从性。原因是我给了他足够的上下文，尤其是概念图图谱的方式，表达了确定性的关系。恰恰 LLM 也是以这种概念层层细化的方式训练和工作的。</p>
+    </div>
+
+    <h2>让思维可计算</h2>
+
+    <p>我都找想国内概念图第一人 @吴金山教授搞一个这样的产品，叫做让思维可计算。</p>
+
+    <p>AI 的能力极大的增强了人脑。以前要折磨好几个通宵的任务，一上午几个小时搞定了。谁能不 AI？ 谁能不爱创作？</p>
+
+    <p>另外写这篇博客配图时，Figma Make 画线框图已经非常擅长了。</p>
+
+    <img src="20251031_concept_map_ai_planning_files/page6.png" alt="Figma Make 线框图">
+
+    <p><strong>AI 这个世界。</strong></p>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="/write/20251031_concept_map_ai_planning.md" target="_blank">原文</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
