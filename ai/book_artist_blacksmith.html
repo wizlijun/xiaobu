@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《艺术家铁匠》认知卡片摘要</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #f7f9fc;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            color: #2c3e50;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .filter-nav {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .filter-btn {
+            background-color: #fff;
+            color: #3498db;
+            border: 1px solid #3498db;
+            border-radius: 20px;
+            padding: 8px 18px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background-color: #3498db;
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.2);
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.4s ease;
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .card.hide {
+            opacity: 0;
+            transform: scale(0.95);
+            /* We handle display none in JS to allow transition */
+            pointer-events: none; 
+            height: 0;
+            padding: 0;
+            margin: 0;
+            border: none;
+            overflow: hidden;
+        }
+
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .card-header .icon {
+            font-size: 1.8em;
+            margin-right: 12px;
+        }
+        
+        .card-header h3 {
+            margin: 0;
+            font-size: 1.3em;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .card-content ul {
+            padding-left: 20px;
+            margin: 0;
+            list-style-type: '— ';
+        }
+
+        .card-content li {
+            margin-bottom: 8px;
+            line-height: 1.7;
+        }
+        
+        .term {
+            font-weight: 500;
+            color: #2980b9;
+            background-color: #eaf5fc;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .special-note {
+            margin-top: 15px;
+            padding: 12px;
+            border-left: 4px solid;
+            border-radius: 4px;
+            font-size: 0.95em;
+        }
+        
+        .note-safety {
+            border-color: #e74c3c;
+            background-color: #fdedec;
+        }
+        
+        .note-tip {
+            border-color: #27ae60;
+            background-color: #eafaf1;
+        }
+        
+        .note-opinion {
+            border-color: #8e44ad;
+            background-color: #f4eef7;
+        }
+        
+        /* Category specific top border */
+        .card[data-category="basics"] { border-top: 4px solid #3498db; }
+        .card[data-category="techniques"] { border-top: 4px solid #2ecc71; }
+        .card[data-category="joining"] { border-top: 4px solid #e67e22; }
+        .card[data-category="design"] { border-top: 4px solid #9b59b6; }
+        .card[data-category="tools"] { border-top: 4px solid #34495e; }
+
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>《艺术家铁匠》认知卡片摘要</h1>
+            <p>点击下方分类，探索铁匠工艺的核心知识</p>
+        </header>
+
+        <nav class="filter-nav">
+            <button class="filter-btn active" data-filter="all">🎨 全部</button>
+            <button class="filter-btn" data-filter="basics">🏠 基础与安全</button>
+            <button class="filter-btn" data-filter="techniques">🔥 核心锻造技术</button>
+            <button class="filter-btn" data-filter="joining">🔗 连接与高级技术</button>
+            <button class="filter-btn" data-filter="design">📐 设计与完工</button>
+            <button class="filter-btn" data-filter="tools">🛠️ 设备与工具</button>
+        </nav>
+
+        <div class="card-grid">
+            <!-- Basics & Safety Cards -->
+            <div class="card" data-category="basics">
+                <div class="card-header"><span class="icon">🏠</span><h3>工作空间要求</h3></div>
+                <div class="card-content">
+                    <ul>
+                        <li><strong>三大要素</strong>: 足够的空间、便利的出入、可靠的电力。</li>
+                        <li><strong>天花板</strong>: 最低<span class="term">2.4米</span>，确保能自由挥锤。</li>
+                        <li><strong>地面</strong>: <span class="term">混凝土</span>地面是最佳选择，防火、坚固、平整。</li>
+                        <li><strong>光线</strong>: 避免阳光直射工作区，以免影响判断金属<span class="term">热色</span>。</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card" data-category="basics">
+                <div class="card-header"><span class="icon">🛡️</span><h3>个人安全防护 (PPE)</h3></div>
+                <div class="card-content">
+                    <ul>
+                        <li><strong>衣物</strong>: <span class="term">棉/羊毛</span>等天然纤维，避免尼龙。皮质围裙是必备。</li>
+                        <li><strong>眼部</strong>: <span class="term">护目镜</span>必须全程佩戴，防止氧化皮和火星。</li>
+                        <li><strong>手部</strong>: 用<span class="term">皮手套</span>持握热金属，养成习惯。</li>
+                        <li><strong>足部</strong>: 穿<span class="term">钢头劳保靴</span>，裤腿盖住鞋口。</li>
+                        <li><strong>听力</strong>: 操作动力锤或角磨机时，佩戴<span class="term">耳罩</span>或耳塞。</li>
+                    </ul>
+                    <div class="special-note note-safety"><strong>核心理念</strong>: 安全不是额外步骤，而是融入工作流程的习惯。工作室里最危险的就是你自己。</div>
+                </div>
+            </div>
+            <div class="card" data-category="basics">
+                <div class="card-header"><span class="icon">🔩</span><h3>核心材料辨析</h3></div>
+                <div class="card-content">
+                    <ul>
+                        <li><span class="term">低碳钢 (Mild Steel)</span>: 现代首选，易锻造，价格低廉。</li>
+                        <li><span class="term">熟铁 (Wrought Iron)</span>: 传统材料，锻焊性能极佳，有纤维结构，昂贵稀有。</li>
+                        <li><span class="term">工具钢 (Tool Steel)</span>: 含碳量高，可热处理获得高硬度，用于制作工具。</li>
+                        <li><span class="term">不锈钢 (Stainless Steel)</span>: 耐腐蚀，但锻造困难，加工后需<span class="term">酸洗钝化</span>。</li>
+                        <li><span class="term">铸铁 (Cast Iron)</span>: 脆，<span class="term">不可锻造</span>，加热敲击会碎裂。</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Techniques Cards -->
+            <div class="card" data-category="techniques">
+                <div class="card-header"><span class="icon">🌡️</span><h3>热色判断 (Heat Colours)</h3></div>
+                <div class="card-content">
+                    <ul>
+                        <li><span class="term">黄白色</span>: 接近熔点，用于<span class="term">锻焊</span>。</li>
+                        <li><span class="term">亮黄色</span>: 最佳塑形温度，用于<span class="term">拉伸、镦粗、冲孔</span>。</li>
+                        <li><span class="term">红色</span>: 塑性降低，适合<span class="term">弯曲、矫直</span>和精修，不易留下锤痕。</li>
+                    </ul>
+                     <div class="special-note note-tip"><strong>关键</strong>: 这是铁匠的眼睛。准确判断温度是高效、成功锻造的基础。</div>
+                </div>
+            </div>
+            <div class="card" data-category="techniques">
+                <div class="card-header"><span class="icon">➡️</span><h3>拉伸锻造 (Drawing Down)</h3></div>
+                <div class="card-content">
+                    <ul>
+                        <li><strong>定义</strong>: 锤击使棒材截面变小，长度增加，常用于制作<span class="term">锥形 (taper)</span>。</li>
+                        <li><strong>技巧</strong>: 交替锤击方钢相邻两面并旋转90°。圆钢先锻成方锥再修圆。</li>
+                        <li><strong>十字锤</strong>: 使用<span class="term">十字锤</span>的锤脊（pein）可以更快地引导金属延伸。</li>
+                        <li><strong>材料计算</strong>: 凿形尖 ≈ 1/2锥长；方形/圆形尖 ≈ 1/3锥长。</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card" data-category="techniques">
+                <div class="card-header"><span class="icon">⬅️</span><h3>镦粗 (Upsetting)</h3></div>
+                <div class="card-content">
+                    <ul>
+                        <li><strong>定义</strong>: 拉伸的反向操作，使棒材局部变粗、变短。</li>
+                        <li><strong>目的</strong>: 为制作铆钉头、把手或为冲孔提供额外材料。</li>
+                        <li><strong>技巧</strong>: 精确控制<span class="term">局部加热</span>区域，在锤击过程中不断<span class="term">矫直</span>，防止弯曲。</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card" data-category="techniques">
+                <div class="card-header"><span class="icon">↩️</span><h3>弯曲 (Bending)</h3></div>
+                <div class="card-content">
+                    <ul>
+                        <li><strong>时机</strong>: 应在所有截面改变完成后再进行弯曲。</li>
+                        <li><strong>原理</strong>: 弯曲时外侧拉伸，内侧压缩，只有<span class="term">中性轴</span>长度不变。</li>
+                        <li><strong>方法</strong>: 可在砧角自由弯曲，或使用台钳、<span class="term">专用夹具</span>获得精确角度。</li>
+                        <li><strong>热量控制</strong>: <span class="term">短距加热</span>=急弯，<span class="term">长距加热</span>=缓弯。</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card" data-category="techniques">
+                <div class="card-header"><span class="icon">🔄</span><h3>扭转 (Twisting)</h3></div>
+                <div class="card-content">
+                    <ul>
+                        <li><strong>技巧</strong>: 对棒材进行<span class="term">均匀、定长</span>的加热，一端固定，另一端用扳手旋转。</li>
+                        <li><strong>要点</strong>: 扭转时<span class="term">计数</span>，以保证重复性和对称性。</li>
+                        <li><strong>变化</strong>: 可对棒材预处理（如开槽）或将多根棒材捆绑扭转，创造复杂纹理。</li>
+                    </ul>
+                    <div class="special-note note-opinion"><strong>设计警示</strong>: 扭转效果强烈，慎用、少用，作为点缀往往比大面积使用更出彩。</div>
+                </div>
+            </div>
+             <div class="card" data-category="techniques">
+                <div class="card-header"><span class="icon">✂️</span><h3>热切与冲孔</h3></div>
+                <div class="card-content">
+                    <ul>
+                        <li><strong>热切 (Hot Cutting)</strong>: 使用<span class="term">方孔刀 (Hardie)</span>或<span class="term">热凿 (Hot Chisel)</span>切割热金属。可用于切断，或将棒材<span class="term">劈开 (Splitting)</span>。</li>
+                        <li><strong>冲孔 (Punching)</strong>: 用<span class="term">冲头 (Punch)</span>在热金属上打孔。它推开金属而非移除，会在孔周形成美观的<span class="term">隆起</span>。</li>
+                        <li><strong>整形 (Drifting)</strong>: 冲孔后，用锥形的<span class="term">冲棒 (Drift)</span>将孔修正到精确的尺寸和形状。</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Joining & Advanced Cards -->
+            <div class="card" data-category="joining">
+                <div class="card-header"><span class="icon">🔗</span><h3>锻焊 (Fire Welding)</h3></div>
+                <div class="card-content">
+                    <ul>
+                        <li><strong>定义</strong>: 最古老的焊接技术，将金属加热至<span class="term">熔化边缘</span>（黄白色，冒火星），锤击使之融为一体。</li>
+                        <li><strong>准备</strong>: 连接处通常需<span class="term">镦粗</span>并锻成<span class="term">斜面 (scarf)</span>。</li>
+                        <li><strong>焊剂 (Flux)</strong>: 使用<span class="term">硼砂</span>可防止氧化，帮助焊接。</li>
+                    </ul>
+                    <div class="special-note note-safety">操作时会有熔渣飞溅，极其危险，必须做好万全的眼部和身体防护！</div>
+                </div>
+            </div>
+            <div class="card" data-category="joining">
+                <div class="card-header"><span class="icon">🔩</span><h3>机械连接</h3></div>
+                <div class="card-content">
+                    <ul>
+                        <li><strong>铆接 (Riveting)</strong>: 用<span class="term">铆钉</span>穿孔并锤打成型，形成牢固的永久连接。</li>
+                        <li><strong>卯榫 (Mortise & Tenon)</strong>: 一种<span class="term">一体化</span>的铆接，将榫头插入卯眼后铆死。</li>
+                        <li><strong>卡箍 (Collar)</strong>: 将加热的金属箍套在构件上，冷却收缩后产生强大的<span class="term">夹紧力</span>。</li>
+                        <li><strong>缠绕 (Wrapping)</strong>: 用加热的细棒材像绳索一样紧密缠绕在构件上。</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card" data-category="joining">
+                <div class="card-header"><span class="icon">✨</span><h3>图案焊接 (Pattern Welding)</h3></div>
+                <div class="card-content">
+                    <ul>
+                        <li><strong>别名</strong>: <span class="term">大马士革钢 (Damascus Steel)</span>。</li>
+                        <li><strong>原理</strong>: 将不同材质的钢片（如高碳钢、低碳钢）<span class="term">层叠</span>，反复进行<span class="term">锻焊</span>和<span class="term">折叠</span>。</li>
+                        <li><strong>效果</strong>: 在最终成品表面形成类似木纹或流水的华丽图案。</li>
+                        <li><strong>后期</strong>: 需通过打磨和<span class="term">酸蚀</span>来显现图案。</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card" data-category="joining">
+                <div class="card-header"><span class="icon">🧑‍🤝‍🧑</span><h3>与击打手协作</h3></div>
+                <div class="card-content">
+                    <ul>
+                        <li><strong>角色</strong>: <span class="term">击打手 (Striker)</span>是使用大锤的助手。</li>
+                        <li><strong>沟通</strong>: 铁匠用小锤的<span class="term">落点、力度和节奏</span>来指挥击打手。敲击铁砧代表停止。</li>
+                        <li><strong>优势</strong>: 相比动力锤，击打手更<span class="term">灵活</span>，能配合铁匠使用各种手持套具，完成复杂操作。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Design & Finishing Cards -->
+            <div class="card" data-category="design">
+                <div class="card-header"><span class="icon">💡</span><h3>设计哲学</h3></div>
+                <div class="card-content">
+                    <ul>
+                        <li><strong>批判性观察</strong>: 设计始于“看”，分析你喜欢或不喜欢的作品，锻炼审美判断力。</li>
+                        <li><strong>从源头汲取灵感</strong>: 亲自去观察自然、建筑等，而非依赖二手图像。</li>
+                        <li><strong>绘画是思考</strong>: 草图是记录和发展想法的工具，过程比结果重要。</li>
+                    </ul>
+                    <div class="special-note note-opinion"><strong>核心观点</strong>: 好的设计是99%的汗水+1%的灵感。不要等待灵光一闪，要主动工作、观察和思考。</div>
+                </div>
+            </div>
+            <div class="card" data-category="design">
+                <div class="card-header"><span class="icon">🎨</span><h3>表面处理 (Finishing)</h3></div>
+                <div class="card-content">
+                    <ul>
+                        <li><strong>准备</strong>: 任何处理前都必须彻底<span class="term">清除氧化皮</span>，可通过打磨、酸洗或喷砂。</li>
+                        <li><strong>室内</strong>: <span class="term">上蜡</span>（如蜂蜡、文艺复兴蜡）能最好地保留金属质感。也可采用<span class="term">可控生锈</span>后封蜡。</li>
+                        <li><strong>室外</strong>: 必须采用更强力的防护。
+                            <ul>
+                                <li><strong>涂漆</strong>: 基础防护，使用<span class="term">石墨漆</span>可模仿锻造质感。</li>
+                                <li><strong>镀锌/喷锌</strong>: 提供长效防腐保护，是最佳选择。</li>
+                                <li><strong>贴金</strong>: 用于局部点缀，效果华丽且耐久。</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Tools Cards -->
+            <div class="card" data-category="tools">
+                <div class="card-header"><span class="icon">🛠️</span><h3>核心设备</h3></div>
+                <div class="card-content">
+                    <ul>
+                        <li><span class="term">锻炉 (Forge)</span>: 热源。分为<span class="term">固态燃料</span>（煤/焦炭）和<span class="term">气/油燃料</span>两种。</li>
+                        <li><span class="term">铁砧 (Anvil)</span>: 主要工作台面，重量是关键，越重越好。</li>
+                        <li><span class="term">桌腿钳 (Leg Vice)</span>: 适合热加工的台钳，能将冲击力传导至地面。</li>
+                        <li><span class="term">型砧 (Swage Block)</span>: 带各种凹槽和孔的铸铁块，用于成型。</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card" data-category="tools">
+                <div class="card-header"><span class="icon">🔨</span><h3>进阶设备</h3></div>
+                <div class="card-content">
+                    <ul>
+                        <li><span class="term">动力锤 (Power Hammer)</span>: 大幅提升效率，可处理大尺寸材料。</li>
+                        <li><span class="term">螺旋压力机 (Fly Press)</span>: 手动，压力巨大，适合冷热弯曲和成型，尤其利于重复作业。</li>
+                        <li><span class="term">焊接设备</span>: 气焊、电焊（MMA, MIG, TIG），现代连接工艺的必备。</li>
+                        <li><span class="term">切割设备</span>: 等离子切割机、动力弓锯等。</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card" data-category="tools">
+                <div class="card-header"><span class="icon">🔧</span><h3>工具制作 (Tool Making)</h3></div>
+                <div class="card-content">
+                    <ul>
+                        <li><strong>材料</strong>: 使用废旧弹簧、扭力杆等<span class="term">高碳钢</span>。</li>
+                        <li><strong>核心工艺</strong>: <span class="term">淬火 (Hardening)</span> 与 <span class="term">回火 (Tempering)</span>。</li>
+                        <li><strong>淬火</strong>: 加热至红色后快速冷却（水或油），获得<span class="term">高硬度</span>。</li>
+                        <li><strong>回火</strong>: 重新低温加热，通过观察表面<span class="term">氧化色</span>来控制温度，以<span class="term">增加韧性</span>，防止工具在使用中碎裂。</li>
+                    </ul>
+                     <div class="special-note note-tip"><strong>回火色谱</strong>: 淡草黄(最硬) → 棕 → 紫 → 蓝(最韧)。根据工具用途选择合适的回火颜色。</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const filterNav = document.querySelector('.filter-nav');
+            const cards = document.querySelectorAll('.card');
+
+            filterNav.addEventListener('click', function (e) {
+                if (e.target.tagName !== 'BUTTON') return;
+
+                const filter = e.target.dataset.filter;
+
+                // Update active button
+                filterNav.querySelector('.active').classList.remove('active');
+                e.target.classList.add('active');
+
+                // Filter cards
+                cards.forEach(card => {
+                    const category = card.dataset.category;
+                    const shouldShow = filter === 'all' || filter === category;
+                    
+                    if (shouldShow) {
+                        card.classList.remove('hide');
+                    } else {
+                        card.classList.add('hide');
+                    }
+                });
+            });
+        });
+    </script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_artist_blacksmith_files/book.html" target="_blank">源链接</a>
+    <h3>附件</h3>
+        <div class="attachment-item">
+            <h4>中文PDF <span class="file-size">(10.7M)</span></h4>
+            <a href="book_artist_blacksmith_files/book.pdf" class="download-btn" download>下载</a>
+        </div>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
