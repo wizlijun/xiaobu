@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>锻造入门指南 - 全书精华版</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #2980b9;
+            --secondary-accent: #e67e22;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --highlight-bg: #eaf2f8;
+            --warning-bg: #fdeded;
+            --warning-border: #e74c3c;
+            --success-bg: #e9f7ef;
+        }
+
+        body {
+            font-family: "PingFang SC", "Segoe UI", "Microsoft YaHei", sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        header h1 { margin: 0; font-size: 2.4em; letter-spacing: 1px; }
+        header .subtitle { opacity: 0.8; font-size: 1em; margin-top: 8px; }
+
+        /* Navigation */
+        .nav-wrapper {
+            position: sticky;
+            top: 0;
+            background: rgba(244, 247, 246, 0.95);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            padding: 10px 0;
+            border-bottom: 1px solid #e1e1e1;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: 1000px;
+            margin: 0 auto;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 0.95em;
+            color: #555;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+            font-weight: 600;
+        }
+
+        .nav-btn:hover { background-color: #f0f0f0; transform: translateY(-1px); }
+        
+        .nav-btn.active {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+            box-shadow: 0 2px 6px rgba(41, 128, 185, 0.3);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 20px;
+            min-height: 80vh;
+        }
+
+        /* Sections */
+        section { display: none; animation: slideUp 0.4s ease-out; }
+        section.active { display: block; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--accent-color);
+            display: inline-block;
+            padding-bottom: 5px;
+            margin-bottom: 25px;
+        }
+
+        /* Grid Layouts */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            border-left: 4px solid transparent;
+            transition: transform 0.2s;
+        }
+
+        .card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
+        .card.blue { border-left-color: var(--accent-color); }
+        .card.orange { border-left-color: var(--secondary-accent); }
+        .card.red { border-left-color: var(--warning-border); }
+
+        .card h3 { margin-top: 0; color: var(--primary-color); font-size: 1.2em; }
+
+        /* Custom Components */
+        .info-tag {
+            display: inline-block;
+            background: #e8f6f3;
+            color: #16a085;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .warning-box {
+            background: var(--warning-bg);
+            border-left: 4px solid var(--warning-border);
+            padding: 15px;
+            margin: 15px 0;
+            color: #c0392b;
+            font-size: 0.95em;
+        }
+
+        .tip-box {
+            background: var(--highlight-bg);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #2c3e50;
+        }
+
+        .toggle-trigger {
+            color: var(--accent-color);
+            cursor: pointer;
+            font-weight: 600;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .toggle-trigger::after {
+            content: '▼';
+            font-size: 0.7em;
+            margin-left: 6px;
+            transition: transform 0.3s;
+        }
+
+        .toggle-trigger.open::after { transform: rotate(180deg); }
+
+        .toggle-content {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #ddd;
+            font-size: 0.95em;
+        }
+
+        .step-list { counter-reset: step; padding-left: 0; list-style: none; }
+        .step-list li { position: relative; padding-left: 40px; margin-bottom: 15px; }
+        .step-list li::before {
+            content: counter(step);
+            counter-increment: step;
+            position: absolute;
+            left: 0; top: 0;
+            width: 28px; height: 28px;
+            background: var(--secondary-accent);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #95a5a6;
+            font-size: 0.85em;
+            border-top: 1px solid #eee;
+            margin-top: 40px;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Blacksmithing Made Easy</h1>
+    <div class="subtitle">锻造入门：从工具选购到锻刀实战（全书核心摘要）</div>
+</header>
+
+<div class="nav-wrapper">
+    <div class="nav-tabs">
+        <button class="nav-btn active" onclick="switchTab('intro')">历史与工坊</button>
+        <button class="nav-btn" onclick="switchTab('tools')">核心工具箱</button>
+        <button class="nav-btn" onclick="switchTab('materials')">钢材与燃料详解</button>
+        <button class="nav-btn" onclick="switchTab('safety')">安全红线</button>
+        <button class="nav-btn" onclick="switchTab('knife')">锻刀全流程</button>
+        <button class="nav-btn" onclick="switchTab('projects')">进阶项目库</button>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- SECTION 1: INTRO & WORKSPACE -->
+    <section id="intro" class="active">
+        <div class="grid">
+            <div class="card blue">
+                <h3>📜 历史演变</h3>
+                <p>从石器时代的手斧到公元前1200年的青铜冶炼，再到铁器时代。铁砧从石板演变为青铜、熟铁，最终定型为19世纪的<strong>“伦敦模式 (London Pattern)”</strong>钢制铁砧。</p>
+            </div>
+            
+            <div class="card orange">
+                <h3>🏠 工坊规划原则</h3>
+                <ul>
+                    <li><strong>空间大小：</strong> 新手建议 <strong>≤100平方英尺</strong>（约9.3平米）。小空间能强制养成高效动线习惯。</li>
+                    <li><strong>黄金动线：</strong> 铁砧与锻炉的距离应保持在<strong>两步以内</strong>，最大限度减少热量流失。</li>
+                    <li><strong>工具摆放：</strong> 铁钳在锻炉旁，锤子在铁砧旁，按使用顺序排列。</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>💡 新手心法</h3>
+                <p>不要一开始就追求液压机等高端设备。<strong>手工锻造</strong>带来的失败体验，是理解金属特性不可或缺的学习曲线。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 2: TOOLS -->
+    <section id="tools">
+        <h2>新手必备工具清单</h2>
+        <div class="grid">
+            <!-- Anvil -->
+            <div class="card blue">
+                <h3>1. 铁砧 (Anvil)</h3>
+                <span class="info-tag">推荐：35磅锻造铁砧</span>
+                <p>建议购买钢制锻造砧（Forging Anvil），避免铸铁（易碎）和蹄铁砧（面太小）。</p>
+                
+                <div class="toggle-trigger" onclick="toggle(this)">查看详细解剖结构</div>
+                <div class="toggle-content">
+                    <ul>
+                        <li><strong>Face (砧面)：</strong> 平整的主工作区，硬度高。</li>
+                        <li><strong>Step (台阶)：</strong> 低于砧面，边缘锋利，用于<strong>切割</strong>金属。</li>
+                        <li><strong>Horn (砧角)：</strong> 锥形部分，用于制作<strong>曲线</strong>和圆形。</li>
+                        <li><strong>Pritchel Hole (圆孔)：</strong> 用于冲孔（Punching）。</li>
+                        <li><strong>Hardy Hole (方孔)：</strong> 用于固定底部工具（如切断器、模具）。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Hammers -->
+            <div class="card blue">
+                <h3>2. 锤子 (Hammers)</h3>
+                <span class="info-tag">重量：2-3磅 | 材质：木柄</span>
+                <p><strong>严禁</strong>使用塑料或玻璃纤维手柄（遇热变形）。</p>
+                <ul>
+                    <li><strong>圆头锤 (Ball Peen)：</strong> 一面平一面圆，用于延展。</li>
+                    <li><strong>横口锤 (Cross Peen)：</strong> 新手首选。楔形面可定向延展金属，不伤手指。</li>
+                </ul>
+            </div>
+
+            <!-- Tongs & Vice -->
+            <div class="card blue">
+                <h3>3. 夹持工具</h3>
+                <p><strong>铁钳 (Tongs)：</strong> 推荐 18-20英寸。</p>
+                <ul>
+                    <li><strong>V-Bit Tongs：</strong> 抓握力强，做刀必备。</li>
+                    <li><strong>Wolf Jaw (狼颚)：</strong> 通用性强，适合不规则形状。</li>
+                </ul>
+                <p><strong>台钳 (Vice)：</strong> 必不可少的辅助固定工具，需能承受敲击。</p>
+            </div>
+
+            <!-- Forge -->
+            <div class="card blue">
+                <h3>4. 锻炉 (Forge)</h3>
+                <p><strong>最佳推荐：丙烷锻炉 (Propane Forge)</strong></p>
+                <p>相比煤炭，它更清洁、温度更易控、更便携。Hell's Forge 是书中推荐的入门品牌（约$200）。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 3: MATERIALS -->
+    <section id="materials">
+        <h2>钢材与燃料百科</h2>
+        
+        <div class="card red" style="margin-bottom: 20px;">
+            <h3>⚠️ 废旧钢材警告 (Scrap Steel)</h3>
+            <p>虽然回收钢材（如板簧、旧锉刀）便宜且环保，但<strong>必须警惕镀锌管或含铅/锌材料</strong>。加热它们会释放<strong>剧毒烟雾</strong>，可能导致严重的“金属烟雾热”甚至死亡。</p>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h3>钢材分类：碳钢</h3>
+                <ul>
+                    <li><strong>低/中碳钢：</strong> 易成型，适合做挂钩、装饰品。</li>
+                    <li><strong>高碳钢 (>0.6% C)：</strong> 硬但脆，适合做<strong>刀具、宝剑、切割工具</strong>。</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>钢材分类：工具钢 (Tool Steel)</h3>
+                <p>这是进阶知识，书中详细区分了以下几类：</p>
+                <div class="toggle-trigger" onclick="toggle(this)">展开6种工具钢详解</div>
+                <div class="toggle-content">
+                    <ol>
+                        <li><strong>水淬钢 (Water Hardening)：</strong> 基础型，遇水硬化，但易裂/变形。</li>
+                        <li><strong>冷作钢 (Cold Work)：</strong> 空气或油淬，变形风险低，适合做木工工具。</li>
+                        <li><strong>抗震钢 (Shock Resisting)：</strong> 含硅，耐冲击，适合做<strong>凿子、冲子</strong>。</li>
+                        <li><strong>高速钢 (High Speed)：</strong> 含钨/钼，耐极高热，用于钻头、锯片。</li>
+                        <li><strong>热作钢 (Hot Work)：</strong> 用于压铸模具，耐高温。</li>
+                        <li><strong>特殊用途钢：</strong> 高合金，耐磨性极强。</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>燃料选择</h3>
+                <ul>
+                    <li><strong>煤炭 (Coal)：</strong> 
+                        <br>- <strong>无烟煤 (Anthracite)：</strong> 最佳选择，燃烧久、热量高。
+                        <br>- 烟煤 (Bituminous)： 烟大，便宜。
+                    </li>
+                    <li><strong>木炭 (Charcoal)：</strong> 容易获得，但<strong>热量通常不足以</strong>有效软化钢铁，且消耗极快，不推荐新手作为主力。</li>
+                    <li><strong>丙烷 (Propane)：</strong> 现代新手的最佳平衡点。</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 4: SAFETY -->
+    <section id="safety">
+        <h2>安全红线 (绝不可忽视)</h2>
+        <div class="grid">
+            <div class="card red">
+                <h3>呼吸系统防护</h3>
+                <p><strong>危险源：</strong> 煤尘、研磨粉尘、镀锌烟雾。</p>
+                <p><strong>对策：</strong> 打磨时必须佩戴 <strong>N95口罩或呼吸器 (Respirator)</strong>。确保工坊通风良好，特别是使用化石燃料时，防止一氧化碳中毒。</p>
+            </div>
+
+            <div class="card red">
+                <h3>身体防护 (PPE)</h3>
+                <ul>
+                    <li><strong>眼睛：</strong> 全程佩戴护目镜（防火花、防UV）。</li>
+                    <li><strong>听力：</strong> 耳塞（听力损伤是累积且不可逆的）。</li>
+                    <li><strong>衣物：</strong> <strong>棉或羊毛</strong>材质（化纤遇火会熔化粘在皮肤上），皮围裙，钢头靴。</li>
+                </ul>
+            </div>
+
+            <div class="card orange">
+                <h3>行为准则</h3>
+                <div class="warning-box">
+                    <strong>切记：黑色的金属也可能是烫的！</strong><br>
+                    永远假设工作区内的所有金属都是高温状态。
+                </div>
+                <ul>
+                    <li>不使用受损工具（尤其是松动的锤头）。</li>
+                    <li>离开前彻底熄灭火源。</li>
+                    <li>身体状态不佳（疲劳、生病、醉酒）严禁开工。</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 5: KNIFE MAKING -->
+    <section id="knife">
+        <h2>实战：锻造6英寸生存刀</h2>
+        <div class="tip-box" style="margin-bottom: 20px;">
+            <strong>设计法则：</strong> 2/3 为刀刃，1/3 为刀柄。6英寸刀刃应配3英寸刀柄。
+        </div>
+
+        <ul class="step-list">
+            <li>
+                <div class="card">
+                    <h3>加热与初步成型</h3>
+                    <p><strong>锻造温度：</strong> 2100-2200°F (亮黄色)。</p>
+                    <p>使用砧角做出曲线，砧面打平。记得在刀刃根部锻出<strong>Drop Choil (护手凹槽)</strong>。用小锤子进行精修，减少后续打磨工作量。</p>
+                </div>
+            </li>
+            <li>
+                <div class="card">
+                    <h3>开刃 (Beveling)</h3>
+                    <p>双面均匀锻打，使刀刃边缘变薄。此时金属会向脊部推挤，形成楔形截面。</p>
+                </div>
+            </li>
+            <li>
+                <div class="card">
+                    <h3>退火 (Annealing)</h3>
+                    <p>为了让金属软化以便锉削和钻孔：加热至红橙色 -> <strong>磁铁不吸</strong> -> 埋入沙中缓慢冷却。</p>
+                </div>
+            </li>
+            <li>
+                <div class="card">
+                    <h3>硬化与回火 (Hardening & Tempering)</h3>
+                    <p>这是赋予刀具灵魂的关键步骤：</p>
+                    <p><strong>1. 硬化：</strong> 加热至磁铁不吸，垂直浸入预热的油中淬火。此时刀极硬但极脆。</p>
+                    <p><strong>2. 回火：</strong> 小心加热，观察<strong>氧化色</strong>变化：</p>
+                    <ul>
+                        <li><strong>刀脊：</strong> 目标是<strong>李子色 (Plum)</strong> —— 保持韧性。</li>
+                        <li><strong>刀刃：</strong> 目标是<strong>小麦色 (Wheat)</strong> —— 保持锋利度。</li>
+                    </ul>
+                    <p><i>技巧：先加热刀脊，让热量慢慢传导至刀刃。</i></p>
+                </div>
+            </li>
+            <li>
+                <div class="card">
+                    <h3>装柄</h3>
+                    <p>使用环氧树脂和黄铜销钉固定木柄。固化需24小时。最后打磨并涂上桐油 (Tung Oil)。</p>
+                </div>
+            </li>
+        </ul>
+    </section>
+
+    <!-- SECTION 6: PROJECTS -->
+    <section id="projects">
+        <h2>项目库：从入门到进阶</h2>
+        <p>除了刀具，书中还详细介绍了以下项目，每个项目都针对特定技能的训练：</p>
+        
+        <div class="grid">
+            <div class="card">
+                <h3>入门级 (Lv.1)</h3>
+                <ul>
+                    <li><strong>J型钩 (J Hook)：</strong> 练习拉尖 (Tapering) 和卷圆。</li>
+                    <li><strong>开瓶器 (Bottle Opener)：</strong> 练习冲孔 (Punching) 和扩孔。</li>
+                    <li><strong>晚餐铃 (Dinner Bell)：</strong> 简单的三角形折弯练习。</li>
+                    <li><strong>抽屉拉手 (Drawer Pulls)：</strong> 简单的拱形弯曲和钻孔。</li>
+                </ul>
+            </div>
+
+            <div class="card blue">
+                <h3>进阶级 (Lv.2)</h3>
+                <ul>
+                    <li><strong>树叶钥匙扣 (Leaf Key Chain)：</strong> 极佳的展宽练习，需将圆棒打成薄片并保留叶柄。</li>
+                    <li><strong>火钳 (Fire Poker)：</strong> 练习在台钳上扭转 (Twisting) 金属棒。</li>
+                    <li><strong>香草切刀 (Herb Chopper)：</strong> 要求两侧对称锻造，这是对控制力的极大考验。建议使用不锈钢。</li>
+                </ul>
+            </div>
+
+            <div class="card orange">
+                <h3>挑战级 (Lv.3)</h3>
+                <ul>
+                    <li><strong>圆头锤 (Rounding Hammer)：</strong> 制作工具的工具。需要精准的冲孔和热处理。</li>
+                    <li><strong>铁钳 (Tongs)：</strong> 复杂的几何结构，需要两半完全镜像匹配。</li>
+                    <li><strong>殖民时期锅铲 (Colonial Spatula)：</strong> 涉及<strong>“半面锤击 (Half-face blows)”</strong>技巧，用以做出偏移的肩部结构。</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>趣味/历史项目</h3>
+                <ul>
+                    <li><strong>Loggerhead：</strong> 
+                        <br><i>一种古老的饮料加热工具。</i> 将铁球端烧红，直接插入饮料中加热（类似古代的微波炉）。由4英寸圆棒锻造而成。
+                    </li>
+                    <li><strong>爱心装饰碗 (Heart Decorative Bowl)：</strong> 需配合<strong>型砧 (Swage block)</strong> 将平面爱心敲击成碗状。</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<footer>
+    <p>内容基于《Blacksmithing Made Easy》 - Charles Prince</p>
+    <p>补充整理：涵盖工具钢分类、详细回火颜色指标及完整项目列表</p>
+</footer>
+
+<script>
+    function switchTab(tabId) {
+        // Hide all sections
+        document.querySelectorAll('section').forEach(el => el.classList.remove('active'));
+        // Show target section
+        document.getElementById(tabId).classList.add('active');
+        
+        // Update buttons
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+        
+        // Smooth scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function toggle(element) {
+        const content = element.nextElementSibling;
+        const isOpen = content.style.display === 'block';
+        
+        content.style.display = isOpen ? 'none' : 'block';
+        element.classList.toggle('open', !isOpen);
+    }
+</script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_blacksmithing_made_easy_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
