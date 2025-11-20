@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>亚马逊会议分类矩阵 - 深度解析</title>
+    <style>
+        :root {
+            --bg-color: #f9fafb;
+            --card-bg: #ffffff;
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+            --accent-blue: #4299e1;
+            --accent-green: #48bb78;
+            --accent-red: #f56565;
+            --accent-purple: #9f7aea;
+            --border-radius: 16px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #1a202c;
+            margin-bottom: 10px;
+            letter-spacing: -0.025em;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* Introduction */
+        .intro-section {
+            background: #ebf8ff;
+            border-left: 4px solid var(--accent-blue);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 40px;
+            color: #2c5282;
+        }
+
+        /* Matrix Grid */
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Specific border colors for types */
+        .type-info { border-top: 6px solid var(--accent-red); } /* Eliminate */
+        .type-decision { border-top: 6px solid var(--accent-blue); } /* Core */
+        .type-idea { border-top: 6px solid var(--accent-purple); } /* Creative */
+        .type-progress { border-top: 6px solid var(--accent-green); } /* Execution */
+
+        .card-header {
+            padding: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-type {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .type-info .card-type { color: var(--accent-red); }
+        .type-decision .card-type { color: var(--accent-blue); }
+        .type-idea .card-type { color: var(--accent-purple); }
+        .type-progress .card-type { color: var(--accent-green); }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .toggle-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #edf2f7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+            font-weight: bold;
+            color: #718096;
+        }
+
+        .card.active .toggle-btn {
+            transform: rotate(45deg);
+            background: #cbd5e0;
+            color: #2d3748;
+        }
+
+        .card-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #fff;
+        }
+
+        .content-inner {
+            padding: 0 25px 30px 25px;
+        }
+
+        /* Internal Content Styling */
+        .strategy-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .tag-kill { background: #fff5f5; color: #c53030; }
+        .tag-core { background: #ebf8ff; color: #2b6cb0; }
+        .tag-creative { background: #faf5ff; color: #6b46c1; }
+        .tag-exec { background: #f0fff4; color: #2f855a; }
+
+        h3 {
+            font-size: 1rem;
+            color: #4a5568;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 5px;
+        }
+
+        ul {
+            padding-left: 20px;
+            color: #4a5568;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #fff3cd 0%, #fff3cd 100%);
+            background-repeat: no-repeat;
+            background-size: 100% 40%;
+            background-position: 0 90%;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .action-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            border: 1px dashed #cbd5e0;
+        }
+
+        .action-title {
+            font-weight: 700;
+            display: block;
+            margin-bottom: 5px;
+            color: #2d3748;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 60px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #a0aec0;
+        }
+
+        @media (max-width: 768px) {
+            .matrix-grid { grid-template-columns: 1fr; }
+            h1 { font-size: 1.75rem; }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>亚马逊会议四象限</h1>
+            <div class="subtitle">书中核心观点：不是所有会议都值得开</div>
+        </header>
+
+        <div class="intro-box intro-section">
+            <strong>💡 核心洞察：</strong> 亚马逊将会议明确分为四类。大多数企业的低效根源在于——在该开“决策会”的时候开了“信息传达会”，在该“头脑风暴”的时候却陷入了“进度汇报”。
+            <br>👇 <strong>点击卡片查看每一类会议的“亚马逊式”处理法则。</strong>
+        </div>
+
+        <div class="matrix-grid">
+
+            <!-- Type 1: 信息传达会议 -->
+            <div class="card type-info" onclick="toggleCard(this)">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <span class="card-type">类型一：信息传达会议</span>
+                        <span class="card-title">能不开，就不开</span>
+                    </div>
+                    <div class="toggle-btn">+</div>
+                </div>
+                <div class="card-content">
+                    <div class="content-inner">
+                        <span class="strategy-tag tag-kill">⚠️ 策略：极力削减 / 替代</span>
+                        
+                        <h3>❌ 常见痛点</h3>
+                        <p>这是企业效率低下的重灾区。典型的“我在上面讲，你在下面睡”。如果不涉及讨论和决策，仅仅是同步信息，这就是在浪费时间。</p>
+
+                        <h3>✅ 亚马逊处理法则</h3>
+                        <ul>
+                            <li><strong>默认取消：</strong> 如果只是为了让大家知道“最近发生了什么”，请取消会议。</li>
+                            <li><strong>文档替代：</strong> 善用邮件、内部文档系统（Wiki）进行异步沟通。</li>
+                            <li><strong>替代方案——一对一面谈：</strong> 将大锅饭式的信息传达，拆解为高频（每周/双周）的<span class="highlight">一对一面谈 (1-on-1)</span>。在私密环境中，不仅能同步信息，还能解决个人困惑和职业发展问题。</li>
+                        </ul>
+
+                        <div class="action-box">
+                            <span class="action-title">🚀 立即行动：</span>
+                            检查你的日程表，删掉所有那些你只是去“听”而不需要“说”或“做决定”的例会。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Type 2: 决策会议 -->
+            <div class="card type-decision" onclick="toggleCard(this)">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <span class="card-type">类型二：决策会议</span>
+                        <span class="card-title">最高规格的战场</span>
+                    </div>
+                    <div class="toggle-btn">+</div>
+                </div>
+                <div class="card-content">
+                    <div class="content-inner">
+                        <span class="strategy-tag tag-core">⭐ 策略：严谨流程 / 叙事资料</span>
+                        
+                        <h3>🎯 会议目的</h3>
+                        <p>做出确认、通过、或要求再次提报的决定（如：新产品发布、人事聘用、大型投资）。</p>
+
+                        <h3>✅ 亚马逊处理法则</h3>
+                        <ul>
+                            <li><strong>资料先行：</strong> 必须使用 <span class="highlight">6页纸 (6-Pager)</span> 叙事文档，严禁 PPT。</li>
+                            <li><strong>静默开场：</strong> 会议前 15-30 分钟全员像在图书馆一样默读资料。</li>
+                            <li><strong>拒绝“社交化从众”：</strong> 贝佐斯痛恨“为了气氛和谐而折中”。如果有分歧，就辩论；辩论结束做决定后，全员 <span class="highlight">“敢于谏言，服从大局”</span>。</li>
+                            <li><strong>明确3W：</strong> 结束时必须确认：谁 (Who) 在什么时间 (When) 完成什么任务 (What)。</li>
+                        </ul>
+
+                        <div class="action-box">
+                            <span class="action-title">🚀 立即行动：</span>
+                            下次决策会，试着没收讲演者的 PPT，要求大家先静静读完 Word 文档再开口。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Type 3: 创意发掘会议 -->
+            <div class="card type-idea" onclick="toggleCard(this)">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <span class="card-type">类型三：创意发掘会议</span>
+                        <span class="card-title">寻找“第1天”的活力</span>
+                    </div>
+                    <div class="toggle-btn">+</div>
+                </div>
+                <div class="card-content">
+                    <div class="content-inner">
+                        <span class="strategy-tag tag-creative">🧠 策略：头脑风暴 / 走出工位</span>
+                        
+                        <h3>🎯 会议目的</h3>
+                        <p>当对解决方案毫无头绪，需要“从0到1”想点子时召开。这是创新的源泉。</p>
+
+                        <h3>✅ 亚马逊处理法则</h3>
+                        <ul>
+                            <li><strong>两个比萨原则：</strong> 参会人数控制在 6-8 人（两张比萨能喂饱的人数），人多嘴杂效率低。</li>
+                            <li><strong>白板文化：</strong> 必须有白板和便利贴。主持人不要过多介入，要作为记录者和引导者。</li>
+                            <li><strong>不求完美，但求效率：</strong> 设定短时间（如5分钟）强迫大家写出大量点子，先追求量，再筛选质。</li>
+                            <li><strong>外出会议 (Off-site)：</strong> 对于重大战略，要离开公司环境，还要“离线”（断网/关手机），进行全封闭式思考。</li>
+                        </ul>
+
+                        <div class="action-box">
+                            <span class="action-title">🚀 立即行动：</span>
+                            遇到瓶颈时，不要在会议室死磕。带上便利贴和团队，换个物理环境（甚至就在电梯里）进行头脑风暴。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Type 4: 进度管理会议 -->
+            <div class="card type-progress" onclick="toggleCard(this)">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <span class="card-type">类型四：进度管理会议</span>
+                        <span class="card-title">用数字代替“感觉”</span>
+                    </div>
+                    <div class="toggle-btn">+</div>
+                </div>
+                <div class="card-content">
+                    <div class="content-inner">
+                        <span class="strategy-tag tag-exec">📊 策略：KPI / 刨根问底</span>
+                        
+                        <h3>🎯 会议目的</h3>
+                        <p>执行 PDCA 循环（计划-实施-检查-调整）。确保项目按既定轨道运行。</p>
+
+                        <h3>✅ 亚马逊处理法则</h3>
+                        <ul>
+                            <li><strong>无异常，不开会：</strong> 如果所有指标都在正常范围内，<span class="highlight">自动取消会议</span>。不要为了开会而开会。</li>
+                            <li><strong>依靠 KPI 仪表盘：</strong> 不要听“我觉得挺顺利”，要看数据。不仅仅看 KGI（结果），更要看 KPI（过程指标）。</li>
+                            <li><strong>刨根问底 (Deep Dive)：</strong> 出现异常数据时，不能只说“我会去调查”，必须在会前就查明原因（通常要问5个为什么）。</li>
+                            <li><strong>高频验证：</strong> 验证周期最长不超过一周。</li>
+                        </ul>
+
+                        <div class="action-box">
+                            <span class="action-title">🚀 立即行动：</span>
+                            建立自动化报表。如果数据没问题，这周的例会直接发邮件通知“取消”。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <footer>
+            <p>基于《贝佐斯如何开会》原书内容整理</p>
+        </footer>
+    </div>
+
+    <script>
+        function toggleCard(element) {
+            // 获取内容区域
+            const content = element.querySelector('.card-content');
+            const isActive = element.classList.contains('active');
+
+            // 简单切换逻辑
+            if (!isActive) {
+                element.classList.add('active');
+                content.style.maxHeight = content.scrollHeight + "px";
+            } else {
+                element.classList.remove('active');
+                content.style.maxHeight = null;
+            }
+        }
+    </script>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_amazon_meeting_method_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
