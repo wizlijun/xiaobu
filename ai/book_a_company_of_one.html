@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深度摘要：一人公司 (A Company of One)</title>
+    <style>
+        :root {
+            --primary-color: #0052cc; /* 深蓝专业色 */
+            --action-color: #00875a;  /* 行动建议绿色 */
+            --bg-color: #f4f5f7;
+            --card-bg: #ffffff;
+            --text-main: #172b4d;
+            --text-secondary: #5e6c84;
+            --border-radius: 8px;
+            --shadow: 0 1px 1px rgba(9, 30, 66, 0.25), 0 0 1px rgba(9, 30, 66, 0.31);
+            --transition: all 0.25s ease-in-out;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Header Area */
+        header {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 2rem;
+            color: var(--text-main);
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        .meta-tags {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.85rem;
+        }
+
+        .meta-tag {
+            background: #ebecf0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: var(--text-secondary);
+        }
+
+        /* Navigation / Filters */
+        .nav-bar {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: none;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-secondary);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: var(--transition);
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .filter-btn.action-mode {
+            background: var(--action-color);
+            color: white;
+        }
+
+        /* Content Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: var(--transition);
+            border-left: 4px solid transparent;
+        }
+
+        .card[data-type="action"] {
+            border-left-color: var(--action-color);
+        }
+        
+        .card[data-type="analysis"] {
+            border-left-color: var(--primary-color);
+        }
+
+        .card-header {
+            padding: 20px 25px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+        }
+
+        .card-header:hover {
+            background-color: #fafbfc;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon-state {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            transition: transform 0.3s;
+        }
+
+        .card.expanded .icon-state {
+            transform: rotate(180deg);
+        }
+
+        .card-body {
+            max-height: 0;
+            overflow: hidden;
+            padding: 0 25px;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card.expanded .card-body {
+            max-height: 3000px;
+            padding-bottom: 25px;
+            opacity: 1;
+            border-top: 1px solid #ebecf0;
+        }
+
+        /* Typography & Elements */
+        h3 {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 20px;
+            border-bottom: 2px solid #f4f5f7;
+            padding-bottom: 5px;
+        }
+
+        p {
+            margin-bottom: 12px;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .highlight {
+            background-color: #fff0b3;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .concept-box {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 4px solid #2196f3;
+        }
+
+        .action-box {
+            background-color: #e3fcef;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 4px solid var(--action-color);
+        }
+
+        .action-title {
+            font-weight: bold;
+            color: var(--action-color);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .quote {
+            font-style: italic;
+            color: #6b778c;
+            border-left: 3px solid #dfe1e6;
+            padding-left: 15px;
+            margin: 15px 0;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            color: #97a0af;
+            margin-top: 40px;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 1.6rem; }
+            .nav-bar { top: 0; padding: 10px 0; background: rgba(244,245,247,0.9); backdrop-filter: blur(5px); }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>一人公司 (A Company of One)</h1>
+        <div class="subtitle">白领失业新世界中的不安全感与独立性</div>
+        <div class="meta-tags">
+            <span class="meta-tag">人类学研究</span>
+            <span class="meta-tag">职业生涯管理</span>
+            <span class="meta-tag">新自由主义</span>
+            <span class="meta-tag">2001-2009纵向追踪</span>
+        </div>
+    </header>
+
+    <!-- Filter Controls -->
+    <div class="nav-bar">
+        <button class="filter-btn active" onclick="filterContent('all')">全览</button>
+        <button class="filter-btn" onclick="filterContent('ideology')">核心意识形态</button>
+        <button class="filter-btn" onclick="filterContent('reality')">现实困境</button>
+        <button class="filter-btn action-mode" onclick="filterContent('action')">⚡️ 行动与策略</button>
+    </div>
+
+    <!-- Introduction -->
+    <div class="card expanded" data-category="ideology" data-type="analysis">
+        <div class="card-header" onclick="toggleCard(this)">
+            <div class="card-title">📖 导言：信念与自由市场</div>
+            <span class="icon-state">▼</span>
+        </div>
+        <div class="card-body">
+            <p><strong>研究背景：</strong> 针对2001-2004年（及2009年回访）美国达拉斯高科技行业失业白领的民族志。这群人不仅没有责怪解雇他们的企业，反而拥抱了一种将自己视为“一人公司”的哲学。</p>
+            <div class="concept-box">
+                <strong>新自由主义的日常化：</strong> 
+                受访者坚信个人能动性、自由市场的效率以及不安全就业的“自然性”。他们认为任何问题（包括长期失业）都可以通过个人努力和市场修正来解决，拒绝集体行动或政府干预。
+            </div>
+        </div>
+    </div>
+
+    <!-- Chapter 1 -->
+    <div class="card" data-category="reality" data-type="analysis">
+        <div class="card-header" onclick="toggleCard(this)">
+            <div class="card-title">🏙️ 第一章：硅原 (Silicon Prairie) 的兴衰</div>
+            <span class="icon-state">▼</span>
+        </div>
+        <div class="card-body">
+            <h3>历史脉络</h3>
+            <ul>
+                <li><strong>起源：</strong> 达拉斯从二战后的国防制造业转型为电信和计算中心（如德州仪器）。</li>
+                <li><strong>繁荣象征：</strong> <strong>Infomart</strong>（模仿水晶宫建造的信息宫）象征着达拉斯试图成为高科技贸易中心的野心。</li>
+                <li><strong>泡沫破裂：</strong> 2000年互联网泡沫破裂，随后是电信行业崩溃和9/11事件。达拉斯的失业率在2003年达到顶峰，且是“无就业复苏”。</li>
+            </ul>
+            <p class="quote">“Infomart最终通过将租户从‘人’转变为‘服务器’（数据中心）才幸存下来——这是一个残酷的隐喻：机器留下了，人被驱逐了。”</p>
+        </div>
+    </div>
+
+    <!-- Chapter 2 -->
+    <div class="card" data-category="ideology" data-type="action">
+        <div class="card-header" onclick="toggleCard(this)">
+            <div class="card-title">🧠 第二章：职业生涯管理 (Career Management)</div>
+            <span class="icon-state">▼</span>
+        </div>
+        <div class="card-body">
+            <h3>核心意识形态</h3>
+            <p>失业者通过采纳<strong>“职业生涯管理”</strong>的逻辑来对抗无力感。这是一种从“组织人”(Organization Man) 到“自由代理人”的文化转变。</p>
+            
+            <div class="action-box">
+                <span class="action-title">⚡️ 受访者的行动策略（也是本书批判的对象）：</span>
+                <ul>
+                    <li><strong>拒绝受害者心态：</strong> 哪怕被粗暴解雇，也不责怪公司，而是将裁员视为“不可避免的自然现象”或“商业决策”。</li>
+                    <li><strong>视自己为承包商：</strong> 即使有一份全职工作，也要在心理上把自己当成临时的“承包商”或“一人公司”。</li>
+                    <li><strong>支持全球化：</strong> 即使自己的工作被外包（Offshoring），也支持自由贸易，认为这能倒逼自己提升技能。</li>
+                    <li><strong>反政治文化 (Antipolitics)：</strong> 认为工会、抗议或政府救助是软弱和过时的表现，是个人的失败。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chapter 3 -->
+    <div class="card" data-category="reality" data-type="action">
+        <div class="card-header" onclick="toggleCard(this)">
+            <div class="card-title">💼 第三章：找工作是一份“全职工作”</div>
+            <span class="icon-state">▼</span>
+        </div>
+        <div class="card-body">
+            <p>对于失业者来说，失业不是“没有工作”，而是换了一份名为“找工作”的最艰难的工作。他们通过模仿上班的仪式来维持自尊。</p>
+            
+            <div class="action-box">
+                <span class="action-title">⚡️ 具体的日常执行策略：</span>
+                <ul>
+                    <li><strong>重构时间与空间：</strong> 每天准时起床，在家穿正装，在这个房间是“爸爸”，走进书房就变成“正在工作的求职者”。</li>
+                    <li><strong>技术化的自我呈现：</strong> 
+                        <ul>
+                            <li>针对每个职位定制简历（Resume Tailoring）。</li>
+                            <li>在简历中堆砌关键词（Keywords）以通过机器筛选。</li>
+                            <li>不断更新名片，认为哪怕失业也要有名片是专业性的体现。</li>
+                        </ul>
+                    </li>
+                    <li><strong>志愿服务：</strong> 通过无偿工作（Volunteering）来填补简历空白，保持“被使用”的感觉，并以此拓展人脉。</li>
+                </ul>
+            </div>
+            <p class="quote">“他们宁愿收到一封说‘你不合适，滚蛋’的拒信，也不愿面对在线申请后的死寂黑洞。”</p>
+        </div>
+    </div>
+
+    <!-- Chapter 4 -->
+    <div class="card" data-category="ideology" data-type="action">
+        <div class="card-header" onclick="toggleCard(this)">
+            <div class="card-title">🤝 第四章：失业的仪式 (社交网络)</div>
+            <span class="icon-state">▼</span>
+        </div>
+        <div class="card-body">
+            <p>达拉斯的求职者大量参与（通常在教会举办的）社交活动（Networking）。这些活动并非单纯的信息交换，而是<strong>维持职业身份的集体仪式</strong>。</p>
+            
+            <div class="concept-box">
+                <strong>TechNet 小组案例：</strong> 
+                这不仅仅是求职俱乐部，更像是互助会。成员们互相确认对方仍是“专业人士”，即便他们目前没有收入。
+            </div>
+
+            <div class="action-box">
+                <span class="action-title">⚡️ 社交必须遵守的“潜规则”：</span>
+                <ul>
+                    <li><strong>电梯演讲 (Elevator Pitch)：</strong> 每个人必须在一分钟内清晰表述我是谁、我要什么。</li>
+                    <li><strong>强制积极性：</strong> 必须分享“本周的好消息”。如果有人承认绝望（如“我这周没得分享”），会被群体迅速纠正或安慰，因为消极情绪威胁到了集体的意识形态护盾。</li>
+                    <li><strong>互惠利他：</strong> 即使大家是竞争对手，也会积极分享线索，以证明自己是“有价值的连接者”。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chapter 5 -->
+    <div class="card" data-category="reality" data-type="analysis">
+        <div class="card-header" onclick="toggleCard(this)">
+            <div class="card-title">🏠 第五章：家庭与性别的隐秘支柱</div>
+            <span class="icon-state">▼</span>
+        </div>
+        <div class="card-body">
+            <p><strong>核心讽刺：</strong> 所谓“独立的一人公司”，其灵活性往往建立在配偶（通常是拥有稳定工作的妻子）的经济支持之上。</p>
+            
+            <h3>性别视角的差异</h3>
+            <ul>
+                <li><strong>男性求职者：</strong> 重新定义男子气概。他们不认为依靠妻子是羞耻，反而将其视为“现代平等的婚姻伙伴关系”。这让他们能从容拒绝低薪工作，等待“合适的机会”。</li>
+                <li><strong>女性求职者：</strong> 即使没有孩子，失业女性也感到巨大的内疚。她们往往认为自己不仅在职场失败，也辜负了家庭责任。她们比男性更焦虑，更难享受失业期间的“灵活性”。</li>
+            </ul>
+            <div class="concept-box">
+                <strong>双职工陷阱：</strong> 中产阶级的生活方式依赖两份收入。一旦一方失业，原本用于抵御风险的家庭结构反而变得脆弱。社会风险被私有化到了核心家庭内部。
+            </div>
+        </div>
+    </div>
+
+    <!-- Epilogue -->
+    <div class="card" data-category="reality" data-type="analysis">
+        <div class="card-header" onclick="toggleCard(this)">
+            <div class="card-title">🔄 尾声：2009年的回访与清算</div>
+            <span class="icon-state">▼</span>
+        </div>
+        <div class="card-body">
+            <p>作者在2009年金融危机期间回访了当年的受访者，发现情况喜忧参半，但意识形态依然坚挺。</p>
+            
+            <h3>人物命运追踪</h3>
+            <ul>
+                <li><strong>Alex：</strong> 成功回归高薪职位，但他始终保持危机感，随时准备回去做服务员。</li>
+                <li><strong>Ed：</strong> 彻底离开了IT行业，在园艺店工作，收入减半，婚姻破裂。但他将这种向下流动重构为“自愿选择更快乐的生活”。</li>
+                <li><strong>Enrique：</strong> 再次失业，依靠妻子的生意生活，婚姻濒临崩溃。他将解雇比喻为“鞋子不合脚”，继续将结构性困境个人化。</li>
+            </ul>
+
+            <div class="action-box">
+                <span class="action-title">⚡️ 最终的社会学洞察：</span>
+                <p>“职业生涯管理”既是救生筏，也是鞭子。</p>
+                <ul>
+                    <li><strong>作为救生筏：</strong> 它赋予失业者能动感，让他们在绝望中保持行动（学习、社交、坚持）。</li>
+                    <li><strong>作为鞭子：</strong> 它掩盖了系统性的不公，让个人承担了所有的心理和经济代价。即使生活分崩离析，他们依然认为是自己没能“预测市场”或“管理好品牌”。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        © 2025 基于 Carrie M. Lane 著作生成的交互式摘要 | 点击卡片标题展开/收起
+    </footer>
+</div>
+
+<script>
+    function toggleCard(header) {
+        const card = header.parentElement;
+        const icon = header.querySelector('.icon-state');
+        
+        if (card.classList.contains('expanded')) {
+            card.classList.remove('expanded');
+        } else {
+            card.classList.add('expanded');
+        }
+    }
+
+    function filterContent(category) {
+        const cards = document.querySelectorAll('.card');
+        const buttons = document.querySelectorAll('.filter-btn');
+
+        // Update buttons
+        buttons.forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+
+        // Filter logic
+        cards.forEach(card => {
+            if (category === 'all') {
+                card.style.display = 'block';
+            } else if (category === 'action') {
+                // Show specific cards that have distinct action/strategy content
+                if (['action', 'ideology', 'reality'].includes(card.dataset.type) || card.dataset.type === 'action') {
+                     // For action filter, we prioritize cards marked as 'action' type explicitly
+                     if(card.dataset.type === 'action') {
+                         card.style.display = 'block';
+                         if(!card.classList.contains('expanded')) card.classList.add('expanded');
+                     } else {
+                         card.style.display = 'none';
+                     }
+                }
+            } else {
+                if (card.dataset.category === category) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            }
+        });
+        
+        // Special handling for 'action' view to ensure visibility
+        if(category === 'action') {
+            const actionCards = document.querySelectorAll('.card[data-type="action"]');
+            actionCards.forEach(c => c.style.display = 'block');
+        }
+    }
+</script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_a_company_of_one_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
