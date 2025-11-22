@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>重构 (第2版) - 全书深度摘要</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
+            --text-main: #1e293b;
+            --text-light: #64748b;
+            --bg-body: #f8fafc;
+            --bg-white: #ffffff;
+            --border: #e2e8f0;
+            --accent-smell: #f43f5e;
+            --accent-refactor: #059669;
+            --accent-principle: #7c3aed;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Sidebar Navigation */
+        aside {
+            width: 280px;
+            background: var(--bg-white);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .brand {
+            padding: 24px;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-white);
+        }
+
+        .brand span { color: var(--primary); }
+
+        .nav-scroll {
+            overflow-y: auto;
+            flex: 1;
+            padding: 16px 0;
+        }
+
+        .nav-group {
+            margin-bottom: 16px;
+        }
+
+        .nav-header {
+            padding: 8px 24px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-light);
+            font-weight: 700;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 8px 24px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 0.95rem;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .nav-item.active {
+            border-left-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px 60px;
+            scroll-behavior: smooth;
+            position: relative;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding-bottom: 100px;
+        }
+
+        /* Search Bar */
+        .search-container {
+            position: sticky;
+            top: 0;
+            background: var(--bg-body);
+            padding-bottom: 20px;
+            z-index: 10;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Typography */
+        h1 { font-size: 2.25rem; margin-bottom: 1rem; color: var(--text-main); }
+        h2 { font-size: 1.5rem; margin-top: 3rem; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--border); }
+        h3 { font-size: 1.1rem; margin-top: 1.5rem; color: var(--text-main); }
+        p { color: var(--text-light); margin-bottom: 1rem; }
+
+        /* Content Blocks */
+        .block {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            transition: box-shadow 0.2s;
+        }
+
+        .block:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .block-header {
+            padding: 16px 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .block-title {
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .block-content {
+            padding: 0 24px 24px;
+            border-top: 1px solid var(--primary-light);
+            display: none;
+            background: #fafbfc;
+        }
+
+        .block.open .block-content { display: block; }
+        .block.open .block-header { background: var(--primary-light); }
+
+        /* Tags */
+        .tag {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .tag-smell { background: #ffe4e6; color: var(--accent-smell); }
+        .tag-refactor { background: #d1fae5; color: var(--accent-refactor); }
+        .tag-principle { background: #ede9fe; color: var(--accent-principle); }
+
+        /* Lists */
+        .detail-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .detail-list li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+        .detail-list li::before {
+            content: "•";
+            color: var(--primary);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .quote-box {
+            border-left: 4px solid var(--accent-principle);
+            background: #f5f3ff;
+            padding: 16px;
+            margin: 16px 0;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+            color: #5b21b6;
+        }
+
+        /* Sections visibility */
+        section { display: none; }
+        section.active { display: block; animation: fadeIn 0.3s ease; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Code snippet */
+        .code-snippet {
+            font-family: 'Menlo', 'Monaco', monospace;
+            font-size: 0.85em;
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+        }
+        .hl-var { color: #93c5fd; }
+        .hl-func { color: #86efac; }
+    </style>
+</head>
+<body>
+
+    <aside>
+        <div class="brand">Refactoring <span>2.0</span></div>
+        <div class="nav-scroll">
+            <div class="nav-group">
+                <div class="nav-header">基础</div>
+                <a class="nav-item active" onclick="switchSection('principles')">1-2. 原则与理念</a>
+                <a class="nav-item" onclick="switchSection('smells')">3. 代码的坏味道</a>
+                <a class="nav-item" onclick="switchSection('testing')">4. 构建测试体系</a>
+            </div>
+            <div class="nav-group">
+                <div class="nav-header">目录详解</div>
+                <a class="nav-item" onclick="switchSection('first-set')">6. 第一组重构</a>
+                <a class="nav-item" onclick="switchSection('encapsulation')">7. 封装</a>
+                <a class="nav-item" onclick="switchSection('moving')">8. 搬移特性</a>
+                <a class="nav-item" onclick="switchSection('data')">9. 组织数据</a>
+                <a class="nav-item" onclick="switchSection('conditional')">10. 简化条件逻辑</a>
+                <a class="nav-item" onclick="switchSection('api')">11. 重构 API</a>
+                <a class="nav-item" onclick="switchSection('inheritance')">12. 处理继承</a>
+            </div>
+        </div>
+    </aside>
+
+    <main>
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="搜索重构手法、坏味道或关键词..." onkeyup="filterContent()">
+        </div>
+
+        <div class="container">
+
+            <!-- Section 1 & 2: Principles -->
+            <section id="principles" class="active">
+                <h1>重构原则与核心理念</h1>
+                <p>第1-2章精华提炼：重构不是事后补救，而是开发的日常。</p>
+
+                <div class="quote-box">
+                    "重构（名词）：对软件内部结构的一种调整，目的是在不改变可观察行为的前提下，提高其可理解性，降低其修改成本。"
+                </div>
+
+                <div class="block open">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-principle">核心</span> 两顶帽子 (Two Hats)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p>开发过程中应明确当前状态，频繁切换：</p>
+                        <ul class="detail-list">
+                            <li><strong>添加功能：</strong> 不修改现有结构，只添加新能力。进度由测试通过衡量。</li>
+                            <li><strong>重构：</strong> 不添加功能，只重组代码。不添加新测试，只在接口变更时修改测试。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-principle">Why</span> 为何重构？</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <ul class="detail-list">
+                            <li><strong>改进设计：</strong> 对抗代码腐烂（Entropy），消除重复。</li>
+                            <li><strong>使软件更易理解：</strong> 代码主要写给人看，顺便给机器执行。</li>
+                            <li><strong>助你找到Bug：</strong> 清晰的结构让Bug无处遁形。</li>
+                            <li><strong>提高编程速度：</strong> 设计持久力假说（Design Stamina Hypothesis）——良好的设计能维持长期的开发速度。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-principle">When</span> 何时重构？</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <ul class="detail-list">
+                            <li><strong>三次法则：</strong> 事不过三，三则重构。</li>
+                            <li><strong>预备性重构：</strong> 添加新功能前，让结构更易于接纳新功能（"Make the change easy, then make the easy change"）。</li>
+                            <li><strong>理解性重构：</strong> 理解代码时，将脑中的理解写回代码。</li>
+                            <li><strong>捡垃圾式重构：</strong> 看到小问题随手修，大问题记下来稍后修。</li>
+                            <li><strong>Code Review时：</strong> 甚至通过结对编程进行实时重构。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-principle">Performance</span> 重构与性能</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p>多数情况下，重构不会显著影响性能。即使影响，也应该<strong>先写出可调优的代码，再调优</strong>。</p>
+                        <p>优化的三种策略：时间预算（实时系统）、持续关注（通常无效）、<strong>90%统计优化（推荐）</strong>（即：在良好的结构基础上，利用Profiler找出那10%的性能热点进行优化）。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 3: Bad Smells -->
+            <section id="smells">
+                <h1>代码的坏味道 (Bad Smells)</h1>
+                <p>第3章：Kent Beck 的经典隐喻，指引我们何时开始重构。</p>
+
+                <!-- List all smells comprehensively -->
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-smell">命名/理解</span> Mysterious Name (神秘命名)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>现象：</strong> 函数、变量或类名无法清晰表达其意图。</p>
+                        <p><strong>解法：</strong> Change Function Declaration, Rename Variable, Rename Field。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-smell">冗余</span> Duplicated Code (重复代码)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>现象：</strong> 同样的逻辑结构在多处出现。</p>
+                        <p><strong>解法：</strong> Extract Function, Pull Up Method (继承体系中)。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-smell">复杂性</span> Long Function (长函数)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>现象：</strong> 函数体过长，包含解释性的注释。</p>
+                        <p><strong>解法：</strong> Extract Function (99%的情况), Replace Temp with Query, Introduce Parameter Object, Preserve Whole Object, Replace Function with Command (极其复杂时)。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-smell">接口</span> Long Parameter List (长参数列表)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>现象：</strong> 函数参数超过3-4个。</p>
+                        <p><strong>解法：</strong> Replace Parameter with Query, Preserve Whole Object, Introduce Parameter Object, Remove Flag Argument, Combine Functions into Class。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-smell">数据</span> Global Data (全局数据)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>现象：</strong> 数据可以被代码库的任何角落修改。来自地狱第四层。</p>
+                        <p><strong>解法：</strong> Encapsulate Variable (首选防御)。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-smell">数据</span> Mutable Data (可变数据)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>现象：</strong> 变量在不同地方被更新，导致难以追踪状态。</p>
+                        <p><strong>解法：</strong> Encapsulate Variable, Split Variable, Separate Query from Modifier, Remove Setting Method, Replace Derived Variable with Query, Change Reference to Value。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-smell">耦合</span> Divergent Change (发散式变化)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>现象：</strong> 一个模块因为多种不同的原因（如数据库变更、显示逻辑变更）经常被修改。</p>
+                        <p><strong>解法：</strong> Split Phase, Move Function, Extract Class。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-smell">耦合</span> Shotgun Surgery (霰弹式修改)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>现象：</strong> 每做一次修改，都要在很多不同的类中做小修改。</p>
+                        <p><strong>解法：</strong> Move Function/Field, Combine Functions into Class, Combine Functions into Transform, Inline Function/Class。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-smell">耦合</span> Feature Envy (依恋情结)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>现象：</strong> 函数跟另一个模块的数据交流比跟自己的模块更多。</p>
+                        <p><strong>解法：</strong> Move Function, Extract Function (将需要的那部分提炼后移走)。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-smell">数据</span> Data Clumps (数据泥团)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>现象：</strong> 总是结伴出现的数据项（如 start/end, x/y）。</p>
+                        <p><strong>解法：</strong> Extract Class, Introduce Parameter Object, Preserve Whole Object。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-smell">数据</span> Primitive Obsession (基本类型偏执)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>现象：</strong> 不愿创建小对象（如 Money, TelephoneNumber），只用 string/int。</p>
+                        <p><strong>解法：</strong> Replace Primitive with Object, Replace Type Code with Subclasses, Replace Conditional with Polymorphism。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-smell">逻辑</span> Repeated Switches (重复的Switch)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>现象：</strong> 同样的条件逻辑（switch/if-else）在多处重复。</p>
+                        <p><strong>解法：</strong> Replace Conditional with Polymorphism。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-smell">逻辑</span> Loops (循环语句)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>现象：</strong> 传统的 for/while 循环，特别是包含复杂逻辑时。</p>
+                        <p><strong>解法：</strong> Replace Loop with Pipeline (filter/map/reduce)。</p>
+                    </div>
+                </div>
+
+                 <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-smell">冗余</span> Lazy Element (冗赘的元素)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>现象：</strong> 没什么用的类或函数（可能是为了未来扩展但从未实现）。</p>
+                        <p><strong>解法：</strong> Inline Function, Inline Class, Collapse Hierarchy。</p>
+                    </div>
+                </div>
+
+                 <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-smell">冗余</span> Speculative Generality (夸夸其谈未来性)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>现象：</strong> "以此应对未来可能的变化"，添加了未使用的钩子或特殊情况。</p>
+                        <p><strong>解法：</strong> Collapse Hierarchy, Inline Function/Class, Remove Dead Code, Change Function Declaration (删除参数)。</p>
+                    </div>
+                </div>
+
+                 <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-smell">中间人</span> Temporary Field (临时字段)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>现象：</strong> 类中的某个字段仅在特定情况下（特定函数中）有效。</p>
+                        <p><strong>解法：</strong> Extract Class, Move Function, Introduce Special Case。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-smell">耦合</span> Message Chains (消息链)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>现象：</strong> `a.getB().getC().doSomething()`，客户端与导航结构紧耦合。</p>
+                        <p><strong>解法：</strong> Hide Delegate, Extract Function, Move Function。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-smell">中间人</span> Middle Man (中间人)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>现象：</strong> 一个类有一半的函数都在单纯委托给另一个类。</p>
+                        <p><strong>解法：</strong> Remove Middle Man, Inline Function。</p>
+                    </div>
+                </div>
+
+                 <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-smell">耦合</span> Insider Trading (内幕交易)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>现象：</strong> 两个模块之间过于亲密，私下频繁交换数据。</p>
+                        <p><strong>解法：</strong> Move Function/Field, Hide Delegate, Replace Subclass/Superclass with Delegate。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-smell">复杂性</span> Large Class (过大的类)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>现象：</strong> 实例变量太多，代码太多。</p>
+                        <p><strong>解法：</strong> Extract Class, Extract Superclass, Replace Type Code with Subclasses。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-smell">继承</span> Refused Bequest (被拒绝的遗赠)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>现象：</strong> 子类继承了父类的方法和数据，但只用了一小部分，甚至不支持父类接口。</p>
+                        <p><strong>解法：</strong> Push Down Method/Field (如果只是没用到), Replace Subclass/Superclass with Delegate (如果接口都不想要)。</p>
+                    </div>
+                </div>
+                
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-smell">注释</span> Comments (过多的注释)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>现象：</strong> 注释被用来解释糟糕的代码（"注释是除臭剂"）。</p>
+                        <p><strong>解法：</strong> Extract Function (用名字解释意图), Change Function Declaration, Introduce Assertion。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 4: Testing -->
+            <section id="testing">
+                <h1>构建测试体系 (Chapter 4)</h1>
+                <p>没有测试的重构是在裸奔。</p>
+                
+                <div class="block open">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-principle">核心</span> 自测试代码 (Self-testing Code)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p>只有当我们拥有一套能够快速发现错误的测试套件时，我们才能放心地进行重构。测试是Bug探测器。</p>
+                        <ul class="detail-list">
+                            <li><strong>自动化：</strong> 测试必须能自动运行并检查结果。</li>
+                            <li><strong>频繁运行：</strong> 至少每天运行，重构时每几分钟运行一次。</li>
+                            <li><strong>TDD：</strong> 先写失败的测试，再写代码。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-principle">技巧</span> 测试策略</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <ul class="detail-list">
+                            <li><strong>Fixture：</strong> 使用 <code>beforeEach</code> 创建干净的标准夹具，避免测试间污染。</li>
+                            <li><strong>关注风险：</strong> 不要为了测试而测试（如简单的getter/setter），关注可能出错的逻辑。</li>
+                            <li><strong>边界探测：</strong> 0、负数、空列表、null、非法输入。</li>
+                            <li><strong>复现Bug：</strong> 收到Bug报告时，先写一个测试暴露它。</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 6: A First Set of Refactorings -->
+            <section id="first-set">
+                <h1>第一组重构 (Chapter 6)</h1>
+                <p>最常用、最基础的工具箱。</p>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">常用</span> Extract Function (提炼函数)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 分离意图与实现。如果你需要花时间浏览一段代码才能弄清它在干什么，就应该将其提炼。</p>
+                        <p><strong>做法：</strong> 创造新函数，以“做什么”命名；复制代码；处理变量作用域（参数/返回值）。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">常用</span> Inline Function (内联函数)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 函数体本身比函数名更清晰，或者为了消除过多的间接层。</p>
+                        <p><strong>做法：</strong> 检查多态；找到所有调用点替换为函数体；删除定义。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">变量</span> Extract Variable (提炼变量)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 表达式难以理解。引入解释性变量来分解复杂逻辑。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">变量</span> Inline Variable (内联变量)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 变量名并不比表达式本身更具描述性。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">接口</span> Change Function Declaration (改变函数声明)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>别名：</strong> Rename Function, Add/Remove Parameter。</p>
+                        <p><strong>动机：</strong> 名字是最好的文档；参数决定了函数的上下文。</p>
+                        <p><strong>做法：</strong> 简单式（直接改）或 迁移式（提炼新函数->旧函数调用新函数->逐步迁移调用者）。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">封装</span> Encapsulate Variable (封装变量)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 数据比函数更难重构。通过函数（getter/setter）访问数据，以便监控和修改数据访问方式。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">变量</span> Rename Variable (变量改名)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 好的名字能解释代码意图。对于持久字段尤为重要。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">结构</span> Introduce Parameter Object (引入参数对象)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 一组数据总是一起传递（如 start/end）。将其组合成结构或类，可以进一步吸引行为。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">结构</span> Combine Functions into Class (函数组合成类)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 一组函数紧密操作同一块数据。类能提供共享环境，简化函数调用。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">结构</span> Combine Functions into Transform (函数组合成变换)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 类似组合成类，但适用于将源数据计算派生数据并返回新记录的场景（特别是在只读上下文中）。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">结构</span> Split Phase (拆分阶段)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 代码在同时处理两件不同的事（如：解析数据 + 渲染）。</p>
+                        <p><strong>做法：</strong> 将第二阶段提炼为函数，引入中转数据结构，将第一阶段转为转换器。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 7: Encapsulation -->
+            <section id="encapsulation">
+                <h1>封装 (Chapter 7)</h1>
+                <p>隐藏信息，减少耦合。</p>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">数据</span> Encapsulate Record (封装记录)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 对象优于简单的记录/哈希表，因为对象可以隐藏结构变化，提供有意义的操作方法。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">数据</span> Encapsulate Collection (封装集合)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 不要直接返回集合的引用，防止外部绕过类直接修改集合。应提供 add/remove 方法，getter 返回只读副本。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">数据</span> Replace Primitive with Object (以对象取代基本类型)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 简单数据（如电话字符串）逐渐需要行为（格式化）。创建值对象（Value Object）来取代它。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">逻辑</span> Replace Temp with Query (以查询取代临时变量)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 临时变量只在函数内可见。将其提炼为函数，可被复用，且有助于缩短函数长度。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">类</span> Extract Class (提炼类)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 类太大，责任太多。将一部分数据和函数分离出去。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">类</span> Inline Class (内联类)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 一个类不再承担足够责任，将其合并回使用它的类。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">委托</span> Hide Delegate (隐藏委托关系)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 客户端必须知道对象的内部结构（`a.getB().getC()`）。在A上建立方法委托给C，减少耦合。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">委托</span> Remove Middle Man (移除中间人)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 过度封装导致某个类全是简单的委托方法。让客户端直接调用受托对象。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">逻辑</span> Substitute Algorithm (替换算法)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 用更清晰的算法替换复杂的旧算法。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 8: Moving Features -->
+            <section id="moving">
+                <h1>搬移特性 (Chapter 8)</h1>
+                <p>在上下文之间重新分配责任。</p>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">常用</span> Move Function (搬移函数)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 函数与另一个上下文的交互更多。这是模块化的核心操作。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">常用</span> Move Field (搬移字段)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 数据结构是根基。如果数据所在的结构不合理，行为也会变乱。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">语句</span> Move Statements into Function (搬移语句到函数内)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 如果某些重复代码总是紧随某函数出现，将其并入该函数。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">语句</span> Move Statements to Callers (搬移语句到调用者)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 函数内部的某些行为在不同调用点需要变化。将这部分移出函数。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">语句</span> Replace Inline Code with Function Call (以函数调用取代内联代码)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 消除重复，提高抽象层级。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">语句</span> Slide Statements (移动语句)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 将相关代码移动到一起，通常是为提炼函数做准备。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">循环</span> Split Loop (拆分循环)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 一个循环做了两件事。拆分后更容易理解和重构。不用过早担心性能。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">循环</span> Replace Loop with Pipeline (以管道取代循环)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 使用 <code>map</code>, <code>filter</code>, <code>reduce</code> 等集合操作，逻辑更清晰，像水流一样。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">清理</span> Remove Dead Code (移除死代码)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 无用的代码是理解的负担。版本控制系统会帮你记住它们。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 9: Organizing Data -->
+            <section id="data">
+                <h1>组织数据 (Chapter 9)</h1>
+                <p>处理数据结构、作用域和引用。</p>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">变量</span> Split Variable (拆分变量)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 一个变量承担了多个责任（被多次赋值用于不同目的）。每个变量应只负责一件事（const）。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">变量</span> Rename Field (字段改名)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 数据结构的命名对于理解程序至关重要。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">变量</span> Replace Derived Variable with Query (以查询取代派生变量)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 尽量减少可变数据的作用域。如果一个值可以计算出来，就不要存储。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">引用</span> Change Reference to Value (将引用对象改为值对象)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 值对象（不可变）更易于理解和处理。如果对象不需要共享更新，尽量作为值对象。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">引用</span> Change Value to Reference (将值对象改为引用对象)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 如果需要共享数据的更新（例如：一个客户对象被多个订单引用），则需要将其转为引用对象（通常使用 Repository）。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 10: Simplifying Conditional Logic -->
+            <section id="conditional">
+                <h1>简化条件逻辑 (Chapter 10)</h1>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">条件</span> Decompose Conditional (分解条件表达式)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 复杂的条件检查掩盖了意图。提炼条件判断、then分支、else分支为独立的函数。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">条件</span> Consolidate Conditional Expression (合并条件表达式)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 一系列检查都导致相同的结果。使用 AND/OR 合并它们，并提炼函数（如 <code>isDisabilityEligible()</code>）。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">条件</span> Replace Nested Conditional with Guard Clauses (以卫语句取代嵌套条件表达式)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> <code>if-else</code> 暗示两个分支同等重要。如果某个分支是异常情况，检查后直接 return，让主流程保持平铺。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">多态</span> Replace Conditional with Polymorphism (以多态取代条件表达式)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 多个函数中有同样的 switch/if 逻辑基于类型分发。使用类和多态使逻辑更清晰。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">特例</span> Introduce Special Case (引入特例)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>别名：</strong> Introduce Null Object。</p>
+                        <p><strong>动机：</strong> 代码中充满了对特殊值（如 null, "unknown"）的检查。创建一个特例对象来封装通用行为。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">断言</span> Introduce Assertion (引入断言)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 明确代码对状态的假设。断言是程序员间的沟通工具，且有助于调试。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 11: Refactoring APIs -->
+            <section id="api">
+                <h1>重构 API (Chapter 11)</h1>
+                <p>优化模块间的连接点。</p>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">接口</span> Separate Query from Modifier (将查询函数和修改函数分离)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>原则：</strong> 命令查询分离（CQS）。任何有返回值的函数都不应该有副作用（Observable Side Effects）。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">接口</span> Parameterize Function (函数参数化)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 两个函数逻辑非常相似，只有字面量不同。合并它们，将不同之处作为参数。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">接口</span> Remove Flag Argument (移除标记参数)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 布尔标记参数（如 `render(true)`）让调用代码晦涩难懂。应拆分为明确命名的函数。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">接口</span> Preserve Whole Object (保持对象完整)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 不要解构对象传多个参数，直接传整个对象。这能应对未来变化，减少参数列表。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">接口</span> Replace Parameter with Query (以查询取代参数)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 如果函数可以通过其他参数自己获取数据，就不要让调用者麻烦去计算并传参。减少参数列表。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">接口</span> Replace Query with Parameter (以参数取代查询)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 为了解耦（去除函数内部对他物的依赖），或者为了纯函数化（引用透明性），将内部依赖改为参数传入。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">接口</span> Remove Setting Method (移除设值函数)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 如果字段在创建后不应改变，移除 setter，表明其不可变性。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">构造</span> Replace Constructor with Factory Function (以工厂函数取代构造函数)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 构造函数有限制（名字固定、必须返回实例）。工厂函数更灵活。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">命令</span> Replace Function with Command (以命令取代函数)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 函数太复杂。封装成命令对象（Command Object），将参数转为字段，便于分解复杂逻辑。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">命令</span> Replace Command with Function (以函数取代命令)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 命令对象如果不复杂，就只是增加了复杂度。变回普通函数。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 12: Inheritance -->
+            <section id="inheritance">
+                <h1>处理继承 (Chapter 12)</h1>
+                <p>继承很强大，但也容易被误用。</p>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">继承</span> Pull Up Method / Field (上移函数/字段)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 子类中有重复代码。移到超类中。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">继承</span> Push Down Method / Field (下移函数/字段)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 超类中的某些行为只与部分子类有关。</p>
+                    </div>
+                </div>
+
+                 <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">继承</span> Pull Up Constructor Body (上移构造函数主体)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 子类构造函数中有重复代码。调用 <code>super()</code>。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">继承</span> Remove Subclass (移除子类)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 子类做的事情太少，不值得存在。用超类中的字段（Type Field）代替。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">继承</span> Extract Superclass (提炼超类)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 两个类有相似的特性。创建一个共同的超类。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">继承</span> Collapse Hierarchy (折叠继承体系)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 超类和子类太相似，没必要分开。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">类型</span> Replace Type Code with Subclasses (以子类取代类型码)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 需要基于类型码表现多态行为，或特定类型有特定字段。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">委托</span> Replace Subclass with Delegate (以委托取代子类)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 组合优于继承。当继承导致类关系过紧，或想沿不同轴向变化（继承只能一次）时，使用委托（策略/状态模式）。</p>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-header" onclick="toggleBlock(this)">
+                        <span class="block-title"><span class="tag tag-refactor">委托</span> Replace Superclass with Delegate (以委托取代超类)</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="block-content">
+                        <p><strong>动机：</strong> 误用继承（如 Stack 继承 List），导致子类暴露了不该暴露的接口。改用委托持有旧超类对象。</p>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        // Section Navigation
+        function switchSection(id) {
+            // Highlight Nav
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Show Section
+            document.querySelectorAll('section').forEach(el => el.classList.remove('active'));
+            const target = document.getElementById(id);
+            if (target) {
+                target.classList.add('active');
+            }
+
+            // Scroll Top
+            document.querySelector('main').scrollTop = 0;
+        }
+
+        // Accordion Logic
+        function toggleBlock(header) {
+            const block = header.parentElement;
+            const icon = header.querySelector('span:last-child');
+            
+            if (block.classList.contains('open')) {
+                block.classList.remove('open');
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                block.classList.add('open');
+                icon.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        // Search Logic
+        function filterContent() {
+            const input = document.querySelector('.search-input').value.toLowerCase();
+            const sections = document.querySelectorAll('section');
+            const allBlocks = document.querySelectorAll('.block');
+
+            if (input.length > 0) {
+                // Show all sections temporarily to search inside
+                sections.forEach(s => s.style.display = 'block');
+                
+                allBlocks.forEach(block => {
+                    const text = block.innerText.toLowerCase();
+                    if (text.includes(input)) {
+                        block.style.display = 'block';
+                        block.classList.add('open'); // Auto expand matched items
+                    } else {
+                        block.style.display = 'none';
+                        block.classList.remove('open');
+                    }
+                });
+            } else {
+                // Reset View
+                sections.forEach(s => s.style.display = '');
+                document.querySelector('section.active').style.display = 'block';
+                allBlocks.forEach(block => {
+                    block.style.display = 'block';
+                    block.classList.remove('open');
+                });
+            }
+        }
+    </script>
+</body>
+</html>
