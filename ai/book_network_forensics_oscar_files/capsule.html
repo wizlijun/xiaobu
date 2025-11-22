@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSCAR 网络取证方法论 - 深度解析</title>
+    <style>
+        :root {
+            --primary-blue: #2c8df4;
+            --light-bg: #f9fafc;
+            --white: #ffffff;
+            --text-main: #2c3e50;
+            --text-secondary: #606f7b;
+            --border-color: #e2e8f0;
+            --success-green: #38c172;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+            background-color: var(--white);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-weight: 800;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--text-main);
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* Timeline/Step Container */
+        .oscar-wrapper {
+            position: relative;
+            padding-left: 50px;
+        }
+
+        /* Vertical Line */
+        .oscar-wrapper::before {
+            content: '';
+            position: absolute;
+            left: 24px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #edf2f7;
+            z-index: 0;
+        }
+
+        /* Step Item */
+        .step-item {
+            position: relative;
+            margin-bottom: 40px;
+            z-index: 1;
+        }
+
+        /* The Letter Circle */
+        .step-marker {
+            position: absolute;
+            left: -50px;
+            top: 0;
+            width: 50px;
+            height: 50px;
+            background: var(--white);
+            border: 2px solid var(--primary-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.5rem;
+            color: var(--primary-blue);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .step-item:hover .step-marker {
+            background: var(--primary-blue);
+            color: var(--white);
+            transform: scale(1.1);
+        }
+
+        /* Main Card */
+        .step-card {
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .step-card:hover {
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Card Header */
+        .card-header {
+            padding: 20px 25px;
+            background: var(--light-bg);
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .step-title {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .step-desc {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            font-weight: normal;
+        }
+
+        .toggle-icon {
+            font-size: 1.2rem;
+            color: var(--primary-blue);
+            transition: transform 0.3s ease;
+        }
+
+        /* Card Body (Hidden Details) */
+        .card-body {
+            padding: 0 25px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0, 1, 0, 1), padding 0.5s ease;
+            background-color: var(--white);
+        }
+
+        .step-item.active .card-body {
+            padding: 25px;
+            max-height: 1000px; /* Approximate max height */
+            transition: max-height 1s ease-in-out;
+        }
+
+        .step-item.active .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        /* Content Styling */
+        h4 {
+            color: var(--text-main);
+            margin-top: 0;
+            font-size: 1rem;
+            border-left: 3px solid var(--primary-blue);
+            padding-left: 10px;
+            margin-bottom: 15px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        li::before {
+            content: "•";
+            color: var(--primary-blue);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .highlight-box {
+            background-color: #f0f9ff;
+            border: 1px dashed #bae6fd;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #0369a1;
+            margin-top: 15px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .oscar-wrapper { padding-left: 0; }
+            .oscar-wrapper::before { display: none; }
+            .step-marker { position: static; margin-bottom: 10px; width: 40px; height: 40px; font-size: 1.2rem; }
+            .step-item { margin-bottom: 30px; }
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+        
+        /* Badge Style */
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border-radius: 4px;
+            background: #e2e8f0;
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>OSCAR 网络取证方法论</h1>
+        <div class="subtitle">源自书籍《Network Forensics: Tracking Hackers through Cyberspace》</div>
+        <p style="margin-top: 20px; color: #718096;">点击下方卡片展开每个步骤的详细执行清单。</p>
+    </header>
+
+    <div class="oscar-wrapper">
+
+        <!-- Step O -->
+        <div class="step-item" onclick="toggleStep(this)">
+            <div class="step-marker">O</div>
+            <div class="step-card">
+                <div class="card-header">
+                    <div>
+                        <div class="step-title">Obtain Information (获取信息)</div>
+                        <span class="step-desc">调查的起点：了解"发生了什么"以及"在哪里发生的"。</span>
+                    </div>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="card-body">
+                    <div class="grid-2">
+                        <div>
+                            <h4>获取事件信息 (The Incident)</h4>
+                            <ul>
+                                <li><strong>事件描述：</strong> 目前已知发生了什么？</li>
+                                <li><strong>时间：</strong> 发现日期、时间和发现方式。</li>
+                                <li><strong>涉事人员与系统：</strong> 涉及哪些用户、IP地址或服务器？</li>
+                                <li><strong>法律考量：</strong> 是否涉及特定的监管要求（如HIPAA, PCI-DSS）？</li>
+                                <li><strong>目标：</strong> 管理层希望达到什么结果（恢复业务 vs 刑事起诉）？</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4>获取环境信息 (The Environment)</h4>
+                            <ul>
+                                <li><strong>网络拓扑：</strong> 获取最新的网络拓扑图。</li>
+                                <li><strong>证据来源：</strong> 现有的日志服务器、IDS/IPS、防火墙在哪里？</li>
+                                <li><strong>时间同步：</strong> 系统的 NTP 状态如何？时间偏差是多少？</li>
+                                <li><strong>资源：</strong> 可用的人员、设备和预算。</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="highlight-box">
+                        <strong>💡 核心提示：</strong> 取证人员不应只关注技术细节，还要理解业务背景和政治环境。这决定了你能动用多少资源以及调查的阻力有多大。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step S -->
+        <div class="step-item" onclick="toggleStep(this)">
+            <div class="step-marker">S</div>
+            <div class="step-card">
+                <div class="card-header">
+                    <div>
+                        <div class="step-title">Strategize (制定战略)</div>
+                        <span class="step-desc">在接触任何键盘之前，先制定计划。</span>
+                    </div>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="card-body">
+                    <span class="badge">关键：优先级排序</span>
+                    <p>网络取证的数据量通常极为庞大，且极易消失。你无法收集所有数据，必须做出选择。</p>
+                    
+                    <h4>战略规划步骤</h4>
+                    <ul>
+                        <li><strong>评估证据价值：</strong> 这个日志/数据包对解决案件有多大帮助？</li>
+                        <li><strong>评估获取成本：</strong> 获取它需要多少时间、人力？是否会干扰业务？</li>
+                        <li><strong>评估易失性 (Volatility)：</strong> 证据会在几秒钟内消失（如ARP缓存），还是会保存很久（如磁带备份）？</li>
+                    </ul>
+
+                    <div class="highlight-box">
+                        <strong>🎯 策略公式：</strong> 优先收集 <strong>[高价值]</strong> + <strong>[高易失性]</strong> + <strong>[低获取成本]</strong> 的证据。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step C -->
+        <div class="step-item" onclick="toggleStep(this)">
+            <div class="step-marker">C</div>
+            <div class="step-card">
+                <div class="card-header">
+                    <div>
+                        <div class="step-title">Collect Evidence (收集证据)</div>
+                        <span class="step-desc">执行采集计划，确保证据的完整性。</span>
+                    </div>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="card-body">
+                    <h4>采集三要素</h4>
+                    <ul>
+                        <li><strong>1. 记录 (Document)：</strong> 记录每一个操作、每一个命令。这是法庭上证明你专业性的基础。</li>
+                        <li><strong>2. 捕获 (Capture)：</strong> 
+                            <br>- <em>被动采集：</em> 嗅探流量（Sniffing）、获取现有日志。
+                            <br>- <em>主动采集：</em> 登录设备查看 ARP 表、CAM 表（注意：这会留下脚印）。
+                        </li>
+                        <li><strong>3. 存储/传输 (Store/Transport)：</strong> 确保证据链（Chain of Custody）不中断。使用加密哈希验证完整性。</li>
+                    </ul>
+                    
+                    <div class="highlight-box">
+                        <strong>⚠️ 最小化脚印 (Footprint)：</strong> 网络取证往往涉及正在运行的生产环境。每一次主动连接（如SSH登录路由器）都会改变系统状态（日志、时间戳、ARP表）。要始终意识到你的操作对证据的影响。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step A -->
+        <div class="step-item" onclick="toggleStep(this)">
+            <div class="step-marker">A</div>
+            <div class="step-card">
+                <div class="card-header">
+                    <div>
+                        <div class="step-title">Analyze (分析)</div>
+                        <span class="step-desc">从数据中提取情报，关联碎片。</span>
+                    </div>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="card-body">
+                    <p>分析通常是非线性的，但在网络取证中，以下几个方面至关重要：</p>
+                    <div class="grid-2">
+                        <div>
+                            <h4>核心技术</h4>
+                            <ul>
+                                <li><strong>关联 (Correlation)：</strong> 将来自防火墙、IDS、Web日志的独立事件联系起来。</li>
+                                <li><strong>时间线 (Timeline)：</strong> 将所有事件按标准化时间（如 UTC）排序。注意修正不同设备的时间偏差。</li>
+                                <li><strong>证实 (Corroboration)：</strong> 永远不要只依赖单一来源的证据。用数据包验证日志，用日志验证数据包。</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4>分析深度</h4>
+                            <ul>
+                                <li><strong>统计分析：</strong> 流量峰值、异常端口使用。</li>
+                                <li><strong>协议分析：</strong> 检查头部字段是否异常（如 covert channels）。</li>
+                                <li><strong>内容重组：</strong> 从数据包中提取文件、邮件或图片。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step R -->
+        <div class="step-item" onclick="toggleStep(this)">
+            <div class="step-marker">R</div>
+            <div class="step-card">
+                <div class="card-header">
+                    <div>
+                        <div class="step-title">Report (报告)</div>
+                        <span class="step-desc">将技术发现转化为可操作的结论。</span>
+                    </div>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="card-body">
+                    <p>如果无法向非技术人员解释清楚，所有的分析工作都是徒劳的。</p>
+                    
+                    <h4>报告的标准</h4>
+                    <ul>
+                        <li><strong>受众导向：</strong> 报告必须能被法官、陪审团、HR经理或CEO理解。</li>
+                        <li><strong>事实与推论分离：</strong> 明确区分"我们在日志中看到了什么"（事实）和"我们要么认为发生了什么"（假设/推论）。</li>
+                        <li><strong>可辩护性 (Defensible)：</strong> 每一个结论都必须有具体的证据支撑，且能经得起对方律师或专家的质疑。</li>
+                    </ul>
+
+                    <div class="highlight-box">
+                        <strong>📄 最终交付物：</strong> 通常包含一份高层级的《执行摘要》供管理层阅读，以及一份包含详细日志、哈希值和技术细节的《技术报告》供IT人员和法庭使用。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer style="text-align: center; margin-top: 50px; color: #a0aec0; font-size: 0.9rem;">
+        &copy; Network Forensics: Tracking Hackers through Cyberspace | OSCAR Methodology Visualization
+    </footer>
+</div>
+
+<script>
+    function toggleStep(element) {
+        // Toggle the 'active' class to trigger CSS transitions
+        element.classList.toggle('active');
+        
+        // Optional: Close others when one opens (Accordion style)
+        // Uncomment the lines below if you want only one section open at a time
+        /*
+        const allSteps = document.querySelectorAll('.step-item');
+        allSteps.forEach(step => {
+            if (step !== element) {
+                step.classList.remove('active');
+            }
+        });
+        */
+    }
+</script>
+
+</body>
+</html>
