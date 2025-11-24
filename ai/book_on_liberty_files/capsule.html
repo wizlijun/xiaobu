@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《论自由》交互式摘要 - J.S. Mill</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2; /* 柔和蓝：代表理性与自由 */
+            --accent-color: #50e3c2;  /* 柔和绿：代表生长与个性 */
+            --warning-color: #ff9a9e; /* 柔和红：代表警告与限制 */
+            --text-main: #2c3e50;
+            --text-light: #7f8c8d;
+            --bg-color: #ffffff;
+            --card-bg: #fdfdfd;
+            --border-color: #eaeaea;
+            --highlight-bg: #eaf4ff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.8;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 布局容器 */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* 头部设计 */
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeIn Down 1s ease-out;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        /* 核心原则展示区 - 醒目 */
+        .hero-principle {
+            background: linear-gradient(135deg, #f6f9fc 0%, #f1f4f9 100%);
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 50px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            transition: transform 0.3s ease;
+        }
+
+        .hero-principle:hover {
+            transform: translateY(-5px);
+        }
+
+        .hero-title {
+            color: var(--primary-color);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            display: inline-block;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .quote {
+            font-size: 1.4rem;
+            font-style: italic;
+            color: #34495e;
+            position: relative;
+        }
+
+        /* 导航标签 */
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            color: var(--text-light);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            background-color: #f8f9fa;
+            color: var(--primary-color);
+        }
+
+        .tab-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
+        }
+
+        /* 内容卡片区 */
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            font-weight: 500;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+        }
+
+        .card h3::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 24px;
+            background-color: var(--accent-color);
+            margin-right: 12px;
+            border-radius: 3px;
+        }
+
+        .highlight-fact {
+            background-color: var(--highlight-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #2980b9;
+            font-weight: 500;
+        }
+
+        .highlight-view {
+            color: #e67e22;
+            font-weight: 500;
+        }
+
+        /* 交互式折叠详情 */
+        .details-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            padding: 0;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .details-btn::after {
+            content: '▼';
+            font-size: 0.7rem;
+            margin-left: 5px;
+            transition: transform 0.3s;
+        }
+
+        .details-btn.open::after {
+            transform: rotate(180deg);
+        }
+
+        .details-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+            background-color: #fcfcfc;
+            border-left: 2px solid var(--border-color);
+            padding-left: 15px;
+            margin-top: 10px;
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        /* 关键词胶囊 */
+        .keyword-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .keyword {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background-color: #f0f0f0;
+            color: #777;
+            font-weight: 600;
+        }
+
+        /* 动画定义 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+            .hero-principle { padding: 20px; }
+            .quote { font-size: 1.1rem; }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-light);
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>ON LIBERTY</h1>
+        <div class="subtitle">论自由 | 约翰·斯图尔特·密尔</div>
+    </header>
+
+    <!-- 核心原则部分：全书的基石 -->
+    <section class="hero-principle">
+        <span class="hero-title">全书核心原则</span>
+        <div class="quote">
+            “人类无论是个体还是集体，能够正当地干涉任何一名成员行动自由的唯一目的，就是<span style="color:var(--warning-color); font-weight:bold;">自我防卫</span>。违背其意志而对文明社会成员合法行使权力的唯一正当理由，是<span style="color:var(--warning-color); font-weight:bold;">防止对他人的伤害</span>。”
+        </div>
+        <div style="margin-top: 20px; font-size: 0.9rem; color: var(--text-light);">
+            (The Harm Principle: 伤害原则)
+        </div>
+    </section>
+
+    <!-- 导航标签 -->
+    <nav class="nav-tabs">
+        <button class="tab-btn active" onclick="openTab(event, 'chapter1')">引论与背景</button>
+        <button class="tab-btn" onclick="openTab(event, 'chapter2')">思想与讨论的自由</button>
+        <button class="tab-btn" onclick="openTab(event, 'chapter3')">个性与幸福</button>
+        <button class="tab-btn" onclick="openTab(event, 'chapter4')">社会权力的极限</button>
+        <button class="tab-btn" onclick="openTab(event, 'chapter5')">应用实例</button>
+    </nav>
+
+    <!-- 第一章：引论 -->
+    <div id="chapter1" class="content-section active">
+        <div class="card">
+            <div class="keyword-group">
+                <span class="keyword">Civil Liberty</span>
+                <span class="keyword">Tyranny of the Majority</span>
+            </div>
+            <h3>主题的界定</h3>
+            <p>本书讨论的不是“意志自由”，而是<span class="highlight-fact">公民自由或社会自由</span>。即社会可以合法地对个人行使权力的性质和界限。</p>
+            <p>密尔指出，随着民主进程，新的威胁出现了：<span class="highlight-view">多数人的暴政</span>。这不仅指政治上的暴政，更指社会舆论对异见者的压迫。</p>
+            <button class="details-btn" onclick="toggleDetails(this)">深入了解：暴政的演变</button>
+            <div class="details-content">
+                <p><strong>古代：</strong> 自由意味着限制统治者的权力（对抗国王或统治阶级）。<br>
+                <strong>现代：</strong> 统治者成为人民的代表，人们认为不需要限制“自己的”权力。<br>
+                <strong>密尔的警示：</strong> “人民”并不总是同质的。实际上是“多数人”可能想要压迫“少数人”。这种社会暴政比政治压迫更可怕，因为它深入生活的细节，奴役灵魂。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第二章：思想言论自由 -->
+    <div id="chapter2" class="content-section">
+        <div class="card" style="border-left: 4px solid var(--primary-color);">
+            <h3>为什么要允许言论绝对自由？</h3>
+            <p>密尔提出了著名的<span class="highlight-fact">三个论点</span>，证明即使全人类只有一个人持相反意见，人类也没有理由让他通过沉默。</p>
+            
+            <div style="margin-top:15px; background: #f9f9f9; padding:15px; border-radius:6px;">
+                <p><strong>1. 如果被压制的意见是正确的：</strong><br> 我们就被剥夺了以真理代替错误的机会。</p>
+                <p><strong>2. 如果被压制的意见是错误的：</strong><br> 我们失去了真理与错误冲突时产生的对真理更清晰的认知和更生动的印象。</p>
+                <p><strong>3. 如果意见是真理与错误的混合（最常见）：</strong><br> 我们需要那部分被压制的真理来补全普遍意见中缺失的部分。</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="keyword-group">
+                <span class="keyword">Infallibility</span>
+                <span class="keyword">Living Truth</span>
+            </div>
+            <h3>无误论的假设 & 僵死的教条</h3>
+            <p>拒绝听取意见就是假设自己<span class="highlight-view">绝对无误 (Infallibility)</span>。历史证明，即使是苏格拉底、耶稣或马可·奥勒留这样的圣贤，也曾因当时社会的“确定性”而被迫害或迫害他人。</p>
+            <button class="details-btn" onclick="toggleDetails(this)">为什么真理需要辩论？</button>
+            <div class="details-content">
+                <p>即使我们持有的是真理，如果它不经常遭受挑战和辩论，它就会变成<span class="highlight-fact">僵死的教条 (Dead Dogma)</span>。持有者将不再理解其理性基础，这会导致信念在性格和行为中失去活力，变成一种形式上的宣称。</p>
+                <p>密尔强调：<strong>“魔鬼辩护士”</strong>的存在对于确立真理至关重要。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第三章：个性 -->
+    <div id="chapter3" class="content-section">
+        <div class="card">
+            <div class="keyword-group">
+                <span class="keyword">Individuality</span>
+                <span class="keyword">Mediocrity</span>
+            </div>
+            <h3>个性作为幸福的要素</h3>
+            <p>密尔引用洪堡（Wilhelm von Humboldt）的观点，认为人的最终目的是<span class="highlight-view">能力的最崇高和最和谐的发展</span>。而这需要两个条件：自由和境遇的多样性。</p>
+            <p>核心隐喻：<strong>人性不是一部机器，而是一棵树。</strong>它需要根据内在力量向各方面生长。</p>
+            <button class="details-btn" onclick="toggleDetails(this)">为什么不仅要思想自由，还要行动自由？</button>
+            <div class="details-content">
+                <p>1. <strong>打破习俗的专制：</strong> 习俗的专制是人类进步的持久障碍（如中国的停滞）。<br>
+                2. <strong>天才的土壤：</strong> 天才只能在自由的空气中呼吸。虽然天才是少数，但他们是“大地的盐”，防止生活变成死水。<br>
+                3. <strong>生活的实验：</strong> 既然人类是不完美的，那么应该允许有不同生活方式的“实验”。</p>
+                <p><strong>警告：</strong> 现代社会正倾向于使人均质化，平庸（Mediocrity）正在成为统治力量。如果个性不反抗，欧洲将变成另一个中国。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第四章：社会权力的极限 -->
+    <div id="chapter4" class="content-section">
+        <div class="card">
+            <h3>个人主权 vs 社会控制</h3>
+            <p>如何划分界限？密尔再次运用“伤害原则”进行区分：</p>
+            <ul style="list-style-type: none; padding-left: 0;">
+                <li style="margin-bottom: 10px; padding: 10px; background: #e8f5e9; border-radius: 4px;">
+                    <strong style="color: #2e7d32;">涉己行为 (Self-regarding acts)：</strong><br>
+                    只影响行为者本人（或经同意的成年人）。<br>
+                    <span class="highlight-fact">社会无权干涉。</span> 即使行为愚蠢、不道德（如酗酒、赌博），社会只能通过规劝、厌恶或回避来表达，而不能施加法律惩罚。
+                </li>
+                <li style="padding: 10px; background: #ffebee; border-radius: 4px;">
+                    <strong style="color: #c62828;">涉他行为 (Other-regarding acts)：</strong><br>
+                    损害他人利益或未履行对社会的义务。<br>
+                    <span class="highlight-fact">社会有权干涉。</span> 可以通过法律惩罚或通过舆论进行道德谴责。
+                </li>
+            </ul>
+        </div>
+        <div class="card">
+            <h3>驳斥“家长式管理”</h3>
+            <p>许多人认为：“如果一个人伤害自己，社会不应该保护他吗？”</p>
+            <p>密尔反驳：成年人是自己幸福的最佳判断者。社会干预个人的涉己行为时，往往是<span class="highlight-view">在错误的地方进行错误的干涉</span>（例如禁止吃猪肉的穆斯林国家，或清教徒禁止娱乐）。社会对他人的好恶不能成为法律。</p>
+        </div>
+    </div>
+
+    <!-- 第五章：应用 -->
+    <div id="chapter5" class="content-section">
+        <div class="card">
+            <h3>具体案例分析</h3>
+            <p>密尔通过具体案例展示了原则的微妙之处：</p>
+            
+            <div style="margin-top: 15px;">
+                <div style="border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px;">
+                    <strong>毒品与毒药的销售：</strong><br>
+                    不能为了预防犯罪而完全禁止销售（如毒药可用于工业），但可以要求登记（"预设证据"）。不能仅为了保护买家不伤害自己而禁止销售（侵犯买家自由）。
+                </div>
+                <div style="border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px;">
+                    <strong>醉酒：</strong><br>
+                    单纯醉酒不应受罚。但如果某人醉酒后曾实施暴力，再次醉酒可被视为犯罪。警察或士兵执勤时醉酒应受罚（违背职责）。
+                </div>
+                <div style="border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px;">
+                    <strong>皮条客与赌场老板：</strong><br>
+                    这是一个边缘案例。密尔倾向于认为，虽然个人有赌博的自由，但社会有权限制那些“为了私利而刺激他人恶习”的商业行为。
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="keyword-group">
+                <span class="keyword">State Education</span>
+                <span class="keyword">Bureaucracy</span>
+            </div>
+            <h3>教育与政府的角色</h3>
+            <p><strong>教育：</strong> 国家应当强制要求受教育（履行对儿童的义务），但国家不应该垄断教育的提供。国家教育应该只是众多实验中的一种，以确立标准，而非塑造思想的模具。</p>
+            <p><strong>政府干预的三个反对理由（非基于自由原则）：</strong></p>
+            <ol>
+                <li>个人处理由于政府（效率）。</li>
+                <li>作为个人发展的手段（如陪审团、地方自治），由个人处理更好。</li>
+                <li><span class="highlight-fact">最大的理由：</span> 避免政府权力过大。如果不加限制，将建立一个庞大的官僚机构，不仅奴役民众，最终也会扼杀政府自身的活力。</li>
+            </ol>
+        </div>
+    </div>
+
+    <footer>
+        <p>Generated based on the text of "On Liberty" by John Stuart Mill.</p>
+        <p>Interactivity designed for low cognitive load learning.</p>
+    </footer>
+</div>
+
+<script>
+    function openTab(evt, chapterName) {
+        // 隐藏所有内容区域
+        var i, contentSection, tabBtn;
+        contentSection = document.getElementsByClassName("content-section");
+        for (i = 0; i < contentSection.length; i++) {
+            contentSection[i].classList.remove("active");
+            contentSection[i].style.display = "none";
+        }
+
+        // 移除所有按钮的激活状态
+        tabBtn = document.getElementsByClassName("tab-btn");
+        for (i = 0; i < tabBtn.length; i++) {
+            tabBtn[i].className = tabBtn[i].className.replace(" active", "");
+        }
+
+        // 显示当前标签页，并添加激活状态
+        document.getElementById(chapterName).style.display = "block";
+        // 小延迟添加active类以触发动画
+        setTimeout(() => {
+            document.getElementById(chapterName).classList.add("active");
+        }, 10);
+        
+        evt.currentTarget.className += " active";
+    }
+
+    function toggleDetails(btn) {
+        btn.classList.toggle("open");
+        var content = btn.nextElementSibling;
+        if (content.style.maxHeight) {
+            content.style.maxHeight = null;
+        } else {
+            content.style.maxHeight = content.scrollHeight + "px";
+        }
+    }
+</script>
+
+</body>
+</html>
