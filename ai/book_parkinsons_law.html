@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>帕金森定律：深度解析版</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --highlight-bg: #eef7ff;
+            --text-color: #4a4a4a;
+            --text-light: #7f8c8d;
+            --bg-color: #ffffff;
+            --card-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            --card-hover-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            --border-radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            
+            /* Special colors for the chart */
+            --money-color: #27ae60;
+            --time-color: #e74c3c;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background-color: #f0f2f5;
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: var(--bg-color);
+            padding: 60px 20px;
+            text-align: center;
+            border-bottom: 1px solid #eaeaea;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin: 0 0 15px 0;
+            font-weight: 800;
+            font-size: 2.5rem;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1.1em;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 0 auto 60px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--bg-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            padding: 30px;
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            border-left: 5px solid transparent;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--card-hover-shadow);
+        }
+
+        .card.active {
+            border-left-color: var(--accent-color);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .card-number {
+            font-size: 0.85em;
+            color: var(--accent-color);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: rgba(52, 152, 219, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .card-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 10px 0;
+            line-height: 1.3;
+        }
+
+        .core-law {
+            background-color: var(--highlight-bg);
+            color: var(--primary-color);
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.05em;
+            margin: 15px 0;
+            border-left: 4px solid var(--accent-color);
+            font-style: italic;
+        }
+
+        .toggle-icon {
+            width: 32px;
+            height: 32px;
+            background: #f8f9fa;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            transition: var(--transition);
+            flex-shrink: 0;
+            margin-left: 15px;
+        }
+
+        .card.active .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        /* Expanded Content */
+        .details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.6s ease-in-out, opacity 0.6s ease-in-out;
+            opacity: 0;
+        }
+
+        .card.active .details {
+            max-height: 3000px;
+            opacity: 1;
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid #f1f1f1;
+        }
+
+        .detail-section {
+            margin-bottom: 25px;
+        }
+
+        .detail-heading {
+            font-size: 1.1em;
+            color: var(--primary-color);
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        /* --- New Styles for Comparison Chart (Chapter 3) --- */
+        .comparison-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+            background: #fafafa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .chart-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chart-label {
+            width: 120px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .chart-data {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin: 0 15px;
+        }
+
+        .bar-container {
+            display: flex;
+            align-items: center;
+            height: 20px;
+            font-size: 0.8em;
+        }
+
+        .bar {
+            height: 12px;
+            border-radius: 6px;
+            margin-right: 8px;
+        }
+
+        .bar.money { background-color: var(--money-color); }
+        .bar.time { background-color: var(--time-color); }
+
+        .psych-analysis {
+            background-color: #fff;
+            border-left: 4px solid #8e44ad;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 0 6px 6px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .psych-title {
+            color: #8e44ad;
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* --- Styles for Chapter 1 --- */
+        .driver-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .driver-box {
+            flex: 1;
+            min-width: 280px;
+            background: #fcfcfc;
+            border: 1px solid #eee;
+            border-top: 3px solid var(--accent-color);
+            padding: 15px;
+            border-radius: 6px;
+        }
+        
+        .driver-title {
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .modern-list li {
+            background: #fcfcfc;
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border-left: 3px solid #bdc3c7;
+        }
+        
+        .modern-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-right: 5px;
+        }
+
+        .fact-box {
+            background: #fff8e1;
+            border: 1px solid #ffe0b2;
+            color: #d35400;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 0.95em;
+        }
+
+        .keywords-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .keyword {
+            color: #555;
+            background: #e0e0e0;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-light);
+            background: #e9ecef;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8rem; }
+            .driver-container { flex-direction: column; }
+            .chart-row { flex-direction: column; align-items: flex-start; margin-bottom: 15px; }
+            .chart-data { width: 100%; margin: 5px 0; }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>帕金森定律</h1>
+        <div class="subtitle">行政学研究精要 · 核心交互摘要</div>
+    </header>
+
+    <main id="container">
+        <!-- JS will populate cards here -->
+    </main>
+
+    <footer>
+        <p>基于 C. Northcote Parkinson 原著 (1957) </p>
+    </footer>
+
+    <script>
+        const chapters = [
+            {
+                id: 1,
+                title: "帕金森定律：金字塔的上升",
+                law: "工作会自动膨胀，直至占满所有可用的时间。",
+                content_type: "rich", 
+                content: `
+                    <div class="detail-section">
+                        <div class="detail-heading">诞生背景与数据支撑</div>
+                        <p>C. Northcote Parkinson 通过研究<strong>英国海军部</strong>（1914-1928）的数据发现了这一规律：</p>
+                        <div class="fact-box">
+                            <ul>
+                                <li><strong>作战主力减少：</strong>舰只减少67%，官兵减少31%。</li>
+                                <li><strong>行政人员暴增：</strong>海军部文职官员（坐办公室的）反而<strong>增加了78%</strong>。</li>
+                            </ul>
+                            <div style="margin-top:8px; font-size:0.9em;">结论：哪怕海军一艘船都没有了，文职官员依然会继续增长。</div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <div class="detail-heading">根本原因：两大驱动力</div>
+                        <div class="driver-container">
+                            <div class="driver-box">
+                                <span class="driver-title">1. 官员想要下属，而非对手</span>
+                                <p>当官员感到过劳时，招聘两个下属是最佳选择。这样他的地位提升了，且下属互相制衡，没人能威胁他。</p>
+                            </div>
+                            <div class="driver-box">
+                                <span class="driver-title">2. 官员们彼此制造工作</span>
+                                <p>原本一个人的工作现在由七个人做。他们忙于彼此协调、传阅文件。每个人都在“忙碌”，但都是<strong>内部消耗</strong>。</p>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                keywords: ["行政增长系数", "自我繁殖", "内卷", "熵增"]
+            },
+            {
+                id: 2,
+                title: "人民的意愿：年度大会",
+                law: "会议的结果取决于座位安排，而非辩论。",
+                content_type: "simple",
+                key_concept: "中间派策略",
+                summary: "只要能够控制游离不定、听不清或听不懂的'中间派'，就能控制投票结果。演讲纯属浪费时间。",
+                mechanism: "圆桌或方桌会议中，核心技巧是安插亲信在犹豫者两侧，制造'多数人已同意'的假象，让其从众。",
+                fact: "策略核心：让中间派还没搞清楚状况就跟着举手。",
+                keywords: ["座位政治", "从众心理", "中间集团"]
+            },
+            {
+                id: 3,
+                title: "高深财政：消失的兴趣点",
+                law: "用于讨论一个项目的时间，与该项目涉及的金额成反比。",
+                content_type: "rich", // 设为Rich以展示图表
+                content: `
+                    <div class="detail-section">
+                        <div class="detail-heading">核心案例：财政委员会的议程</div>
+                        <p>财政委员会在一次会议中讨论了三个项目，结果令人震惊：</p>
+                        
+                        <div class="comparison-chart">
+                            <!-- Item 1 -->
+                            <div class="chart-row">
+                                <div class="chart-label">☢️ 核反应堆</div>
+                                <div class="chart-data">
+                                    <div class="bar-container">
+                                        <div class="bar money" style="width: 100%;"></div>
+                                        <span>$10,000,000</span>
+                                    </div>
+                                    <div class="bar-container">
+                                        <div class="bar time" style="width: 5%;"></div>
+                                        <strong>2.5 分钟 (通过)</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Item 2 -->
+                            <div class="chart-row">
+                                <div class="chart-label">🚲 自行车棚</div>
+                                <div class="chart-data">
+                                    <div class="bar-container">
+                                        <div class="bar money" style="width: 15%;"></div>
+                                        <span>$2,350</span>
+                                    </div>
+                                    <div class="bar-container">
+                                        <div class="bar time" style="width: 60%;"></div>
+                                        <strong>45 分钟 (激烈争论)</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                             <!-- Item 3 -->
+                            <div class="chart-row">
+                                <div class="chart-label">☕ 员工咖啡</div>
+                                <div class="chart-data">
+                                    <div class="bar-container">
+                                        <div class="bar money" style="width: 2%;"></div>
+                                        <span>$57 / 年</span>
+                                    </div>
+                                    <div class="bar-container">
+                                        <div class="bar time" style="width: 90%;"></div>
+                                        <strong>1.25 小时 (僵持不下)</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <div class="detail-heading">作者的深度心理剖析：为什么？</div>
+                        <p>这不仅仅是浪费时间，这是人性的必然：</p>
+                        
+                        <div class="psych-analysis">
+                            <span class="psych-title">1. 核反应堆：无知带来的沉默</span>
+                            <p>在一千万美元的项目面前，大部分委员完全不懂技术细节。如果开口提问，不仅可能暴露自己的无知，还可能被专家嘲笑。因此，为了<strong>掩饰无知</strong>，大家选择保持沉默并迅速点头通过。</p>
+                        </div>
+                        
+                        <div class="psych-analysis">
+                            <span class="psych-title">2. 自行车棚：常识带来的表现欲</span>
+                            <p>所有人都知道车棚是什么，都知道石棉顶和铁皮顶的区别。这里没有技术门槛。为了证明自己<strong>“正在尽职尽责地审查预算”</strong>（Pulling their weight），每个人都必须发言。这是他们唯一能安全展示权威的领域。</p>
+                        </div>
+
+                        <div class="fact-box" style="margin-top:15px;">
+                            <strong>结论（琐事定律）：</strong> 金额越小，处于普通人理解范围内的概率越高，参与讨论的人就越多，浪费的时间也就越长。
+                        </div>
+                    </div>
+                `,
+                keywords: ["琐事定律", "认知负荷", "无效会议", "避重就轻"]
+            },
+            {
+                id: 4,
+                title: "董事与理事会：低效系数",
+                law: "委员会一旦超过20-22人，便即刻丧失实际效力。",
+                content_type: "simple",
+                key_concept: "无能系数",
+                summary: "委员会就像植物一样生长。一旦超过临界点，核心权力就会转移到由3-5人组成的内部小圈子。",
+                mechanism: "当成员过多：难以召集、有人耳背、开始发表正式演讲而非对话。真正的决策早在会前由少数人定好了。",
+                fact: "英国内阁、枢密院等机构都在成员超过20人左右时开始衰落或权力转移。",
+                keywords: ["组织膨胀", "核心圈子", "决策瘫痪"]
+            },
+            {
+                id: 5,
+                title: "候选人名单：选择的原则",
+                law: "完美的招聘广告应当只吸引唯一的一位合格申请者。",
+                content_type: "simple",
+                key_concept: "负向筛选",
+                summary: "现代心理测试选出的是平庸之辈。正确的做法是设定极高的门槛（甚至荒谬的条件），吓退所有不合适的人。",
+                mechanism: "在广告中平衡薪资与危险/难度，使得只有一个这种'疯子'会来申请——而他正是你需要的。",
+                fact: "案例：招聘首相应该要求他能和拳王打三个回合，并在民调中获得不可能的高票。",
+                keywords: ["精准招聘", "门槛设置", "逆向思维"]
+            },
+            {
+                id: 6,
+                title: "规划与建筑：行政大楼",
+                law: "完美的布局设计只会在机构崩溃的前夜达成。",
+                content_type: "simple",
+                key_concept: "完美即死亡",
+                summary: "当宏伟、完美的总部大楼建成时，往往标志着该机构已进入衰退期或变得僵化。",
+                mechanism: "因为规划完美的大楼需要时间，这期间机构已经从奋斗期转入守成期。",
+                fact: "凡尔赛宫建成时路易十四权力已衰；新德里建成时英帝国已失去印度。",
+                keywords: ["建筑决定论", "盛极而衰", "形式主义"]
+            },
+            {
+                id: 7,
+                title: "个性筛选：鸡尾酒会公式",
+                law: "重要人物会顺时针移动，并在特定时间聚集在特定区域。",
+                content_type: "simple",
+                key_concept: "社交流体力学",
+                summary: "想要在酒会上识别关键人物？不要看头衔，看行为模式。人群自然左倾（顺时针），因为这是防御姿态。",
+                mechanism: "重要人物到达时间公式：开始时间 + 45分钟。他们在特定区域短暂停留后迅速离开。",
+                fact: "实验观察：为了避开角落的胆小鬼和中间的怪人，重要人物随'洋流'移动。",
+                keywords: ["社交分析", "群体行为", "权力识别"]
+            },
+            {
+                id: 8,
+                title: "嫉妒无能症：一种麻痹症",
+                law: "二流领导必然招募三流下属，最终导致组织智力坏死。",
+                content_type: "simple",
+                key_concept: "Injelititis (嫉妒无能症)",
+                summary: "当且仅当由于高度的无能(Incompetence)和嫉妒(Jealousy)结合时爆发。",
+                mechanism: "第一阶段：排挤能人。第二阶段：自鸣得意。第三阶段：组织死亡。",
+                fact: "诊断方法：如果在食堂看到食物难吃且环境肮脏，但高管却对此沾沾自喜，该组织已病入膏肓。",
+                keywords: ["平庸化", "逆向淘汰", "组织病变"]
+            },
+            {
+                id: 9,
+                title: "从茅屋到帕卡德：成功公式",
+                law: "通过伪装贫穷来规避勒索与税收。",
+                content_type: "simple",
+                key_concept: "猎犬壁垒 (Hound Barrier)",
+                summary: "基于对亚洲富豪的研究。真正的富豪必须住在贫民窟里以避免被黑社会勒索或税务局盯上。",
+                mechanism: "当勒索金额 > 维持豪宅和保镖的成本时，富豪才会搬家。",
+                fact: "中国式避税法：通过制造混乱（如预付奇怪金额）让官僚系统崩溃从而获得免疫。",
+                keywords: ["财富伪装", "成本博弈", "系统干扰"]
+            },
+            {
+                id: 10,
+                title: "退休点：退休年龄",
+                law: "退休年龄不应取决于现任者的衰老，而应取决于继任者的忍耐极限。",
+                content_type: "simple",
+                key_concept: "强制退休术",
+                summary: "必须强迫现任者(X)在继任者(Y)能力衰退前退休。",
+                mechanism: "现代最有效的逼退技术：频繁的空中旅行（制造时差疲劳）+ 繁琐的表格填写（精神折磨）。",
+                fact: "通过安排连续的、跨时区的国际会议，让领导者在文书工作和飞行中'自然'崩溃。",
+                keywords: ["继任危机", "精力耗尽", "表格折磨"]
+            }
+        ];
+
+        const container = document.getElementById('container');
+
+        chapters.forEach(chapter => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            
+            let detailsContent = '';
+            
+            if (chapter.content_type === 'rich') {
+                detailsContent = `
+                    ${chapter.content}
+                    <div class="keywords-container">
+                        ${chapter.keywords.map(k => `<span class="keyword">${k}</span>`).join('')}
+                    </div>
+                `;
+            } else {
+                detailsContent = `
+                    <div class="detail-section">
+                        <div class="detail-heading">核心概念: ${chapter.key_concept}</div>
+                        <p>${chapter.summary}</p>
+                    </div>
+
+                    <div class="detail-section">
+                        <div class="detail-heading">运作机制</div>
+                        <p>${chapter.mechanism}</p>
+                    </div>
+
+                    <div class="fact-box">
+                        <strong>事实与现象：</strong> ${chapter.fact}
+                    </div>
+
+                    <div class="keywords-container">
+                        ${chapter.keywords.map(k => `<span class="keyword">${k}</span>`).join('')}
+                    </div>
+                `;
+            }
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <span class="card-number">Chapter ${chapter.id}</span>
+                    <div class="toggle-icon">▼</div>
+                </div>
+                <h2 class="card-title">${chapter.title}</h2>
+                <div class="core-law">${chapter.law}</div>
+                
+                <div class="details">
+                    ${detailsContent}
+                </div>
+            `;
+
+            card.addEventListener('click', () => {
+                const isActive = card.classList.contains('active');
+                document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+                if (!isActive) {
+                    card.classList.add('active');
+                }
+            });
+
+            container.appendChild(card);
+        });
+    </script>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_parkinsons_law_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
