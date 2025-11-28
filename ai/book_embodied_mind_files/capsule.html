@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《具身心智》交互式摘要</title>
+    <style>
+        :root {
+            --bg-color: #fcfcfc;
+            --text-color: #333;
+            --accent-color: #5d9cec; /* 柔和蓝 */
+            --highlight-bg: #ebf4ff;
+            --card-bg: #ffffff;
+            --shadow: 0 4px 6px rgba(0,0,0,0.05);
+            --embodied-border: #48cfad; /* 具身认知强调色 */
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-weight: 300;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        /* 导航栏 */
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: white;
+            border: 1px solid #e0e0e0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+            box-shadow: var(--shadow);
+        }
+
+        /* 内容区域布局 */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        /* 卡片样式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-top: 4px solid #e0e0e0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+        }
+
+        /* 重点强调 - 具身认知 */
+        .card.embodied-focus {
+            border-top: 4px solid var(--embodied-border);
+            background-color: #fafffd;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #34495e;
+        }
+
+        .tag {
+            font-size: 0.75em;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: #eee;
+            color: #666;
+        }
+
+        .card.embodied-focus .tag {
+            background: rgba(72, 207, 173, 0.2);
+            color: #2a8a70;
+        }
+
+        /* 交互式折叠内容 */
+        details {
+            margin-top: 15px;
+            border-top: 1px dashed #eee;
+            padding-top: 10px;
+        }
+
+        summary {
+            cursor: pointer;
+            color: var(--accent-color);
+            font-weight: 500;
+            list-style: none;
+            outline: none;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+        }
+
+        summary::after {
+            content: "+";
+            margin-left: auto;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        details[open] summary::after {
+            content: "-";
+        }
+
+        .content-text {
+            font-size: 0.95em;
+            color: #555;
+            margin-top: 10px;
+        }
+
+        /* 关键词高亮 */
+        .kw {
+            background: var(--highlight-bg);
+            padding: 0 4px;
+            border-radius: 3px;
+            font-weight: 500;
+            color: #2c3e50;
+            border-bottom: 1px solid #dbeafe;
+            cursor: help;
+        }
+
+        .kw:hover {
+            background: #dbeafe;
+        }
+
+        /* 术语解释 Tooltip */
+        .card[data-tooltip]::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            width: 80%;
+            text-align: center;
+            z-index: 10;
+        }
+
+        /* 核心观点列表 */
+        ul.points {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+        
+        ul.points li {
+            margin-bottom: 8px;
+            color: #444;
+        }
+
+        /* 底部 */
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 20px;
+            font-size: 0.8em;
+            color: #999;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8em; }
+            .container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>具身心智 (The Embodied Mind)</h1>
+        <div class="subtitle">认知科学与人类经验 | 瓦雷拉、汤普森、罗施</div>
+        <p style="margin-top: 20px; font-size: 0.9em; color: #888;">点击卡片展开详情 · 悬停关键词查看定义</p>
+    </header>
+
+    <div class="nav-container">
+        <button class="nav-btn active" onclick="filterCards('all')">全览</button>
+        <button class="nav-btn" onclick="filterCards('critique')">第一阶段：批判</button>
+        <button class="nav-btn" onclick="filterCards('emergence')">第二阶段：涌现</button>
+        <button class="nav-btn" onclick="filterCards('enaction')">核心：生成/具身</button>
+        <button class="nav-btn" onclick="filterCards('philosophy')">哲学：无根基性</button>
+    </div>
+
+    <div class="container">
+
+        <!-- 卡片 1: 核心冲突 -->
+        <div class="card category-critique" data-tooltip="科学试图客观描述世界，但科学本身源于我们的主观经验。">
+            <div class="card-header">
+                <div class="card-title">基本循环性 (The Fundamental Circularity)</div>
+                <span class="tag">出发点</span>
+            </div>
+            <p class="content-text">
+                现代科学陷入了一个悖论：它试图从外部客观地解释心智，却忽略了科学理论本身是由<span class="kw">人类经验</span>构建的。
+            </p>
+            <details>
+                <summary>深入了解</summary>
+                <ul class="points">
+                    <li><strong>分裂：</strong> 认知科学通常忽略日常的“生活世界”(Lebenswelt)。</li>
+                    <li><strong>反思：</strong> 我们需要一种方法，既能进行科学研究，又能尊重人类直接的、具身的经验。</li>
+                    <li><strong>桥梁：</strong> 书中提出结合<span class="kw">现象学</span>、佛教的正念修行与现代认知科学来打破这种二元对立。</li>
+                </ul>
+            </details>
+        </div>
+
+        <!-- 卡片 2: 计算主义批判 -->
+        <div class="card category-critique">
+            <div class="card-header">
+                <div class="card-title">计算主义 (Cognitivism)</div>
+                <span class="tag">传统观点</span>
+            </div>
+            <p class="content-text">
+                传统认知科学将心智视为<span class="kw">符号处理系统</span>，类似于计算机软件。
+            </p>
+            <details>
+                <summary>为何不足？</summary>
+                <ul class="points">
+                    <li><strong>表征主义 (Representationism)：</strong> 假设外部有一个预先存在的世界，心智的任务是在内部建立这个世界的“地图”。</li>
+                    <li><strong>三明治模型：</strong> 感知(输入) -> 计算(处理) -> 行动(输出)。这切断了感知与行动的内在联系。</li>
+                    <li><strong>问题：</strong> 这种模型无法解释“常识”和背景知识，也忽略了身体的作用。</li>
+                </ul>
+            </details>
+        </div>
+
+        <!-- 卡片 3: 涌现与连接主义 -->
+        <div class="card category-emergence">
+            <div class="card-header">
+                <div class="card-title">涌现 (Emergence)</div>
+                <span class="tag">进阶观点</span>
+            </div>
+            <p class="content-text">
+                转向<span class="kw">连接主义</span>（神经网络）：心智不是符号操作，而是大量简单单元互动产生的<span class="kw">全局状态</span>。
+            </p>
+            <details>
+                <summary>核心概念</summary>
+                <ul class="points">
+                    <li><strong>自组织 (Self-organization)：</strong> 没有中央控制器，系统通过局部互动产生有序的宏观行为。</li>
+                    <li><strong>无我 (Selfless Minds)：</strong> 就像蚁群没有“总指挥蚁”，大脑中也没有一个具体的“自我”在发号施令。这与佛教的“无我”概念相呼应。</li>
+                </ul>
+            </details>
+        </div>
+
+        <!-- 重点卡片 4: 具身认知 -->
+        <div class="card category-enaction embodied-focus" data-tooltip="这是本书最核心的贡献：认知即行动。">
+            <div class="card-header">
+                <div class="card-title">生成/具身认知 (Enaction)</div>
+                <span class="tag" style="background:#48cfad; color:white;">核心概念</span>
+            </div>
+            <p class="content-text">
+                <strong>认知不是对预先存在世界的表征，而是通过身体在世界中的行动“生成”出的意义。</strong>
+            </p>
+            <details open>
+                <summary>核心机制：结构耦合</summary>
+                <div style="background: #f0fdfa; padding: 10px; border-radius: 8px; margin: 10px 0;">
+                    <ul class="points">
+                        <li><strong>结构耦合 (Structural Coupling)：</strong> 生物体的结构与环境历史性地相互触发变化。不是单纯的适应，而是共同进化。</li>
+                        <li><strong>中间道路：</strong> 
+                            <br>❌ 实在论（世界是客观预设的）
+                            <br>❌ 唯心论（世界是主观投射的）
+                            <br>✅ <strong>生成论</strong>（世界和认知者通过行动相互塑造）。
+                        </li>
+                        <li><strong>案例：颜色视觉。</strong> 颜色不是外部世界的客观属性（波长不等于颜色），也不是纯主观幻觉。它是特定的生物身体结构与环境互动生成的“微观世界”。</li>
+                    </ul>
+                </div>
+            </details>
+        </div>
+
+        <!-- 卡片 5: 进化观 -->
+        <div class="card category-enaction">
+            <div class="card-header">
+                <div class="card-title">自然漂移 (Natural Drift)</div>
+                <span class="tag">进化论</span>
+            </div>
+            <p class="content-text">
+                反对极端的“适应主义”（认为生物特征都是为了最优适应环境）。
+            </p>
+            <details>
+                <summary>进化的另一种解读</summary>
+                <ul class="points">
+                    <li><strong>满足即可 (Satisficing)：</strong> 进化不是寻找“最优解”，而是只要“能存活”即可。</li>
+                    <li><strong>路径依赖：</strong> 生物的形态更多取决于自身的历史结构约束，而非外部环境的选择。</li>
+                    <li><strong>结论：</strong> 既然环境不是固定的模具，认知就不可能是对环境的“镜像”。</li>
+                </ul>
+            </details>
+        </div>
+
+        <!-- 卡片 6: 无根基性 -->
+        <div class="card category-philosophy">
+            <div class="card-header">
+                <div class="card-title">无根基性 (Groundlessness)</div>
+                <span class="tag">哲学终局</span>
+            </div>
+            <p class="content-text">
+                如果在外部找不到绝对客观的世界，在内部也找不到绝对的“自我”，我们该怎么办？
+            </p>
+            <details>
+                <summary>中道 (The Middle Way)</summary>
+                <ul class="points">
+                    <li><strong>笛卡尔式的焦虑：</strong> 担心如果没有绝对基础，就会陷入虚无主义。</li>
+                    <li><strong>佛教中观派 (Madhyamaka)：</strong> 教导我们接受“空性”（相互依存性）。事物没有独立的本质，但这并不意味着它们不存在。</li>
+                    <li><strong>伦理意义：</strong> 认识到这种相互依存性（无根基性），是生起无条件的<span class="kw">慈悲心</span>的基础。</li>
+                </ul>
+            </details>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>© 2023 Generated Summary based on "The Embodied Mind" (Revised Edition)</p>
+        <p>核心词汇：具身认知 (Embodied Cognition) | 生成 (Enaction) | 自组织 (Self-organization) | 正念 (Mindfulness)</p>
+    </footer>
+
+    <script>
+        function filterCards(category) {
+            const cards = document.querySelectorAll('.card');
+            const btns = document.querySelectorAll('.nav-btn');
+            
+            // Update buttons
+            btns.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Filter cards
+            cards.forEach(card => {
+                if (category === 'all') {
+                    card.style.display = 'block';
+                    setTimeout(() => card.style.opacity = '1', 50);
+                } else {
+                    if (card.classList.contains(`category-${category}`)) {
+                        card.style.display = 'block';
+                        setTimeout(() => card.style.opacity = '1', 50);
+                    } else {
+                        card.style.opacity = '0';
+                        setTimeout(() => card.style.display = 'none', 300);
+                    }
+                }
+            });
+        }
+
+        // Add tooltip interaction
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mousemove', function(e) {
+                if(this.hasAttribute('data-tooltip')) {
+                    // visual feedback logic if needed
+                }
+            });
+        });
+    </script>
+</body>
+</html>
