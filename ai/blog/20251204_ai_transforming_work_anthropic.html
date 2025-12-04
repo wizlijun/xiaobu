@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 如何改变 Anthropic 的工作方式</title>
+    <style>
+        /* 现代化CSS样式 */
+        body {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fff;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+        }
+        .author-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+        }
+        .process-phase {
+            background-color: #f1f8ff;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #0366d6;
+        }
+        .scenario {
+            background-color: #f6f8fa;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 3px solid #6f42c1;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+        pre {
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+        }
+        blockquote {
+            background-color: #f9f9f9;
+            border-left: 4px solid #ccc;
+            margin: 1.5em 10px;
+            padding: 10px 15px;
+            font-style: italic;
+        }
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+        li {
+            margin: 8px 0;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+    <h1>AI 如何改变 Anthropic 的工作方式</h1>
+
+    <h2>导语</h2>
+    <p>AI 如何改变我们的工作方式？此前关于 AI 经济影响的研究关注整体劳动力市场，涵盖各种不同的工作。但如果深入研究一些最早采用 AI 技术的群体——也就是我们自己呢？</p>
+
+    <div class="highlight">
+        <p>2025 年 8 月，我们调查了 132 名 Anthropic 工程师和研究人员，进行了 53 次深度访谈，并分析了内部 Claude Code 使用数据，以了解 AI 使用如何改变 Anthropic 的工作。研究发现，AI 使用正在根本性地改变软件开发人员的工作性质，既带来希望也引发担忧。</p>
+    </div>
+
+    <p>研究揭示了一个面临重大转型的工作场所：工程师完成的工作更多，变得更"全栈"（能够胜任正常专业领域之外的任务），加快了学习和迭代速度，并处理以前被忽视的任务。这种广度的扩展也让人们思考其中的权衡——有些人担心这可能意味着失去更深层的技术能力，或降低有效监督 Claude 输出的能力，而另一些人则欣然接受更广阔、更高层次思考的机会。一些人发现更多 AI 协作意味着与同事的协作减少；一些人想知道是否最终会让自己失业。</p>
+
+    <p>我们认识到，在一家构建 AI 的公司研究 AI 的影响意味着代表一种特权地位——我们的工程师可以早期访问尖端工具，在相对稳定的领域工作，并且他们自己正在为影响其他行业的 AI 转型做出贡献。尽管如此，我们认为研究和发布这些发现总体上是有用的，因为 Anthropic 内部工程师所发生的事情可能仍然是更广泛社会转型的预示。数据收集时，Claude Sonnet 4 和 Claude Opus 4 是可用的最强大模型，而能力还在继续提升。</p>
+
+    <p>更强大的 AI 带来生产力优势，但也引发关于保持技术专业知识、维护有意义协作以及为不确定的未来做好准备的问题，这可能需要在 AI 增强的工作场所中采用新的学习、指导和职业发展方法。</p>
+
+    <h2>核心发现</h2>
+
+    <div class="process-phase">
+        <h3>调查数据</h3>
+        <ul>
+            <li><strong>主要用途</strong>：Anthropic 工程师和研究人员最常使用 Claude 修复代码错误和学习代码库。调试和代码理解是最常见的用途。</li>
+            <li><strong>使用量和生产力提升</strong>：员工自我报告在 60% 的工作中使用 Claude，实现 50% 的生产力提升，比去年同期增长 2-3 倍。这种生产力表现为每个任务类别的时间略微减少，但输出量大幅增加。</li>
+            <li><strong>新增工作</strong>：27% 的 Claude 辅助工作包括原本不会完成的任务，如扩展项目、制作实用工具（如交互式数据仪表板）和探索性工作。</li>
+            <li><strong>委托程度</strong>：大多数员工频繁使用 Claude，但报告只能"完全委托"0-20% 的工作给它。Claude 是一个持续的协作者，但使用它通常涉及主动监督和验证，特别是在高风险工作中。</li>
+        </ul>
+    </div>
+
+    <div class="process-phase">
+        <h3>定性访谈</h3>
+        <ul>
+            <li><strong>AI 委托直觉</strong>：工程师倾向于委托易于验证、低风险（如"一次性调试或研究代码"）或无聊的任务（"我越想做这个任务，就越不太可能使用 Claude"）。许多人描述了一种信任进展，从简单任务开始，逐渐委托更复杂的工作。</li>
+            <li><strong>技能拓宽与实践减少</strong>：Claude 使人们能够将技能拓宽到软件工程的更多领域（"我现在可以很好地做前端或事务数据库工作...而以前我会害怕接触这些"），但一些员工也担心，矛盾的是，编写和批评代码所需的更深层技能会退化——"当产出如此容易和快速时，真正花时间学习东西变得越来越难。"</li>
+            <li><strong>与编码技艺的关系变化</strong>：一些工程师接受 AI 辅助并专注于结果（"我以为我真的喜欢写代码，但我想我实际上只是喜欢写代码带给我的东西"）；另一些人说"写代码确实有一些我怀念的部分。"</li>
+            <li><strong>工作场所社交动态可能在变化</strong>：Claude 现在是以前会问同事的问题的首选——一些人报告指导和协作机会减少（"我喜欢和人一起工作，我不再那么'需要'他们让我感到难过...初级人员不再那么频繁地来问我问题。"）</li>
+            <li><strong>职业演变和不确定性</strong>：工程师报告转向管理 AI 系统的更高层次工作，并报告显著的生产力提升。然而，这些变化也引发关于软件工程作为一个职业的长期轨迹的问题。一些人对未来表达矛盾的感受："我对短期感到乐观，但长期来看，我认为 AI 最终会做所有事情，让我和许多其他人变得无关紧要。"其他人强调真正的不确定性，只是说"很难说"几年后他们的角色会是什么样子。</li>
+        </ul>
+    </div>
+
+    <div class="process-phase">
+        <h3>Claude Code 使用趋势</h3>
+        <ul>
+            <li><strong>处理更复杂任务，更自主</strong>：六个月前，Claude Code 在需要人类输入之前会自行完成约 10 个操作。现在，它通常处理约 20 个，需要更少的人类引导来完成更复杂的工作流程。工程师越来越多地使用 Claude 完成复杂任务，如代码设计/规划（从 1% 增加到 10%）和实现新功能（从 14% 增加到 37%）。</li>
+            <li><strong>修复大量"小问题"</strong>：8.6% 的 Claude Code 任务涉及修复改善生活质量的小问题，如为可维护性重构代码（即"修复小问题"），人们说这些通常会被降低优先级。这些小修复可能累积成更大的生产力和效率提升。</li>
+            <li><strong>每个人都变得更"全栈"</strong>：不同的团队以不同的方式使用 Claude，通常是增强他们的核心专业知识——安全团队使用它分析不熟悉的代码，对齐与安全团队使用它构建数据的前端可视化，等等。</li>
+        </ul>
+    </div>
+
+    <h2>调查数据详解</h2>
+    <p>我们调查了来自整个组织的 132 名 Anthropic 工程师和研究人员，更好地了解他们如何日常使用 Claude。我们通过内部沟通渠道和直接联系分发调查，涵盖代表研究和产品功能的不同团队。</p>
+
+    <h3>人们使用 Claude 做什么编码任务？</h3>
+    <p>大多数员工（55%）每天使用 Claude 进行调试。42% 每天使用 Claude 进行代码理解，37% 每天使用 Claude 实现新功能。较少频繁的任务是高级设计/规划（可能是因为这些是人们倾向于保留给人类的任务），以及数据科学和前端开发（可能是因为它们总体上不太常见）。</p>
+
+    <h3>使用量和生产力</h3>
+    <p>员工自我报告 12 个月前在 28% 的日常工作中使用 Claude，获得 +20% 的生产力提升，而现在，他们在 59% 的工作中使用 Claude，平均获得 +50% 的生产力提升。年度比较相当显著——这表明一年内这两个指标都增长了 2 倍以上。使用量和生产力也高度相关，在分布的极端端，14% 的受访者通过使用 Claude 将生产力提高了 100% 以上——这些是我们内部的"高级用户"。</p>
+
+    <div class="scenario">
+        <p>需要注意的是，生产力很难精确测量。METR（一个 AI 研究非营利组织）的最新研究表明，在高度熟悉的代码库上使用 AI 的有经验开发者高估了 AI 的生产力提升。然而，METR 确定的导致低于预期生产力的因素（如 AI 在大型复杂环境中表现较差，或需要大量隐性知识/上下文的地方）与我们员工说他们不委托给 Claude 的任务类型密切对应。我们跨任务自我报告的生产力提升可能反映了员工发展战略性 AI 委托技能。</p>
+    </div>
+
+    <p>当询问员工在目前使用 Claude 的任务类别中，它如何影响他们在该任务类别上的总体花费时间和工作输出量时，出现了一个有趣的生产力模式。在几乎所有任务类别中，我们看到花费时间净减少，输出量净增加更大。</p>
+
+    <p>然而，当我们深入研究原始数据时，我们看到节省时间的回答聚集在相反的两端——一些人在 Claude 辅助的任务上花费的时间显著增加。</p>
+
+    <p>为什么？人们普遍解释说，他们必须对 Claude 的代码进行更多调试和清理，并承担更多认知开销来理解 Claude 的代码，因为他们自己没有编写它。一些人提到在任务上花费更多时间是一种启用意义——一个人说使用 Claude 帮助他们"坚持处理我以前会立即放弃的任务"；另一个人说它帮助他们进行更彻底的测试，以及在新代码库中进行更多学习和探索。</p>
+
+    <p>输出量增加更直接且实质性；所有任务类别都有更大的净增加。当我们考虑人们报告的是任务类别（如整体"调试"）而不是单个任务时，这种模式是有道理的——即人们可以在调试作为一个类别上花费略少的时间，同时总体上产生更多的调试输出。生产力很难直接测量，但这些自我报告的数据表明，AI 主要通过更大的输出量在 Anthropic 提高生产力。</p>
+
+    <h3>Claude 启用新工作</h3>
+    <p>我们好奇的一件事是：Claude 是在启用质量上新的工作类型，还是 Claude 辅助的工作最终会由员工完成（尽管可能速度较慢）？</p>
+
+    <p>员工估计他们 27% 的 Claude 辅助工作如果没有它就不会完成。工程师引用 AI 用于扩展项目、实用但不紧急的工作（如交互式数据仪表板）、有用但繁琐的工作（如文档和测试），以及手动操作不划算的探索性工作。正如一个人解释的，他们现在可以修复更多以前损害生活质量的"小问题"，如重构结构不良的代码，或构建"帮助更快完成另一个任务的小工具"。我们在使用数据分析中也寻找了这一点，发现 8.6% 的 Claude Code 任务涉及"小问题修复"。</p>
+
+    <p>另一位研究人员解释说，他们同时运行许多版本的 Claude，所有版本都在探索问题的不同方法：</p>
+
+    <blockquote>
+        <p>人们倾向于将超强能力模型视为单个实例，就像获得一辆更快的汽车。但拥有一百万匹马...让你可以测试一堆不同的想法...当你有额外的广度来探索时，这是令人兴奋和更有创意的。</p>
+    </blockquote>
+
+    <h3>多少工作可以完全委托给 Claude？</h3>
+    <p>尽管工程师频繁使用 Claude，但超过一半的人说他们只能"完全委托"0-20% 的工作给 Claude。（值得注意的是，受访者对"完全委托"的解释可能有所不同——从完全不需要验证的任务到足够可靠只需轻度监督的任务。）在解释原因时，工程师描述了与 Claude 积极迭代地工作，并验证其输出——特别是对于复杂任务或代码质量标准至关重要的高风险领域。这表明工程师倾向于与 Claude 密切协作并检查其工作，而不是在没有验证的情况下移交任务，并且他们对"完全委托"设定了很高的标准。</p>
+
+    <h2>定性访谈详解</h2>
+
+    <h3>AI 委托方法</h3>
+    <p>工程师和研究人员正在开发各种策略来在工作流程中有效利用 Claude。人们通常委托以下任务：</p>
+
+    <div class="scenario">
+        <h4>超出用户上下文且复杂度低的任务</h4>
+        <ul>
+            <li>"我在我上下文少的地方使用 Claude，但我认为整体复杂度也很低。"</li>
+            <li>"我遇到的大多数基础设施问题并不困难，可以由 Claude 处理...我不太了解 Git 或 Linux...Claude 很好地弥补了我在这些领域缺乏经验。"</li>
+        </ul>
+    </div>
+
+    <div class="scenario">
+        <h4>易于验证的任务</h4>
+        <ul>
+            <li>"对于验证工作量与创建工作量相比不大的一切，它绝对令人惊叹。"</li>
+        </ul>
+    </div>
+
+    <div class="scenario">
+        <h4>定义明确或自包含的任务</h4>
+        <ul>
+            <li>"如果项目的一个子组件与其余部分充分解耦，我会让 Claude 尝试一下。"</li>
+        </ul>
+    </div>
+
+    <div class="scenario">
+        <h4>代码质量不重要的任务</h4>
+        <ul>
+            <li>"如果是一次性调试或研究代码，它直接交给 Claude。如果在概念上很困难或需要某种非常特定类型的调试注入，或设计问题，我自己做。"</li>
+        </ul>
+    </div>
+
+    <div class="scenario">
+        <h4>重复或无聊的任务</h4>
+        <ul>
+            <li>"我越想做这个任务，就越不太可能使用 Claude。而如果我感到很大的阻力...我经常发现开始与 Claude 谈论任务更容易。"</li>
+            <li>在我们的调查中，平均而言，人们说 44% 的 Claude 辅助工作包括他们自己不会喜欢做的任务。</li>
+        </ul>
+    </div>
+
+    <div class="scenario">
+        <h4>提示比执行更快的任务</h4>
+        <ul>
+            <li>"对于我预计需要我不到 10 分钟的任务...我可能不会费心使用 Claude。"</li>
+            <li>"冷启动问题可能是目前最大的阻碍。我所说的冷启动，是指我对我团队的代码库如何工作有很多内在信息，而 Claude 默认情况下不会有...我可以花时间尝试迭代完美的提示，但我只是去自己做。"</li>
+        </ul>
+    </div>
+
+    <h3>信任但验证</h3>
+    <p>许多用户描述了他们 Claude 使用中的一种进展，涉及随着时间推移委托越来越复杂的任务："起初我使用 AI 工具提出关于 Rust 编程语言的基本问题...最近，我一直在使用 Claude Code 进行所有编码。"</p>
+
+    <p>一位工程师将信任进展比作采用其他技术，如 Google Maps：</p>
+
+    <blockquote>
+        <p>一开始我只在我不知道的路线上使用 [Google Maps]...这就像我使用 Claude 编写我不知道的 SQL，但不要求它编写我知道的 Python。然后我开始在我大部分知道的路线上使用 Google Maps，但也许我不知道最后一英里...今天我一直使用 Google Maps，即使是我的日常通勤。如果它说走另一条路，我就走，只是相信它考虑了所有选项...我今天以类似的方式使用 Claude Code。</p>
+    </blockquote>
+
+    <p>工程师对是否在专业领域内还是外使用 Claude 存在分歧。一些人将其用于"外围"领域以节省实施时间；其他人更喜欢他们可以验证输出的熟悉领域（"我以这样一种方式使用 Claude，我仍然完全理解它在做什么"）。一位安全工程师强调了经验的重要性，当 Claude 提出一个"以危险的方式非常聪明的解决方案，那种非常有才华的初级工程师可能会提出的东西"。也就是说，这是只有具有判断力和经验的用户才能识别为有问题的东西。</p>
+
+    <h3>人们为自己保留什么任务？</h3>
+    <p>人们一致表示，他们不使用 Claude 完成涉及高级或战略思考的任务，或需要组织上下文或"品味"的设计决策。一位工程师解释说："我通常保留高级思考和设计。我从新功能开发到调试尽可能委托。"这反映在我们的调查数据中，该数据显示设计和规划任务的生产力提升最少。然而，许多人将委托边界描述为"移动目标"，随着模型改进而定期重新协商。</p>
+
+    <h2>技能转型</h2>
+
+    <h3>新能力...</h3>
+    <p>27% 的 Claude 辅助工作原本不会完成的调查发现反映了一个更广泛的模式：工程师使用 AI 在核心专业知识之外工作。许多员工报告完成了以前超出他们专业知识的工作——后端工程师构建 UI；研究人员创建可视化。一位后端工程师描述了通过与 Claude 迭代构建复杂 UI："它做得比我好得多。我不可能做到，肯定不能按时...（设计师）说'等等，你做的这个？'我说'不，Claude 做的——我只是提示它。'"</p>
+
+    <p>工程师报告"变得更全栈...我现在可以很好地做前端、事务数据库或 API 代码，而以前我会害怕接触我不太擅长的东西。"这种能力扩展使反馈循环更紧密，学习更快——一位工程师说，"几周的过程"（构建、安排会议和迭代）可以变成"几小时的工作会议"，同事在场进行实时反馈。</p>
+
+    <p>总的来说，人们对他们快速原型化、并行化工作、减少苦差事以及普遍提高雄心水平的新能力感到兴奋。一位高级工程师告诉我们，"这些工具肯定使初级工程师更高效，并对他们将承担的项目类型更大胆。"一些人还说，使用 Claude 降低的"激活能量"使他们更容易克服拖延，"显著减少了我想开始解决问题所需的能量，因此我愿意处理更多额外的事情。"</p>
+
+    <h3>...以及更少的实践</h3>
+    <p>与此同时，一些人担心"随着[他们]委托更多，技能会退化"，并失去在手动解决问题过程中发生的附带（或"附带"）学习：</p>
+
+    <blockquote>
+        <p>如果你自己出去调试一个困难的问题，你会花时间阅读对解决你的问题没有直接用处的文档和代码——但在这整个时间里，你正在构建系统如何工作的模型。现在发生的这种情况要少得多，因为 Claude 可以直接让你找到问题。</p>
+    </blockquote>
+
+    <blockquote>
+        <p>我过去会探索每个配置以了解工具可以做什么，但现在我依赖 AI 告诉我如何使用新工具，所以我缺乏专业知识。在与其他队友的对话中，我可以立即回忆起事情，而现在我必须问 AI。</p>
+    </blockquote>
+
+    <blockquote>
+        <p>使用 Claude 有可能跳过我通过解决简单实例学习如何执行任务的部分，然后在解决更复杂实例时遇到困难。</p>
+    </blockquote>
+
+    <p>一位高级工程师说，如果他们更初级，他们会更担心自己的技能：</p>
+
+    <blockquote>
+        <p>我主要在我知道答案应该是什么或应该是什么样子的情况下使用 AI。我通过"艰难的方式"做软件工程开发了这种能力...但如果我[在职业生涯早期]，我会认为需要付出很多刻意的努力来继续培养我自己的能力，而不是盲目接受模型输出。</p>
+    </blockquote>
+
+    <p>编码技能退化令人担忧的一个原因是"监督悖论"——如上所述，有效使用 Claude 需要监督，而监督 Claude 需要可能因过度使用 AI 而退化的编码技能。一个人说：</p>
+
+    <blockquote>
+        <p>老实说，我更担心监督和监管问题，而不是我的技能本身...我的技能退化或未能发展主要会在我安全使用 AI 完成我关心的任务的能力方面出现问题，而不是我独立完成这些任务的能力。</p>
+    </blockquote>
+
+    <p>为了对抗这一点，一些工程师故意在没有 AI 的情况下练习："每隔一段时间，即使我知道 Claude 可以解决一个问题，我也不会要求它。这帮助我保持敏锐。"</p>
+
+    <h3>我们还需要那些实践编码技能吗？</h3>
+    <p>也许软件工程正在向更高的抽象层次移动，这在过去已经发生过。早期程序员更接近机器——手动管理内存，用汇编语言编写，甚至切换物理开关来输入指令。随着时间的推移，出现了更高级、更易读的语言，自动处理复杂的低级操作。也许，特别是随着"氛围编码"的兴起，我们现在正在将英语作为一种编程语言。我们的一位员工建议有抱负的工程师"擅长让 AI [编写代码]，并专注于学习更高级的概念和模式。"</p>
+
+    <p>一些员工说，他们觉得这种转变使他们能够在更高的层次上思考——"关于最终产品和最终用户"，而不仅仅是代码。一个人通过将当前的转变与以前必须学习链表进行比较来描述——这是高级编程语言现在自动处理的基本结构。"我很高兴我知道如何做到这一点...（但）做那些低级操作在情感上并不特别重要。我宁愿关心代码允许我做什么。"另一位工程师进行了类似的比较，但指出抽象是有代价的——随着向高级语言的转变，大多数工程师失去了对内存处理的深刻理解。</p>
+
+    <p>在某个领域继续发展技能可以更好地监督 Claude 并提高工作效率（"我注意到当这是我熟悉的东西时，我自己做通常更快"）。但工程师对这是否重要存在分歧。一些人保持乐观：</p>
+
+    <blockquote>
+        <p>我不太担心技能侵蚀。AI 仍然让我仔细思考问题，帮助我学习新方法。如果有的话，能够更快地探索和测试想法加速了我在某些领域的学习。</p>
+    </blockquote>
+
+    <p>另一个更务实："我作为软件工程师的技能肯定在退化...但如果它们需要，这些技能可以回来，而我现在只是不需要它们了！"一个人指出，他们只失去了不太重要的技能，如制作图表，"关键的代码我仍然可以写得很好。"</p>
+
+    <p>也许最有趣的是，一位工程师质疑了前提："'生锈'的框架依赖于一个假设，即编码有一天会回到 Claude 3.5 之前的样子。我不认为会。"</p>
+
+    <h2>软件工程的技艺和意义</h2>
+    <p>工程师对是否怀念实践编码存在严重分歧。一些人感到真正的失落——"对我来说这是一个时代的结束——我编程了 25 年，对那个技能的胜任感是我职业满足感的核心部分。"其他人担心不享受工作的新性质："整天提示 Claude 并不是很有趣或充实。自己实施某些东西，放一些音乐进入状态要有趣和充实得多。"</p>
+
+    <p>一些人直接解决了权衡并接受了它："写代码确实有一些我怀念的部分——重构代码时进入禅宗流动状态，但总的来说，我现在高效得多，我很乐意放弃那些。"</p>
+
+    <p>一个人说与 Claude 迭代更有趣，因为他们可以比与人类更挑剔地提供反馈。其他人对结果更感兴趣。一位工程师说：</p>
+
+    <blockquote>
+        <p>我预计到这个时候我会感到害怕或无聊...然而我真的没有感到这些事情。相反，我感到非常兴奋，因为我可以做得更多。我以为我真的喜欢写代码，但我实际上只是喜欢写代码带给我的东西。</p>
+    </blockquote>
+
+    <p>人们是否接受 AI 辅助或哀悼失去实践编码似乎取决于他们认为软件工程的哪些方面最有意义。</p>
+
+    <h2>工作场所社交动态的变化</h2>
+    <p>一个更突出的主题是 Claude 已经成为曾经问同事的问题的首选。"我现在总体上问的问题多得多，但其中 80-90% 都问 Claude，"一位员工指出。这创造了一种过滤机制，Claude 处理常规查询，让同事处理超出 AI 能力的更复杂、战略性或上下文繁重的问题（"它将我对[我的团队]的依赖减少了 80%，[但]最后 20% 至关重要，我会去和他们交谈"）。人们还"向 Claude 抛出想法"，类似于与人类协作者的互动。</p>
+
+    <p>大约一半的人报告团队协作模式没有改变。一位工程师说，他仍在与人会面、分享上下文和选择方向，他认为在不久的将来仍会有很多协作，但"你将与很多 Claude 交谈，而不是做你的标准专注工作。"</p>
+
+    <p>然而，其他人描述了与同事互动减少的经历（"我与 Claude 一起工作比与我的任何同事都多。"）一些人欣赏减少的社交摩擦（"我不会因为占用我同事的时间而感到内疚"）。其他人抵制这种变化（"我实际上不喜欢常见的回应是'你问过 Claude 吗？'我真的很享受亲自与人一起工作，非常重视这一点"）或怀念旧的工作方式："我喜欢和人一起工作，我现在不再那么'需要'他们让我感到难过。"几个人指出了对传统指导动态的影响，因为"Claude 可以为初级员工提供很多指导"，而不是高级工程师。一位高级工程师说：</p>
+
+    <blockquote>
+        <p>更多初级人员不再那么频繁地来问我问题，这让我感到难过，尽管他们肯定更有效地得到他们的问题的答案，学习得更快。</p>
+    </blockquote>
+
+    <h2>职业不确定性和适应</h2>
+    <p>许多工程师描述他们的角色从编写代码转变为管理 AI。工程师越来越将自己视为"AI 代理的管理者"——一些人已经"不断至少有几个 [Claude] 实例在运行。"一个人估计他们的工作已经转变为"70%+ 是代码审查者/修订者，而不是净新代码编写者"，另一个人将"对 1、5 或 100 个 Claude 的工作负责"视为他们未来角色的一部分。</p>
+
+    <p>从长远来看，职业不确定性很普遍。工程师将这些变化视为更广泛行业转型的预兆，许多人说"很难说"几年后他们的职业生涯会是什么样子。一些人表达了短期乐观和长期不确定性之间的冲突。"我对短期感到乐观，但长期来看，我认为 AI 最终会做所有事情，让我和许多其他人变得无关紧要，"一个人说。其他人更直接："感觉我每天上班都是为了让自己失业。"</p>
+
+    <p>一些工程师更乐观。一个人说，"我为初级开发人员担心，但我也意识到初级开发人员可能是对新技术最渴望的。我对这个职业的轨迹总体上感到非常乐观。"他们认为，虽然有不熟练的工程师发布有问题代码的潜在风险，但更好的 AI 防护措施、更多内置教育资源以及从错误中自然学习的组合将帮助该领域随着时间的推移进行适应。</p>
+
+    <p>我们询问人们如何设想他们未来的角色以及他们是否有任何适应策略。一些人提到进一步专业化的计划（"发展有意义地审查 AI 工作的技能将需要更长时间并需要更多专业化"），一些人预计未来会专注于更多人际和战略工作（"我们将花更多时间寻找共识，让 AI 在实施上花更多时间"）。一个人说，他们专门使用 Claude 进行职业发展，从中获得关于工作和领导技能的反馈（"我可以学习东西或者即使不完全学习东西也能有效的速度完全改变了。我几乎觉得天花板刚刚为我打破了"）。</p>
+
+    <p>总的来说，许多人承认深度不确定性："我对我认为未来有用的具体技能信心非常低。"一位团队负责人说："没有人知道会发生什么...重要的是要真正适应。"</p>
+
+    <h2>Claude Code 使用趋势详解</h2>
+    <p>调查和访谈数据显示，Claude 使用量的增加正在帮助人们更快地工作并承担新类型的工作，尽管这伴随着围绕 AI 委托和技能发展的紧张关系。不过，自我报告的数据只讲述了部分故事。为了补充这一点，我们还分析了 Anthropic 团队的实际 Claude 使用数据。因为调查受访者报告 Claude Code 占他们使用的大部分，所以我们使用我们的隐私保护分析工具分析了 2025 年 2 月和 8 月的 200,000 个内部 Claude Code 转录。</p>
+
+    <h3>以更少的监督处理更困难的问题</h3>
+    <p>过去六个月，Claude Code 的使用已转向更困难和更自主的编码任务：</p>
+
+    <ul>
+        <li><strong>员工正在使用 Claude Code 处理越来越复杂的任务</strong>。我们在 1-5 的量表上估计每个转录的任务复杂度，其中 1 对应于"基本编辑"，5 是"需要数周/数月人类专家工作的专家级任务"。任务复杂度平均从 3.2 增加到 3.8。为了说明分数之间的差异：平均 3.2 的任务包括"解决 Python 模块导入错误"，而平均 3.8 的任务包括"实现和优化缓存系统"。</li>
+        <li><strong>Claude Code 每个转录进行的最大连续工具调用数增加了 116%</strong>。工具调用对应于 Claude 使用外部工具（如对文件进行编辑或运行命令）采取的操作。Claude 现在可以链接 21.2 个独立的工具调用而无需人类干预，而六个月前是 9.8 个工具调用。</li>
+        <li><strong>人类轮次数减少了 33%</strong>。每个转录的平均人类轮次数从 6.2 减少到 4.1，这表明与六个月前相比，现在完成给定任务所需的人类输入更少。</li>
+    </ul>
+
+    <p>这些使用数据证实了调查数据：工程师将越来越复杂的工作委托给 Claude，Claude 需要的监督更少。这似乎可能推动了观察到的生产力提升。</p>
+
+    <h3>任务分布</h3>
+    <p>我们将 Claude Code 转录分类为一种或多种类型的编码任务，研究过去六个月不同任务的使用如何演变。</p>
+
+    <p>从使用数据估计的整体任务频率分布与自我报告的任务频率分布大致一致。2025 年 2 月和 8 月之间最显著的变化是，现在使用 Claude 实现新功能（14.3% → 36.9%）和进行代码设计或规划（1.0% → 9.9%）的转录比例多得多。Claude Code 任务相对分布的这种转变可能表明 Claude 在这些更复杂的任务上变得更好，尽管它也可能反映团队采用 Claude Code 用于不同工作流程的变化，而不是绝对工作量的增加。</p>
+
+    <h3>修复小问题</h3>
+    <p>我们从调查中发现，工程师现在花更多时间进行小的生活质量改进；与此一致，当前 Claude Code 任务的 8.6% 被归类为"小问题修复"。这些包括更大的任务，如创建性能可视化工具和为可维护性重构代码，以及更小的任务，如创建终端快捷方式。这可能有助于工程师报告的生产力提升（解决以前被忽视的生活质量改进可能随着时间的推移导致更高的效率），并可能减少日常工作中的摩擦和挫折。</p>
+
+    <h3>跨团队的任务变化</h3>
+    <p>为了研究当前任务如何在团队之间变化，我们改进了分类方法，为每个 8 月转录分配一个主要编码任务，并按内部团队拆分数据。堆叠条形图显示了每个团队的编码任务细分。</p>
+
+    <p>"所有团队"栏显示整体分布，最常见的任务是构建新功能、调试和代码理解。这为特定于团队的比较提供了基线。</p>
+
+    <p>值得注意的特定于团队的模式：</p>
+
+    <ul>
+        <li><strong>预训练团队</strong>（帮助训练 Claude）经常使用 Claude Code 构建新功能（54.6%），其中大部分是运行额外的实验。</li>
+        <li><strong>对齐与安全和后训练团队</strong>使用 Claude Code 进行最多的前端开发（7.5% 和 7.4%），通常用于创建数据可视化。</li>
+        <li><strong>安全团队</strong>经常使用 Claude Code 进行代码理解（48.9%），特别是分析和理解代码库不同部分的安全影响。</li>
+        <li><strong>非技术员工</strong>经常使用 Claude Code 进行调试（51.5%），如解决网络问题或 Git 操作，以及数据科学（12.7%）；Claude 似乎对弥合技术知识差距很有价值。</li>
+    </ul>
+
+    <p>这些特定于团队的模式中的许多展示了我们在调查和访谈中观察到的相同能力扩展：使团队中的人能够完成他们原本没有时间或技能做的新工作。例如，预训练团队运行了大量额外实验，非技术员工能够修复代码中的错误。虽然数据表明团队确实将 Claude 用于他们的核心任务（例如，基础设施团队最常使用 Claude Code 进行基础设施和 DevOps 工作），但 Claude 通常也增强他们的核心任务（例如，研究人员使用 Claude 进行前端开发以更好地可视化他们的数据）。这表明 Claude 正在使每个人在工作中变得更全栈。</p>
+
+    <h2>展望未来</h2>
+    <p>过去一年，Anthropic 员工大大增加了对 Claude 的使用，不仅用它来加速现有工作，还用来学习新代码库、减少苦差事、扩展到新领域并处理以前被忽视的改进。随着 Claude 变得更自主和更有能力，工程师正在发现使用 AI 委托的新方法，同时也在弄清楚他们将来需要什么技能。这些转变带来了明显的生产力和学习优势，同时也带来了关于软件工程工作的长期轨迹的真正不确定性。AI 会类似于过去的软件工程转型——从低级到高级编程语言，或从个人贡献者到管理者，正如几位工程师建议的那样吗？还是会走得更远？</p>
+
+    <p>现在还为时尚早——Anthropic 内部有许多早期采用者，景观正在迅速变化，我们的发现目前可能不会推广到其他组织或环境。这项研究反映了这种不确定性：发现是微妙的，没有单一的共识或明确的指令出现。但它确实提出了关于我们如何深思熟虑和有效地应对这些变化的问题。</p>
+
+    <p>为了跟进这项初步工作，我们正在采取几个步骤。我们正在与 Anthropic 工程师、研究人员和领导层交谈，以解决提出的机会和挑战。这包括审查我们如何将团队聚集在一起并相互协作，我们如何支持专业发展，和/或我们如何为 AI 增强工作建立最佳实践（例如，由我们的 AI 流畅性框架指导）。我们还在将这项研究扩展到工程师之外，以了解 AI 转型如何影响整个组织的角色，并支持外部组织（如 CodePath）调整计算机科学课程以适应 AI 辅助的未来。展望未来，我们还在考虑可能随着 AI 能力提高而变得越来越相关的结构性方法，如组织内角色演变或技能重塑的新途径。</p>
+
+    <p>我们期望在 2026 年分享更具体的计划，因为我们的思考逐渐成熟。Anthropic 是负责任的工作场所转型的实验室；我们不仅想研究 AI 如何改变工作，还想尝试如何深思熟虑地应对这种转型，首先从我们自己开始。</p>
+
+    <h2>附录：局限性</h2>
+    <p>我们的调查结果受到几个方法论局限性的影响。我们通过便利抽样和目的性抽样（以确保广泛的组织代表性）选择受访者。我们在多个内部 Slack 频道上发布了调查，产生了 68 个回复，我们还从组织结构图中选择了 20 个不同的研究和产品功能团队，并直接向每个团队发送消息给 5-10 个人（总共联系了 207 人），最终 64 个回复的回复率为 31%。我们采访了前 53 个回应的人。这里可能存在一些选择偏差，因为特别关注 Claude 或有强烈意见（积极或消极）的人可能更有可能回应，而那些经历更中立的人可能代表性不足。</p>
+
+    <p>此外，回应可能受到社会期望偏差（由于回应不是匿名的，所有参与者都是 Anthropic 员工，受访者可能夸大了对 Claude 影响的积极评估）和近期偏差（要求参与者回忆 12 个月前的生产力和使用模式容易受到记忆扭曲的影响）的影响。此外，如前所述，生产力通常很难估计，因此这些自我报告应该持保留态度。这些自我报告的看法应与我们更客观的 Claude Code 使用数据一起解释，未来的研究将受益于匿名数据收集和更强有力验证的测量工具。</p>
+
+    <p>我们的 Claude Code 分析在时间段内使用比例抽样，这意味着我们只能测量任务分布的相对变化，而不能测量工作量的绝对变化。例如，当我们报告功能实现从 Claude Code 使用的 14% 增加到 37% 时，这并不一定表明正在完成更多的总功能工作。</p>
+
+    <p>最后，这项研究是在 2025 年 8 月进行的，当时 Claude Sonnet 4 和 Claude Opus 4 是我们最先进的模型。鉴于 AI 发展的快速步伐，我们观察到的模式可能已经随着更新模型的出现而发生了变化。</p>
+
+    <hr>
+
+    <div class="author-info">
+        <h3>引用本文</h3>
+        <p>如果您想引用这篇文章，可以使用以下 Bibtex：</p>
+        <pre><code>@online{huang2025aiwork,
+  author = {Saffron Huang and Bryan Seethor and Esin Durmus and Kunal Handa and Miles McCain and Michael Stern and Deep Ganguli},
+  title = {How AI Is Transforming Work at Anthropic},
+  date = {2025-12-02},
+  year = {2025},
+  url = {https://anthropic.com/research/how-ai-is-transforming-work-at-anthropic/}
+}</code></pre>
+    </div>
+
+    <div class="author-info">
+        <h3>致谢</h3>
+        <p>Saffron Huang 领导了这个项目，设计并执行了调查、访谈和数据分析，绘制了图表并撰写了博客文章。Bryan Seethor 共同设计了调查和访谈，共同领导调查和访谈数据收集，分析访谈主题，为写作做出贡献，并管理项目时间表。Esin Durmus 为实验设计做出贡献，并在整个过程中提供详细的指导和反馈。Kunal Handa 为访谈过程贡献了基础设施。Deep Ganguli 提供了关键指导和组织支持。所有作者在整个过程中提供了详细的指导和反馈。</p>
+    </div>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://anthropic.com/research/how-ai-is-transforming-work-at-anthropic/" target="_blank">Anthropic 原文</a>
+    <h3>相关链接</h3>
+        <a href="https://www.anthropic.com/ai-fluency" target="_blank">AI 流畅性框架</a><br>
+        <a href="https://metr.org/" target="_blank">METR AI 研究</a><br>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
