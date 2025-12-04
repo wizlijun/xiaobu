@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美军狙击手训练手册 - 深度交互版</title>
+    <style>
+        :root {
+            --bg-color: #f9fbfd;
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --survival-color: #27ae60;
+            --survival-bg: #e8f5e9;
+            --card-front-bg: #ffffff;
+            --card-back-bg: #ecf0f1;
+            --text-color: #34495e;
+            --action-bg: #fff8e1;
+            --action-border: #ffc107;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding-top: 70px; /* Space for fixed header */
+            line-height: 1.6;
+        }
+
+        /* Top Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e1e8ed;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            padding: 0 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .nav-container {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding: 15px 0;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #7f8c8d;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--accent-color);
+            background: #f0f4f8;
+        }
+
+        /* Main Layout */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .chapter-header {
+            text-align: center;
+            margin-bottom: 40px;
+            margin-top: 60px;
+            position: relative;
+        }
+
+        .chapter-header h2 {
+            font-size: 2.2rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .chapter-header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .chapter-header::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 4px;
+            background: var(--accent-color);
+            margin: 20px auto;
+            border-radius: 2px;
+        }
+
+        /* Special Structure Box */
+        .structure-box {
+            background: #fff;
+            border: 2px dashed #bdc3c7;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .badge {
+            background: #bdc3c7;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            position: absolute;
+            top: -15px;
+            left: 30px;
+        }
+
+        /* Flip Card Grid */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        /* Flip Card Styles */
+        .flip-card {
+            background-color: transparent;
+            height: 320px; /* Fixed height for uniformity */
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-radius: 12px;
+        }
+
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            border: 1px solid #eee;
+        }
+
+        /* Front Side */
+        .flip-card-front {
+            background-color: var(--card-front-bg);
+            color: var(--primary-color);
+        }
+
+        .flip-card-front h3 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+        }
+
+        .icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #bdc3c7;
+        }
+
+        .tap-hint {
+            font-size: 0.8rem;
+            color: #95a5a6;
+            margin-top: 15px;
+            opacity: 0.7;
+        }
+
+        /* Back Side */
+        .flip-card-back {
+            background-color: var(--card-back-bg);
+            color: var(--text-color);
+            transform: rotateY(180deg);
+            text-align: left;
+            align-items: flex-start;
+            overflow-y: auto;
+        }
+
+        .flip-card-back h4 {
+            margin-top: 0;
+            color: var(--accent-color);
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            width: 100%;
+            padding-bottom: 5px;
+        }
+
+        .flip-card-back ul {
+            padding-left: 20px;
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        .flip-card-back li {
+            margin-bottom: 8px;
+        }
+
+        /* Survival Card Variant */
+        .survival-card .flip-card-front {
+            border-top: 5px solid var(--survival-color);
+            background: linear-gradient(to bottom, #f9fff9, #fff);
+        }
+        
+        .survival-card .icon {
+            color: var(--survival-color);
+        }
+
+        .survival-card .flip-card-back {
+            background-color: var(--survival-bg);
+        }
+
+        .survival-card .flip-card-back h4 {
+            color: var(--survival-color);
+        }
+
+        /* Action Box */
+        .action-box {
+            background-color: var(--action-bg);
+            border: 1px solid var(--action-border);
+            border-left: 6px solid var(--action-border);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .action-box h4 {
+            margin: 0 0 10px 0;
+            color: #d35400;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .action-box h4::before {
+            content: "⚡";
+            margin-right: 10px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+            .navbar {
+                justify-content: flex-start;
+                padding: 0 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#intro" class="nav-link active">手册结构</a>
+            <a href="#ch1" class="nav-link">简介与选拔</a>
+            <a href="#ch2" class="nav-link">武器装备</a>
+            <a href="#ch3" class="nav-link">野战技术</a>
+            <a href="#ch4" class="nav-link">射击术</a>
+            <a href="#ch5" class="nav-link" style="color:var(--survival-color)">追踪与生存</a>
+            <a href="#ch6" class="nav-link">任务规划</a>
+            <a href="#ch7" class="nav-link">运用</a>
+            <a href="#ch8" class="nav-link">作战行动</a>
+            <a href="#appendix" class="nav-link" style="color:var(--survival-color)">附录：终极生存</a>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <!-- Intro Section -->
+        <section id="intro">
+            <div class="chapter-header">
+                <h2>手册结构说明</h2>
+                <p>Structure of Contents</p>
+            </div>
+            
+            <div class="structure-box">
+                <span class="badge">必读：编码逻辑</span>
+                <h3>数字背后的含义</h3>
+                <p>本手册采用独特的段落编码系统，以便在实战和训练中快速交叉引用：</p>
+                <div style="display: flex; gap: 20px; margin-top: 20px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px; background: #eee; padding: 15px; border-radius: 8px;">
+                        <strong style="color: var(--accent-color); font-size: 1.2rem;">X-Y 格式</strong>
+                        <p>例如：<strong>8-5</strong></p>
+                        <p><strong>X (8)</strong> = 章节号 (Chapter 8)</p>
+                        <p><strong>Y (5)</strong> = 该章内的段落顺序</p>
+                    </div>
+                    <div style="flex: 2; min-width: 300px;">
+                        <h4>为什么这很重要？</h4>
+                        <ul>
+                            <li><strong>统一语言：</strong> 无论使用纸质书、电子书还是音频，"参见段落 8-5" 永远指向同一内容。</li>
+                            <li><strong>快速索引：</strong> 在简报中，指挥官可以直接引用编码下达指令。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter 1 -->
+        <section id="ch1">
+            <div class="chapter-header">
+                <h2>第一章：简介与选拔</h2>
+                <p>Sniper Mission & Selection</p>
+            </div>
+
+            <div class="card-grid">
+                <!-- Card 1 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🎯</div>
+                            <h3>任务核心</h3>
+                            <p>狙击手存在的意义</p>
+                            <div class="tap-hint">翻转查看详情</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>双重使命</h4>
+                            <ul>
+                                <li><strong>主要任务：</strong> 远距离精确火力。杀伤人员、破坏器材、制造恐惧、打击士气。</li>
+                                <li><strong>次要任务：</strong> 收集并报告战场信息（眼睛和耳朵）。</li>
+                                <li><strong>关键词：</strong> 歧视性火力 (Discriminatory Fire) —— 精确区分目标。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🧠</div>
+                            <h3>心理素质选拔</h3>
+                            <p>比射击更重要的标准</p>
+                            <div class="tap-hint">翻转查看详情</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>心理侧写</h4>
+                            <ul>
+                                <li><strong>冷静杀戮：</strong> 必须能无焦虑、无悔恨地消灭目标。</li>
+                                <li><strong>动机筛选：</strong> 为了"声望"或"特权"而来的候选人通常不合格。</li>
+                                <li><strong>情绪稳定：</strong> 能忍受长时间的孤独、睡眠不足和恶劣环境。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">👀</div>
+                            <h3>生理与习惯</h3>
+                            <p>硬性指标与禁忌</p>
+                            <div class="tap-hint">翻转查看详情</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>生理要求</h4>
+                            <ul>
+                                <li><strong>视力：</strong> 矫正后20/20，<strong>绝对不能色盲</strong>（无法识别伪装）。</li>
+                                <li><strong>吸烟：</strong> 禁止习惯性吸烟者。烟味和咳嗽会暴露位置，戒断反应会导致颤抖。</li>
+                                <li><strong>体能：</strong> 必须具备超越普通步兵的耐力。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-box">
+                <h4>行动建议：人员筛选</h4>
+                <p>如果在选拔中发现候选人表现出对"杀戮"的过度渴望或仅仅是为了炫耀，即使射击满分也应淘汰。重点考察其在无人监督下的自律性。</p>
+            </div>
+        </section>
+
+        <!-- Chapter 2 -->
+        <section id="ch2">
+            <div class="chapter-header">
+                <h2>第二章：武器与装备</h2>
+                <p>Equipment & Weapons</p>
+            </div>
+
+            <div class="card-grid">
+                <!-- Card 1 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🔫</div>
+                            <h3>M110 SASS</h3>
+                            <p>半自动狙击系统的优势</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>7.62mm 半自动系统</h4>
+                            <ul>
+                                <li><strong>优势：</strong> 快速补射能力，对多目标的打击效率高于栓动步枪。</li>
+                                <li><strong>关键维护：</strong> 枪管磨合（Barrel Break-in）。前100发必须遵循特定清洁程序，否则影响精度寿命。</li>
+                                <li><strong>附件：</strong> 配备消音器，可显著降低特征。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🚀</div>
+                            <h3>M107 LRSR</h3>
+                            <p>远程重型狙击步枪</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>.50口径反器材</h4>
+                            <ul>
+                                <li><strong>射程：</strong> 精确射击可达1800米，最大射程6800米。</li>
+                                <li><strong>用途：</strong> 打击硬目标、远距离反狙击、排爆。</li>
+                                <li><strong>警告：</strong> 严禁使用 SLAP（脱壳穿甲弹），可能炸膛。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🔭</div>
+                            <h3>光学设备维护</h3>
+                            <p>狙击手的第二生命</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>安装与保养</h4>
+                            <ul>
+                                <li><strong>扭矩：</strong> 瞄准镜环螺母必须拧紧至 **65英寸/磅**。过紧损坏管身，过松导致归零偏移。</li>
+                                <li><strong>除雾：</strong> 温差大时易起雾。进入温暖室内前包裹设备以缓慢回温。</li>
+                                <li><strong>镜头：</strong> 永远不要用干布擦拭灰尘（会刮伤镀膜），先吹气再用镜头纸。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter 3 -->
+        <section id="ch3">
+            <div class="chapter-header">
+                <h2>第三章：野战技术与生存基础</h2>
+                <p>Fieldcraft & Survival Basics</p>
+            </div>
+
+            <div class="card-grid">
+                <!-- Survival Card -->
+                <div class="flip-card survival-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🍃</div>
+                            <h3>目标指示特征</h3>
+                            <p>暴露位置的致命错误</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>五大暴露源</h4>
+                            <ul>
+                                <li><strong>运动：</strong> 人眼对运动最敏感。</li>
+                                <li><strong>反光：</strong> 皮肤油光、手表、瞄准镜。</li>
+                                <li><strong>轮廓：</strong> 必须打破头肩轮廓。</li>
+                                <li><strong>气味：</strong> 肥皂、驱虫剂、从家带来的食物味。</li>
+                                <li><strong>野生动物：</strong> 鸟类突然起飞是危险信号。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Survival Card -->
+                <div class="flip-card survival-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🌿</div>
+                            <h3>伪装与吉利服</h3>
+                            <p>融入环境的艺术</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>自然伪装法则</h4>
+                            <ul>
+                                <li><strong>原则：</strong> 70%使用自然植被，30%使用人造材料。</li>
+                                <li><strong>植被采集：</strong> 不要从你*经过*的地方采集，要从你*要去*的地方采集，并随环境变化不断更换。</li>
+                                <li><strong>脸部：</strong> 涂黑高光部位（额头、鼻尖、颧骨），涂亮阴影部位。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Survival Card -->
+                <div class="flip-card survival-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🐛</div>
+                            <h3>潜行运动</h3>
+                            <p>不被发现的移动方式</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>关键技术</h4>
+                            <ul>
+                                <li><strong>低姿爬行：</strong> 腿不分开，脚趾推，手指拉，枪放拖袋。</li>
+                                <li><strong>每动必停：</strong> 每移动几英寸，都要停下来观察、聆听（SLLS: Stop, Look, Listen, Smell）。</li>
+                                <li><strong>利用干扰：</strong> 利用风吹草动、飞机噪音、炮火声掩护移动。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-box">
+                <h4>行动建议：生存伪装</h4>
+                <p>在进入阵地前，务必进行<strong>"反光检查"</strong>。哪怕一个微小的反光都能招致致命打击。如果你在移动中惊扰了野生动物（如惊飞鸟群），必须立即冻结不动并做好战斗准备，因为敌人可能也注意到了。</p>
+            </div>
+        </section>
+
+        <!-- Chapter 4 -->
+        <section id="ch4">
+            <div class="chapter-header">
+                <h2>第四章：射击术 (核心技能)</h2>
+                <p>Marksmanship Fundamentals</p>
+            </div>
+
+            <div class="card-grid">
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🧘</div>
+                            <h3>稳固据枪</h3>
+                            <p>射击的物理基础</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>三大要素</h4>
+                            <ul>
+                                <li><strong>骨骼支撑：</strong> 尽量用骨架而非肌肉支撑武器。</li>
+                                <li><strong>肌肉放松：</strong> 肌肉紧张会导致微颤。</li>
+                                <li><strong>自然指向 (NPA)：</strong> 放松身体时枪口自然指向哪里？不要用肌肉强行把枪拉向目标，而应移动身体。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🌬️</div>
+                            <h3>环境影响</h3>
+                            <p>风、温、压</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>弹道修正</h4>
+                            <ul>
+                                <li><strong>温度：</strong> 热空气密度低->弹着点高。每变化20度约偏差1 MOA。</li>
+                                <li><strong>角度射击：</strong> 无论仰射还是俯射，子弹都会**偏高**。需计算水平距离（斜距 x 余弦值）。</li>
+                                <li><strong>湿度：</strong> 影响较小，但在极端情况下需考虑。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🔁</div>
+                            <h3>综合射击口诀</h3>
+                            <p>BRASS</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>执行流程</h4>
+                            <ul>
+                                <li><strong>B</strong>reathe (呼吸)：自然呼吸暂停。</li>
+                                <li><strong>R</strong>elax (放松)：全身肌肉松弛。</li>
+                                <li><strong>A</strong>im (瞄准)：对正十字线。</li>
+                                <li><strong>S</strong>lack (预压)：消除扳机虚位。</li>
+                                <li><strong>S</strong>queeze (挤压)：不知不觉中击发。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter 5 -->
+        <section id="ch5">
+            <div class="chapter-header">
+                <h2>第五章：追踪与反追踪 (生存核心)</h2>
+                <p>Tracking & Evasion</p>
+            </div>
+
+            <div class="card-grid">
+                <!-- Survival Card -->
+                <div class="flip-card survival-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">👣</div>
+                            <h3>踪迹阅读 (Tracking)</h3>
+                            <p>像猎人一样思考</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>六大指标</h4>
+                            <ul>
+                                <li><strong>移位：</strong> 翻动的泥土、折断的树枝。</li>
+                                <li><strong>污迹：</strong> 血迹、压碎的浆果汁液。</li>
+                                <li><strong>垃圾：</strong> 糖纸、烟头（极其明显的非自然物）。</li>
+                                <li><strong>天气：</strong> 雨水冲刷程度判断脚印新鲜度。</li>
+                                <li><strong>方框法：</strong> 在36英寸范围内数脚印除以2，估算人数。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Survival Card -->
+                <div class="flip-card survival-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🚑</div>
+                            <h3>伤情判断 (Wounds)</h3>
+                            <p>通过血迹分析敌人</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>血迹分析</h4>
+                            <ul>
+                                <li><strong>肺部中弹：</strong> 粉红色、泡沫状血迹。</li>
+                                <li><strong>动脉出血：</strong> 鲜红色，呈喷射状或间歇性大量涌出。</li>
+                                <li><strong>腹部受伤：</strong> 混有消化液，有特殊气味。</li>
+                                <li><strong>头部受伤：</strong> 粘稠、甚至带有脑组织。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Survival Card -->
+                <div class="flip-card survival-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🚫</div>
+                            <h3>反追踪与逃避 (Evasion)</h3>
+                            <p>如何甩掉尾巴</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>欺骗技术</h4>
+                            <ul>
+                                <li><strong>中断踪迹：</strong> 利用硬地、岩石带、溪流移动。</li>
+                                <li><strong>倒退行走：</strong> 在松软地面倒退走，制造反向假象。</li>
+                                <li><strong>换鞋：</strong> 携带第二双不同纹路的鞋子。</li>
+                                <li><strong>90度转弯：</strong> 在硬地上突然直角转弯，并在转弯处清理痕迹。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-box">
+                <h4>行动建议：逃生计划 (E&E)</h4>
+                <p>如果不幸被俘，<strong>最初的几分钟到几小时是逃跑的最佳时机</strong>（敌人警惕性未稳，你也未因囚禁而虚弱）。如果不幸要在野外长期躲避，务必遵循BLISS原则选择藏身处：融合(Blend)、低轮廓(Low)、不规则(Irregular)、小(Small)、偏僻(Secluded)。</p>
+            </div>
+        </section>
+
+        <!-- Chapter 6 & 7 -->
+        <section id="ch6">
+            <div class="chapter-header">
+                <h2>第六、七章：任务与运用</h2>
+                <p>Planning & Employment</p>
+            </div>
+
+            <div class="card-grid">
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">📋</div>
+                            <h3>任务规划</h3>
+                            <p>成功的先决条件</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>关键检查点</h4>
+                            <ul>
+                                <li><strong>插入与撤离：</strong> 必须有主计划和备用计划（PZ/LZ）。</li>
+                                <li><strong>通信：</strong> 必须有PACE计划（主用、备用、应急、紧急）。</li>
+                                <li><strong>医疗：</strong> 撤离路线和医疗后送程序。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">👮</div>
+                            <h3>交战规则 (ROE)</h3>
+                            <p>合法杀戮的界限</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>附带损伤控制</h4>
+                            <ul>
+                                <li>狙击手是减少附带损伤的最佳工具。</li>
+                                <li>必须考虑子弹穿透力，避免击穿目标后伤及平民。</li>
+                                <li>指挥官应给予狙击手特定的ROE，不同于普通步兵。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter 8 -->
+        <section id="ch8">
+            <div class="chapter-header">
+                <h2>第八章：作战行动</h2>
+                <p>Urban & Counter-Sniper</p>
+            </div>
+
+            <div class="card-grid">
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🏙️</div>
+                            <h3>城市战技术</h3>
+                            <p>水泥丛林生存法则</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>阵地选择</h4>
+                            <ul>
+                                <li><strong>位置：</strong> 避免在屋顶（轮廓太明显）。</li>
+                                <li><strong>房间深处：</strong> 在房间深处射击，隐藏枪口焰和灰尘。</li>
+                                <li><strong>窗户：</strong> 不要打碎所有玻璃（这本身就是信号），利用纱窗或窗帘作为隐蔽网。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">⚔️</div>
+                            <h3>反狙击作战</h3>
+                            <p>猎杀猎人</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>五步法</h4>
+                            <ol>
+                                <li>确定威胁。</li>
+                                <li>收集信息（Crack-Thump声响间隔测距）。</li>
+                                <li>确定敌人活动模式。</li>
+                                <li>确定最佳交战位置。</li>
+                                <li>交战（此时忽略其他目标，只针对敌狙击手）。</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Appendix Survival -->
+        <section id="appendix">
+            <div class="chapter-header">
+                <h2>附录 F：终极生存指南</h2>
+                <p>Survival Psychology & Skills</p>
+            </div>
+
+            <div class="card-grid">
+                <!-- Survival Card -->
+                <div class="flip-card survival-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🧠</div>
+                            <h3>生存心理</h3>
+                            <p>最大的敌人是自己</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>生存之敌</h4>
+                            <ul>
+                                <li><strong>恐惧与恐慌：</strong> 会导致非理性决策。接受恐惧，利用肾上腺素。</li>
+                                <li><strong>孤独与无聊：</strong> 会导致放松警惕。保持忙碌（改善避难所、清洁武器）。</li>
+                                <li><strong>态度：</strong> 坚信"我能活下去"是生存的第一要素。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Survival Card -->
+                <div class="flip-card survival-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">💧</div>
+                            <h3>水与食物</h3>
+                            <p>野外能量维持</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>获取原则</h4>
+                            <ul>
+                                <li><strong>水优先于食物：</strong> 没有水，人只能活几天；没有食物可以活几周。</li>
+                                <li><strong>水源净化：</strong> 煮沸是最好的方法。碘片、过滤次之。</li>
+                                <li><strong>食物：</strong> 避免未知的植物。昆虫是优质蛋白质（煮熟吃），但避开鲜艳、有毛或有强烈气味的昆虫。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Survival Card -->
+                <div class="flip-card survival-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🔥</div>
+                            <h3>生存工具包</h3>
+                            <p>随身携带的救命稻草</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>必备物品</h4>
+                            <ul>
+                                <li><strong>火种：</strong> 打火机、镁棒、防水火柴。</li>
+                                <li><strong>信号：</strong> 信号镜（最远距离）、口哨。</li>
+                                <li><strong>多用途：</strong> 550伞绳、保险套（储水用）、太空毯、小刀。</li>
+                                <li><strong>医疗：</strong> 抗生素、止泻药、绷带。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-box">
+                <h4>行动建议：生存心态</h4>
+                <p>如果与部队失散，且无法通讯：<strong>停下来，思考，观察，计划 (S.T.O.P.)</strong>。不要盲目奔跑。保存体力，在夜间移动，白天隐蔽。利用自然资源（如流向）导航回友军防线。</p>
+            </div>
+        </section>
+
+    </div>
+
+</body>
+</html>
