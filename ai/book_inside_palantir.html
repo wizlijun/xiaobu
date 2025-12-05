@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Inside Palantir - 移动端深度摘要</title>
+    <style>
+        :root {
+            --primary: #3b82f6; /* Bright Blue */
+            --primary-light: #eff6ff;
+            --accent: #6366f1; /* Indigo */
+            --text-dark: #1e293b;
+            --text-body: #475569;
+            --text-light: #94a3b8;
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --success-bg: #dcfce7;
+            --success-text: #166534;
+            --warning-bg: #fef3c7;
+            --warning-text: #92400e;
+            --danger-bg: #fee2e2;
+            --danger-text: #991b1b;
+            --radius: 16px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            padding-bottom: 60px; /* Space for bottom interaction */
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+            padding: 2.5rem 1.5rem 1.5rem;
+            border-bottom-left-radius: 24px;
+            border-bottom-right-radius: 24px;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 1.8rem;
+            margin: 0 0 0.5rem 0;
+            color: var(--text-dark);
+            letter-spacing: -0.5px;
+        }
+
+        .hero p {
+            font-size: 0.95rem;
+            color: var(--text-body);
+            margin: 0;
+        }
+
+        .hero .meta {
+            margin-top: 1rem;
+            display: inline-block;
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Container */
+        .container {
+            padding: 0 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Section Title */
+        .section-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-light);
+            margin: 2rem 0 0.8rem 4px;
+            font-weight: 700;
+        }
+
+        /* Interactive Card */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 1rem;
+            overflow: hidden;
+            transition: transform 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .card-header {
+            padding: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            background: #fff;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-icon {
+            font-size: 1.2rem;
+        }
+
+        .chevron {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-light);
+            transition: transform 0.3s ease;
+        }
+
+        .card.expanded .chevron {
+            transform: rotate(180deg);
+            fill: var(--primary);
+        }
+
+        /* Expanded Content */
+        .card-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #fdfdfd;
+        }
+
+        .card.expanded .card-body {
+            max-height: 2000px; /* Arbitrary large number */
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .content-inner {
+            padding: 1.25rem;
+            font-size: 0.95rem;
+            color: var(--text-body);
+        }
+
+        /* Content Elements */
+        .highlight-box {
+            background: var(--primary-light);
+            border-left: 4px solid var(--primary);
+            padding: 12px;
+            margin: 12px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .highlight-box strong {
+            color: var(--primary);
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+        }
+
+        .tag-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .tag {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .tag-fact { background: var(--success-bg); color: var(--success-text); }
+        .tag-risk { background: var(--danger-bg); color: var(--danger-text); }
+        .tag-concept { background: var(--warning-bg); color: var(--warning-text); }
+
+        ul.detail-list {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+        ul.detail-list li {
+            margin-bottom: 8px;
+        }
+
+        .quote {
+            font-style: italic;
+            color: #64748b;
+            border-left: 2px solid #cbd5e1;
+            padding-left: 12px;
+            margin: 16px 0;
+        }
+
+        /* Floating Action Button for Navigation (Optional) */
+        .fab-up {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--text-dark);
+            color: white;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 100;
+            cursor: pointer;
+        }
+        .fab-up.visible { opacity: 1; }
+
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <!-- Hero -->
+    <div class="hero">
+        <h1>Inside Palantir</h1>
+        <p>揭秘硅谷最神秘的数据巨头</p>
+        <div class="meta">HTML5 深度交互摘要</div>
+    </div>
+
+    <div class="container">
+
+        <!-- Section 1 -->
+        <div class="section-label">01. 起源与基因</div>
+        
+        <div class="card" onclick="toggleCard(this)">
+            <div class="card-header">
+                <div class="card-title"><span class="card-icon">🦄</span> 硅谷遇上情报界</div>
+                <svg class="chevron" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+            </div>
+            <div class="card-body">
+                <div class="content-inner">
+                    <div class="tag-row">
+                        <span class="tag tag-fact">2003年成立</span>
+                        <span class="tag tag-concept">PayPal 黑帮</span>
+                    </div>
+                    <p>Palantir 诞生于 9/11 后的焦虑之中。其核心理念是将 <b>PayPal 用于识别金融欺诈的算法</b>，重新编程以识别恐怖主义网络。</p>
+                    <div class="highlight-box">
+                        <strong>核心四人组</strong>
+                        Peter Thiel（资金/愿景）、Alex Karp（哲学/道德）、Stephen Cohen（代码天才）、Joe Lonsdale（数据）。
+                    </div>
+                    <p>初期，硅谷风投因其市场狭窄（仅限政府）而避之不及。转机来自 <b>In-Q-Tel</b>（CIA 的风险投资部门）的 200 万美元注资，这不仅是资金，更是进入情报界的“通行证”。</p>
+                    <div class="quote">“名字取自《指环王》的真知晶球（Palantir），寓意能看到远处和未来的力量，但也暗示了被景象误导的风险。”</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" onclick="toggleCard(this)">
+            <div class="card-header">
+                <div class="card-title"><span class="card-icon">🧠</span> 哲学王 CEO：Alex Karp</div>
+                <svg class="chevron" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+            </div>
+            <div class="card-body">
+                <div class="content-inner">
+                    <p>Karp 与典型的硅谷 CEO 截然不同。他拥有法学学位和德国哲学博士学位，推崇“任务导向”而非商业利润。</p>
+                    <ul class="detail-list">
+                        <li><b>增强而非替代：</b> 他坚持“Augmented Intelligence”，即计算机发现模式，人类进行判断。</li>
+                        <li><b>反硅谷文化：</b> 他认为硅谷轻视了西方国家面临的生存威胁。2020年，他将总部从帕洛阿尔托搬到了<b>科罗拉多州丹佛</b>，以远离硅谷的单一文化。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2 -->
+        <div class="section-label">02. 产品矩阵</div>
+
+        <div class="card" onclick="toggleCard(this)">
+            <div class="card-header">
+                <div class="card-title"><span class="card-icon">🛡️</span> Gotham：战争与情报</div>
+                <svg class="chevron" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+            </div>
+            <div class="card-body">
+                <div class="content-inner">
+                    <span class="tag tag-concept">核心产品</span>
+                    <p>Palantir 的起家之作。它不像传统数据库那样只存储表格，而是建立<b>“图谱 (Graph)”</b>。</p>
+                    <div class="highlight-box">
+                        <strong>实战应用</strong>
+                        在伊拉克和阿富汗，美军用它整合截获的电话、简易爆炸装置（IED）报告和地理位置。一名上尉称使用它就像从“黑白电视升级到了高清电视”。
+                    </div>
+                    <p>Gotham 允许分析师点击一个节点（如嫌疑人），瞬间展开与其关联的所有节点（资金流、通话记录、行动轨迹）。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" onclick="toggleCard(this)">
+            <div class="card-header">
+                <div class="card-title"><span class="card-icon">🏭</span> Foundry：企业的操作系统</div>
+                <svg class="chevron" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+            </div>
+            <div class="card-body">
+                <div class="content-inner">
+                    <p>为了解决过度依赖政府合同的问题，Palantir 推出了 Foundry。它致力于打破企业内部的<b>数据孤岛</b>。</p>
+                    <div class="highlight-box">
+                        <strong>核心概念：本体论 (Ontology)</strong>
+                        Foundry 不仅仅整合数据，它将数据转化为业务对象。例如在空客工厂，数据不再是“数据库中的一行”，而是代表一个具体的“起落架”或“工单”。
+                    </div>
+                    <ul class="detail-list">
+                        <li><b>空客 (Airbus)：</b> 将 A350 生产中的延误排查时间从数周缩短至数天。</li>
+                        <li><b>Walgreens：</b> 预测药品需求，应对供应链中断。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" onclick="toggleCard(this)">
+            <div class="card-header">
+                <div class="card-title"><span class="card-icon">🤖</span> AIP：人工智能平台</div>
+                <svg class="chevron" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+            </div>
+            <div class="card-body">
+                <div class="content-inner">
+                    <p>最新的增长引擎。AIP 将大语言模型 (LLM) 引入企业私有数据环境。</p>
+                    <p><b>关键差异化：</b> 其他公司提供通用的 Chatbot，AIP 提供“行动能力”。AI 可以直接在 Foundry 的本体层上操作，例如：“显示所有延误的订单，并起草邮件给供应商”，并在人类批准后执行。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3 -->
+        <div class="section-label">03. 关键战役与争议</div>
+
+        <div class="card" onclick="toggleCard(this)">
+            <div class="card-header">
+                <div class="card-title"><span class="card-icon">🦠</span> COVID-19 与全球危机</div>
+                <svg class="chevron" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+            </div>
+            <div class="card-body">
+                <div class="content-inner">
+                    <p>疫情期间，Palantir 成为了英美政府的后台大脑。</p>
+                    <ul class="detail-list">
+                        <li><b>英国 NHS：</b> 建立了 COVID-19 数据存储库，整合了 200 多家医院的数据，实时分配呼吸机和床位。</li>
+                        <li><b>美国 HHS (Tiberius 项目)：</b> 监控疫苗分发链条，确保每一剂疫苗的可追溯性。</li>
+                    </ul>
+                    <p>这证明了其在极端压力下处理“混乱数据”的能力。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" onclick="toggleCard(this)">
+            <div class="card-header">
+                <div class="card-title"><span class="card-icon">⚠️</span> 道德困境与争议</div>
+                <svg class="chevron" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+            </div>
+            <div class="card-body">
+                <div class="content-inner">
+                    <div class="tag-row">
+                        <span class="tag tag-risk">ICE 遣返</span>
+                        <span class="tag tag-risk">隐私监控</span>
+                    </div>
+                    <p>Palantir 长期处于舆论风暴中心。</p>
+                    <div class="highlight-box">
+                        <strong>ICE 合同风波</strong>
+                        Palantir 为美国移民海关执法局 (ICE) 提供软件，被指控协助识别和遣返非法移民。员工内部抗议，但公司高层坚持“技术中立，政策由政府决定”的立场。
+                    </div>
+                    <p><b>透明度悖论：</b> Palantir 声称其软件通过极其严格的“审计日志（Audit Trails）”来保护隐私——每一次数据查询都会被永久记录，防止滥用。然而，批评者认为这种强大的监控能力本身就是威胁。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 4 -->
+        <div class="section-label">04. 未来展望</div>
+
+        <div class="card" onclick="toggleCard(this)">
+            <div class="card-header">
+                <div class="card-title"><span class="card-icon">📈</span> 财务与 AI 军备竞赛</div>
+                <svg class="chevron" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+            </div>
+            <div class="card-body">
+                <div class="content-inner">
+                    <ul class="detail-list">
+                        <li><b>2023 盈利转折：</b> 公司终于实现了 GAAP 盈利，证明了其不仅能增长，还能赚钱。</li>
+                        <li><b>奥本海默时刻：</b> Alex Karp 将当前的 AI 竞争比作曼哈顿计划。他直言不讳地表示，西方必须在 AI 武器化上战胜对手（如中国），Palantir 将是这一战略的核心基础设施。</li>
+                        <li><b>双引擎策略：</b> 继续深耕国防（特别是乌克兰战场的实战应用），同时利用 AIP 在企业市场快速扩张。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scroll to top button -->
+    <div class="fab-up" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+        <svg style="width:24px;height:24px;fill:white" viewBox="0 0 24 24"><path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/></svg>
+    </div>
+
+    <script>
+        function toggleCard(card) {
+            // Check if currently expanded
+            const isExpanded = card.classList.contains('expanded');
+            
+            // Optional: Close others (Accordion style) - uncomment if desired
+            /*
+            document.querySelectorAll('.card').forEach(c => {
+                c.classList.remove('expanded');
+            });
+            */
+
+            // Toggle current
+            if (!isExpanded) {
+                card.classList.add('expanded');
+            } else {
+                card.classList.remove('expanded');
+            }
+        }
+
+        // Show/Hide Scroll Button
+        window.addEventListener('scroll', () => {
+            const fab = document.querySelector('.fab-up');
+            if (window.scrollY > 300) {
+                fab.classList.add('visible');
+            } else {
+                fab.classList.remove('visible');
+            }
+        });
+    </script>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_inside_palantir_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
