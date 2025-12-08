@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025 AI 现状深度报告：100万亿 Token 实证分析</title>
+    <style>
+        :root {
+            --bg-body: #f9fafb;
+            --bg-card: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
+            --accent-data: #0ea5e9; /* Cyan for Data */
+            --accent-insight: #8b5cf6; /* Purple for Insights */
+            --accent-risk: #f59e0b; /* Amber for Risks/Warnings */
+            --border: #e5e7eb;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.7;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* Hero Header */
+        header {
+            text-align: center;
+            padding: 60px 20px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            border-bottom: 4px solid var(--primary);
+        }
+
+        h1 { font-size: 2.2rem; margin-bottom: 10px; color: #111827; }
+        .subtitle { color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
+        .badge-group { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
+        .badge { padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .badge-blue { background: var(--primary-light); color: var(--primary); }
+        .badge-gray { background: #f3f4f6; color: #4b5563; }
+
+        /* Interactive Sections */
+        .section-wrapper {
+            background: var(--bg-card);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .section-header {
+            padding: 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            user-select: none;
+        }
+        .section-header:hover { background-color: #f8fafc; }
+        
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .icon-box {
+            width: 40px; height: 40px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .toggle-btn {
+            font-size: 1.5rem; color: var(--text-muted);
+            transition: transform 0.3s ease;
+        }
+
+        .section-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0, 1, 0, 1);
+            background: #fff;
+        }
+
+        .section-content.open { max-height: 3000px; transition: max-height 1s ease-in-out; }
+        
+        .content-inner { padding: 0 30px 30px 30px; border-top: 1px solid var(--border); }
+
+        /* Highlight Boxes */
+        .highlight-box {
+            margin: 20px 0;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid;
+            display: flex;
+            gap: 15px;
+        }
+        .h-data { background: #f0f9ff; border-color: var(--accent-data); }
+        .h-insight { background: #f5f3ff; border-color: var(--accent-insight); }
+        .h-warn { background: #fffbeb; border-color: var(--accent-risk); }
+
+        .h-label { font-weight: 800; font-size: 0.85rem; text-transform: uppercase; min-width: 60px; margin-top: 2px; }
+        .h-data .h-label { color: #0284c7; }
+        .h-insight .h-label { color: #7c3aed; }
+        .h-warn .h-label { color: #d97706; }
+
+        /* Quadrant Chart Styles */
+        .quadrant-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 10px;
+            margin: 30px 0;
+            position: relative;
+        }
+        .quadrant {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            position: relative;
+        }
+        .q-title { font-weight: 700; margin-bottom: 8px; font-size: 1rem; }
+        .q-desc { font-size: 0.9rem; color: #475569; }
+        .q-tag {
+            display: inline-block; padding: 2px 8px; border-radius: 4px; 
+            font-size: 0.75rem; margin-top: 8px; font-weight: 600;
+        }
+        
+        /* Quadrant specific colors */
+        .q-top-right { border-color: #bfdbfe; background: #eff6ff; } /* High Cost/High Vol */
+        .q-top-right .q-tag { background: #2563eb; color: #fff; }
+
+        .q-top-left { border-color: #bbf7d0; background: #f0fdf4; } /* Low Cost/High Vol */
+        .q-top-left .q-tag { background: #16a34a; color: #fff; }
+        
+        .q-bottom-right { border-color: #e9d5ff; background: #faf5ff; } /* High Cost/Low Vol */
+        .q-bottom-right .q-tag { background: #9333ea; color: #fff; }
+        
+        .q-bottom-left { border-color: #e5e7eb; background: #f9fafb; opacity: 0.8; } /* Low/Low */
+        .q-tag.gray { background: #94a3b8; color: #fff; }
+
+        .axis-label {
+            position: absolute; font-weight: bold; color: #64748b; font-size: 0.8rem; text-transform: uppercase;
+        }
+
+        /* Charts & Bars */
+        .bar-wrapper { margin-bottom: 12px; }
+        .bar-label { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 4px; }
+        .bar-track { background: #f1f5f9; height: 12px; border-radius: 6px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 6px; width: 0; transition: width 1.5s ease-out; }
+        
+        .c-closed { background: #334155; }
+        .c-row-oss { background: #f97316; }
+        .c-cn-oss { background: #3b82f6; }
+
+        /* Cinderella Section */
+        .glass-slipper {
+            background: linear-gradient(135deg, #e0f2fe 0%, #ffffff 100%);
+            border: 2px solid #bae6fd;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        /* Conclusion */
+        .footer-summary {
+            background: #1e293b;
+            color: white;
+            padding: 40px;
+            border-radius: 16px;
+            margin-top: 40px;
+        }
+        .footer-summary h2 { border-bottom: 1px solid #475569; padding-bottom: 15px; margin-top: 0; }
+        .key-takeaway { margin-bottom: 15px; display: flex; gap: 12px; }
+        .key-bullet { color: #38bdf8; font-weight: bold; }
+
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>2025 AI 现状实证研究报告</h1>
+        <div class="subtitle">基于 OpenRouter 平台 <strong>100 万亿 Token</strong> 的全景分析</div>
+        <div class="badge-group">
+            <span class="badge badge-blue">a16z & OpenRouter</span>
+            <span class="badge badge-gray">发布时间：2025.12</span>
+            <span class="badge badge-gray">数据周期：2024.11 - 2025.11</span>
+        </div>
+    </header>
+
+    <!-- Section 1: Introduction & The Shift -->
+    <div class="section-wrapper">
+        <div class="section-header" onclick="toggleSection('sec1')">
+            <div class="section-title">
+                <div class="icon-box">⚡</div>
+                范式转移：从“生成”到“推理”
+            </div>
+            <div class="toggle-btn" id="btn-sec1">+</div>
+        </div>
+        <div class="section-content" id="sec1">
+            <div class="content-inner">
+                <p>2024年12月5日 o1 模型的发布是真正的分水岭。AI 领域从单次前向传递（Single-pass）转向了多步深思熟虑（Multi-step deliberation）。</p>
+                
+                <div class="highlight-box h-data">
+                    <div class="h-label">数据</div>
+                    <div>
+                        <strong>>50%</strong> 的流量现在流向了经过推理优化的模型（Reasoning Models）。
+                        与此同时，平均 Prompt（输入）长度增长了 <strong>4倍</strong>，Output（输出）长度增长了 <strong>3倍</strong>。
+                    </div>
+                </div>
+
+                <div class="highlight-box h-insight">
+                    <div class="h-label">核心观点</div>
+                    <div>
+                        <strong>代理式推理 (Agentic Inference) 已成主流：</strong> 用户不再只是问一个简单的问题，而是提供代码库、长文档，要求模型进行规划、工具调用（Tool Use）和迭代修正。模型正在从“聊天机器人”演变为“分析引擎”。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: Market Landscape -->
+    <div class="section-wrapper">
+        <div class="section-header" onclick="toggleSection('sec2')">
+            <div class="section-title">
+                <div class="icon-box">📊</div>
+                市场格局：开源崛起与中型模型
+            </div>
+            <div class="toggle-btn" id="btn-sec2">+</div>
+        </div>
+        <div class="section-content" id="sec2">
+            <div class="content-inner">
+                <p>闭源模型仍占据主导，但开源模型（OSS）特别是中国模型的增长不容忽视。</p>
+                
+                <div class="highlight-box h-data">
+                    <div class="h-label">份额</div>
+                    <div style="width: 100%">
+                        <div class="bar-wrapper">
+                            <div class="bar-label"><span>闭源模型 (OpenAI, Anthropic)</span> <span>~70%</span></div>
+                            <div class="bar-track"><div class="bar-fill c-closed" style="width: 70%"></div></div>
+                        </div>
+                        <div class="bar-wrapper">
+                            <div class="bar-label"><span>全球开源 (Llama, Mistral)</span> <span>~17%</span></div>
+                            <div class="bar-track"><div class="bar-fill c-row-oss" style="width: 17%"></div></div>
+                        </div>
+                        <div class="bar-wrapper">
+                            <div class="bar-label"><span>中国开源 (DeepSeek, Qwen)</span> <span>~13%</span></div>
+                            <div class="bar-track"><div class="bar-fill c-cn-oss" style="width: 13%"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box h-insight">
+                    <div class="h-label">趋势</div>
+                    <div>
+                        <strong>中型即新型 (Medium is the New Small)：</strong> 
+                        原本的小模型（<15B）使用率下降。市场向 <strong>15B-70B</strong> 参数量的中型模型集中（如 Qwen 32B, GPT-OSS 20B）。这一区间在能力与推理成本之间找到了最佳平衡点（Model-Market Fit）。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: Usage Categories -->
+    <div class="section-wrapper">
+        <div class="section-header" onclick="toggleSection('sec3')">
+            <div class="section-title">
+                <div class="icon-box">🎮</div>
+                使用场景：不仅仅是生产力
+            </div>
+            <div class="toggle-btn" id="btn-sec3">+</div>
+        </div>
+        <div class="section-content" id="sec3">
+            <div class="content-inner">
+                <p>如果你认为 AI 只是用来写代码和写邮件的，数据会反驳你。</p>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                    <div>
+                        <h4 style="color:var(--primary)">开源模型主战场</h4>
+                        <ul>
+                            <li><strong>角色扮演 (Roleplay):</strong> 占比 >50%。用户寻求无审查、富有创造力的叙事体验。</li>
+                            <li><strong>编程辅助:</strong> 本地部署或低成本调用的首选。</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 style="color:#334155">闭源模型主战场</h4>
+                        <ul>
+                            <li><strong>专业编程:</strong> Claude 系列占据该领域 >60% 份额。</li>
+                            <li><strong>高精知识:</strong> 科学、法律等对幻觉零容忍的领域。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight-box h-insight">
+                    <div class="h-label">启示</div>
+                    <div>
+                        <strong>娱乐需求被低估：</strong> 角色扮演的巨大流量证明了 AI 在情感陪伴、游戏和创意写作中的潜力。这是消费级应用的金矿。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 4: Cost vs Usage (DETAILED) -->
+    <div class="section-wrapper" style="border: 2px solid var(--primary);">
+        <div class="section-header" onclick="toggleSection('sec4')">
+            <div class="section-title">
+                <div class="icon-box">💰</div>
+                重点分析：成本与使用的二元结构
+            </div>
+            <div class="toggle-btn" id="btn-sec4">+</div>
+        </div>
+        <div class="section-content open" id="sec4">
+            <div class="content-inner">
+                <p>市场并未像预期的那样完全“商品化”（即价格决定一切）。相反，我们观察到了基于<strong>任务性质</strong>的清晰分层。价格弹性在微观层面表现出极大差异。</p>
+
+                <div class="highlight-box h-data">
+                    <div class="h-label">宏观</div>
+                    <div>
+                        整体需求缺乏价格弹性。简单地将价格降低 10%，并不会带来 10% 的使用量增长——除非你的模型达到了某种<strong>能力阈值</strong>。
+                    </div>
+                </div>
+
+                <!-- Quadrant Visualization -->
+                <div style="text-align: center; font-weight: bold; margin-bottom: 5px;">AI 模型市场的四象限图 (对数坐标)</div>
+                <div class="quadrant-grid">
+                    <!-- Top Left -->
+                    <div class="quadrant q-top-left">
+                        <div class="axis-label" style="top:5px; left:5px;">高用量 / 低成本</div>
+                        <div class="q-title">高效巨人类 (Efficient Giants)</div>
+                        <div class="q-desc">通过极低成本和足够好的性能，捕获了海量自动化、长文本和脚本流量。存在“杰文斯悖论”效应：越便宜，用得越多。</div>
+                        <div class="q-tag">DeepSeek V3</div>
+                        <div class="q-tag">Gemini Flash</div>
+                        <div class="q-tag">Qwen 2.5</div>
+                    </div>
+
+                    <!-- Top Right -->
+                    <div class="quadrant q-top-right">
+                        <div class="axis-label" style="top:5px; right:5px;">高用量 / 高成本</div>
+                        <div class="q-title">溢价领袖类 (Premium Leaders)</div>
+                        <div class="q-desc">尽管价格昂贵（$2-$30/1M Tokens），但因其推理能力和可靠性，仍被大规模用于关键业务代码、架构设计和复杂科研。</div>
+                        <div class="q-tag">Claude 3.7 Sonnet</div>
+                        <div class="q-tag">GPT-5</div>
+                        <div class="q-tag">o1</div>
+                    </div>
+
+                    <!-- Bottom Left -->
+                    <div class="quadrant q-bottom-left">
+                        <div class="axis-label" style="bottom:5px; left:5px;">低用量 / 低成本</div>
+                        <div class="q-title">长尾商品类 (Long Tail)</div>
+                        <div class="q-desc">廉价但缺乏分发渠道或核心竞争力。仅在某些极其细分的低价值场景中使用。</div>
+                        <div class="q-tag gray">Small OSS Models</div>
+                        <div class="q-tag gray">Older Models</div>
+                    </div>
+
+                    <!-- Bottom Right -->
+                    <div class="quadrant q-bottom-right">
+                        <div class="axis-label" style="bottom:5px; right:5px;">低用量 / 高成本</div>
+                        <div class="q-title">利基专家类 (Specialized Experts)</div>
+                        <div class="q-desc">高风险、低频次任务。用户愿意为了一次完美的金融分析或医疗诊断支付高昂费用，但总调用量不大。</div>
+                        <div class="q-tag">GPT-4 Legacy</div>
+                        <div class="q-tag">Domain Finetunes</div>
+                    </div>
+                </div>
+
+                <div class="highlight-box h-insight">
+                    <div class="h-label">深度解析</div>
+                    <div>
+                        <ul style="margin:0; padding-left:20px;">
+                            <li><strong>特例 - "Technology" 类别：</strong> 唯一的既昂贵又高频的类别。这代表了系统架构设计等高价值任务，用户愿意为此支付溢价。</li>
+                            <li><strong>二元对立：</strong> 企业在关键任务上对价格<strong>不敏感</strong>（只选 Premium Leaders）；但在流水线任务上对价格<strong>极度敏感</strong>（涌向 Efficient Giants）。</li>
+                            <li><strong>开源的胜利：</strong> 开源模型通过占据“左上角”（高效巨人）象限，成功从闭源模型手中夺走了大量低价值但高频次的处理任务。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 5: Retention & Cinderella -->
+    <div class="section-wrapper">
+        <div class="section-header" onclick="toggleSection('sec5')">
+            <div class="section-title">
+                <div class="icon-box">👠</div>
+                用户留存：辛德瑞拉“水晶鞋”效应
+            </div>
+            <div class="toggle-btn" id="btn-sec5">+</div>
+        </div>
+        <div class="section-content" id="sec5">
+            <div class="content-inner">
+                <div class="glass-slipper">
+                    <h3 style="color:#0369a1; margin-top:0;">什么是“水晶鞋”效应？</h3>
+                    <p>报告发现，用户留存率并非线性变化，而是取决于<strong>“模型-工作流契合度” (Workload-Model Fit)</strong>。</p>
+                    <p>当一个新模型（如 o1 或 Claude 3.5）发布时，如果它率先解决了某个之前无法解决的痛点（就像水晶鞋完美契合灰姑娘的脚），这批早期用户就会形成<strong>“基础群组” (Foundational Cohorts)</strong>。</p>
+                    <p><strong>关键结论：</strong> 这批用户的留存率极高，几乎不会流失。因为他们的业务逻辑已经基于该模型构建。后续模型即使更便宜，也很难撬动他们（切换成本 > 价格差异）。</p>
+                </div>
+
+                <div class="highlight-box h-warn">
+                    <div class="h-label">怪象</div>
+                    <div>
+                        <strong>DeepSeek 的“回旋镖”效应：</strong> 数据显示 DeepSeek 的用户群组出现了罕见的“回流”现象。用户尝试了其他模型后，因为性价比或特定能力的缺失，又重新回到了 DeepSeek。这证明其在特定生态位中具有不可替代性。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conclusion -->
+    <div class="footer-summary">
+        <h2>📊 综合总结与展望</h2>
+        
+        <div class="key-takeaway">
+            <span class="key-bullet">1. 生态多元化：</span>
+            <span>未来不是“赢家通吃”。市场已分化为处理复杂推理的“昂贵大脑”和处理海量数据的“高效工人”。多模型协作（Multi-model orchestration）是必经之路。</span>
+        </div>
+        
+        <div class="key-takeaway">
+            <span class="key-bullet">2. 代理是未来：</span>
+            <span>随着上下文变长和工具调用普及，衡量模型好坏的标准将从“生成文本的流畅度”变为“完成复杂任务的成功率”。</span>
+        </div>
+        
+        <div class="key-takeaway">
+            <span class="key-bullet">3. 亚洲崛起：</span>
+            <span>中国模型不仅在追赶，更在通过高频迭代和极致性价比重塑全球开发者习惯（尤其是 DeepSeek/Qwen 系列）。</span>
+        </div>
+
+        <p style="margin-top: 20px; color: #94a3b8; font-size: 0.9rem;">
+            * 本报告基于 OpenRouter 2024-2025 年的匿名元数据分析生成。
+        </p>
+    </div>
+</div>
+
+<script>
+    function toggleSection(id) {
+        const content = document.getElementById(id);
+        const btn = document.getElementById('btn-' + id);
+        
+        if (content.classList.contains('open')) {
+            content.classList.remove('open');
+            btn.style.transform = 'rotate(0deg)';
+            btn.innerHTML = '+';
+        } else {
+            // Close others if desired (optional for focus)
+            // document.querySelectorAll('.section-content').forEach(el => el.classList.remove('open'));
+            // document.querySelectorAll('.toggle-btn').forEach(el => el.style.transform = 'rotate(0deg)');
+            
+            content.classList.add('open');
+            btn.style.transform = 'rotate(45deg)';
+            btn.innerHTML = '+'; // Keep plus but rotated looks like X
+        }
+    }
+
+    // Animation trigger on load
+    window.addEventListener('load', () => {
+        // Simple animation to fill bars
+        setTimeout(() => {
+            const bars = document.querySelectorAll('.bar-fill');
+            bars.forEach(bar => {
+                // Force redraw for transition (mock logic, real transition handles naturally)
+            });
+        }, 500);
+    });
+</script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://openrouter.ai/state-of-ai" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
