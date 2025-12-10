@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卡片盒笔记法：Structure 深度解析版</title>
+    <style>
+        :root {
+            /* 莫兰迪色系升级版 */
+            --bg-body: #f5f7fa;
+            --bg-card: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #607d8b;
+            --accent-blue: #a9cce3;
+            --accent-blue-deep: #2471a3;
+            --accent-green: #a3e4d7;
+            --accent-green-deep: #148f77;
+            --accent-purple: #d7bde2;
+            --accent-purple-deep: #884ea0;
+            --accent-dark: #34495e;
+            --shadow-soft: 0 10px 30px rgba(0,0,0,0.04);
+            --shadow-hover: 0 15px 40px rgba(0,0,0,0.1);
+            --radius-std: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 50px 20px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeIn 1s ease;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 300;
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        /* Nav */
+        .nav-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 50px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 12px 25px;
+            border: 1px solid transparent;
+            background: white;
+            color: var(--text-secondary);
+            border-radius: 50px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow-soft);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-blue);
+            color: var(--accent-blue-deep);
+        }
+
+        .nav-btn.active {
+            background: var(--text-primary);
+            color: white;
+            box-shadow: 0 8px 20px rgba(44, 62, 80, 0.25);
+        }
+
+        /* Sections */
+        .view-section {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .view-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- 结构解析视图 (核心更新) --- */
+        .structure-layout {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .context-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-std);
+            padding: 40px;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 30px;
+            border-left: 6px solid var(--accent-purple-deep);
+        }
+
+        .definition-box {
+            background: var(--accent-dark);
+            color: #ecf0f1;
+            padding: 30px;
+            border-radius: var(--radius-std);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(52, 73, 94, 0.3);
+        }
+
+        .definition-box::before {
+            content: '"Structure"';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            font-size: 8rem;
+            font-weight: 800;
+            color: rgba(255,255,255,0.05);
+            font-family: serif;
+        }
+
+        .def-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--accent-purple);
+            font-family: serif;
+            font-style: italic;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .comp-col h4 {
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .diagram-box {
+            background: white;
+            border-radius: var(--radius-std);
+            padding: 30px;
+            box-shadow: var(--shadow-soft);
+            height: 100%;
+        }
+
+        .structure-list li {
+            margin-bottom: 15px;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .structure-list li::before {
+            content: '•';
+            color: var(--accent-blue-deep);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        /* --- 章节卡片 --- */
+        .chapter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .chapter-card {
+            background: white;
+            border-radius: var(--radius-std);
+            padding: 30px;
+            box-shadow: var(--shadow-soft);
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chapter-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--accent-blue);
+        }
+
+        .chapter-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent-blue);
+            opacity: 0.5;
+        }
+
+        .chapter-num {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .chapter-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+
+        .chapter-desc {
+            font-size: 0.95rem;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* 模态框 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 750px;
+            max-height: 85vh;
+            border-radius: 20px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.15);
+            padding: 50px;
+            overflow-y: auto;
+            transform: scale(0.95);
+            transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            border: 1px solid #f0f0f0;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            background: #f5f5f5;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #666;
+        }
+
+        .close-btn:hover {
+            background: var(--accent-red);
+            color: var(--accent-red-deep);
+        }
+
+        /* 动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* 响应式 */
+        @media (max-width: 900px) {
+            .structure-layout { grid-template-columns: 1fr; }
+            h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>卡片盒笔记法 · 深度解析</h1>
+        <div class="subtitle">How to Take Smart Notes | Sönke Ahrens</div>
+    </header>
+
+    <div class="nav-wrapper">
+        <button class="nav-btn active" onclick="switchTab('structure')">🔍 深度：什么是 Structure？</button>
+        <button class="nav-btn" onclick="switchTab('principles')">🧠 四大原则</button>
+        <button class="nav-btn" onclick="switchTab('process')">📝 六步工作流</button>
+        <button class="nav-btn" onclick="switchTab('mindset')">💡 卢曼的心法</button>
+    </div>
+
+    <!-- 1. 结构深度解析 (重写增强版) -->
+    <div id="structure" class="view-section active">
+        <div class="structure-layout">
+            <!-- 左栏：深度定义 -->
+            <div>
+                <div class="definition-box">
+                    <div class="def-title">Structure 在欧美语境下的深意</div>
+                    <p style="opacity: 0.9; margin-bottom: 20px;">
+                        在欧美学术传统（特别是德国哲学与系统论）中，"Structure" 并非指简单的物理形状或死板的框架，而是指<strong>“关系的总和”</strong>。
+                    </p>
+                    <div class="comparison-grid">
+                        <div class="comp-col">
+                            <h4 style="color: var(--accent-red);">🚫 传统/建筑学隐喻</h4>
+                            <ul style="font-size: 0.9rem; padding-left: 20px; line-height: 1.6; opacity: 0.8;">
+                                <li><strong>定义：</strong> 像建筑蓝图一样的框架。</li>
+                                <li><strong>特征：</strong> 自上而下 (Top-down)。先有框架，再填充内容。</li>
+                                <li><strong>形式：</strong> 目录、大纲 (Outline)、分类文件夹。</li>
+                                <li><strong>缺陷：</strong> 僵化，无法容纳意外的发现。一旦大纲定好，新想法就是干扰。</li>
+                            </ul>
+                        </div>
+                        <div class="comp-col">
+                            <h4 style="color: var(--accent-green);">✅ 卢曼/系统论隐喻</h4>
+                            <ul style="font-size: 0.9rem; padding-left: 20px; line-height: 1.6; opacity: 0.8;">
+                                <li><strong>定义：</strong> 像大脑神经一样的网络。</li>
+                                <li><strong>特征：</strong> 自下而上 (Bottom-up)。先有节点，连接产生结构。</li>
+                                <li><strong>形式：</strong> 引用、双向链接、笔记群集。</li>
+                                <li><strong>优势：</strong> 涌现 (Emergence)。结构是生长的结果，而非预设的前提。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="context-card" style="margin-top: 30px;">
+                    <h3 style="color: var(--accent-purple-deep); margin-top: 0;">为什么这对写作至关重要？</h3>
+                    <p>在西方写作教学（如 Essay Writing）中，老师通常强调先写 Outline（大纲）。这导致学生产生<strong>“规划者思维”</strong>：</p>
+                    <blockquote style="border-left: 4px solid #ddd; padding-left: 15px; margin: 20px 0; color: #666; font-style: italic;">
+                        “我要写关于贫富差距的文章，第一章写定义，第二章写原因...”
+                    </blockquote>
+                    <p>而卡片盒笔记法提倡<strong>“专家思维”</strong>：你不应该面对一张白纸去规划结构，你应该面对你的卡片盒。结构不是你想出来的，而是你<strong>看</strong>出来的——当你把相关的笔记铺开，结构自然就显现了。</p>
+                    <p><strong>结论：</strong> 在此书中，Structure = <strong>笔记之间建立的动态连接网络</strong>。它是一个脚手架，随着你的思想一起生长。</p>
+                </div>
+            </div>
+
+            <!-- 右栏：具体操作与可视化 -->
+            <div class="diagram-box">
+                <h3 style="margin-top: 0; color: var(--text-primary);">结构的具体形态</h3>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">卡片盒中的结构通过以下四种方式实现：</p>
+                
+                <ul class="structure-list">
+                    <li>
+                        <strong>1. 线性序列 (Folgezettel)：</strong>
+                        <p style="font-size: 0.9rem; color: #666; margin-top: 5px;">笔记 21a 放在 21 后面。用于发展一段连续的论证。</p>
+                    </li>
+                    <li>
+                        <strong>2. 双向链接 (Links)：</strong>
+                        <p style="font-size: 0.9rem; color: #666; margin-top: 5px;">笔记 A 提及笔记 B。连接不同上下文的弱联系，产生创意跳跃。</p>
+                    </li>
+                    <li>
+                        <strong>3. 索引/入口笔记 (Structure Note)：</strong>
+                        <p style="font-size: 0.9rem; color: #666; margin-top: 5px;">一张特殊的卡片，上面罗列了关于“某个主题”的一系列相关笔记链接。这是临时的“局部地图”。</p>
+                    </li>
+                    <li>
+                        <strong>4. 关键词 (Index)：</strong>
+                        <p style="font-size: 0.9rem; color: #666; margin-top: 5px;">不是分类标签，而是检索入口。指向一两个核心笔记即可。</p>
+                    </li>
+                </ul>
+
+                <div style="background: var(--bg-body); padding: 15px; border-radius: 8px; margin-top: 20px; font-size: 0.85rem; color: #555;">
+                    💡 <strong>提示：</strong> 不要为了整理而整理。只有当某个主题的笔记多到乱的时候，才需要创建一个“结构笔记”来梳理它们。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 四大原则 -->
+    <div id="principles" class="view-section">
+        <div class="chapter-grid">
+            <div class="chapter-card" onclick="openModal('c5')">
+                <div class="chapter-num">原则 01</div>
+                <div class="chapter-title">写作是唯一重要之事</div>
+                <div class="chapter-desc">不要把写作看作研究结束后的“报告”，写作是研究的媒介。没有写下来的思考，不叫思考，叫白日梦。</div>
+            </div>
+            <div class="chapter-card" onclick="openModal('c6')">
+                <div class="chapter-num">原则 02</div>
+                <div class="chapter-title">简单是关键</div>
+                <div class="chapter-desc">就像集装箱改变了航运，标准化的笔记格式改变了思考。必须严格区分三种笔记：临时、文献、永久。</div>
+            </div>
+            <div class="chapter-card" onclick="openModal('c7')">
+                <div class="chapter-num">原则 03</div>
+                <div class="chapter-title">没有人从零开始</div>
+                <div class="chapter-desc">“白纸综合症”是线性流程的产物。在循环流程中，你永远拥有笔记积累，永远是站在巨人的肩膀上开始。</div>
+            </div>
+            <div class="chapter-card" onclick="openModal('c8')">
+                <div class="chapter-num">原则 04</div>
+                <div class="chapter-title">让工作推动你</div>
+                <div class="chapter-desc">建立正向反馈循环。依靠意志力是不可持续的，依靠“完成卡片”的成就感和好奇心才是长久之计。</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 六步工作流 -->
+    <div id="process" class="view-section">
+        <div class="chapter-grid">
+            <div class="chapter-card" onclick="openModal('c9')">
+                <div class="chapter-num">STEP 1</div>
+                <div class="chapter-title">分离任务</div>
+                <div class="chapter-desc">多任务处理降低智商。将写作拆解为：阅读、理解、构思、编辑，并在不同时间用不同心态去完成。</div>
+            </div>
+            <div class="chapter-card" onclick="openModal('c10')">
+                <div class="chapter-num">STEP 2</div>
+                <div class="chapter-title">为理解而阅读</div>
+                <div class="chapter-desc">手中要有笔。不要高亮（那是自欺欺人），要用自己的话转述（Translation）。这是检验理解的试金石。</div>
+            </div>
+            <div class="chapter-card" onclick="openModal('c11')">
+                <div class="chapter-num">STEP 3</div>
+                <div class="chapter-title">撰写永久笔记</div>
+                <div class="chapter-desc">这是核心。每天将文献笔记转化为永久笔记。思考：这条信息对我的研究有什么意义？它如何改变我的旧知？</div>
+            </div>
+            <div class="chapter-card" onclick="openModal('c12')">
+                <div class="chapter-num">STEP 4</div>
+                <div class="chapter-title">建立连接</div>
+                <div class="chapter-desc">不要把笔记“存”进去，要把笔记“织”进去。寻找它与旧笔记的联系：支持？反驳？补充？</div>
+            </div>
+            <div class="chapter-card" onclick="openModal('c13')">
+                <div class="chapter-num">STEP 5</div>
+                <div class="chapter-title">分享发现</div>
+                <div class="chapter-desc">不要从头脑风暴开始，从“卡片盒风暴”开始。看哪些主题已经积累了足够的卡片（关键质量），顺势而为。</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. 心法 -->
+    <div id="mindset" class="view-section">
+        <div class="chapter-grid">
+            <div class="chapter-card" onclick="openModal('memory')">
+                <div class="chapter-num">认知科学</div>
+                <div class="chapter-title">外包记忆与遗忘</div>
+                <div class="chapter-desc">大脑擅长思考，不擅长记忆。将存储外包给卡片盒，让大脑专注于处理。学会利用“蔡加尼克效应”清空大脑缓存。</div>
+            </div>
+            <div class="chapter-card" onclick="openModal('luhmann')">
+                <div class="chapter-num">大师心法</div>
+                <div class="chapter-title">卢曼的秘密</div>
+                <div class="chapter-desc">“我从不强迫自己做不喜欢的事。”通过并行处理多个项目，他在不同任务间切换以保持新鲜感和动力。</div>
+            </div>
+            <div class="chapter-card" onclick="openModal('c14')">
+                <div class="chapter-num">长期主义</div>
+                <div class="chapter-title">养成习惯</div>
+                <div class="chapter-desc">不要依赖意志力，要改变环境设计。让工具触手可及，让记笔记成为像呼吸一样的本能。</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal-content" id="modalContent">
+        <button class="close-btn" onclick="closeModal(event)">×</button>
+        <div id="modalBody"></div>
+    </div>
+</div>
+
+<script>
+    // 详细内容数据
+    const contentDB = {
+        'c5': {
+            title: '原则一：写作是唯一重要的事情',
+            body: `
+                <p>学术界有一种常见的误解，认为写作只是研究结束后的最后一步，用来展示成果。<strong>这是一个巨大的错误。</strong></p>
+                <p>如果你在研究过程中不写作，你就没有在思考。即使你不打算发表，你也应该像要发表一样去写作，原因如下：</p>
+                <ul style="line-height: 2;">
+                    <li><strong>检验理解：</strong> 只有当你试图用清晰的句子把一个想法写下来时，你才会发现自己理解中的漏洞。</li>
+                    <li><strong>思维外化：</strong> 大脑的工作记忆有限（7±2法则）。写作将思维外化，让你能处理更复杂的论证。</li>
+                    <li><strong>刻意练习：</strong> 每天写笔记就是每天在练习学术写作的核心技能：辨析、重组和表达。</li>
+                </ul>
+                <div style="background:#f0f4f8; padding:15px; border-radius:8px; margin-top:20px;">
+                    <strong>行动指南：</strong> 无论是听课、阅读还是思考，手中永远要有笔。不写下来，就等于没发生。
+                </div>
+            `
+        },
+        'c6': {
+            title: '原则二：简单是关键',
+            body: `
+                <p>许多人失败是因为系统太复杂。卢曼的系统之所以高效，是因为极其简单。核心在于<strong>标准化的工作流</strong>。</p>
+                <h3>必须区分的三种笔记：</h3>
+                <ol style="margin-bottom: 20px;">
+                    <li><strong>临时笔记 (Fleeting Notes)：</strong> 
+                        <br><span style="color:#666; font-size:0.9em;">作用：捕捉瞬间灵感。寿命：1-2天。处理方式：转化为永久笔记后丢弃。</span>
+                    </li>
+                    <li><strong>文献笔记 (Literature Notes)：</strong> 
+                        <br><span style="color:#666; font-size:0.9em;">作用：记录阅读理解。要求：非常简短，用自己的话转述。存放：文献管理软件。</span>
+                    </li>
+                    <li><strong>永久笔记 (Permanent Notes)：</strong> 
+                        <br><span style="color:#666; font-size:0.9em;">作用：卡片盒的核心。要求：像写给别人看一样写，脱离语境也能读懂，包含一个完整的想法。</span>
+                    </li>
+                </ol>
+                <p><strong>错误做法：</strong> 把所有东西都记在一个大本子里，或者不区分这三种笔记。这会导致“垃圾进，垃圾出”。</p>
+            `
+        },
+        'c7': {
+            title: '原则三：没有人从零开始',
+            body: `
+                <p>“面对空白文档（The Blank Page）”是写作最大的恐惧来源。但如果你使用卡片盒，这根本不存在。</p>
+                <p><strong>线性流程 vs 循环流程：</strong></p>
+                <ul>
+                    <li><strong>线性（痛苦）：</strong> 选题 → 找资料 → 阅读 → 写作。如果你选了个坏题目，你就完了。</li>
+                    <li><strong>循环（自然）：</strong> 阅读 → 记笔记 → 建立连接 → 发现题目 → 整理笔记 → 写作。</li>
+                </ul>
+                <p>你的选题应该基于你已经拥有的素材（笔记）。这样，当你决定写什么的时候，其实你已经完成了大部分工作（因为笔记都已经写好了）。</p>
+            `
+        },
+        'c8': {
+            title: '原则四：让工作推动你',
+            body: `
+                <p>为什么有些学生在考研或写论文时会崩溃？因为他们依赖意志力去做一件反馈周期很长的事。</p>
+                <p><strong>正向反馈循环：</strong></p>
+                <p>卡片盒将巨大的任务（写一本书）拆解为微小的任务（写一张卡片）。</p>
+                <ul>
+                    <li>写一张卡片只需要几分钟。</li>
+                    <li>每写一张，你就能看到知识库在增长。</li>
+                    <li>每建立一个连接，你就能获得“发现新知”的快感。</li>
+                </ul>
+                <p>这种即时的、具体的奖励感会让你上瘾，从而不再需要意志力驱动。</p>
+            `
+        },
+        'c9': {
+            title: 'STEP 1：分离任务',
+            body: `
+                <p>注意力是稀缺资源。试图同时进行多项任务（如一边写初稿一边查阅文献一边修正语法）会极大地降低智商。</p>
+                <p><strong>像专家一样分配注意力：</strong></p>
+                <ul>
+                    <li><strong>校对时：</strong> 扮演挑剔的批评家，关注细节和规范。</li>
+                    <li><strong>写作时：</strong> 扮演宽容的创作者，允许不完美，只求把想法写出来。</li>
+                    <li><strong>构思时：</strong> 扮演贪玩的孩子，允许胡思乱想，寻找意外的联系。</li>
+                </ul>
+                <p>一次只做一件事，并为每件事分配正确的心态。</p>
+            `
+        },
+        'c10': {
+            title: 'STEP 2：为理解而阅读',
+            body: `
+                <p><strong>警惕“单纯曝光效应”：</strong> 当你反复阅读或高亮一段文字时，大脑会产生熟悉的错觉，让你以为自己懂了。其实你只是记住了文字的形状。</p>
+                <p><strong>唯一的解法：转述 (Elaboration)。</strong></p>
+                <p>合上书，试图用自己的语言，向一个不在场的人解释这段话的意思。如果你卡住了，或者只能重复原文的词汇，说明你没有理解。</p>
+                <p>卡片盒笔记法强迫你进行这种深度处理，因为你必须把内容转化为新的笔记。</p>
+            `
+        },
+        'c11': {
+            title: 'STEP 3：撰写永久笔记',
+            body: `
+                <p>这是将“别人的知识”转化为“自己的知识”的关键一步。</p>
+                <p><strong>标准：</strong></p>
+                <ul>
+                    <li>一张卡片只写一个想法。</li>
+                    <li>使用完整的句子，而不是关键词堆砌。</li>
+                    <li>精确、清晰、简练。</li>
+                </ul>
+                <p><strong>思考方向：</strong> 不要只是做摘录。要问自己：<em>“这条信息与我已有的笔记有什么关系？它反驳了那个观点？它支持了这个理论？我可以怎么用它？”</em></p>
+            `
+        },
+        'c12': {
+            title: 'STEP 4：建立连接',
+            body: `
+                <p>如果没有连接，笔记只是死的数据。有了连接，它们才变成活的知识网络。</p>
+                <p><strong>卢曼的编号法：</strong></p>
+                <p>如果是纸质卡片，利用字母数字编码（如 21/3d）将新笔记插入到相关旧笔记的物理位置后面。这使得你可以无限扩展某个话题。</p>
+                <p><strong>数字化操作：</strong></p>
+                <p>使用双向链接（[[Wiki Links]]）。当你添加新笔记时，强制自己去检索卡片盒，看看能不能连到旧笔记上。这种检索过程本身就是对记忆的强化。</p>
+            `
+        },
+        'c13': {
+            title: 'STEP 5：分享发现',
+            body: `
+                <p>当你积累了一段时间后，你会发现某些主题下面聚集了大量的卡片（Critical Mass）。</p>
+                <p>这说明你对这个话题有热情，且有积累。这就是你应该写的主题。</p>
+                <p>把这些相关的卡片提取出来，铺在桌面上（或画布上），寻找逻辑顺序。大纲不是写出来的，是排出来的。你会发现论证中的缺口，这时再去针对性地补充阅读。</p>
+            `
+        },
+        'memory': {
+            title: '认知科学：外包记忆',
+            body: `
+                <p>我们的短期记忆只能容纳极少的信息。试图把所有东西都记在脑子里是低效的。</p>
+                <p><strong>蔡加尼克效应 (Zeigarnik Effect)：</strong> 未完成的任务会一直占据大脑后台，导致焦虑和分心。解决办法很简单：把它写下来。</p>
+                <p>一旦你把想法写进可靠的系统（卡片盒），大脑就会“放手”，从而释放认知资源去进行更高维度的思考。遗忘不是坏事，只要你能重新找到它。</p>
+            `
+        },
+        'luhmann': {
+            title: '卢曼的心法',
+            body: `
+                <p>卢曼是一个非常强调“轻松”的人。他说：<em>“如果我在写作时遇到困难，我就立刻停下来，去做别的事。”</em></p>
+                <p>因为他同时维护着多个主要的思路（卡片盒中的不同分支），他总能找到一个进展顺利的项目去做。这避免了作家的“卡壳（Writer's Block）”。</p>
+                <p>这不是懒惰，这是智慧：利用不同的任务来调节大脑的疲劳。</p>
+            `
+        },
+        'c14': {
+            title: '养成习惯',
+            body: `
+                <p>任何需要消耗大量意志力才能开始的行为，都无法持久。</p>
+                <p><strong>环境设计：</strong></p>
+                <ul>
+                    <li>让纸笔永远触手可及。</li>
+                    <li>统一笔记的格式，不要每次都纠结用什么字体、什么本子。</li>
+                    <li>把“阅读-思考-写作”整合成一个流畅的动作，而不是割裂的步骤。</li>
+                </ul>
+                <p>最终，你会对这种“理解的快感”上瘾。不记笔记，你反而会觉得阅读是不完整的。</p>
+            `
+        }
+    };
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.view-section').forEach(el => {
+            el.classList.remove('active');
+            el.style.opacity = 0;
+            el.style.transform = 'translateY(20px)';
+        });
+        document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+        
+        const target = document.getElementById(tabId);
+        event.currentTarget.classList.add('active');
+        
+        target.classList.add('active');
+        // Small delay to trigger animation
+        setTimeout(() => {
+            target.style.opacity = 1;
+            target.style.transform = 'translateY(0)';
+        }, 50);
+    }
+
+    function openModal(id) {
+        const data = contentDB[id];
+        if(!data) return;
+
+        document.getElementById('modalBody').innerHTML = `
+            <h2 style="color: var(--accent-blue-deep); margin-top: 0; margin-bottom: 20px;">${data.title}</h2>
+            <div style="font-size: 1.05rem; line-height: 1.8; color: #333;">${data.body}</div>
+        `;
+        document.getElementById('modalOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(e) {
+        if (e.target.id === 'modalOverlay' || e.target.closest('.close-btn')) {
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+    }
+</script>
+
+</body>
+</html>
