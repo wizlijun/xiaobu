@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025 GenAI 代码安全深度报告</title>
+    <style>
+        :root {
+            --primary: #0066cc;
+            --primary-light: #e6f2ff;
+            --secondary: #5c6ac4;
+            --accent: #00c4cc;
+            --bg-color: #fcfcfc;
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --text-light: #718096;
+            --success: #38a169;
+            --danger: #e53e3e;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 6px 16px rgba(0, 102, 204, 0.08);
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--text-main);
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .tag-pill {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        /* Methodology Section - Visual Flow */
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .section-icon {
+            background: var(--primary);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-weight: bold;
+        }
+
+        .method-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .method-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid #edf2f7;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .method-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--secondary);
+        }
+
+        .method-title {
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: block;
+            color: var(--text-main);
+        }
+
+        .method-desc {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        /* Stats Section */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 50px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            transition: transform 0.2s;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-val {
+            font-size: 2rem;
+            font-weight: 800;
+            display: block;
+            line-height: 1.2;
+        }
+
+        .stat-lbl {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 5px;
+            display: block;
+        }
+
+        /* Core Insights - Accordion Style */
+        .insight-wrapper {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+        }
+
+        details {
+            border-bottom: 1px solid #edf2f7;
+            transition: all 0.3s ease;
+        }
+
+        details:last-child {
+            border-bottom: none;
+        }
+
+        details[open] {
+            background: #fcfdff;
+        }
+
+        summary {
+            padding: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.05rem;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        summary:hover {
+            background-color: #fafafa;
+        }
+
+        summary::after {
+            content: '+';
+            font-size: 1.5rem;
+            color: var(--primary);
+            font-weight: 300;
+        }
+
+        details[open] summary::after {
+            content: '-';
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .insight-content {
+            padding: 0 25px 30px 25px;
+            color: var(--text-light);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        /* Highlights inside insights */
+        .highlight-box {
+            background: var(--primary-light);
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95rem;
+            color: #2c5282;
+        }
+
+        .chart-placeholder {
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .bar-container {
+            flex-grow: 1;
+            background: #edf2f7;
+            height: 8px;
+            border-radius: 4px;
+        }
+        
+        .bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: var(--secondary);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <span class="tag-pill">Veracode 2025</span>
+        <h1>GenAI 代码安全评估报告</h1>
+        <p style="color: var(--text-light); max-width: 600px; margin: 0 auto;">
+            本文核心回答：在没有特定安全提示词的情况下，大语言模型生成的代码是否安全？
+        </p>
+    </header>
+
+    <!-- 1. Methodology Section -->
+    <div class="section-header">
+        <div class="section-icon">1</div>
+        <h2 style="margin: 0; font-size: 1.3rem;">研究方法与依据 (Methodology)</h2>
+    </div>
+    
+    <div class="method-grid">
+        <div class="method-card">
+            <span class="method-title">📊 测试样本规模</span>
+            <div class="method-desc">覆盖 <strong>100+ 个大语言模型</strong>，包含最新的 GPT-5 系列、Claude Sonnet 4.5、Gemini 2.5 等。</div>
+        </div>
+        <div class="method-card" style="--secondary: #00c4cc;">
+            <span class="method-title">🧪 80项 编码任务</span>
+            <div class="method-desc">
+                <strong>4种语言：</strong> Java, Python, C#, JS<br>
+                <strong>4类漏洞：</strong> SQL注入, XSS, 日志注入, 加密缺陷
+            </div>
+        </div>
+        <div class="method-card" style="--secondary: #e53e3e;">
+            <span class="method-title">🔍 评估标准</span>
+            <div class="method-desc">
+                采用 <strong>SAST (静态应用安全测试)</strong> 引擎。仅当代码通过编译且无已知 CWE 漏洞时，才计为“通过”。
+            </div>
+        </div>
+        <div class="method-card" style="--secondary: #ed8936;">
+            <span class="method-title">🤖 提示词策略</span>
+            <div class="method-desc">
+                <strong>零安全提示 (Zero-Security Prompting)</strong>。仅描述功能需求，不提及安全约束，模拟开发者最自然的提问方式。
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Key Stats -->
+    <div class="section-header">
+        <div class="section-icon">2</div>
+        <h2 style="margin: 0; font-size: 1.3rem;">关键数据概览 (Key Findings)</h2>
+    </div>
+
+    <div class="stats-container">
+        <div class="stat-box">
+            <span class="stat-val" style="color: var(--primary);">55%</span>
+            <span class="stat-lbl">总体安全通过率<br>(中位数)</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-val" style="color: var(--success);">72%</span>
+            <span class="stat-lbl">GPT-5 Mini<br>(最高分模型)</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-val" style="color: var(--danger);">28.5%</span>
+            <span class="stat-lbl">Java 语言<br>(最低通过率)</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-val" style="color: var(--text-main);">0%</span>
+            <span class="stat-lbl">随模型参数量<br>增长的安全提升</span>
+        </div>
+    </div>
+
+    <!-- 3. Core Insights & Analysis -->
+    <div class="section-header">
+        <div class="section-icon">3</div>
+        <h2 style="margin: 0; font-size: 1.3rem;">核心深度洞察 (Core Insights)</h2>
+    </div>
+
+    <div class="insight-wrapper">
+        <details>
+            <summary>洞察一：为什么 OpenAI 的新模型突然变强了？</summary>
+            <div class="insight-content">
+                <p>在长期停滞在 50-59% 的通过率后，OpenAI 的 GPT-5 系列（特别是 reasoning models）跃升至 70% 以上。</p>
+                <div class="highlight-box">
+                    <strong>💡 推理机制即“自我审查”：</strong> 
+                    表现最好的模型都是<strong>“推理模型 (Reasoning Models)”</strong>。它们在输出代码前会进行内部思维链推导。这个过程类似于开发者的“自我代码审查”，显著过滤了不安全的编码模式。而非推理版模型 (GPT-5 Chat) 表现依然平平 (52%)。
+                </div>
+            </div>
+        </details>
+
+        <details>
+            <summary>洞察二：为什么 Java 成了“重灾区”？</summary>
+            <div class="insight-content">
+                <p>Python、C# 和 JavaScript 的表现非常接近（约 55-61%），唯独 Java 只有 28.5%。</p>
+                <div class="highlight-box">
+                    <strong>📉 训练数据的“历史包袱”：</strong> 
+                    Java 作为老牌服务端语言，其互联网上的大量存量代码（训练数据）编写于安全意识普及之前。模型学习了大量过时的、包含漏洞的 Legacy Code（例如拼接 SQL 字符串），从而导致了糟糕的安全表现。
+                </div>
+            </div>
+        </details>
+
+        <details>
+            <summary>洞察三：模型“偏科”严重，这说明了什么？</summary>
+            <div class="insight-content">
+                <p>模型在 SQL 注入防御上得分很高 (>80%)，但在 XSS (跨站脚本) 和 日志注入上惨败 (<15%)。</p>
+                <div class="highlight-box">
+                    <strong>🚫 上下文缺失是硬伤：</strong> 
+                    <ul style="margin: 10px 0 0 20px; padding: 0;">
+                        <li><strong>简单模式 (SQLi)：</strong> 防御 SQL 注入有标准模板（参数化查询），无论上下文如何，这样做总是对的。模型很容易学会这个“套路”。</li>
+                        <li><strong>困难模式 (XSS)：</strong> 防御 XSS 需要理解数据流向（数据是否被污染？是否需要清洗？）。大模型缺乏全局应用上下文，无法判断变量是否安全，往往选择“躺平”不处理。</li>
+                    </ul>
+                </div>
+            </div>
+        </details>
+
+        <details>
+            <summary>洞察四：语法完美 ≠ 代码安全</summary>
+            <div class="insight-content">
+                <p>报告发现了一个有趣的背离现象：</p>
+                <div style="margin-top: 10px;">
+                    <div style="display:flex; justify-content:space-between; font-size:0.9rem; margin-bottom:5px;">
+                        <span>语法正确率 (代码能跑)</span>
+                        <span style="font-weight:bold; color:var(--success);">接近 100%</span>
+                    </div>
+                    <div class="bar-container"><div class="bar-fill" style="width: 98%; background-color: var(--success);"></div></div>
+                </div>
+                <div style="margin-top: 15px;">
+                    <div style="display:flex; justify-content:space-between; font-size:0.9rem; margin-bottom:5px;">
+                        <span>安全正确率 (代码无毒)</span>
+                        <span style="font-weight:bold; color:var(--primary);">仅 55%</span>
+                    </div>
+                    <div class="bar-container"><div class="bar-fill" style="width: 55%; background-color: var(--primary);"></div></div>
+                </div>
+                <div class="highlight-box">
+                    <strong>⚠️ 危险的假象：</strong> 
+                    模型越来越擅长写出“能运行”的代码，这会让开发者放松警惕。但“能运行”不代表“无漏洞”。训练数据中充满了能运行但不安全的代码，模型忠实地复制了这一点。
+                </div>
+            </div>
+        </details>
+    </div>
+
+    <footer style="margin-top: 50px; text-align: center; color: var(--text-light); font-size: 0.9rem;">
+        <p>数据来源：Veracode GenAI Code Security Report (October 2025 Update)</p>
+        <p>提示：本摘要为 AI 生成，仅供参考。</p>
+    </footer>
+
+</div>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="report_veracode_genai_code_security_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
