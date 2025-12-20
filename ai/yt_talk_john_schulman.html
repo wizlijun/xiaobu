@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深度访谈：John Schulman - AI 工程化转型与未来路径</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+        
+        :root {
+            --primary: #2563eb;
+            --secondary: #475569;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', sans-serif;
+            background-color: var(--bg-body);
+            color: #1e293b;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 渐变文字 */
+        .text-gradient {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 卡片基础样式 */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        /* 标签样式 */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.15rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.025em;
+        }
+        .badge-eng { background: #e0e7ff; color: #3730a3; } /* 工程 */
+        .badge-sci { background: #ecfdf5; color: #065f46; } /* 科研 */
+        .badge-hist { background: #f1f5f9; color: #475569; } /* 历史 */
+        .badge-prod { background: #ffedd5; color: #9a3412; } /* 产品 */
+
+        /* 交互式 Details 动画 */
+        details summary {
+            list-style: none;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        details summary::-webkit-details-marker { display: none; }
+        
+        details[open] summary ~ div {
+            animation: slideDown 0.3s ease-out forwards;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Tab 切换动画 */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tab-btn.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+            background-color: #eff6ff;
+        }
+
+        /* 引用块样式 */
+        .quote-box {
+            border-left: 4px solid #cbd5e1;
+            padding-left: 1rem;
+            font-style: italic;
+            color: #64748b;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body class="p-4 md:p-8 lg:p-12 max-w-6xl mx-auto">
+
+    <!-- 头部：人物与背景 -->
+    <header class="mb-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div>
+            <div class="flex items-center gap-3 mb-2">
+                <span class="badge badge-hist">2025年访谈</span>
+                <span class="text-xs text-gray-500 font-mono">TRANSCRIPT SUMMARY</span>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-3 text-gradient">John Schulman</h1>
+            <p class="text-lg text-gray-600 font-medium max-w-2xl">
+                OpenAI 联合创始人 / 前 RL 负责人 <i class="fa-solid fa-arrow-right mx-2 text-gray-300 text-sm"></i> 
+                <span class="text-gray-900 font-bold">Thinking Machines 创始人</span>
+            </p>
+        </div>
+        <div class="flex gap-4">
+            <div class="text-right hidden md:block">
+                <div class="text-sm font-bold text-gray-800">核心议题</div>
+                <div class="text-xs text-gray-500">Post-training scaling</div>
+                <div class="text-xs text-gray-500">Software Engineering</div>
+                <div class="text-xs text-gray-500">Tinker API</div>
+            </div>
+            <div class="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xl">
+                <i class="fa-solid fa-microchip"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- 1. 软件工程的范式转移 (核心亮点) -->
+    <section class="mb-12">
+        <div class="flex items-center gap-2 mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">从“炼丹”到“系统工程”</h2>
+            <div class="h-px bg-gray-200 flex-grow ml-4"></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- 过去 -->
+            <div class="card p-6 border-l-4 border-l-gray-300">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-lg font-bold text-gray-500">2016-2019: 探索时代</h3>
+                    <i class="fa-solid fa-flask text-gray-300 text-xl"></i>
+                </div>
+                <ul class="space-y-4">
+                    <li class="flex gap-3">
+                        <span class="mt-1 text-gray-400"><i class="fa-solid fa-user-group"></i></span>
+                        <div>
+                            <strong class="block text-sm text-gray-700">小作坊模式</strong>
+                            <p class="text-xs text-gray-500">1-3人的小组，凭借直觉（Taste）和数学灵感在 Jupyter Notebook 中从零写代码。</p>
+                        </div>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="mt-1 text-gray-400"><i class="fa-solid fa-person-rays"></i></span>
+                        <div>
+                            <strong class="block text-sm text-gray-700">人才画像：怪才 (Weirdos)</strong>
+                            <p class="text-xs text-gray-500">也是风险偏好者。当时 AI 并非显学，没有明确的职业路径，更像是在搞曼哈顿计划式的秘密科研。</p>
+                        </div>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="mt-1 text-red-300"><i class="fa-solid fa-ban"></i></span>
+                        <div>
+                            <strong class="block text-sm text-gray-700">失败案例：Universe</strong>
+                            <p class="text-xs text-gray-500">试图在无数个环境中训练一个通用 Agent。理念超前但技术栈笨重，且模型无法有效泛化。</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 现在 -->
+            <div class="card p-6 border-l-4 border-l-blue-600 bg-blue-50/30">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-lg font-bold text-blue-700">2024+: 规模化时代</h3>
+                    <i class="fa-solid fa-code-branch text-blue-500 text-xl"></i>
+                </div>
+                <ul class="space-y-4">
+                    <li class="flex gap-3">
+                        <span class="mt-1 text-blue-500"><i class="fa-solid fa-server"></i></span>
+                        <div>
+                            <strong class="block text-sm text-gray-800">工程 > 算法创新</strong>
+                            <p class="text-sm text-gray-600">现在的低垂果实（Low-hanging fruit）在于<strong>Scaling（规模化）</strong>。这需要的是将简单的想法极其稳健地集成到现有的大型代码库中，而不是发明新数学公式。</p>
+                        </div>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="mt-1 text-blue-500"><i class="fa-solid fa-laptop-code"></i></span>
+                        <div>
+                            <strong class="block text-sm text-gray-800">代码阅读能力至关重要</strong>
+                            <p class="text-sm text-gray-600">你需要阅读并理解数千行他人的代码，而不是自己写一个脚本。<strong>软件工程能力（集成、调试、架构）成为核心竞争力。</strong></p>
+                        </div>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="mt-1 text-blue-500"><i class="fa-solid fa-user-tie"></i></span>
+                        <div>
+                            <strong class="block text-sm text-gray-800">职业化与避险</strong>
+                            <p class="text-sm text-gray-600">现在涌入的人才更倾向于规避风险（Risk-averse），走标准职业道路。门槛变高了，但也变得更无聊了。</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. 技术深度：折叠面板 -->
+    <section class="mb-12">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">关键技术洞察 <span class="text-sm font-normal text-gray-400 ml-2">点击展开详情</span></h2>
+        
+        <div class="space-y-3">
+            <!-- 2.1 The Speedrun -->
+            <details class="group card">
+                <summary class="p-5 flex items-center justify-between font-semibold text-gray-700 hover:bg-gray-50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600"><i class="fa-solid fa-forward-fast"></i></div>
+                        <span>思想实验：如果在2015年拥有现在的知识，能多快造出ChatGPT？</span>
+                    </div>
+                    <span class="text-gray-400 group-open:rotate-180 transition-transform"><i class="fa-solid fa-chevron-down"></i></span>
+                </summary>
+                <div class="px-5 pb-5 pt-0 text-sm text-gray-600 border-t border-gray-100 mt-2">
+                    <div class="pl-11 pt-3 space-y-2">
+                        <p><strong class="text-indigo-600">结论：2018/2019年即可达成。</strong></p>
+                        <p>这不需要 H100 GPU。如果知道正确的“配方”（Recipe），仅需几台 GPU 服务器和几名核心人员即可。</p>
+                        <ul class="list-disc list-inside bg-indigo-50 p-3 rounded-lg mt-2 text-indigo-900">
+                            <li><strong>关键瓶颈不在算力，而在“后训练”（Post-training）。</strong></li>
+                            <li>通过精巧的数据构建（类似 NanoGPT 的思路）和正确的微调策略，小算力也能跑出 GPT-3.5 级别的效果。</li>
+                            <li>阻碍其实是我们当时不知道“微调数据”和“提示工程”的重要性。</li>
+                        </ul>
+                    </div>
+                </div>
+            </details>
+
+            <!-- 2.2 RL & Value Functions -->
+            <details class="group card">
+                <summary class="p-5 flex items-center justify-between font-semibold text-gray-700 hover:bg-gray-50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600"><i class="fa-solid fa-robot"></i></div>
+                        <span>RL的现状：价值函数(Value Functions)为什么“失宠”了？</span>
+                    </div>
+                    <span class="text-gray-400 group-open:rotate-180 transition-transform"><i class="fa-solid fa-chevron-down"></i></span>
+                </summary>
+                <div class="px-5 pb-5 pt-0 text-sm text-gray-600 border-t border-gray-100 mt-2">
+                    <div class="pl-11 pt-3 space-y-2">
+                        <p>在当前的 RLHF（基于人类反馈的强化学习）范式中，Value Functions 本应提供方差缩减（Variance Reduction），但在实际操作中效果不明显。</p>
+                        <p><strong>未来的方向：</strong></p>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li><strong>多智能体博弈 (Multi-agent Games)：</strong> 比如辩论（Debate）。通过纳什均衡让模型自我博弈，解决人类难以直接评估的难题。</li>
+                            <li><strong>生成器-验证器共训 (Generator-Verifier Co-training)：</strong> 让模型既做生成者也做裁判，形成良性循环。</li>
+                            <li><strong>Sim-to-Real (仿真转现实)：</strong> 借鉴机器人领域的思路，在模拟环境中大规模训练，然后泛化到现实世界的部署中。</li>
+                        </ul>
+                    </div>
+                </div>
+            </details>
+
+            <!-- 2.3 Memory & Continual Learning -->
+            <details class="group card">
+                <summary class="p-5 flex items-center justify-between font-semibold text-gray-700 hover:bg-gray-50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600"><i class="fa-solid fa-brain"></i></div>
+                        <span>持续学习：如何让模型拥有长期记忆？</span>
+                    </div>
+                    <span class="text-gray-400 group-open:rotate-180 transition-transform"><i class="fa-solid fa-chevron-down"></i></span>
+                </summary>
+                <div class="px-5 pb-5 pt-0 text-sm text-gray-600 border-t border-gray-100 mt-2">
+                    <div class="pl-11 pt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-gray-50 p-3 rounded">
+                            <strong class="text-gray-800">短期/工作记忆</strong>
+                            <p class="mt-1">主要依赖 <strong>In-context Learning (长上下文)</strong>。在短时间范围内，这种方式效率极高，目前难以被替代。</p>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded">
+                            <strong class="text-gray-800">长期/程序性知识</strong>
+                            <p class="mt-1">需要 <strong>Weight Updates (参数更新)</strong>。John 认为 LoRA (Low-Rank Adaptation) 等技术会叠加在上下文之上，用于沉淀长期的、需要大量容量的知识。</p>
+                        </div>
+                    </div>
+                </div>
+            </details>
+        </div>
+    </section>
+
+    <!-- 3. 产品与未来：Thinking Machines & AGI -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+        
+        <!-- Tinker 产品卡片 (占据2列) -->
+        <div class="lg:col-span-2 card bg-slate-900 text-white border-slate-700">
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-terminal text-blue-400"></i> Tinker
+                            <span class="text-xs bg-blue-600 text-white px-2 py-0.5 rounded font-normal">开发中</span>
+                        </h3>
+                        <p class="text-slate-400 text-sm mt-1">Thinking Machines 的核心产品</p>
+                    </div>
+                </div>
+                
+                <p class="text-slate-300 mb-6 leading-relaxed">
+                    这不是另一个高级封装的 LLM 接口。Tinker 是一个<strong>低层级微调 API (Low-level Fine-tuning API)</strong>。
+                    想象一下 OpenAI 的 Sampling API，但它是用于<strong>训练</strong>的。
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-800 p-4 rounded border border-slate-700">
+                        <h4 class="font-bold text-blue-400 text-sm mb-2">解决了什么痛点？</h4>
+                        <p class="text-xs text-slate-300">
+                            抽象掉了 GPU 集群管理、分布式训练的噩梦（Distributed Systems pain），让你可以直接编写 Python 脚本来控制训练循环和算法细节。
+                        </p>
+                    </div>
+                    <div class="bg-slate-800 p-4 rounded border border-slate-700">
+                        <h4 class="font-bold text-blue-400 text-sm mb-2">目标用户</h4>
+                        <p class="text-xs text-slate-300">
+                            目前是精通 ML 的工程师。愿景是让未来的 AI 初创公司不需要自己雇佣基础设施团队，直接在 Tinker 上构建复杂的定制模型。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AGI 预测卡片 (占据1列) -->
+        <div class="card p-6 flex flex-col justify-between">
+            <div>
+                <h3 class="text-lg font-bold text-gray-800 mb-3">AGI 何时到来？</h3>
+                <div class="quote-box mb-4 text-sm">
+                    "工程师总是乐观的。他们预估的时间通常需要乘以 3。"
+                </div>
+                <p class="text-sm text-gray-600 mb-4">
+                    John 提到了<strong>自动驾驶</strong>作为类比——比大家预期的要慢得多。但他同时也承认，“AI 研发 AI”的正反馈循环是一个巨大的变数。
+                </p>
+            </div>
+            <div class="bg-emerald-50 p-4 rounded border border-emerald-100">
+                <div class="text-xs font-bold text-emerald-800 uppercase mb-1">实验室协作信心</div>
+                <div class="flex items-center gap-2">
+                    <div class="h-2 w-full bg-emerald-200 rounded-full overflow-hidden">
+                        <div class="h-full bg-emerald-500 w-2/3"></div>
+                    </div>
+                    <span class="text-xs font-bold text-emerald-600">中等</span>
+                </div>
+                <p class="text-xs text-emerald-700 mt-2">认为各大实验室在安全关键时刻能够进行协调。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. John 的个人工作流 (Actionable Advice) -->
+    <section class="card p-8 bg-gradient-to-br from-white to-gray-50">
+        <h2 class="text-xl font-bold text-gray-800 mb-6 text-center">像 John Schulman 一样做研究</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="text-center">
+                <div class="w-12 h-12 bg-white rounded-full shadow-sm mx-auto flex items-center justify-center text-gray-700 text-xl mb-3 border border-gray-100">
+                    <i class="fa-solid fa-mug-hot"></i>
+                </div>
+                <h4 class="font-bold text-gray-800 mb-2">环境隔离</h4>
+                <p class="text-sm text-gray-500">
+                    喜欢在嘈杂的咖啡馆工作。在构思（Ideation）阶段，只带笔记本（纸笔），<strong>物理隔绝</strong>数字干扰。
+                </p>
+            </div>
+
+            <div class="text-center">
+                <div class="w-12 h-12 bg-white rounded-full shadow-sm mx-auto flex items-center justify-center text-blue-600 text-xl mb-3 border border-gray-100">
+                    <i class="fa-solid fa-comments-dollar"></i>
+                </div>
+                <h4 class="font-bold text-gray-800 mb-2">深度使用 AI</h4>
+                <p class="text-sm text-gray-500">
+                    不只是查维基百科。使用 <strong>Cursor</strong> 写代码，使用 <strong>GPT-5 Pro</strong> (transcript原话) 进行多轮对话，让 AI 充当 Feedback Loop 润色想法。
+                </p>
+            </div>
+
+            <div class="text-center">
+                <div class="w-12 h-12 bg-white rounded-full shadow-sm mx-auto flex items-center justify-center text-purple-600 text-xl mb-3 border border-gray-100">
+                    <i class="fa-solid fa-book-journal-whills"></i>
+                </div>
+                <h4 class="font-bold text-gray-800 mb-2">实验记录</h4>
+                <p class="text-sm text-gray-500">
+                    坚持维护<strong>研究笔记本 (Lab Notebook)</strong>。现在可以将笔记直接粘贴给 LLM 获取反馈。
+                    <span class="block mt-1 text-xs text-purple-600 font-semibold">警惕：不要让 AI 代写你没读过的代码。</span>
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="mt-12 text-center border-t border-gray-200 pt-8 pb-8">
+        <p class="text-sm text-gray-400">基于 2025 年 Dwarkesh Patel 访谈实录生成</p>
+        <p class="text-xs text-gray-300 mt-2">Generated with HTML5 & Tailwind CSS</p>
+    </footer>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.bilibili.com/video/BV14yqzBjEEE/" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
