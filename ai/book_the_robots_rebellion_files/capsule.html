@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《机器人的叛乱》交互式深度摘要</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --accent-color: #50e3c2;
+            --text-color: #333333;
+            --light-bg: #f7f9fc;
+            --card-bg: #ffffff;
+            --hover-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: #ffffff;
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 40px 20px;
+            text-align: center;
+            border-bottom: 1px solid #e1e1e1;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            color: #2c3e50;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #555;
+            margin-top: 10px;
+        }
+
+        .author {
+            font-style: italic;
+            color: #777;
+            margin-top: 5px;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Key Thesis Section */
+        .thesis-box {
+            background-color: var(--light-bg);
+            border-left: 5px solid var(--primary-color);
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .thesis-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            color: #666;
+            transition: all var(--transition-speed);
+            border-radius: 20px;
+        }
+
+        .tab-btn:hover {
+            background-color: #eef2f7;
+            color: var(--primary-color);
+        }
+
+        .tab-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 6px rgba(74, 144, 226, 0.3);
+        }
+
+        /* Content Sections */
+        .chapter-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .chapter-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .key-points-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .key-points-list li {
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 12px;
+        }
+
+        .key-points-list li::before {
+            content: "✓";
+            color: var(--accent-color);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        /* Flip Cards Container */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        /* Flip Card Styles */
+        .flip-card {
+            background-color: transparent;
+            width: 100%;
+            height: 250px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+
+        .flip-card:hover .flip-card-inner, .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .flip-card-front {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            color: var(--text-color);
+        }
+
+        .flip-card-back {
+            background: linear-gradient(135deg, #4a90e2 0%, #50e3c2 100%);
+            color: white;
+            transform: rotateY(180deg);
+            overflow-y: auto; /* Allow scrolling if text is long */
+        }
+
+        .card-label {
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.8rem;
+            color: #999;
+            margin-bottom: 10px;
+        }
+
+        .card-term {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .card-def {
+            font-size: 0.95rem;
+        }
+
+        .card-back-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            padding-bottom: 5px;
+            width: 100%;
+        }
+
+        .card-back-content {
+            font-size: 0.9rem;
+            text-align: left;
+            width: 100%;
+        }
+
+        .hint-text {
+            text-align: center;
+            color: #999;
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+            .nav-tabs { flex-direction: column; }
+            .tab-btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>机器人的叛乱</h1>
+    <div class="subtitle">在达尔文时代寻找意义</div>
+    <div class="author">作者：基思·斯坦诺维奇 (Keith E. Stanovich)</div>
+</header>
+
+<div class="container">
+    <div class="thesis-box">
+        <div class="thesis-title">🧬 核心隐喻：一场必要的叛乱</div>
+        <p>人类是基因（第一复制子）和模因（第二复制子）的生存机器（载体）。这两个复制子的利益并不总是与人类个体的利益一致。通过<strong>分析式认知（系统2）</strong>和<strong>广义理性</strong>，我们可以发起一场叛乱，超越复制子的控制，夺回作为自主个体的生活意义。</p>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-tabs" id="navTabs">
+        <button class="tab-btn active" onclick="openChapter('intro')">导论与背景</button>
+        <button class="tab-btn" onclick="openChapter('ch1')">第一章：深渊</button>
+        <button class="tab-btn" onclick="openChapter('ch2')">第二章：大脑内战</button>
+        <button class="tab-btn" onclick="openChapter('ch3')">第三章：秘密武器</button>
+        <button class="tab-btn" onclick="openChapter('ch4')">第四章：大脑偏差</button>
+        <button class="tab-btn" onclick="openChapter('ch5')">第五章：进化心理学批判</button>
+        <button class="tab-btn" onclick="openChapter('ch6')">第六章：理性障碍</button>
+        <button class="tab-btn" onclick="openChapter('ch7')">第七章：模因危机</button>
+        <button class="tab-btn" onclick="openChapter('ch8')">第八章：重塑灵魂</button>
+    </div>
+
+    <!-- Chapter Contents -->
+
+    <!-- Intro -->
+    <div id="intro" class="chapter-content active">
+        <h2 class="section-title">导论：为何我们需要“叛乱”？</h2>
+        <ul class="key-points-list">
+            <li><strong>残酷的现实：</strong> 我们不仅是基因的载体，也是文化模因（meme）的宿主。这些“复制子”的目标是自我复制，而非宿主的幸福。</li>
+            <li><strong>现代困境：</strong> 我们的很多本能（如对糖的渴望、部落主义）在远古时代是适应性的，但在现代社会可能导致灾难。</li>
+            <li><strong>希望所在：</strong> 人类是唯一能意识到自身处境并试图反抗复制子指令的“机器人”。工具是<strong>认知科学</strong>和<strong>理性决策</strong>。</li>
+        </ul>
+        <p class="hint-text">点击下方卡片查看核心概念反转</p>
+    </div>
+
+    <!-- Chapter 1 -->
+    <div id="ch1" class="chapter-content">
+        <h2 class="section-title">第一章：凝视达尔文的深渊</h2>
+        <ul class="key-points-list">
+            <li><strong>普遍达尔文主义：</strong> 这是一个“通用酸”，会腐蚀传统的人类神圣感。</li>
+            <li><strong>工具性关系：</strong> 人类（载体）是被构建来服务于基因（复制子）的。</li>
+            <li><strong>利益分离：</strong> 基因的利益（复制）与人的利益（幸福、长寿）经常冲突。例如，为了繁殖，基因可能让载体早逝。</li>
+            <li><strong>火星探测器隐喻：</strong> 基因是远程控制者，因为通信延迟（代际时间长），它们必须给大脑（载体）一定的自主权（长缰绳控制）。这为叛乱提供了可能。</li>
+        </ul>
+        
+        <div class="cards-grid">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-label">核心概念 01</div>
+                        <div class="card-term">复制子 vs. 载体</div>
+                        <div class="card-def">Replicators vs. Vehicles</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="card-back-title">为什么重要？</div>
+                        <div class="card-back-content">
+                            <p><strong>论据：</strong>基因是真正的不朽者（复制子），而生物个体（载体）只是暂时的生存机器。认识到这一点是叛乱的第一步：我们不需要盲目服务于基因的利益。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-label">核心概念 02</div>
+                        <div class="card-term">长缰绳控制</div>
+                        <div class="card-def">Long-Leash Control</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="card-back-title">机制解释</div>
+                        <div class="card-back-content">
+                            <p><strong>逻辑：</strong>基因无法预见未来所有情况，只能给大脑设定通用目标（如“活下去”），而非具体指令。这创造了“目标间隙”，让人类有机会发展出与基因目标不一致的个人目标（如避孕）。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chapter 2 -->
+    <div id="ch2" class="chapter-content">
+        <h2 class="section-title">第二章：大脑内部的战争</h2>
+        <ul class="key-points-list">
+            <li><strong>双重加工理论：</strong> 大脑并非铁板一块，而是由两套截然不同的系统组成。</li>
+            <li><strong>TASS (系统1)：</strong> 自发式系统集合。进化而来的、模块化的、快速的、自动的。它是“短缰绳”，直接执行基因的古老指令。</li>
+            <li><strong>分析系统 (系统2)：</strong> 串行的、费力的、受控的、逻辑的。它是“长缰绳”，可以进行假设思维和脱钩操作（decoupling）。</li>
+            <li><strong>核心冲突：</strong> TASS常常在现代环境中给出错误的直觉反应，分析系统必须介入并<strong>覆盖（Override）</strong>它。</li>
+        </ul>
+
+        <div class="cards-grid">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-label">核心概念 03</div>
+                        <div class="card-term">TASS (自发式系统集合)</div>
+                        <div class="card-def">The Autonomous Set of Systems</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="card-back-title">特征与风险</div>
+                        <div class="card-back-content">
+                            <p><strong>特征：</strong>像“泥蜂”一样刻板（Sphexish）。包含反射、本能和过度习得的技能。<br><strong>风险：</strong>它不理会你的反思，经常引发“非理性”行为（如对陌生人的刻板印象、深层恐惧）。它是基因的代理人。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-label">核心概念 04</div>
+                        <div class="card-term">分析式覆盖</div>
+                        <div class="card-def">Analytic Override</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="card-back-title">叛乱的关键</div>
+                        <div class="card-back-content">
+                            <p><strong>机制：</strong>系统2必须检测到系统1的反应与个体长远目标冲突，并抑制该反应。<br><strong>论据：</strong>例如，在四卡片选择任务中，必须抑制翻开“证实卡片”的直觉，通过逻辑运算去翻开“证伪卡片”。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chapter 3 -->
+    <div id="ch3" class="chapter-content">
+        <h2 class="section-title">第三章：机器人的秘密武器——理性</h2>
+        <ul class="key-points-list">
+            <li><strong>工具理性 (Instrumental Rationality)：</strong> 能够最大化实现个人目标的行为模式。这是机器人反抗基因控制的最强武器。</li>
+            <li><strong>进化适应性 ≠ 理性：</strong> 适应性服务于基因复制；理性服务于载体（个人）的幸福。</li>
+            <li><strong>薄理性 vs. 广义理性：</strong>
+                <ul>
+                    <li><em>薄理性：</em> 仅关注手段是否有效实现目标（不评价目标本身）。</li>
+                    <li><em>广义理性：</em> 既评估手段，也评估目标本身是否合理（是否符合载体的长远利益）。</li>
+                </ul>
+            </li>
+        </ul>
+
+        <div class="cards-grid">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-label">核心概念 05</div>
+                        <div class="card-term">个人效用最大化</div>
+                        <div class="card-def">Maximizing Personal Utility</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="card-back-title">理性的定义</div>
+                        <div class="card-back-content">
+                            <p><strong>核心：</strong>理性就是以最优方式获取你想要的东西（针对载体）。<br><strong>区别：</strong>基因想要你牺牲自己去保护亲属（适应性），但作为个体你可能更想活下去。坚持个人效用最大化就是一种叛乱。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chapter 4 -->
+    <div id="ch4" class="chapter-content">
+        <h2 class="section-title">第四章：自主大脑的偏差</h2>
+        <ul class="key-points-list">
+            <li><strong>基本计算偏差：</strong> TASS倾向于将所有问题<strong>语境化（Contextualization）</strong>。</li>
+            <li><strong>现代社会的陷阱：</strong> 现代社会充满抽象符号、概率和非人际互动。TASS的古老启发式（如通过故事而非数据判断）在现代经常失效。</li>
+            <li><strong>框架效应：</strong> 人的偏好不是固定的，极易受描述方式影响（如“存活率”vs“死亡率”）。这证明人类并非天生完全理性。</li>
+        </ul>
+
+        <div class="cards-grid">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-label">核心概念 06</div>
+                        <div class="card-term">基本计算偏差</div>
+                        <div class="card-def">Fundamental Computational Bias</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="card-back-title">为什么是问题？</div>
+                        <div class="card-back-content">
+                            <p><strong>机制：</strong>大脑习惯自动联想背景知识、社会化问题、寻找叙事连贯性。<br><strong>后果：</strong>在需要抽象逻辑推理的任务中（如三段论、概率计算），这种自动化的语境填补会阻碍我们看清逻辑结构，导致谬误。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chapter 5 -->
+    <div id="ch5" class="chapter-content">
+        <h2 class="section-title">第五章：进化心理学的误区</h2>
+        <ul class="key-points-list">
+            <li><strong>进化心理学的辩护：</strong> 许多进化心理学家认为人类是“适应性理性”的，错误只是因为实验环境不自然。</li>
+            <li><strong>斯坦诺维奇的反驳：</strong> 适应性（基因利益）不等于理性（个人利益）。</li>
+            <li><strong>钠光灯隐喻：</strong> 现代世界就像钠光灯（单色光），我们的色觉机制在此环境下失效。进化心理学家说“这不怪眼睛”，但斯坦诺维奇说“可我们就生活在钠光灯下！”</li>
+            <li><strong>去语境化的必要性：</strong> 现代社会要求我们必须具备处理抽象、去语境化信息的能力（如理解保险合同、法律条文）。</li>
+        </ul>
+
+        <div class="cards-grid">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-label">核心概念 07</div>
+                        <div class="card-term">对“适应性”的批判</div>
+                        <div class="card-def">Critique of Adaptationism</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="card-back-title">论据反转</div>
+                        <div class="card-back-content">
+                            <p><strong>观点：</strong>仅仅因为某个行为在更新世（远古）是适应的，并不意味着它是理性的。<br><strong>例子：</strong>为了地位进行危险竞争可能符合基因利益（增加繁殖机会），但可能导致个体死亡（违反载体利益）。不能为本能辩护。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chapter 6 -->
+    <div id="ch6" class="chapter-content">
+        <h2 class="section-title">第六章：理性障碍——为何聪明人做傻事</h2>
+        <ul class="key-points-list">
+            <li><strong>智力 ≠ 理性：</strong> 智力（IQ）主要衡量算法层面的效率（计算力、记忆力）；理性属于意向层面（目标设定、信念修正）。</li>
+            <li><strong>理性障碍 (Dysrationalia)：</strong> 拥有足够智力，但无法理性思考和行动的状态。</li>
+            <li><strong>认知吝啬鬼：</strong> 高智商的人也会因为思维懒惰（依赖系统1）而犯错。</li>
+            <li><strong>思维倾向：</strong> 理性需要特定的思维倾向（如开放思想、反省需求），这与智力只有中度相关。</li>
+        </ul>
+
+        <div class="cards-grid">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-label">核心概念 08</div>
+                        <div class="card-term">算法层 vs. 意向层</div>
+                        <div class="card-def">Algorithmic vs. Intentional Level</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="card-back-title">认知分层</div>
+                        <div class="card-back-content">
+                            <p><strong>算法层：</strong>计算机硬件般的效率，智力测验测量的部分（如处理速度）。<br><strong>意向层：</strong>软件层面的目标、价值观和认识论信念。理性障碍往往发生在这里——硬件很好，但运行了错误的软件（信念/策略）。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chapter 7 -->
+    <div id="ch7" class="chapter-content">
+        <h2 class="section-title">第七章：从基因魔爪到模因魔爪</h2>
+        <ul class="key-points-list">
+            <li><strong>第二复制子：</strong> 模因（Memes）是文化传播单位。它们像病毒一样感染大脑。</li>
+            <li><strong>模因也是自私的：</strong> 模因传播是因为它们善于传播，不一定是因为它们是真的或对宿主有利（例如：连锁信、有害的邪教观念）。</li>
+            <li><strong>纽拉特式的自助法 (Neurathian Bootstrapping)：</strong> 我们无法站在完全纯净的立场审视信念。只能像在海上修船一样，利用一部分模因（如科学、逻辑）去评估和修补另一部分模因。</li>
+            <li><strong>模因评估原则：</strong> 
+                1. 避免伤害载体；
+                2. 追求真实性；
+                3. 避免排除其他可能性的模因；
+                4. 拒绝免疫于评估的模因。</li>
+        </ul>
+
+        <div class="cards-grid">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-label">核心概念 09</div>
+                        <div class="card-term">共适应模因悖论</div>
+                        <div class="card-def">Co-adapted Meme Paradox</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="card-back-title">自我审视的困境</div>
+                        <div class="card-back-content">
+                            <p><strong>困境：</strong>我们用大脑中的观念去评估其他观念。如果已有的观念本身就是“坏模因”，评估就会偏差。<br><strong>解法：</strong>使用具有通用评估功能的“元模因”（如科学方法、逻辑规则、证伪精神）作为清洗工具。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chapter 8 -->
+    <div id="ch8" class="chapter-content">
+        <h2 class="section-title">第八章：没有神秘主义的灵魂</h2>
+        <ul class="key-points-list">
+            <li><strong>没有小人 (Homunculus)：</strong> 大脑中没有一个统一的指挥官。自我是构建出来的。</li>
+            <li><strong>深度评价 (Strong Evaluation)：</strong> 人类独特的能力。不仅有欲望，还能评估“拥有这种欲望是否是好的”。</li>
+            <li><strong>二阶欲望：</strong> “我想要某种欲望”。例如，我想抽烟（一阶），但我希望我不想要抽烟（二阶）。</li>
+            <li><strong>理性整合：</strong> 通过反思，让一阶欲望与高阶价值观一致。这是人类自主性的体现。</li>
+            <li><strong>意义的来源：</strong> 意义不在于神秘的起源，而在于我们能够进行<strong>元理性</strong>的评估，重塑我们的目标结构，使其服务于个体而非复制子。</li>
+        </ul>
+
+        <div class="cards-grid">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-label">核心概念 10</div>
+                        <div class="card-term">元理性 (Meta-Rationality)</div>
+                        <div class="card-def">与理性整合</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="card-back-title">终极叛乱</div>
+                        <div class="card-back-content">
+                            <p><strong>解释：</strong>不仅要有效地实现目标（工具理性），还要批判和选择目标本身（广义理性）。<br><strong>结论：</strong>通过批判我们身上携带的基因指令和文化模因，我们构建了一个独特的、自主的“灵魂”。这就是在达尔文时代找到的意义。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hint footer inside nav area to verify completeness -->
+</div>
+
+<script>
+    function openChapter(chapterId) {
+        // Hide all content
+        const contents = document.querySelectorAll('.chapter-content');
+        contents.forEach(content => content.classList.remove('active'));
+
+        // Remove active class from buttons
+        const buttons = document.querySelectorAll('.tab-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+
+        // Show specific chapter
+        document.getElementById(chapterId).classList.add('active');
+        
+        // Add active class to clicked button
+        // Since we are using inline onclick, we need to find the button that corresponds
+        // Simple hack: loop buttons text or index, but here let's rely on event.target logic if passed, 
+        // or re-select based on index. A cleaner way for this static demo:
+        // Re-looping to match index is tedious without specific IDs on buttons.
+        // Let's just use event bubbling or closure if we were dynamically generating.
+        // For simplicity in this static HTML string:
+        
+        // Find the button that calls this function (approximate matching)
+        const targetBtn = Array.from(buttons).find(b => b.getAttribute('onclick').includes(chapterId));
+        if(targetBtn) targetBtn.classList.add('active');
+    }
+
+    // Add click event for card flipping on mobile touch devices if hover doesn't work well
+    document.querySelectorAll('.flip-card').forEach(card => {
+        card.addEventListener('click', function() {
+            this.classList.toggle('flipped');
+        });
+    });
+</script>
+
+</body>
+</html>
