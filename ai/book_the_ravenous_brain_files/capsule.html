@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《贪婪的大脑》深度交互图谱</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --accent-hover: #2980b9;
+            --bg-body: #f4f7f6;
+            --bg-card: #ffffff;
+            --text-main: #333333;
+            --text-light: #7f8c8d;
+            --card-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            --flip-duration: 0.6s;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* Hero Section */
+        header {
+            background: linear-gradient(135deg, #fff 0%, #f0f4f8 100%);
+            padding: 60px 20px;
+            text-align: center;
+            border-bottom: 1px solid #e1e4e8;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Navigation */
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            background: rgba(244, 247, 246, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 2px solid transparent;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            color: var(--text-light);
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn.active {
+            background: #fff;
+            color: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 4px 6px rgba(52, 152, 219, 0.1);
+        }
+
+        .nav-btn:hover:not(.active) {
+            color: var(--accent);
+            background: rgba(255,255,255,0.5);
+        }
+
+        /* Content Sections */
+        main {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 0 20px 60px 20px;
+        }
+
+        .chapter-section {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .chapter-section.active {
+            display: block;
+        }
+
+        .section-intro {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 40px;
+            border-left: 6px solid var(--accent);
+        }
+
+        .section-intro h2 {
+            margin-top: 0;
+            color: var(--primary);
+        }
+
+        /* Flip Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        /* The Flip Card Container */
+        .flip-card {
+            background-color: transparent;
+            height: 380px; /* Fixed height for uniformity */
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        /* Inner Container: Needed for positioning */
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform var(--flip-duration);
+            transform-style: preserve-3d;
+            box-shadow: var(--card-shadow);
+            border-radius: 16px;
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        /* Front and Back common styles */
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            padding: 30px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Front Style */
+        .flip-card-front {
+            background-color: var(--bg-card);
+            color: var(--text-main);
+            border: 1px solid #eee;
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .instruction {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: #bdc3c7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Back Style */
+        .flip-card-back {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            transform: rotateY(180deg);
+            text-align: left;
+            align-items: flex-start;
+            overflow-y: auto; /* Allow scrolling if content is long */
+        }
+
+        .back-title {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.8;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            width: 100%;
+            padding-bottom: 5px;
+        }
+
+        .back-content {
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .back-evidence {
+            margin-top: 15px;
+            background: rgba(0,0,0,0.1);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            border-top: 1px solid #eee;
+            margin-top: 60px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Mobile tweaks */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+            .flip-card { height: 420px; } /* Taller cards for mobile text wrapping */
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>The Ravenous Brain</h1>
+    <div class="subtitle">《贪婪的大脑》深度交互摘要图谱</div>
+    <div style="margin-top: 15px; font-size: 0.9rem; color: #95a5a6;">点击卡片翻转，探索概念背后的“为什么”</div>
+</header>
+
+<!-- Navigation -->
+<div class="nav-container">
+    <button class="nav-btn active" onclick="showChapter('ch1-2')">1-2. 基础与进化</button>
+    <button class="nav-btn" onclick="showChapter('ch3-4')">3-4. 无意识与注意</button>
+    <button class="nav-btn" onclick="showChapter('ch5')">5. 神经机制</button>
+    <button class="nav-btn" onclick="showChapter('ch6')">6. 动物意识</button>
+    <button class="nav-btn" onclick="showChapter('ch7-8')">7-8. 损伤与疾病</button>
+</div>
+
+<main>
+
+    <!-- Chapter 1-2 -->
+    <section id="ch1-2" class="chapter-section active">
+        <div class="section-intro">
+            <h2>意识的物理基础与进化目的</h2>
+            <p>本书开篇即挑战了二元论，将意识拉回物理世界。Daniel Bor 认为，意识不是魔法，而是生物进化的必然产物，其核心目的是为了更高效地处理信息。</p>
+        </div>
+        <div class="cards-grid">
+            <!-- Card 1 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🧠</div>
+                        <div class="card-title">物理主义 (Physicalism)</div>
+                        <p>意识完全产生于大脑的物理活动，身心并非二元对立。</p>
+                        <div class="instruction">点击查看论据</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-title">核心论据</div>
+                        <div class="back-content">
+                            笛卡尔的“二元论”是错的。如果意识是非物理的，那阿司匹林（物理分子）怎么能减轻头痛（意识体验）？
+                        </div>
+                        <div class="back-evidence">
+                            <strong>关键实验：</strong> 作者在fMRI扫描仪中，通过想象“打网球”或“在房间走动”来回答问题。扫描仪能通过血流变化实时读出他的意图。这证明看似私密的意识活动，本质上是可观测的物理状态。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🧬</div>
+                        <div class="card-title">作为信息处理的进化</div>
+                        <p>所有生命形式都是为了捕捉关于环境的信息（Ideas）。</p>
+                        <div class="instruction">点击查看论据</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-title">为什么要进化出大脑？</div>
+                        <div class="back-content">
+                            DNA也是在存储信息，但它只能通过“代际更替”来学习（由于突变和死亡），速度极慢。
+                        </div>
+                        <div class="back-evidence">
+                            <strong>大脑的优势：</strong> 神经系统允许生物在<strong>个体生命周期内</strong>进行实时的学习和创新。意识是这种信息处理能力的巅峰——它是一个“在线”的创新工厂，允许我们在头脑中模拟未来，而不必在现实中试错致死。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chapter 3-4 -->
+    <section id="ch3-4" class="chapter-section">
+        <div class="section-intro">
+            <h2>无意识的局限与意识的本质</h2>
+            <p>我们往往高估了无意识（直觉）的能力。作者认为，真正的复杂运算和创新必须发生在意识层面。这主要通过两个机制实现：注意力和工作记忆。</p>
+        </div>
+        <div class="cards-grid">
+            <!-- Card 3 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🌑</div>
+                        <div class="card-title">无意识的“愚笨”</div>
+                        <p>无意识只能处理简单的、自动化的任务，无法处理复杂的结构。</p>
+                        <div class="instruction">点击查看论据</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-title">反驳“直觉神话”</div>
+                        <div class="back-content">
+                            许多人认为潜意识更聪明，但这往往是错觉。
+                        </div>
+                        <div class="back-evidence">
+                            <strong>证据：</strong> 麻醉实验显示，深度无意识状态下，大脑只能进行最简单的词汇联想（Priming），无法理解句子含义。著名的Dijksterhuis实验（声称无意识能更好地做复杂决定）在后续严格的重复实验中被推翻：<strong>有意识的深思熟虑在处理复杂逻辑时表现更好。</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🔦</div>
+                        <div class="card-title">注意力的神经战争</div>
+                        <p>注意力是意识的守门人，负责过滤和增强。</p>
+                        <div class="instruction">点击查看论据</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-title">工作机制</div>
+                        <div class="back-content">
+                            大脑每秒接收海量数据，无法全部处理。注意力是一种“胜者为王”的神经竞争机制。
+                        </div>
+                        <div class="back-evidence">
+                            <strong>机制：</strong> 代表不同信息的神经元群（Coalitions）相互竞争。获胜的神经元群会抑制其他群体的活动，并将自身信号放大，这就形成了我们当下的“关注点”。只有被注意到的信息，才能进入意识。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 5 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">📦</div>
+                        <div class="card-title">组块 (Chunking)</div>
+                        <p>意识的核心超能力：压缩信息以突破容量限制。</p>
+                        <div class="instruction">点击查看论据</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-title">为什么要组块？</div>
+                        <div class="back-content">
+                            意识（工作记忆）的容量极其有限，大约只能容纳 <strong>4个</strong> 单位。
+                        </div>
+                        <div class="back-evidence">
+                            <strong>原理：</strong> 为了处理复杂世界，我们通过寻找规律（Patterns），将大量碎片信息压缩成一个“组块”。例如：你不必记住 `1,9,4,9` 四个数字，只需记住 `1949`（建国年份）这一个概念。这极大地扩展了意识的有效带宽，是人类智慧的基石。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chapter 5 -->
+    <section id="ch5" class="chapter-section">
+        <div class="section-intro">
+            <h2>意识的神经科学：从红玫瑰到大脑网络</h2>
+            <p>意识在大脑中并非无处不在。通过研究盲视患者和脑成像，我们锁定了产生意识体验的关键网络。</p>
+        </div>
+        <div class="cards-grid">
+            <!-- Card 6 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🌐</div>
+                        <div class="card-title">额顶网络 (PPN)</div>
+                        <p>意识的“全球工作空间”，位于大脑前额叶和顶叶。</p>
+                        <div class="instruction">点击查看论据</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-title">为什么它是核心？</div>
+                        <div class="back-content">
+                            简单的感官皮层（如V1区）即使活跃，也不一定产生意识（如盲视现象）。只有当信息传播到<strong>前额叶-顶叶网络</strong>时，我们才能“意识到”它。
+                        </div>
+                        <div class="back-evidence">
+                            <strong>功能：</strong> 这个网络连接极其丰富，负责整合来自各个感官的信息，进行复杂的模式识别和决策。它是意识产生的高级舞台。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 7 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🌊</div>
+                        <div class="card-title">高频伽马波 (High Gamma)</div>
+                        <p>意识产生的神经签名：快速的同步震荡。</p>
+                        <div class="instruction">点击查看论据</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-title">如何绑定体验？</div>
+                        <div class="back-content">
+                            为什么我们看到的是一朵完整的红玫瑰，而不是分离的“红色”、“形状”和“香味”？
+                        </div>
+                        <div class="back-evidence">
+                            <strong>机制：</strong> 大脑不同区域通过极快频率（伽马波，>40Hz）的同步放电进行沟通。这种同步震荡将分散的信息“绑定”在一起，形成统一的意识体验。麻醉会破坏这种长距离的同步。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chapter 6 -->
+    <section id="ch6" class="chapter-section">
+        <div class="section-intro">
+            <h2>动物意识：不仅仅是本能</h2>
+            <p>既然意识是进化的产物，它就不会是人类独有的。但人类拥有某种独特的“升级版”意识。</p>
+        </div>
+        <div class="cards-grid">
+            <!-- Card 8 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🦍</div>
+                        <div class="card-title">动物的元认知</div>
+                        <p>动物不仅有意识，甚至知道自己“知道什么”。</p>
+                        <div class="instruction">点击查看论据</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-title">超越反射</div>
+                        <div class="back-content">
+                            除了著名的镜像测试（自我意识），猴子还能完成赌博任务。
+                        </div>
+                        <div class="back-evidence">
+                            <strong>实验：</strong> 当猴子对自己的判断有信心时，会下重注（高风险高回报）；没信心时，会选择安全选项。这种根据内心确定性调整行为的能力，证明它们拥有<strong>元认知</strong>——一种高级意识形式。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 9 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🏗️</div>
+                        <div class="card-title">层级化组块 (Hierarchical Chunking)</div>
+                        <p>人类意识与其他动物的关键区别。</p>
+                        <div class="instruction">点击查看论据</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-title">人类的杀手锏</div>
+                        <div class="back-content">
+                            虽然老鼠也能简单组块（记路），但人类能进行<strong>递归式</strong>的组块。
+                        </div>
+                        <div class="back-evidence">
+                            <strong>套杯子实验：</strong> 幼童很快学会将“小杯放入中杯”作为一个整体，再放入大杯。而黑猩猩很难理解这种“组块套组块”的层级结构。这种构建复杂金字塔式知识结构的能力，是人类语言和文明的基础。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chapter 7-8 -->
+    <section id="ch7-8" class="chapter-section">
+        <div class="section-intro">
+            <h2>脆弱的边缘：脑损伤与精神疾病</h2>
+            <p>当意识的物理基础受损时，我们会看到惊人的现象。这反过来验证了意识的神经理论。</p>
+        </div>
+        <div class="cards-grid">
+            <!-- Card 10 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🌫️</div>
+                        <div class="card-title">隐秘意识 (Covert Consciousness)</div>
+                        <p>植物人状态下，意识可能依然存在，只是无法表达。</p>
+                        <div class="instruction">点击查看论据</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-title">来自fMRI的证据</div>
+                        <div class="back-content">
+                            Adrian Owen的研究震惊了世界。
+                        </div>
+                        <div class="back-evidence">
+                            <strong>实验：</strong> 医生让一位看似无意识的植物人想象“打网球”。结果她的大脑运动皮层像常人一样被激活了！这意味着她有意识，甚至能听懂指令。通过这种方式，她能回答“是”或“否”。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 11 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🌪️</div>
+                        <div class="card-title">作为意识障碍的精神疾病</div>
+                        <p>许多精神疾病本质上是意识（工作记忆）系统的故障。</p>
+                        <div class="instruction">点击查看论据</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-title">重新定义病理</div>
+                        <div class="back-content">
+                            <ul style="padding-left: 20px; margin: 0;">
+                                <li><strong>精神分裂症：</strong> 工作记忆萎缩，无法过滤错误模式，导致妄想。与谷氨酸系统异常有关。</li>
+                                <li><strong>自闭症：</strong> 可能是<strong>过度意识</strong>。大脑连接过强，导致感官过载，无法有效压缩信息（组块），因此不得不通过刻板行为寻求秩序。</li>
+                            </ul>
+                        </div>
+                        <div class="back-evidence">
+                            <strong>启示：</strong> 治疗应关注恢复前额叶功能和工作记忆。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    <p>2025 Summary of "The Ravenous Brain" by Daniel Bor | Designed for Deep Learning</p>
+</footer>
+
+<script>
+    function showChapter(id) {
+        // Hide all sections
+        const sections = document.querySelectorAll('.chapter-section');
+        sections.forEach(s => s.classList.remove('active'));
+        
+        // Remove active class from buttons
+        const btns = document.querySelectorAll('.nav-btn');
+        btns.forEach(b => b.classList.remove('active'));
+        
+        // Show selected section
+        document.getElementById(id).classList.add('active');
+        
+        // Highlight button
+        // Simple matching logic based on onclick attribute
+        const clickedBtn = Array.from(btns).find(b => b.getAttribute('onclick').includes(id));
+        if(clickedBtn) clickedBtn.classList.add('active');
+
+        // Scroll to top of main smoothly
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>
