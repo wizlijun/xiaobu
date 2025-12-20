@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>心智社会 (The Society of Mind) - 深度交互摘要</title>
+    <style>
+        :root {
+            --bg-color: #fcfcfc;
+            --text-color: #333;
+            --accent-color: #4a90e2;
+            --card-bg: #ffffff;
+            --card-back-bg: #f0f7ff;
+            --highlight-color: #fff3cd;
+            --section-bg: #ffffff;
+            --shadow: 0 4px 15px rgba(0,0,0,0.05);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.8;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem 1rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-weight: 300;
+            margin: 0;
+            font-size: 2rem;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Intro Section */
+        .intro-box {
+            background: var(--section-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        .intro-box p {
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .highlight {
+            background-color: var(--highlight-color);
+            padding: 0 4px;
+            border-radius: 2px;
+            font-weight: 500;
+        }
+
+        /* Section Titles */
+        .section-title {
+            text-align: center;
+            font-size: 1.5rem;
+            margin: 3rem 0 2rem;
+            position: relative;
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 3px;
+            background: var(--accent-color);
+            margin: 10px auto 0;
+            border-radius: 2px;
+        }
+
+        /* Flip Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        /* Card Setup */
+        .card-container {
+            perspective: 1000px;
+            height: 350px;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            box-shadow: var(--shadow);
+            border-radius: 12px;
+        }
+
+        .card-container.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            padding: 2rem;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card-front {
+            background-color: var(--card-bg);
+            border: 1px solid #eee;
+        }
+
+        .card-back {
+            background-color: var(--card-back-bg);
+            transform: rotateY(180deg);
+            text-align: left;
+            align-items: flex-start;
+            overflow-y: auto;
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--accent-color);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .card-def {
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        .card-question {
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+            display: block;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card-answer {
+            font-size: 0.9rem;
+            color: #444;
+        }
+
+        .click-hint {
+            position: absolute;
+            bottom: 15px;
+            font-size: 0.8rem;
+            color: #999;
+            opacity: 0.7;
+        }
+
+        /* Accordion for Detailed Summary */
+        .accordion {
+            margin-top: 2rem;
+        }
+
+        .accordion-item {
+            border-bottom: 1px solid #eee;
+            margin-bottom: 10px;
+        }
+
+        .accordion-header {
+            background: white;
+            padding: 1.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .accordion-header:hover {
+            background: #f8fbff;
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+            background: white;
+            padding: 0 1.5rem;
+        }
+
+        .accordion-content.active {
+            padding: 1.5rem;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .accordion-icon {
+            transition: transform 0.3s;
+        }
+
+        .active .accordion-icon {
+            transform: rotate(45deg);
+        }
+
+        /* Key Points List */
+        ul.key-points {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul.key-points li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        ul.key-points li::before {
+            content: '•';
+            color: var(--accent-color);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+            font-size: 0.8rem;
+            margin-top: 4rem;
+        }
+
+        /* Tag */
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            background: #eee;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+            h1 { font-size: 1.5rem; }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>心智社会</h1>
+    <div class="subtitle">The Society of Mind | Marvin Minsky | 1985</div>
+</header>
+
+<div class="container">
+
+    <!-- 核心论点 -->
+    <div class="intro-box">
+        <p>
+            如果我们将大脑看作一台机器，它是如何产生思想、情感和意识的？<br>
+            明斯基的核心论点是：<span class="highlight">智能并非源于某种单一的机制，而是由无数个本身并不具备智能的微小“代理”（Agents）通过复杂的交互涌现而成的。</span>
+            心智不是一个君主，而是一个社会。
+        </p>
+    </div>
+
+    <!-- 核心概念反转卡片 -->
+    <h2 class="section-title">核心概念图谱 (点击翻转)</h2>
+    <div class="cards-grid">
+
+        <!-- Card 1: Agents -->
+        <div class="card-container" onclick="this.classList.toggle('flipped')">
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="tag">基础单元</div>
+                    <div class="card-icon">🧩</div>
+                    <div class="card-title">代理 (Agent)</div>
+                    <div class="card-def">心智的基本组成单位，其本身通常很简单，不具备智能。</div>
+                    <div class="click-hint">点击查看逻辑</div>
+                </div>
+                <div class="card-back">
+                    <span class="card-question">为什么需要代理？</span>
+                    <p class="card-answer">
+                        为了解释智能，我们必须将复杂的行为分解为更简单的部分。如果解释智能的部分本身是有智能的，我们就陷入了循环论证。只有当我们把心智分解为**本身没有思想或感觉**的碎片时，解释才算完成。
+                    </p>
+                    <span class="card-question">核心论据</span>
+                    <p class="card-answer">
+                        如同搭积木，"建造者"（Builder）是一个高级代理，它并不懂得如何移动手臂，它只需指挥"寻找"（Find）、"抓取"（Get）等低级代理。这种层级结构允许复杂性从无脑的机械过程中涌现。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: K-Lines -->
+        <div class="card-container" onclick="this.classList.toggle('flipped')">
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="tag">记忆机制</div>
+                    <div class="card-icon">🕸️</div>
+                    <div class="card-title">K-线 (K-Lines)</div>
+                    <div class="card-def">一种记忆理论：我们不存储记忆的“副本”，而是存储触发当时心理状态的“连线”。</div>
+                    <div class="click-hint">点击查看逻辑</div>
+                </div>
+                <div class="card-back">
+                    <span class="card-question">记忆是如何工作的？</span>
+                    <p class="card-answer">
+                        K-线（Knowledge-lines）就像是让代理回到之前状态的开关。当你解决一个问题时，K-线会记录下哪些代理是活跃的。
+                    </p>
+                    <span class="card-question">核心论据</span>
+                    <p class="card-answer">
+                        回忆不是重放录像，而是**重建**（Re-membering）。当我们回忆时，K-线重新激活了旧的代理网络，使我们处于一种类似于过去的状态，从而利用以前的解题能力来处理新问题。这解释了为什么记忆往往是不精确的重建。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3: Frames -->
+        <div class="card-container" onclick="this.classList.toggle('flipped')">
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="tag">认知结构</div>
+                    <div class="card-icon">🖼️</div>
+                    <div class="card-title">框架 (Frames)</div>
+                    <div class="card-def">预先存在的认知骨架，用于处理新情况。包含许多带有“默认值”的终端。</div>
+                    <div class="click-hint">点击查看逻辑</div>
+                </div>
+                <div class="card-back">
+                    <span class="card-question">我们如何快速理解世界？</span>
+                    <p class="card-answer">
+                        当我们进入一个房间，即使没看清细节，我们也会假设有地板、天花板和墙壁。这就是框架的作用。它提供了**默认假设**（Default Assumptions）。
+                    </p>
+                    <span class="card-question">核心论据</span>
+                    <p class="card-answer">
+                        如果没有框架和默认值，我们将被海量信息淹没，无法行动。框架允许我们先假设（如"这是一把椅子，它有腿"），只在感知到不符合预期的信息时才进行修正。这是视觉识别和语言理解速度之源。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4: Difference-Engines -->
+        <div class="card-container" onclick="this.classList.toggle('flipped')">
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="tag">问题解决</div>
+                    <div class="card-icon">⚙️</div>
+                    <div class="card-title">差异机 (Difference-Engines)</div>
+                    <div class="card-def">一种通过减少“现状”与“目标”之间差异来解决问题的机制。</div>
+                    <div class="click-hint">点击查看逻辑</div>
+                </div>
+                <div class="card-back">
+                    <span class="card-question">什么是“目标”？</span>
+                    <p class="card-answer">
+                        目标并非神秘的驱动力，而是对某种**不存在状态**的描述。差异机不断比较当前状态和理想状态，并激活能减少这种差异的子代理。
+                    </p>
+                    <span class="card-question">核心论据</span>
+                    <p class="card-answer">
+                        这是早期人工智能（如GPS）的核心。它解释了看似有目的的行为如何由机械过程产生。我们不需要一个拥有自由意志的“小人”在脑中指挥，只需要一套消除差异的反馈机制。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 5: Censors -->
+        <div class="card-container" onclick="this.classList.toggle('flipped')">
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="tag">负向学习</div>
+                    <div class="card-icon">🚫</div>
+                    <div class="card-title">审查者 (Censors)</div>
+                    <div class="card-def">用于抑制不仅是行动，还有“特定类型思维”的代理。</div>
+                    <div class="click-hint">点击查看逻辑</div>
+                </div>
+                <div class="card-back">
+                    <span class="card-question">我们如何避免错误？</span>
+                    <p class="card-answer">
+                        不仅仅是学习做什么（正向学习），更重要的是学习**不做什么**。审查者拦截那些通往已知失败或危险的思维路径。
+                    </p>
+                    <span class="card-question">核心论据</span>
+                    <p class="card-answer">
+                        弗洛伊德提出了审查机制，但明斯基将其扩展到智力层面。笑话（Jokes）本质上往往是愚弄了审查者，或者让我们安全地触碰被审查的禁忌（包括逻辑上的荒谬），因此引发笑声作为一种释放或认知纠错信号。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 6: Papert's Principle -->
+        <div class="card-container" onclick="this.classList.toggle('flipped')">
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="tag">发展心理学</div>
+                    <div class="card-icon">📈</div>
+                    <div class="card-title">派珀特原则 (Papert's Principle)</div>
+                    <div class="card-def">心智发展的关键步骤不仅是获得新技能，更是建立新的管理层级。</div>
+                    <div class="click-hint">点击查看逻辑</div>
+                </div>
+                <div class="card-back">
+                    <span class="card-question">皮亚杰实验的解释</span>
+                    <p class="card-answer">
+                        为什么儿童在某些阶段会犯错（如认为高瘦杯子的水比矮胖杯子多）？因为他们拥有了特定的代理（高度代理、宽度代理），但缺乏协调它们的**管理代理**。
+                    </p>
+                    <span class="card-question">核心论据</span>
+                    <p class="card-answer">
+                        心智成长不是简单的积累，而是行政结构的重组。我们通过在旧的、相互冲突的代理之上建立新的“中间管理者”层级来解决冲突，从而实现认知升级（例如守恒概念）。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 详细章节摘要 -->
+    <h2 class="section-title">章节深度导览</h2>
+    <div class="accordion">
+        
+        <!-- Section 1 -->
+        <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+                <span>第一部分：代理与机构 (The Agents of the Mind)</span>
+                <span class="accordion-icon">+</span>
+            </div>
+            <div class="accordion-content">
+                <p>本部分奠定了全书的基调：**拆解**。</p>
+                <ul class="key-points">
+                    <li><strong>积木世界 (The World of Blocks)：</strong> 明斯基使用搭建积木塔作为核心隐喻。一个看似简单的动作（搭塔）实际上需要无数子代理（寻找、移动、看到、抓取、平衡）的协作。</li>
+                    <li><strong>官僚机构：</strong> 只要每个代理都做好自己简单的任务，整体就能表现出复杂的智能。就像在喝茶时，"抓取"代理只管抓，"平衡"代理只管不洒，它们不需要理解"喝茶"这个宏大目标。</li>
+                    <li><strong>非妥协原则 (Non-compromise)：</strong> 当代理发生冲突时，通过“妥协”往往得到平庸的结果。更有效的机制是让冲突升级到更高层，或者抑制冲突双方，转而激活全新的代理。</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 2 -->
+        <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+                <span>第二部分：自我与意识 (The Self & Consciousness)</span>
+                <span class="accordion-icon">+</span>
+            </div>
+            <div class="accordion-content">
+                <p>明斯基挑战了“单一自我”的直觉。</p>
+                <ul class="key-points">
+                    <li><strong>自我的神话：</strong> 我们感觉自己有一个单一的“自我”，这是一种为了决策效率而产生的幻觉。实际上，我们是许多相互竞争的代理的集合。</li>
+                    <li><strong>B-大脑 (B-Brains)：</strong> 为了解释反思和监视，明斯基提出了A大脑（处理外部世界）和B大脑（监视A大脑）。B大脑并不完全理解A大脑在做什么，它只是监控A是否陷入循环或混乱，并进行干预。</li>
+                    <li><strong>意识的局限：</strong> 意识不是看到思想的过程，而是对短期记忆记录的访问。我们无法意识到思维的每一步，因为如果那样，我们将无法行动。意识主要在系统遇到故障或需要重新规划时介入。</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 3 -->
+        <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+                <span>第三部分：学习与记忆 (Learning & Memory)</span>
+                <span class="accordion-icon">+</span>
+            </div>
+            <div class="accordion-content">
+                <p>重新定义学习：从“存储信息”到“重建状态”。</p>
+                <ul class="key-points">
+                    <li><strong>K-线 (K-Lines)：</strong> 记忆不是静态的数据包，而是动态的过程。当我们学习解决问题时，我们创建了一条K-线，连接所有活跃的代理。回忆就是拉动这根线，唤醒当时的心理状态。</li>
+                    <li><strong>层级带 (Level-Bands)：</strong> 记忆必须是模糊的。如果记忆太精确，我们将无法将其应用到新情况。通过只记录特定层级（不过于宏观也不过于微观）的信息，我们实现了泛化能力。</li>
+                    <li><strong>单一框架者 vs 累积者：</strong> 两种学习风格。前者试图用一个理论解释所有（容易过度概括），后者收集大量特例（效率低但稳健）。成熟的心智是两者的混合。</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 4 -->
+        <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+                <span>第四部分：语言与意义 (Language, Words & Ideas)</span>
+                <span class="accordion-icon">+</span>
+            </div>
+            <div class="accordion-content">
+                <p>语言是代理之间（以及人与人之间）的控制信号。</p>
+                <ul class="key-points">
+                    <li><strong>多素 (Polynemes)：</strong> 一个词（如“苹果”）如何触发颜色、形状、味道等不同体验？因为“苹果”是一个多素，它向不同领域的代理发送信号，每个代理以自己的方式响应（视觉代理看到红色，味觉代理尝到甜味）。</li>
+                    <li><strong>同素 (Isonomes)：</strong> 与多素相反，同素对不同的代理产生相同的控制效果。例如，“快”这个概念可以作用于走路、说话或思考，表示速度的提升。</li>
+                    <li><strong>代词素 (Pronomes)：</strong> 类似于语言中的代词（它、那个），但在心智中，它们是临时的“抓手”，用于在短期记忆中连接复杂的框架和关系。</li>
+                    <li><strong>翻译的困难：</strong> 意义在于代理之间的连接网络。两个人心智网络不同，完全准确的沟通是不可能的，语言只是一种通过触发对方相似结构来“重建”思想的尝试。</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 5 -->
+        <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+                <span>第五部分：情感与发展 (Emotion & Development)</span>
+                <span class="accordion-icon">+</span>
+            </div>
+            <div class="accordion-content">
+                <p>情感并非非理性的，它是特殊的思维模式。</p>
+                <ul class="key-points">
+                    <li><strong>情感即状态：</strong> 情感不是附加在思维上的色彩，而是整个心智社会运行模式的切换。例如，“愤怒”可能只是关闭了具有长远规划和自我保护功能的代理，从而允许攻击性代理接管。</li>
+                    <li><strong>依恋学习 (Attachment Learning)：</strong> 婴儿的学习不仅仅是基于奖惩，更是基于对依恋对象的模仿。我们学习目标的**本身**（values），而不仅仅是达到目标的方法。</li>
+                    <li><strong>功能自主 (Functional Autonomy)：</strong> 最初为了取悦父母或解决生存问题而产生的子目标（如“学习”），最终可能脱离原始驱动力，成为独立的目标。</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 总结 -->
+    <div class="intro-box" style="margin-top: 3rem; background: #f0f7ff; border: 1px solid #e1eefc;">
+        <h3 style="margin-top:0;">总结：心智是什么？</h3>
+        <p>
+            《心智社会》没有给出一个简单的公式，而是展示了一个复杂的生态系统。
+            心智是进化拼凑出来的产物，包含了无数的特定解法、层级管理和相互制衡的机制。
+            **我们之所以感觉自己是统一的，是因为那些处理冲突和不一致的代理（审查者、B大脑）工作得太好了，以至于我们察觉不到底层的混乱。**
+            <br><br>
+            <strong>"Minds are simply what brains do." (心智即大脑之所为。)</strong>
+        </p>
+    </div>
+
+    <footer>
+        Generated based on "The Society of Mind" by Marvin Minsky (1985).<br>
+        Interactive HTML Summary for Deep Understanding.
+    </footer>
+
+</div>
+
+<script>
+    function toggleAccordion(header) {
+        const content = header.nextElementSibling;
+        const isActive = content.classList.contains('active');
+        
+        // Close all other accordions
+        document.querySelectorAll('.accordion-content').forEach(item => {
+            item.classList.remove('active');
+            item.style.maxHeight = null;
+            item.previousElementSibling.classList.remove('active');
+        });
+
+        if (!isActive) {
+            header.classList.add('active');
+            content.classList.add('active');
+            content.style.maxHeight = content.scrollHeight + "px";
+        }
+    }
+</script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_the_society_of_mind_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
