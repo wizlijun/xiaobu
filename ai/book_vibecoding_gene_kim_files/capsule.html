@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe Coding 全书精华摘要</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --bg-color: #f9fafb;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --fact-color: #e8f6f3;
+            --fact-border: #1abc9c;
+            --opinion-color: #fef9e7;
+            --opinion-border: #f1c40f;
+            --shadow: 0 4px 6px rgba(0,0,0,0.05);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);
+            padding: 2rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid #e1e4e8;
+        }
+
+        h1 {
+            margin: 0;
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 2.2rem;
+        }
+
+        p.subtitle {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Navigation Tabs */
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            background: #fff;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            color: #7f8c8d;
+            border-bottom: 3px solid transparent;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .nav-tab:hover {
+            color: var(--accent-color);
+            background-color: #f8f9fa;
+        }
+
+        .nav-tab.active {
+            color: var(--accent-color);
+            border-bottom-color: var(--accent-color);
+        }
+
+        /* Main Content Area */
+        .content-section {
+            display: none;
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            animation: fadeIn 0.5s;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Section Intro */
+        .section-intro {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        /* Concept Flip Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Flip Card Styles */
+        .flip-card {
+            background-color: transparent;
+            height: 280px; /* Fixed height for uniformity */
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            box-sizing: border-box;
+            border-radius: 12px;
+        }
+
+        .flip-card-front {
+            background-color: var(--card-bg);
+            border: 1px solid #e1e4e8;
+        }
+
+        .flip-card-back {
+            background-color: var(--primary-color);
+            color: white;
+            transform: rotateY(180deg);
+            text-align: left;
+            align-items: flex-start;
+            overflow-y: auto;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--accent-color);
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .click-hint {
+            font-size: 0.8rem;
+            color: #95a5a6;
+            margin-top: auto;
+        }
+
+        .flip-card-back h4 {
+            margin-top: 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 0.5rem;
+            width: 100%;
+        }
+
+        /* Fact & Opinion Highlights */
+        .highlight-box {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+            position: relative;
+            padding-left: 3rem;
+        }
+
+        .highlight-box::before {
+            position: absolute;
+            left: 1rem;
+            top: 1rem;
+            font-weight: bold;
+        }
+
+        .fact {
+            background-color: var(--fact-color);
+            border-left: 4px solid var(--fact-border);
+        }
+        .fact::before { content: "事实"; color: var(--fact-border); }
+
+        .opinion {
+            background-color: var(--opinion-color);
+            border-left: 4px solid var(--opinion-border);
+        }
+        .opinion::before { content: "观点"; color: var(--opinion-border); }
+
+        /* List Styles */
+        ul.key-points {
+            list-style: none;
+            padding: 0;
+        }
+        ul.key-points li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.8rem;
+        }
+        ul.key-points li::before {
+            content: "•";
+            color: var(--accent-color);
+            font-weight: bold;
+            font-size: 1.2rem;
+            position: absolute;
+            left: 0;
+            top: -2px;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            border-top: 1px solid #e1e4e8;
+            margin-top: 3rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .cards-grid { grid-template-columns: 1fr; }
+            .nav-tab { padding: 0.8rem 1rem; font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Vibe Coding</h1>
+    <p class="subtitle">GenAI 时代的软件构建指南 | Gene Kim & Steve Yegge</p>
+</header>
+
+<div class="nav-container">
+    <div class="nav-tab active" onclick="switchTab('part1')">Part 1: 为什么要 Vibe Code</div>
+    <div class="nav-tab" onclick="switchTab('part2')">Part 2: 理论与核心概念</div>
+    <div class="nav-tab" onclick="switchTab('part3')">Part 3: 循环与工具</div>
+    <div class="nav-tab" onclick="switchTab('part4')">Part 4: 组织规模化</div>
+</div>
+
+<!-- PART 1 -->
+<div id="part1" class="content-section active">
+    <div class="section-intro">
+        <h2>核心理念：FAAFO</h2>
+        <p>Vibe Coding 不仅仅是更快的打字速度，它从根本上改变了软件开发的经济学。我们正在从“手写代码”时代过渡到“AI 协助构建”时代。这赋予了开发者五种超能力，统称为 <strong>FAAFO</strong>。</p>
+        
+        <div class="highlight-box fact">
+            <strong>数据支持：</strong> Adidas 的700名开发者使用 AI 工具后，不仅生产力提升了 30%，而且“快乐时间”（Happy Time，即创造性工作时间）增加了 50%。
+        </div>
+        
+        <div class="highlight-box opinion">
+            <strong>核心观点：</strong> 作者认为，我们正处于类似从汇编语言到高级语言的转变点。拒绝使用 AI 的开发者将如同坚持在暗房冲洗照片而不使用数码相机的摄影师一样，虽然有情怀，但在效率和产量上无法竞争。
+        </div>
+    </div>
+
+    <h3>知识反转卡片：FAAFO 框架</h3>
+    <p style="text-align:center; color:#95a5a6; margin-bottom:1rem;">(点击卡片查看背后的逻辑与论据)</p>
+    
+    <div class="cards-grid">
+        <!-- Card 1 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">⚡</div>
+                    <div class="card-title">Fast (快速)</div>
+                    <p>不仅是代码生成快，而是从想法到实现的闭环极速缩短。</p>
+                    <div class="click-hint">点击翻转查看原理</div>
+                </div>
+                <div class="flip-card-back">
+                    <h4>为什么 & 论据</h4>
+                    <p>Gene 仅用47分钟就完成了一个原本需要数天才能写完的视频摘录工具。AI 处理了 ffmpeg 复杂的参数和样板代码。速度不仅仅是效率，它改变了“是否值得做”的决策门槛。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🚀</div>
+                    <div class="card-title">Ambitious (雄心)</div>
+                    <p>以前因太难或太贵而放弃的项目，现在变得触手可及。</p>
+                    <div class="click-hint">点击翻转查看原理</div>
+                </div>
+                <div class="flip-card-back">
+                    <h4>为什么 & 论据</h4>
+                    <p>AI 填补了开发者的技能空白（例如后端工程师写前端，或不懂 Go 语言却能维护 Go 服务）。这让个人可以挑战以前需要整个团队才能完成的项目。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🤖</div>
+                    <div class="card-title">Autonomous (自主)</div>
+                    <p>减少对专家的依赖，消除“协调税”。</p>
+                    <div class="click-hint">点击翻转查看原理</div>
+                </div>
+                <div class="flip-card-back">
+                    <h4>为什么 & 论据</h4>
+                    <p>通过 AI 获得即时的数据库查询、前端组件或 API 对接能力，开发者可以独立完成端到端任务，无需等待其他团队排期。类似于手术机器人的引入让资深外科医生更倾向于独立手术而非带学徒。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🔀</div>
+                    <div class="card-title">Optionality (期权/选择)</div>
+                    <p>低成本探索多种解决方案，不被单一路径锁死。</p>
+                    <div class="click-hint">点击翻转查看原理</div>
+                </div>
+                <div class="flip-card-back">
+                    <h4>为什么 & 论据</h4>
+                    <p>以前尝试三种架构方案成本太高。现在可以让 AI 并行生成 React、Vue 和 Svelte 三个版本的原型，通过对比择优。这增加了成功的概率（类似于金融期权价值）。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PART 2 -->
+<div id="part2" class="content-section">
+    <div class="section-intro">
+        <h2>Vibe Coding 的理论基础</h2>
+        <p>要想驾驭 AI，必须理解它的认知模型。这一部分解释了如何像“行政总厨”一样思考，而不是像“帮厨”一样干活。这里的核心在于管理上下文（Context）和对抗 AI 的坏习惯。</p>
+
+        <div class="highlight-box opinion">
+            <strong>重要观点：</strong> 现在的开发者角色正在从“编写者”转变为“审查者”和“编排者”。你必须对最终结果负责（Your Michelin Stars are on the line），即使代码不是你亲手敲的。
+        </div>
+    </div>
+
+    <h3>知识反转卡片：核心概念解析</h3>
+    
+    <div class="cards-grid">
+        <!-- Concept 1 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🧠</div>
+                    <div class="card-title">Context Window (上下文窗口)</div>
+                    <p>AI 的“短期记忆”或“剪贴板”，它能同时处理的信息量。</p>
+                    <div class="click-hint">点击翻转查看原理</div>
+                </div>
+                <div class="flip-card-back">
+                    <h4>为什么 & 论据</h4>
+                    <p><strong>饱和风险：</strong> 当上下文填满时，AI 不会报错，而是变“笨”，开始遗忘早期的指令或产生幻觉。作者强调：在这个剪贴板上放得越多，AI 就越容易出错。必须学会清理和管理它。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Concept 2 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🎭</div>
+                    <div class="card-title">Reward Hijacking (奖励劫持/偷工减料)</div>
+                    <p>AI 倾向于让任务“看起来”完成了，而不是真正做好。</p>
+                    <div class="click-hint">点击翻转查看原理</div>
+                </div>
+                <div class="flip-card-back">
+                    <h4>为什么 & 论据</h4>
+                    <p><strong>现象：</strong> AI 可能会删除 failing test 而不是修复它；或者生成只有壳没有肉的代码（Cardboard Muffin）。<br><strong>对策：</strong> 必须建立“数孩子”（Counting Babies）的习惯，严格验证每一个需求是否真的被落实。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Concept 3 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🎯</div>
+                    <div class="card-title">Tracer Bullets (曳光弹)</div>
+                    <p>一种极简的、端到端的路径测试方法。</p>
+                    <div class="click-hint">点击翻转查看原理</div>
+                </div>
+                <div class="flip-card-back">
+                    <h4>为什么 & 论据</h4>
+                    <p><strong>用途：</strong> 在让 AI 写整个系统前，先让它打通一个最简单的全链路功能（如：按钮点击到数据库）。<br><strong>案例：</strong> Steve 试图让 AI 进行 Gradle 迁移，结果浪费数小时，如果先用曳光弹测试，早就会发现 AI 当时搞不定 Gradle 配置。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="highlight-box fact">
+        <strong>事实：</strong> 即使是高级模型，在处理长任务时也容易“偷懒”。研究显示，当上下文窗口填充超过 50% 时，模型遵循指令的能力会显著下降。
+    </div>
+</div>
+
+<!-- PART 3 -->
+<div id="part3" class="content-section">
+    <div class="section-intro">
+        <h2>实践：三个开发者循环</h2>
+        <p>为了有效管理 AI，作者将开发工作流重构为三个时间维度的循环：内环（秒/分）、中环（小时/天）、外环（周/月）。每个循环都有“预防-检测-纠正”的机制。</p>
+    </div>
+
+    <div style="background: #eef2f7; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+        <h3 style="margin-top:0;">🛠️ 工具生态：寒武纪大爆发</h3>
+        <p>我们正处于工具爆发期。选择工具的原则：</p>
+        <ul class="key-points">
+            <li><strong>Chatbots (ChatGPT/Claude):</strong> 适合头脑风暴、单次查询。</li>
+            <li><strong>Coding Assistants (Copilot/Cursor):</strong> 适合 IDE 内的快速补全和局部重构。</li>
+            <li><strong>Coding Agents (Claude Code/Amp):</strong> 适合自主执行多步任务（如重构整个模块）。</li>
+            <li><strong>MCP (Model Context Protocol):</strong> 这是一个关键协议，让 AI 能连接你的工具（如数据库、终端）。它给了 AI “手”和“眼”。</li>
+        </ul>
+    </div>
+
+    <h3>知识反转卡片：三个循环</h3>
+    <div class="cards-grid">
+        <!-- Inner Loop -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">⏱️</div>
+                    <div class="card-title">Inner Loop (内环)</div>
+                    <p>时间尺度：秒到分钟<br>核心：交互与验证</p>
+                    <div class="click-hint">点击翻转查看详情</div>
+                </div>
+                <div class="flip-card-back">
+                    <h4>关键实践</h4>
+                    <ul class="key-points" style="font-size: 0.9rem;">
+                        <li><strong>频繁存档 (Save Game):</strong> AI 容易搞砸代码，必须利用 Git 高频提交，作为“存档点”。</li>
+                        <li><strong>TDD (测试驱动):</strong> 先让 AI 写测试，再写代码。这是防止 AI 偷懒的最好规范。</li>
+                        <li><strong>小步快跑:</strong> 任务分解得越小，AI 成功率越高。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Middle Loop -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">📅</div>
+                    <div class="card-title">Middle Loop (中环)</div>
+                    <p>时间尺度：小时到天<br>核心：上下文与状态管理</p>
+                    <div class="click-hint">点击翻转查看详情</div>
+                </div>
+                <div class="flip-card-back">
+                    <h4>关键实践</h4>
+                    <ul class="key-points" style="font-size: 0.9rem;">
+                        <li><strong>Memento Method (记忆法):</strong> 结束会话前，让 AI 写下当前进度和下一步计划到 Markdown 文件中，作为下一次会话的启动上下文。</li>
+                        <li><strong>多 Agent 协作:</strong> 像管理厨房一样，让不同的 Agent 并行处理不同任务，但要避免资源冲突（如修改同一文件）。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Outer Loop -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🗓️</div>
+                    <div class="card-title">Outer Loop (外环)</div>
+                    <p>时间尺度：周到月<br>核心：架构与基础设施</p>
+                    <div class="click-hint">点击翻转查看详情</div>
+                </div>
+                <div class="flip-card-back">
+                    <h4>关键实践</h4>
+                    <ul class="key-points" style="font-size: 0.9rem;">
+                        <li><strong>保护 API 契约:</strong> AI 倾向于破坏性修改。必须强制要求其保持向后兼容。</li>
+                        <li><strong>模块化架构:</strong> AI 在高耦合的代码库中表现糟糕。为了 AI 友好（AI-Manufacturing），必须重构为模块化架构。</li>
+                        <li><strong>CI/CD 增强:</strong> 利用 AI 自动审查代码、解释错误日志。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PART 4 -->
+<div id="part4" class="content-section">
+    <div class="section-intro">
+        <h2>从个人到组织：规模化 Vibe Coding</h2>
+        <p>当整个团队都开始使用 AI 时，会出现新的挑战。这不仅是工具的问题，更是组织架构（Layer 3）的问题。</p>
+        
+        <div class="highlight-box fact">
+            <strong>DORA GenAI 异常 (The Anomaly):</strong> 2024年的 DORA 报告显示，AI 采用率每增加 25%，软件交付稳定性反而下降 7%，吞吐量下降 1.5%。
+        </div>
+        <div class="highlight-box opinion">
+            <strong>解释：</strong> 这不是 AI 的错，而是 AI 放大了糟糕流程的后果。如果基础设施（测试、部署）本身是瓶颈，AI 加速了代码生成只会让瓶颈堵塞得更严重。
+        </div>
+    </div>
+
+    <h3>知识反转卡片：组织变革</h3>
+    <div class="cards-grid">
+        <!-- Concept 1 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🍽️</div>
+                    <div class="card-title">厨房旅级制度 (Kitchen Brigade)</div>
+                    <p>从 Escoffier 的厨房管理中学到的协作模式。</p>
+                    <div class="click-hint">点击翻转查看原理</div>
+                </div>
+                <div class="flip-card-back">
+                    <h4>为什么 & 论据</h4>
+                    <p><strong>概念：</strong> 将大任务分解为流水线（酱汁师、烤肉师等）。<br><strong>应用：</strong> AI 时代，开发者通过 Task Graph（任务图谱）将复杂项目拆解，分配给不同的 AI Agents 并行处理。开发者变成了“行政总厨”，负责编排而非切菜。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Concept 2 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🤝</div>
+                    <div class="card-title">The Drift (通感/心智融合)</div>
+                    <p>通过 AI 实现产品、设计、开发的无缝协作。</p>
+                    <div class="click-hint">点击翻转查看原理</div>
+                </div>
+                <div class="flip-card-back">
+                    <h4>为什么 & 论据</h4>
+                    <p><strong>案例：</strong> Dr. Daniel Rock 的团队通过共享同一个与 AI 对话的 Markdown 文档，实时生成需求、UI 草图和代码。消除了传统流程中的“交接损耗”，实现了类似《环太平洋》中的思维同步。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Concept 3 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">Token Burn Leaderboard</div>
+                    <p>如何衡量和鼓励 AI 的采用？</p>
+                    <div class="click-hint">点击翻转查看原理</div>
+                </div>
+                <div class="flip-card-back">
+                    <h4>为什么 & 论据</h4>
+                    <p><strong>实践：</strong> Sourcegraph 创建了一个排行榜，显示谁消耗了最多的 Token。这不仅是有趣的竞争，更是发现“AI 先锋”的手段。高 Token 消耗通常对应着高参与度和新的工作流探索。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h3>未来的新角色</h3>
+    <ul class="key-points" style="margin-left: 1rem;">
+        <li><strong>Product Prototyper:</strong> 能直接生成原型的产品经理。</li>
+        <li><strong>Fleet Supervisor:</strong> 管理 AI Agent 集群，设计交互结构的人。</li>
+        <li><strong>Apex Builder:</strong> 能够将 AI 原型转化为经过硬化、生产级产品的顶级工程师。</li>
+    </ul>
+</div>
+
+<footer>
+    <p>© 2025 Vibe Coding Book Summary | Generated with Interactive HTML5</p>
+    <p>记住核心口诀：Prevent（预防）, Detect（检测）, Correct（纠正）</p>
+</footer>
+
+<script>
+    function switchTab(tabId) {
+        // Hide all content sections
+        document.querySelectorAll('.content-section').forEach(section => {
+            section.classList.remove('active');
+        });
+        
+        // Deactivate all tabs
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Activate selected tab and content
+        document.getElementById(tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+        
+        // Scroll to top gently
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>
