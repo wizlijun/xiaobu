@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mors Kochanski: 生存技艺的内核与系统架构</title>
+    <style>
+        :root {
+            --bg-body: #f8f9fa;
+            --bg-card: #ffffff;
+            --text-main: #2c3e50;
+            --text-secondary: #596b7c;
+            --primary-blue: #3498db;
+            --active-blue: #2980b9;
+            --nature-green: #27ae60;
+            --alert-orange: #e67e22;
+            --highlight-bg: #fff9c4;
+            --code-bg: #f4f6f7;
+            --border-radius: 12px;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            --transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* --- Header Section --- */
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed #cbd5e0;
+        }
+
+        h1 {
+            font-weight: 800;
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .meta-tags {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: #e1f5fe;
+            color: var(--active-blue);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* --- Section Dividers --- */
+        .section-header {
+            margin: 40px 0 20px 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-header::before {
+            content: "";
+            display: block;
+            width: 5px;
+            height: 24px;
+            background: var(--active-blue);
+            border-radius: 2px;
+        }
+
+        /* --- Interactive Card System --- */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            cursor: pointer;
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border-color: rgba(52, 152, 219, 0.3);
+        }
+
+        .card.active {
+            border-left: 5px solid var(--active-blue);
+        }
+
+        .card-header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .badge {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            background: var(--code-bg);
+            color: #666;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+        }
+
+        .card-summary {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .toggle-icon {
+            font-size: 1.2rem;
+            color: var(--primary-blue);
+            transition: transform 0.3s ease;
+        }
+
+        .card.active .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        /* --- Expanded Content --- */
+        .card-details {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, opacity 0.4s ease;
+        }
+
+        .card.active .card-details {
+            max-height: 1200px; /* Allow enough space */
+            opacity: 1;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        /* --- Content Styling --- */
+        .key-point {
+            margin-bottom: 12px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .key-point::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--active-blue);
+            font-weight: bold;
+        }
+
+        .highlight-box {
+            background: #fff3e0;
+            border-left: 4px solid var(--alert-orange);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95rem;
+        }
+
+        .highlight {
+            background-color: var(--highlight-bg);
+            padding: 0 4px;
+            border-radius: 3px;
+        }
+
+        .quote {
+            font-style: italic;
+            color: #7f8c8d;
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            border-left: 3px solid #bdc3c7;
+        }
+
+        /* --- Comparison Grid --- */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .col {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .col h4 {
+            margin: 0 0 10px 0;
+            color: var(--active-blue);
+            font-size: 1rem;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding-bottom: 5px;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            color: #aaa;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Mors Kochanski 访谈录</h1>
+        <div class="subtitle">从“装备依赖”到“底层重构”的生存哲学</div>
+        <div class="meta-tags">
+            <span class="tag">认知科学</span>
+            <span class="tag">Bushcraft 内核</span>
+            <span class="tag">心智黑客</span>
+        </div>
+        <p style="margin-top: 15px; font-size: 0.85rem; color: #999;">*注：基于字幕修正 Morris Cohan Ski 为 Mors Kochanski；Tom Roy Croft 为 Tom Roycraft。</p>
+    </header>
+
+    <!-- SECTION 1: THE CONCEPT (BUSHCRAFT) -->
+    <div class="section-header">系统定义：什么是 Bushcraft？</div>
+
+    <!-- Card 1: Definition -->
+    <div class="card" onclick="toggleCard(this)">
+        <div class="card-header-content">
+            <div>
+                <span class="badge">Kernel Definition</span>
+                <div class="card-title"><span class="card-icon">🌿</span> WHAT: 定义与生活方式</div>
+                <div class="card-summary">Bushcraft 并非简单的“求生”，而是一种底层操作系统的重写。</div>
+            </div>
+            <div class="toggle-icon">▼</div>
+        </div>
+        <div class="card-details">
+            <p>Bushcraft 是一种<strong>生活方式的模拟</strong>，它不仅是为了活着，而是为了在自然中舒适地生活（Residency）。</p>
+            <div class="highlight-box">
+                <strong>核心特征 (Core Features):</strong>
+                <ul>
+                    <li><strong>时间回溯：</strong> 模拟 2000 年前或更早的原住民生活状态。</li>
+                    <li><strong>资源本地化：</strong> 强调“脚下的资源”（Resources at your feet），而非背包里的工业品。</li>
+                    <li><strong>关键技能栈：</strong> 摩擦生火（不依赖火柴）、植物学（食物/药物/材料）、物理制造（打制石器、编织容器）。</li>
+                </ul>
+            </div>
+            <div class="quote">“有些人致力于实现自给自足，努力像两千年前的原住民那样生活，这既是一种爱好，也是一个合理的目标。”</div>
+        </div>
+    </div>
+
+    <!-- Card 2: Motivation -->
+    <div class="card" onclick="toggleCard(this)">
+        <div class="card-header-content">
+            <div>
+                <span class="badge">Dependency Management</span>
+                <div class="card-title"><span class="card-icon">📉</span> WHY: 装备与知识的反向曲线</div>
+                <div class="card-summary">为什么高手最终会放弃昂贵的装备？</div>
+            </div>
+            <div class="toggle-icon">▼</div>
+        </div>
+        <div class="card-details">
+            <p>Mors 描述了一个典型的<strong>认知成熟度模型</strong>，即硬件（装备）与软件（知识）的去耦合过程：</p>
+            <div class="key-point"><strong>初级阶段（高耦合）：</strong> 依赖昂贵的现代装备（如钛合金炉、精良刀具）来掩盖技能的不足。</div>
+            <div class="key-point"><strong>高级阶段（去耦合）：</strong> 随着“内部软件”（知识）的升级，逐渐摒弃多余的物理装备。</div>
+            <div class="key-point"><strong>终极阶段（全栈自主）：</strong> 发现唯一的依赖是<span class="highlight">知识 + 大自然提供的原材料</span>。</div>
+            <div class="quote">“随着技能的提升，他们会转向越来越简单的事情……最终所需的只是知识加上大自然提供的资源。”</div>
+        </div>
+    </div>
+
+    <!-- Card 3: Boundaries -->
+    <div class="card" onclick="toggleCard(this)">
+        <div class="card-header-content">
+            <div>
+                <span class="badge">Architecture Comparison</span>
+                <div class="card-title"><span class="card-icon">⚖️</span> BOUNDARIES: 领域边界辨析</div>
+                <div class="card-summary">Bushcraft vs. 现代生存 vs. 学术研究</div>
+            </div>
+            <div class="toggle-icon">▼</div>
+        </div>
+        <div class="card-details">
+            <p>理解 Bushcraft 最好的方式是看它“不是什么”。Mors 清晰地划分了不同系统的边界：</p>
+            
+            <div class="comparison-grid">
+                <div class="col">
+                    <h4>🚑 现代生存 (Modern Survival)</h4>
+                    <span class="badge">Disaster Recovery</span>
+                    <p><strong>场景：</strong> 飞行员迫降、意外迷路。</p>
+                    <p><strong>目标：</strong> 活着离开（Exit Strategy）。</p>
+                    <p><strong>手段：</strong> 依赖现代工业品（GPS、信号枪）。</p>
+                    <p><strong>心态：</strong> “我不想回到原始，我只想利用一切手段活下来。”</p>
+                </div>
+                <div class="col" style="border: 2px solid var(--nature-green); background: #fff;">
+                    <h4>🌲 丛林技艺 (Bushcraft)</h4>
+                    <span class="badge">Bare Metal Programming</span>
+                    <p><strong>场景：</strong> 主动进入自然，长期居住。</p>
+                    <p><strong>目标：</strong> 舒适生活（Lifestyle）。</p>
+                    <p><strong>手段：</strong> 刀斧 + 自然知识（植物/物理）。</p>
+                    <p><strong>心态：</strong> “我想了解这片森林能为我提供什么。”</p>
+                </div>
+            </div>
+
+            <div class="comparison-grid">
+                <div class="col">
+                    <h4>🚣 户外教育 (Outdoor Ed)</h4>
+                    <span class="badge">User Interface</span>
+                    <p>侧重于使用装备进行活动（划船、露营），而非制造装备或深度利用自然材料。</p>
+                </div>
+                <div class="col">
+                    <h4>🏛 学术人类学 (Academia)</h4>
+                    <span class="badge">Documentation Only</span>
+                    <p>教授们研究箭头分类，却无法制作。Mors 强调<strong>执行环境</strong>：只有通过亲手敲击当地的石英岩（Quartzite），才能真正理解石器技艺。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- SECTION 2: THE OPERATOR (MORS' JOURNEY) -->
+    <div class="section-header">系统进化：Mors 的个人算法</div>
+
+    <!-- Card 4: Mentorship & Dependencies -->
+    <div class="card" onclick="toggleCard(this)">
+        <div class="card-header-content">
+            <div>
+                <span class="badge">Dependency Injection</span>
+                <div class="card-title"><span class="card-icon">🔗</span> 知识图谱与导师网络</div>
+                <div class="card-summary">从家庭传承到学术界，构建知识库的关键节点。</div>
+            </div>
+            <div class="toggle-icon">▼</div>
+        </div>
+        <div class="card-details">
+            <div class="key-point"><strong>Root Access (父母):</strong> 森林居民背景，赋予了他依靠狩猎、采集生存的底层代码。</div>
+            <div class="key-point"><strong>Mentor (Tavell):</strong> 尽管年轻，但作为精神导师提供了视野。</div>
+            <div class="key-point"><strong>API Connector (Harvey Scott):</strong> 慧眼识珠，将 Mors 引入大学任教23年，将“夏令营技能”升级为严谨的“学术课程”。</div>
+            <div class="key-point"><strong>Database (书籍):</strong> 早期疯狂阅读图书馆资料，但敏锐地发现了“书本知识”与“实践体验”之间的 Bug。</div>
+        </div>
+    </div>
+
+    <!-- Card 5: The Tom Roycraft Iteration -->
+    <div class="card" onclick="toggleCard(this)">
+        <div class="card-header-content">
+            <div>
+                <span class="badge">Pair Programming / Agile</span>
+                <div class="card-title"><span class="card-icon">🔥</span> Tom Roycraft 与技能黑客</div>
+                <div class="card-summary">两个“冒牌”专家如何通过敏捷迭代破解失传技能。</div>
+            </div>
+            <div class="toggle-icon">▼</div>
+        </div>
+        <div class="card-details">
+            <p>这是一个典型的<strong>结对编程 (Pair Programming)</strong> 案例：</p>
+            <div class="highlight-box">
+                <strong>痛点 (Bug Report):</strong> 两人虽是教官，但坦诚相对时发现，除火柴外，无人掌握原始生火（弓钻法）。<br>
+                <strong>迭代 (Sprint):</strong> 两人互相竞争，每一次小突破都倒逼对方进步。没有教材，全靠试错。<br>
+                <strong>众包 (Crowdsourcing):</strong> 利用植物课上的20名学生作为“分布式传感器”，快速识别未知植物。
+            </div>
+            <div class="quote">“每次取得进展，我们都想胜过对方……我们进步很快，但找不到人教我们，只能互相帮助。”</div>
+        </div>
+    </div>
+
+    <!-- Card 6: Career Architecture -->
+    <div class="card" onclick="toggleCard(this)">
+        <div class="card-header-content">
+            <div>
+                <span class="badge">System Migration</span>
+                <div class="card-title"><span class="card-icon">🚀</span> 职业架构的重构 (1971)</div>
+                <div class="card-summary">从单体架构（全职工作）转向微服务（自由职业）。</div>
+            </div>
+            <div class="toggle-icon">▼</div>
+        </div>
+        <div class="card-details">
+            <div class="key-point"><strong>旧架构：</strong> 稳定的朝九晚五 + 周末兼职。系统负载过高（连续工作15个周末），濒临崩溃。</div>
+            <div class="key-point"><strong>新架构 (Freelance):</strong> 辞职成为自由职业者。不再为1-2个雇主工作，而是为“52个雇主”工作（每周轮换）。</div>
+            <div class="key-point"><strong>核心模块：</strong> 大学教学（提供声誉与图书馆权限）+ Dawson Creek 项目（提供主要经济收入）。</div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Interactive Summary based on vCaptions transcript | Designed for Cognitive Clarity</p>
+    </footer>
+</div>
+
+<script>
+    function toggleCard(card) {
+        // Close all other cards to maintain low cognitive load
+        const allCards = document.querySelectorAll('.card');
+        allCards.forEach(c => {
+            if (c !== card && c.classList.contains('active')) {
+                c.classList.remove('active');
+            }
+        });
+
+        // Toggle current card
+        card.classList.toggle('active');
+    }
+</script>
+
+</body>
+</html>
