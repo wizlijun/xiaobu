@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ray Mears: Bushcraft 系统架构分析</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --surface-color: #f8fafc;
+            --primary-text: #0f172a;
+            --secondary-text: #64748b;
+            --accent-blue: #3b82f6; /* 逻辑/Why */
+            --accent-green: #10b981; /* 技能/What */
+            --accent-red: #ef4444; /* 边界/Anti-patterns */
+            --border-color: #e2e8f0;
+            --radius: 16px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-text);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 0 0 10px 0;
+            letter-spacing: -0.03em;
+        }
+
+        .meta-tag {
+            display: inline-block;
+            background: #f1f5f9;
+            padding: 4px 10px;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            color: var(--secondary-text);
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        /* Navigation Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--secondary-text);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary-text);
+            background-color: #f8fafc;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .tab-btn.active {
+            color: var(--primary-text);
+            border-bottom-color: var(--accent-blue);
+        }
+        
+        .tab-btn.active[data-target="what"] { border-bottom-color: var(--accent-green); }
+        .tab-btn.active[data-target="boundary"] { border-bottom-color: var(--accent-red); }
+
+        /* Content Sections */
+        .section-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .section-content.active {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Card Component */
+        .card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 24px;
+            position: relative;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+            border-color: #cbd5e1;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            display: inline-block;
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .icon-blue { background: #eff6ff; color: var(--accent-blue); }
+        .icon-green { background: #ecfdf5; color: var(--accent-green); }
+        .icon-red { background: #fef2f2; color: var(--accent-red); }
+
+        h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.25rem;
+        }
+
+        p {
+            margin: 0 0 15px 0;
+            color: #334155;
+            font-size: 0.95rem;
+        }
+
+        /* Code Block Style for Logic */
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+
+        /* Interactive Details */
+        details {
+            margin-top: auto;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 12px;
+        }
+
+        summary {
+            cursor: pointer;
+            color: var(--accent-blue);
+            font-weight: 600;
+            font-size: 0.9rem;
+            user-select: none;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        summary::-webkit-details-marker { display: none; }
+        summary::after { content: '+'; font-size: 1.2rem; }
+        details[open] summary::after { content: '-'; }
+
+        .detail-content {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+
+        /* Comparison Table */
+        .comparison-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .comparison-row:last-child { border-bottom: none; }
+        .bad-practice { color: #dc2626; text-decoration: line-through; opacity: 0.7; }
+        .good-practice { color: #059669; font-weight: 600; }
+
+        /* Footer */
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: var(--secondary-text);
+            font-size: 0.85rem;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Bushcraft 系统架构</h1>
+        <div style="margin-top: 10px;">
+            <span class="meta-tag">Mindset Engineering</span>
+            <span class="meta-tag">Survival Logic</span>
+            <span class="meta-tag">Action Oriented</span>
+        </div>
+    </header>
+
+    <!-- 导航栏：三个核心关注点 -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('why', this)" data-target="why">Why: 内核与驱动</button>
+        <button class="tab-btn" onclick="switchTab('what', this)" data-target="what">What: 定义与技术栈</button>
+        <button class="tab-btn" onclick="switchTab('boundary', this)" data-target="boundary">Boundaries: 边界与反模式</button>
+    </div>
+
+    <!-- 模块 1: Why (内核) -->
+    <div id="why" class="section-content active">
+        
+        <div class="card">
+            <div class="card-icon icon-blue">⚡</div>
+            <h2>驱动力 (Motivation)</h2>
+            <p>Bushcraft 不仅仅是活着，它是关于“选择生存”的底层逻辑。核心案例中的二战飞行员证明了这一点。</p>
+            <div class="code-block">
+                // 飞行员的生存逻辑<br>
+                function checkWillToLive() {<br>
+                &nbsp;&nbsp;if (!hasGirlfriend || !drivenCar) {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;return "REFUSE_TO_DIE";<br>
+                &nbsp;&nbsp;}<br>
+                &nbsp;&nbsp;return "SURVIVE_AGAINST_ODDS";<br>
+                }
+            </div>
+            <details>
+                <summary>查看逻辑解析</summary>
+                <div class="detail-content">
+                    Ray 强调，这名飞行员在<strong>无训练、无知识</strong>的情况下生存了196天，核心驱动力是他未完成的人生目标（交女友、开车）。<br><strong>结论：</strong> 软件（思维/动机）比硬件（身体/装备）更重要。
+                </div>
+            </details>
+        </div>
+
+        <div class="card">
+            <div class="card-icon icon-blue">🔄</div>
+            <h2>递归学习 (The Loop)</h2>
+            <p>为什么 Bushcraft 令人着迷？因为它是一个无限递归的学习系统。</p>
+            <p><strong>机制：</strong> 解决 1 个户外问题 -> 触发 10 个新问题。</p>
+            <details>
+                <summary>系统输出</summary>
+                <div class="detail-content">
+                    这种机制就像给大脑“充电”（Powers your phone）。你永远处于 Beta 测试阶段（I'm still learning），永远有新的补丁需要更新。
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <!-- 模块 2: What (定义) -->
+    <div id="what" class="section-content">
+        
+        <div class="card">
+            <div class="card-icon icon-green">🏗️</div>
+            <h2>核心定义：软件替代硬件</h2>
+            <p>Ray 对 Bushcraft 最精准的定义源自他的启蒙时刻：</p>
+            <div style="background:#f0fdf4; color:#166534; padding:10px; border-radius:6px; font-weight:600;">
+                "You don't need equipment, you need skills."
+            </div>
+            <p>Bushcraft 是用<strong>知识库</strong>去填补<strong>物质装备</strong>的空白。</p>
+        </div>
+
+        <div class="card">
+            <div class="card-icon icon-green">📦</div>
+            <h2>技术栈 (The Stack)</h2>
+            <p>这是一个包含多个模块的综合系统，而非单一技能。</p>
+            <details open>
+                <summary>查看模块列表</summary>
+                <div class="detail-content">
+                    <ul>
+                        <li><strong>Tracking (追踪):</strong> 读取自然数据的能力（如 Ray 追踪狐狸）。</li>
+                        <li><strong>Botany (植物学):</strong> 识别可用资源（食物、药物）。</li>
+                        <li><strong>Wildlife (野生动物):</strong> 理解生态系统的运行逻辑。</li>
+                        <li><strong>Psychology (心理):</strong> 保持舒适感（Feeling good）和希望（Light in darkness）。</li>
+                    </ul>
+                </div>
+            </details>
+        </div>
+
+        <div class="card">
+            <div class="card-icon icon-green">🎓</div>
+            <h2>系统属性</h2>
+            <p>Bushcraft 不仅仅是体育运动（Not a sport），它被定义为：</p>
+            <p><strong>"A Life Lesson" (生命的一课)</strong></p>
+            <p>它关乎如何在压力下保持功能正常。</p>
+        </div>
+    </div>
+
+    <!-- 模块 3: Boundaries (边界) -->
+    <div id="boundary" class="section-content">
+        
+        <div class="card">
+            <div class="card-icon icon-red">🚧</div>
+            <h2>反模式 (Anti-Patterns)</h2>
+            <p>媒体常宣传错误的生存形象。Ray 明确划定了 Bushcraft <strong>不是</strong>什么。</p>
+            
+            <div class="comparison-row">
+                <span class="bad-practice">野人形象 (Wild Man)</span>
+                <span class="good-practice">普通人 (Ordinary People)</span>
+            </div>
+            <div class="comparison-row">
+                <span class="bad-practice">胡子拉碴/不修边幅</span>
+                <span class="good-practice">保持尊严与舒适</span>
+            </div>
+            <div class="comparison-row">
+                <span class="bad-practice">咬牙切齿 (Grit teeth)</span>
+                <span class="good-practice">面带微笑 (Smile)</span>
+            </div>
+            
+            <details>
+                <summary>纠正误区</summary>
+                <div class="detail-content">
+                    现在的观念认为你需要变得像“April White-Dread”（代指刻板印象中的粗野生存者）才能生存。<strong>这是错误的 (That's not true)。</strong> 真正的生存是为了让水变干净、食物变安全，是为了让自己感觉良好，而不是单纯的受苦。
+                </div>
+            </details>
+        </div>
+
+        <div class="card">
+            <div class="card-icon icon-red">⚖️</div>
+            <h2>与普通露营的区别</h2>
+            <p>边界在于对装备的依赖程度。</p>
+            <ul>
+                <li><strong>Camping:</strong> 依赖外部硬件支持（Hardware Dependency）。</li>
+                <li><strong>Bushcraft:</strong> 依赖内部知识库（Software Dependency）。</li>
+            </ul>
+            <p class="detail-content">当 Ray 小时候想在户外过夜但没有露营装备时，Bushcraft 成为了唯一的解决方案。</p>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Generated based on Ray Mears Interview Analysis<br>Focus: Mindset, Action, and Definition.</p>
+    </footer>
+</div>
+
+<script>
+    function switchTab(targetId, btn) {
+        // 1. 移除所有 Tab 的激活状态
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        // 2. 激活当前点击的 Tab
+        btn.classList.add('active');
+
+        // 3. 隐藏所有内容区域
+        document.querySelectorAll('.section-content').forEach(content => {
+            content.classList.remove('active');
+            content.style.display = 'none'; // 确保动画重置
+        });
+
+        // 4. 显示目标内容区域
+        const targetContent = document.getElementById(targetId);
+        targetContent.style.display = 'grid';
+        // 微小延迟以触发 CSS 动画
+        setTimeout(() => {
+            targetContent.classList.add('active');
+        }, 10);
+    }
+</script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="bilibili " target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
