@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深度摘要：《射艺之道》 (The Archer's Craft)</title>
+    <style>
+        :root {
+            --primary-green: #3a6b48; /* 经典的森林绿 */
+            --light-green: #e9f5ec;   /* 极浅的背景绿 */
+            --wood-color: #8d6e63;    /* 木材色 */
+            --accent-gold: #fbc02d;   /* 强调色 */
+            --text-main: #2c3e50;
+            --text-light: #546e7a;
+            --white: #ffffff;
+            --shadow: 0 8px 16px rgba(0,0,0,0.08);
+            --transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--light-green);
+            color: var(--text-main);
+            margin: 0;
+            line-height: 1.7;
+        }
+
+        /* 顶部大图区 */
+        header {
+            background: linear-gradient(rgba(58, 107, 72, 0.9), rgba(58, 107, 72, 0.8)), url('https://images.unsplash.com/photo-1511316695145-4992006ffddb?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            color: var(--white);
+            text-align: center;
+            padding: 80px 20px;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin: 0;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            font-weight: 300;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: -40px auto 40px; /* 向上重叠Header */
+            padding: 0 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 章节标题 */
+        .chapter-title {
+            text-align: center;
+            margin: 60px 0 30px;
+            color: var(--primary-green);
+            font-size: 2em;
+            position: relative;
+        }
+        
+        .chapter-title::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 4px;
+            background: var(--wood-color);
+            margin: 10px auto;
+            border-radius: 2px;
+        }
+
+        /* 核心摘要卡片（非翻转） */
+        .intro-card {
+            background: var(--white);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 40px;
+            border-top: 5px solid var(--wood-color);
+        }
+
+        /* 翻转卡片系统 */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            height: 320px; /* 卡片高度 */
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 25px;
+            box-sizing: border-box;
+        }
+
+        .flip-card-front {
+            background-color: var(--white);
+            border: 1px solid #eee;
+        }
+
+        .flip-card-front h3 {
+            color: var(--primary-green);
+            font-size: 1.4em;
+            margin-top: 15px;
+        }
+
+        .icon-large {
+            font-size: 3.5em;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .hint-text {
+            font-size: 0.8em;
+            color: #999;
+            margin-top: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .flip-card-back {
+            background: linear-gradient(145deg, var(--primary-green), #2e5539);
+            color: var(--white);
+            transform: rotateY(180deg);
+            text-align: left;
+            align-items: flex-start; /* 左对齐文本 */
+        }
+
+        .flip-card-back strong {
+            color: var(--accent-gold);
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
+        .flip-card-back p {
+            font-size: 0.95em;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        /* 详情折叠区 */
+        details {
+            background: var(--white);
+            margin-bottom: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+            border-left: 4px solid var(--wood-color);
+            transition: var(--transition);
+        }
+
+        details[open] {
+            box-shadow: var(--shadow);
+        }
+
+        summary {
+            padding: 15px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--text-main);
+            list-style: none; /* 隐藏默认三角 */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::after {
+            content: '+';
+            font-size: 1.5em;
+            color: var(--primary-green);
+            transition: transform 0.3s;
+        }
+
+        details[open] summary::after {
+            transform: rotate(45deg);
+        }
+
+        .details-content {
+            padding: 0 20px 20px;
+            color: var(--text-light);
+            border-top: 1px solid #eee;
+        }
+
+        /* 标签页系统 (用于射击步骤) */
+        .tabs {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-top: 30px;
+        }
+
+        .tab-header {
+            display: flex;
+            background: #f4f4f4;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-weight: bold;
+            color: #666;
+            transition: background 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn.active {
+            background: var(--white);
+            color: var(--primary-green);
+            border-bottom: 3px solid var(--primary-green);
+        }
+
+        .tab-content {
+            padding: 30px;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 引用块 */
+        .quote-box {
+            text-align: center;
+            font-style: italic;
+            color: #555;
+            margin: 50px 0;
+            padding: 20px;
+            border-top: 1px solid #ddd;
+            border-bottom: 1px solid #ddd;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            background: var(--text-main);
+            color: #888;
+            margin-top: 60px;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            h1 { font-size: 2em; }
+            .card-grid { grid-template-columns: 1fr; }
+            .tab-header { flex-direction: column; }
+            .tab-btn { text-align: left; border-bottom: 1px solid #ddd; }
+            .tab-btn.active { border-left: 4px solid var(--primary-green); border-bottom: 1px solid #ddd; }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>射艺之道</h1>
+    <div class="subtitle">THE ARCHER'S CRAFT | A.E. HODGKIN</div>
+    <p>一本关于英国长弓制作与狩猎艺术的工匠笔记</p>
+</header>
+
+<div class="container">
+
+    <div class="intro-card">
+        <h2 style="margin-top:0; color:var(--primary-green);">📖 摘要导读</h2>
+        <p>本书是对逝去的<strong>英国长弓传统</strong>的一次充满热情的复兴。作者 Adrian Eliot Hodgkin 以其导师 Saxton Pope 为灵感，并没有撰写一本枯燥的历史教科书，而是创作了一本<strong>实用的操作手册</strong>。</p>
+        <p>全书分为三部分：<strong>历史回顾</strong>（不仅是怀旧，更是理解长弓为何衰落）、<strong>工艺实践</strong>（如何亲手制作弓箭）、以及<strong>狩猎艺术</strong>（如何运用古老的武器在现代丛林中生存）。这里的核心观点是：<strong>射箭不应只是把玩古董，而是一种需要身体力行、充满野性魅力的生活方式。</strong></p>
+    </div>
+
+    <!-- 第一部分：历史 -->
+    <h2 class="chapter-title">Part I: 历史的重量</h2>
+    <p style="text-align:center; margin-bottom:30px;">长弓不仅是武器，它是英国平民对抗贵族骑士的象征。</p>
+
+    <div class="card-grid">
+        <!-- 卡片 1 -->
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <span class="icon-large">🏰</span>
+                    <h3>长弓的黄金时代</h3>
+                    <div class="hint-text">翻转查看战术价值</div>
+                </div>
+                <div class="flip-card-back">
+                    <strong>平民的胜利</strong>
+                    <p>长弓源于威尔士，在爱德华三世手中达到顶峰。它是一种“大炮”之前的火炮。</p>
+                    <strong>战术革命</strong>
+                    <p>在克雷西和阿金库尔战役中，轻装的平民弓箭手通过密集的箭雨射杀战马，瘫痪了法国重装骑兵，彻底改变了封建战争的规则。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 卡片 2 -->
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <span class="icon-large">📉</span>
+                    <h3>衰落的真相</h3>
+                    <div class="hint-text">为何火枪取代了弓箭？</div>
+                </div>
+                <div class="flip-card-back">
+                    <strong>并非性能不及</strong>
+                    <p>早期的火枪在射速、射程和精度上都不如长弓。滑铁卢战役时的火枪甚至不如14世纪的长弓。</p>
+                    <strong>人为因素</strong>
+                    <p>火枪之所以胜出，是因为长弓需要<strong>终生的强健体魄与练习</strong>，而火枪手几周即可速成。是“懒惰”与“时尚”淘汰了长弓。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 卡片 3 -->
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <span class="icon-large">🎓</span>
+                    <h3>罗杰·阿什汉姆</h3>
+                    <div class="hint-text">射箭之父</div>
+                </div>
+                <div class="flip-card-back">
+                    <strong>《Toxophilus》(1545)</strong>
+                    <p>他是伊丽莎白一世的导师，写下了第一本关于射箭的英文专著。他将射箭从一种残酷的战争技能，升华为一种适合学者修身养性的高雅运动，是本书作者的精神导师。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第二部分：制作工艺 -->
+    <h2 class="chapter-title">Part II: 制弓工坊</h2>
+    <p style="text-align:center; margin-bottom:30px;">“如果你能用双手制作它，你就能用灵魂驾驭它。”</p>
+
+    <!-- 制作部分使用 Details 展开，降低页面长度 -->
+    <details>
+        <summary>🛠️ 必备工具与材料 (Tools & Materials)</summary>
+        <div class="details-content">
+            <p>作者强调<strong>极简主义</strong>。你不需要昂贵的车床或精密仪器。</p>
+            <ul>
+                <li><strong>核心工具：</strong> 一把锋利的小斧头（用于粗加工）、一个鞋匠用的锉刀（Rasp，用于塑形）、一个小刨子、刮刀。</li>
+                <li><strong>关键材料：</strong>
+                    <ul>
+                        <li><strong>紫杉木 (Yew)：</strong> 制作长弓的顶级材料，特别是生长缓慢的高山紫杉。</li>
+                        <li><strong>柠檬木 (Lemonwood)：</strong> 初学者的最佳选择，质地均匀，易于加工。</li>
+                        <li><strong>亚麻线：</strong> 制作弓弦的传统材料，需配合蜂蜡。</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </details>
+
+    <div class="card-grid">
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <span class="icon-large">🌳</span>
+                    <h3>紫杉木的秘密</h3>
+                    <h3>Sapwood vs Heartwood</h3>
+                    <div class="hint-text">天然的复合材料</div>
+                </div>
+                <div class="flip-card-back">
+                    <strong>边材 (Sapwood)</strong>
+                    <p>白色的外层木质。它具有极强的<strong>抗拉性</strong>，必须作为弓背（Back），承受拉伸力。</p>
+                    <strong>心材 (Heartwood)</strong>
+                    <p>红色的内层木质。它具有极强的<strong>抗压性</strong>，作为弓腹（Belly），承受压缩力。两者结合赋予了长弓灵魂。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <span class="icon-large">📐</span>
+                    <h3>训弓 (Tillering)</h3>
+                    <div class="hint-text">制弓的灵魂步骤</div>
+                </div>
+                <div class="flip-card-back">
+                    <strong>定义的艺术</strong>
+                    <p>Tillering 是指在制作过程中，不断张开弓，观察弓臂弯曲的弧度，并小心去除多余木料的过程。</p>
+                    <strong>完美的目标</strong>
+                    <p>目标是让弓臂弯曲得像完美的圆弧（或椭圆），没有任何“硬点”（不弯曲处）或“弱点”（弯曲过度处）。这需要极大的耐心。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <span class="icon-large">🏹</span>
+                    <h3>箭的悖论 (Paradox)</h3>
+                    <div class="hint-text">为什么箭能绕过弓身？</div>
+                </div>
+                <div class="flip-card-back">
+                    <strong>Archer's Paradox</strong>
+                    <p>箭射出时并非直线运动，而是像鱼一样摆动。箭杆必须有适当的<strong>挠度 (Spine)</strong>。</p>
+                    <strong>机制</strong>
+                    <p>箭杆在弦的推力下弯曲，绕过弓把，然后在飞行中回直。太硬或太软的箭都无法命中目标。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第三部分：射击与狩猎 -->
+    <h2 class="chapter-title">Part III: 射艺与狩猎</h2>
+    
+    <div class="intro-card" style="border-top-color: var(--accent-gold);">
+        <h3>🎯 射击的五大要素 (The Five Points)</h3>
+        <p>这是基于罗杰·阿什汉姆的经典教导，是所有射手必须内化的流程。</p>
+        
+        <div class="tabs">
+            <div class="tab-header">
+                <button class="tab-btn active" onclick="openTab(event, 'step1')">1. 站姿 (Standing)</button>
+                <button class="tab-btn" onclick="openTab(event, 'step2')">2. 搭箭 (Nocking)</button>
+                <button class="tab-btn" onclick="openTab(event, 'step3')">3. 开弓 (Drawing)</button>
+                <button class="tab-btn" onclick="openTab(event, 'step4')">4. 固势 (Holding)</button>
+                <button class="tab-btn" onclick="openTab(event, 'step5')">5. 撒放 (Loosing)</button>
+            </div>
+
+            <div id="step1" class="tab-content active">
+                <h4>Standing</h4>
+                <p>不仅仅是站立，而是建立稳固的基础。双脚分开，身体侧对目标。不仅仅是为了准确，更是为了<strong>优美 (Comely)</strong>。如果是狩猎，还需学会在跪姿或蹲姿下射击。</p>
+            </div>
+            <div id="step2" class="tab-content">
+                <h4>Nocking</h4>
+                <p>动作要一致且熟练。注意<strong>主羽 (Cock feather)</strong> 必须朝外（背对弓身），否则箭羽会撞击弓把，破坏飞行轨迹。</p>
+            </div>
+            <div id="step3" class="tab-content">
+                <h4>Drawing</h4>
+                <p>不要只用手臂的力量。古谚云：<strong>"Lay your body in the bow"</strong>（将身体压入弓中）。利用背部肌肉群，平稳地将弓弦拉至靠位（Anchor point），通常是下巴或眼角。</p>
+            </div>
+            <div id="step4" class="tab-content">
+                <h4>Holding</h4>
+                <p>这是身心合一的瞬间。在满弓状态下，瞄准目标。时间极短，但必须绝对稳定。不仅是视觉的瞄准，更是心理的确认。</p>
+            </div>
+            <div id="step5" class="tab-content">
+                <h4>Loosing</h4>
+                <p>最关键的一步。撒放必须干净利落，像指尖滑过琴弦。不能有“向后拉”或“向前送”的多余动作。手在撒放后应保持原位，直到箭击中目标。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 狩猎策略卡片 -->
+    <h3 style="text-align:center; color:var(--text-light);">🌲 狩猎哲学：静猎 (The Still-Hunt)</h3>
+    <div class="card-grid">
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <span class="icon-large">🐾</span>
+                    <h3>静猎 vs 追逐</h3>
+                    <div class="hint-text">弓猎的核心</div>
+                </div>
+                <div class="flip-card-back">
+                    <strong>必须极度接近</strong>
+                    <p>弓箭的有效杀伤距离通常在80码以内。你不能像持枪猎人那样远距离射击。</p>
+                    <strong>策略</strong>
+                    <p>不要追逐猎物。像树桩一样静止，融入环境，利用风向，让猎物走向你。这是一场比拼耐心的禅修。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <span class="icon-large">🦊</span>
+                    <h3>利用动物本能</h3>
+                    <div class="hint-text">恐惧、饥饿、好奇</div>
+                </div>
+                <div class="flip-card-back">
+                    <strong>利用好奇心</strong>
+                    <p>动物对未知但未被识别为“人类”的物体充满好奇。静止不动或轻微的怪声有时能吸引它们靠近。</p>
+                    <strong>避开防御机制</strong>
+                    <p>动物的鼻子（嗅觉）是第一防御，耳朵是第二，眼睛是第三。永远处于下风口。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="quote-box">
+        “长弓是一件简单、美丽且困难的事物……当你最终仅仅依靠自己的技艺拿下雄鹿时，森林的小神灵们会咯咯地笑，搓着手说：‘看啊，兄弟们，一个真正的弓箭手！旧时光并没有完全消逝！’”
+    </div>
+
+</div>
+
+<footer>
+    <p>Based on <em>The Archer's Craft</em> by Adrian Eliot Hodgkin (1951)</p>
+    <p style="font-size: 0.8em; margin-top:10px;">HTML Visualization Generated by AI Assistant</p>
+</footer>
+
+<script>
+    // 简单的 Tab 切换逻辑
+    function openTab(evt, stepName) {
+        var i, tabcontent, tablinks;
+        
+        // 隐藏所有内容
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+            tabcontent[i].classList.remove("active");
+        }
+
+        // 移除所有按钮激活状态
+        tablinks = document.getElementsByClassName("tab-btn");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+
+        // 显示当前 Tab 并添加激活状态
+        document.getElementById(stepName).style.display = "block";
+        // 稍微延迟添加 active class 以触发 CSS 动画
+        setTimeout(() => {
+            document.getElementById(stepName).classList.add("active");
+        }, 10);
+        evt.currentTarget.className += " active";
+    }
+    
+    // 添加移动端触摸翻转支持
+    document.querySelectorAll('.flip-card').forEach(item => {
+        item.addEventListener('click', event => {
+            const inner = item.querySelector('.flip-card-inner');
+            // 简单的逻辑：检查当前的 transform 状态
+            const currentStyle = inner.style.transform;
+            if (currentStyle === 'rotateY(180deg)') {
+                inner.style.transform = 'rotateY(0deg)';
+            } else {
+                inner.style.transform = 'rotateY(180deg)';
+            }
+        });
+    });
+</script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_the_archers_craft_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
