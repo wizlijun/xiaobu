@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《箭术的魔力》核心摘要与互动学习</title>
+    <style>
+        :root {
+            --primary-color: #5d9cec; /* 柔和蓝 */
+            --accent-color: #48cfad; /* 柔和绿 */
+            --text-color: #434a54;
+            --light-bg: #f5f7fa;
+            --white: #ffffff;
+            --fact-bg: #e3f2fd;
+            --fact-border: #2196f3;
+            --opinion-bg: #fff3e0;
+            --opinion-border: #ff9800;
+            --card-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            --hover-shadow: 0 10px 15px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--white);
+            color: var(--text-color);
+            line-height: 1.8;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* 布局 */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 40px;
+        }
+
+        /* 侧边导航 */
+        aside {
+            position: sticky;
+            top: 20px;
+            height: calc(100vh - 40px);
+            overflow-y: auto;
+            padding-right: 10px;
+            border-right: 1px solid #eee;
+        }
+
+        aside h3 {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        nav li {
+            margin-bottom: 10px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #666;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            display: block;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+
+        nav a:hover, nav a.active {
+            background-color: var(--light-bg);
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        /* 主内容区 */
+        main {
+            padding-bottom: 100px;
+        }
+
+        header {
+            margin-bottom: 50px;
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 2px solid var(--light-bg);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #888;
+            font-size: 1.1rem;
+        }
+
+        /* 章节样式 */
+        section {
+            margin-bottom: 60px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s forwards;
+        }
+
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            border-left: 5px solid var(--primary-color);
+            padding-left: 15px;
+            margin-bottom: 25px;
+            color: #2d3e50;
+        }
+
+        .summary-box {
+            background-color: var(--light-bg);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        /* 高亮标记系统 */
+        .highlight-fact {
+            background-color: var(--fact-bg);
+            border-bottom: 2px solid var(--fact-border);
+            padding: 2px 4px;
+            border-radius: 3px;
+            cursor: help;
+            position: relative;
+        }
+
+        .highlight-opinion {
+            background-color: var(--opinion-bg);
+            border-bottom: 2px solid var(--opinion-border);
+            padding: 2px 4px;
+            border-radius: 3px;
+            cursor: help;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .dot { width: 12px; height: 12px; display: inline-block; border-radius: 50%; margin-right: 5px; }
+        .dot-fact { background-color: var(--fact-border); }
+        .dot-opinion { background-color: var(--opinion-border); }
+
+        /* 翻转卡片容器 */
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        /* 翻转卡片样式 */
+        .flip-card {
+            background-color: transparent;
+            width: 100%;
+            height: 200px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: var(--card-shadow);
+            border-radius: 10px;
+        }
+
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .flip-card-front {
+            background-color: var(--white);
+            border: 1px solid #e1e8ed;
+        }
+
+        .flip-card-front h4 {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin: 0;
+        }
+        
+        .flip-card-front p {
+            font-size: 0.85rem;
+            color: #999;
+            margin-top: 10px;
+        }
+
+        .icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--accent-color);
+        }
+
+        .flip-card-back {
+            background-color: var(--primary-color);
+            color: white;
+            transform: rotateY(180deg);
+            text-align: left;
+            align-items: flex-start;
+        }
+
+        .flip-card-back h5 {
+            margin: 0 0 10px 0;
+            font-size: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            width: 100%;
+            padding-bottom: 5px;
+        }
+
+        .flip-card-back p {
+            font-size: 0.9rem;
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            aside {
+                position: static;
+                height: auto;
+                margin-bottom: 40px;
+                border-right: none;
+                border-bottom: 1px solid #eee;
+            }
+        }
+        
+        /* 诗歌样式 */
+        .poem-box {
+            text-align: center;
+            font-style: italic;
+            background: #fff;
+            border: 1px dashed #ccc;
+            padding: 30px;
+            margin: 20px 0;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 侧边导航 -->
+    <aside>
+        <h3>章节导航</h3>
+        <nav>
+            <ul>
+                <li><a href="#chap1">I. 前言与历史</a></li>
+                <li><a href="#chap2">II. 狩猎箭术概论</a></li>
+                <li><a href="#chap3">III. 啄木鸟射击</a></li>
+                <li><a href="#chap4">IV. 圣约翰河探险</a></li>
+                <li><a href="#chap5">V. 射击野兔</a></li>
+                <li><a href="#chap6">VI. 隐士与海岛</a></li>
+                <li><a href="#chap7">VII. 神秘的奥基乔比湖</a></li>
+                <li><a href="#chap8">VIII. 林鸳鸯与同伴</a></li>
+                <li><a href="#chap9">IX-X. 诗歌与鸟类之战</a></li>
+                <li><a href="#chap11">XI. 飞射与技巧</a></li>
+                <li><a href="#chap12">XII. 三周野人生活</a></li>
+                <li><a href="#chap13">XIII-XIV. 丘鹬与小鹿</a></li>
+                <li><a href="#chap15">XV-XVI. 鹭群与狩猎哲学</a></li>
+                <li><a href="#chap17">XVII. 奥克菲诺基沼泽</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- 主内容 -->
+    <main>
+        <header>
+            <h1>箭术的魔力 (The Witchery of Archery)</h1>
+            <p>作者：J. Maurice Thompson & Will H. Thompson | 核心要点可视化摘要</p>
+            <div class="legend">
+                <span><span class="dot dot-fact"></span>事实 (Fact)</span>
+                <span><span class="dot dot-opinion"></span>观点 (Opinion)</span>
+            </div>
+        </header>
+
+        <!-- Chapter I -->
+        <section id="chap1">
+            <h2>I. 前言与历史 (Prefatory Remarks)</h2>
+            <div class="summary-box">
+                <p>作者回顾了箭术在英国的兴起。经验是完美的学校，而<span class="highlight-fact">诺曼征服者威廉在黑斯廷斯战役中让英国人领教了长弓的威力</span>。随后，长弓成为英国自由民的象征，并在克雷西(Crecy)和阿金库尔(Agincourt)等战役中奠定了英国的霸权。尽管火器最终取代了弓箭，但在18世纪末至19世纪初，箭术作为一项贵族运动复兴。在美国，虽然起步较晚，但“箭术狂热”正在迅速蔓延。</p>
+            </div>
+            
+            <div class="cards-container">
+                <!-- Card 1 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🏹</div>
+                            <h4>黑斯廷斯战役</h4>
+                            <p>历史转折点</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>诺曼征服 (1066)</h5>
+                            <p>英国人在黑斯廷斯战役中从诺曼人那里学到了关于箭术的第一课。威廉征服者随后将长弓普及给自由民，奠定了英国军事基础。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">📜</div>
+                            <h4>从武器到运动</h4>
+                            <p>箭术的演变</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>复兴与现状</h5>
+                            <p>随着火器取代冷兵器，箭术并未消失，而是转变为“皇室运动”。在美国，随着相关文章的发表，数百个箭术俱乐部从缅因州发展到德克萨斯州。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter II -->
+        <section id="chap2">
+            <h2>II. 狩猎箭术概论 (Outline Sketch of Archery in Hunting)</h2>
+            <div class="summary-box">
+                <p>作者探讨了箭术的魅力，认为<span class="highlight-opinion">弓是音乐和诗歌的起源（原始的里拉琴）</span>。与枪支不同，<span class="highlight-fact">射箭依赖于个人的肌肉力量和精神控制，而非机械力量</span>。作者批评了现代散弹枪狩猎的屠杀性质，提倡回归更具挑战性和公平性的弓猎。对于初学者，建议从近距离射击如啄木鸟等小鸟开始练习。</p>
+            </div>
+
+            <div class="cards-container">
+                <!-- Card 1 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">💪</div>
+                            <h4>弓 vs 枪</h4>
+                            <p>本质区别</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>力量的来源</h5>
+                            <p>射箭时，箭的飞行依赖于射手自身的体能和技巧；而开枪时，杀伤力来自火药，即使是孩童或体弱者也能造成巨大破坏。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🎯</div>
+                            <h4>入门练习</h4>
+                            <p>如何开始</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>不要只射靶心</h5>
+                            <p>作者建议不要只练习固定距离的靶子，而应使用像挂在树上的黑橡胶球或地上的草袋，以模拟真实的狩猎环境。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter III -->
+        <section id="chap3">
+            <h2>III. 啄木鸟射击 (Notes on Woodpecker Shooting)</h2>
+            <div class="summary-box">
+                <p>本章以皮克斯(Picus)和喀耳刻(Circe)的神话开篇，解释啄木鸟红头斑点的由来。作者详细描述了<span class="highlight-fact">北美黑啄木鸟(Hylotomus pileatus)</span>和其他品种的习性。对于初学者，啄木鸟是练习隐蔽接近和精准射击的绝佳对象。<span class="highlight-opinion">要成为优秀的弓猎手，必须学会像猫一样悄无声息，并能准确目测距离。</span></p>
+            </div>
+
+            <div class="cards-container">
+                <!-- Card 1 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🐦</div>
+                            <h4>北美黑啄木鸟</h4>
+                            <p>森林之王</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>Hylotomus pileatus</h5>
+                            <p>美国最大的啄木鸟之一，体型接近乌鸦，拥有鲜红的羽冠。它们警觉性极高，是测试弓手潜行和射击技巧的高级目标。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">📝</div>
+                            <h4>射击法则</h4>
+                            <p>核心技巧</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>轻箭与钝头</h5>
+                            <p>射击小鸟时，应使用带有钝锡头的轻箭（以免卡在树上）。关键在于：无论距离远近，每次都要将箭拉满（Draw to the head）。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter IV -->
+        <section id="chap4">
+            <h2>IV. 圣约翰河探险 (Bow-Shooting on the St. John's)</h2>
+            <div class="summary-box">
+                <p>记录了作者与兄弟Will及助手Caesar在佛罗里达的探险。故事包括<span class="highlight-fact">夜间与一只巨大的山猫(catamount)搏斗</span>，以及在湖上狩猎珍贵的<span class="highlight-fact">雪鹭(Snowy Heron)</span>。作者强调了弓箭在不惊扰其他猎物方面的优势。<span class="highlight-opinion">长弓是最令人愉悦的运动器械，因为它允许在此刻错失后，猎物仍可能不被惊飞。</span></p>
+            </div>
+
+            <div class="cards-container">
+                <!-- Card 1 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🐾</div>
+                            <h4>夜战山猫</h4>
+                            <p>惊险遭遇</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>Catamount Encounter</h5>
+                            <p>营地被袭，作者追踪并近距离射杀了一只攻击猎犬的巨大山猫。这是一次对其勇气和重磅猎弓杀伤力的极致考验。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🤫</div>
+                            <h4>静音优势</h4>
+                            <p>弓 vs 枪</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>不惊扰猎物</h5>
+                            <p>在猎杀雪鹭时，即便第一次未命中，弓弦轻微的声响并未惊飞鸟儿，使作者有机会进行修正射击并最终获胜。这是火器无法做到的。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter V -->
+        <section id="chap5">
+            <h2>V. 射击野兔 (Hare, or Rabbit Shooting)</h2>
+            <div class="summary-box">
+                <p>野兔（Rabbit/Hare）是极佳的练习目标。作者指出了射击野兔的常见错误：<span class="highlight-fact">由于野兔蹲伏时看起来比实际大，初学者容易射高</span>。因此，瞄准时必须瞄得极低。野兔受伤或被追逐时有绕圈跑回原地的习性。推荐使用宽头箭（Broad-headed arrows）。</p>
+            </div>
+
+            <div class="cards-container">
+                <!-- Card 1 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">📉</div>
+                            <h4>视觉误差</h4>
+                            <p>瞄准技巧</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>瞄准下方</h5>
+                            <p>野兔蹲伏在草丛中时，耳朵平贴，身体显大。必须瞄准其接触地面的身体下沿，否则箭矢极易从其背部上方飞过。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🐕</div>
+                            <h4>习性利用</h4>
+                            <p>战术</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>绕圈跑</h5>
+                            <p>野兔被惊动或受伤后，倾向于在小范围内绕圈跑。弓手可以利用这一点，在路径上埋伏等待其返回。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter VI -->
+        <section id="chap6">
+            <h2>VI. 隐士与海岛 (Bow-Shooting with a Hermit)</h2>
+            <div class="summary-box">
+                <p>一次海难导致小船倾覆，作者一行流落荒岛，偶遇一位生活在当地的“隐士”猎人。这位使用老式长管猎枪的老人最初嘲笑弓箭，但在见证了作者<span class="highlight-fact">在水面射击红头鸭的精准度</span>后转为敬佩。本章展示了半热带岛屿的田园生活和弓箭在获取食物方面的实用性。</p>
+            </div>
+
+            <div class="cards-container">
+                <!-- Card 1 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🏝️</div>
+                            <h4>隐士之家</h4>
+                            <p>生活方式</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>自给自足</h5>
+                            <p>隐士一家在岛上种植橙子、香蕉，捕鱼狩猎，过着与世无争、健康满足的生活，这引发了作者对现代商业生活与其对比的思考。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🦉</div>
+                            <h4>午夜奇遇</h4>
+                            <p>自然观察</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>巨枭捕浣熊</h5>
+                            <p>作者在月夜的海滩上目睹了一群浣熊的假面舞会，随后一只巨大的猫头鹰俯冲而下攻击浣熊。作者用箭射杀了这只巨枭。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter VII -->
+        <section id="chap7">
+            <h2>VII. 神秘的奥基乔比湖 (The Mysterious Lake)</h2>
+            <div class="summary-box">
+                <p>奥基乔比湖(Okechobee)曾被神话和传说笼罩。作者通过雇佣曾是逃兵的向导，利用自制帆船“Deserter”号深入探索。虽然没有发现传说中的珍珠或遗迹，但发现了丰富的生态系统。<span class="highlight-fact">湖泊被柏树沼泽包围，充满鳄鱼、蛇鸟和各种水禽</span>。这次探险充满了对未知领域的浪漫主义色彩。</p>
+            </div>
+
+            <div class="cards-container">
+                <!-- Card 1 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🗺️</div>
+                            <h4>去神秘化</h4>
+                            <p>探索结果</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>无遗迹，唯自然</h5>
+                            <p>作者证实了关于古代遗迹和珍珠的传说是虚构的。奥基乔比湖是一个巨大的、充满水生植物和野生动物的浅水湖，而非失落的文明之地。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">⛵</div>
+                            <h4>"Deserter"号</h4>
+                            <p>交通工具</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>逃兵的遗产</h5>
+                            <p>探险队使用了一艘由内战逃兵建造的26英尺长的帆船。这艘船曾是逃兵在沼泽中躲藏时的生存工具，非常适合浅水航行。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter VIII -->
+        <section id="chap8">
+            <h2>VIII. 林鸳鸯与同伴 (Shooting the Wood-Duck)</h2>
+            <div class="summary-box">
+                <p>林鸳鸯(Wood-Duck)被誉为<span class="highlight-opinion">最美丽的鸭类</span>，也是弓箭手的完美猎物。它们习惯在小溪流活动，飞行距离短，适合伏击。作者描述了鸭子对箭矢的奇怪反应：有时它们会围着落水的箭矢盘旋观察，给射手第二次机会。<span class="highlight-fact">必须使用带倒刺的锋利宽头箭</span>。</p>
+            </div>
+
+            <div class="cards-container">
+                <!-- Card 1 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🦆</div>
+                            <h4>好奇心致死</h4>
+                            <p>特殊习性</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>对箭矢的反应</h5>
+                            <p>作者观察到金眼鸭(Golden-eye)和林鸳鸯在箭矢未击中落入水中后，有时不会飞远，反而会好奇地围着箭矢游动或盘旋，这为弓手提供了绝佳的补射机会。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🎣</div>
+                            <h4>渔猎双修</h4>
+                            <p>休闲方式</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>弓与钓竿</h5>
+                            <p>作者推荐在溪边露营时同时携带钓竿和弓箭。弓箭的静音特性使得射鸭不会惊扰水中的鲈鱼，反之亦然，实现了完美的运动结合。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter IX & X -->
+        <section id="chap9">
+            <h2>IX-X. 诗歌与鸟类之战 (The Poem & Battles of the Birds)</h2>
+            <div class="poem-box">
+                "一团旋转的火焰，两只雄性黄鹂在空中搏斗... 羽毛如雪片般飘落。"
+            </div>
+            <div class="summary-box">
+                <p>第十章打破了“鸟类生活是和平赞歌”的诗人幻想。作者通过长期观察指出，<span class="highlight-fact">鸟类之间存在残酷的竞争和战斗</span>。斑鸠极其残忍，知更鸟好斗，蓝松鸦(Blue-jay)则是恶名昭著的强盗和杀手。<span class="highlight-opinion">自然界充满了生存斗争，鸟鸣往往是战歌而非赞美诗。</span></p>
+            </div>
+
+            <div class="cards-container">
+                <!-- Card 1 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">⚔️</div>
+                            <h4>打破神话</h4>
+                            <p>自然观</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>并非无辜</h5>
+                            <p>所谓的“和平鸽”其实并不和平；看似无辜的鸣禽在求偶和领地争夺中会进行殊死搏斗，甚至啄瞎对手的眼睛。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">😈</div>
+                            <h4>蓝松鸦 (Blue-jay)</h4>
+                            <p>森林恶霸</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>智商与残忍</h5>
+                            <p>蓝松鸦被描述为最聪明但也最无良的鸟类。它们会集体围攻鹰和猫头鹰，吃掉其他鸟类的幼鸟，甚至虐待被陷阱捕获的动物。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter XI -->
+        <section id="chap11">
+            <h2>XI. 飞射与技巧 (Some Wing-Shots and Fancy Work)</h2>
+            <div class="summary-box">
+                <p>本章重点讲述高难度的“飞射”（射击飞行中的鸟）。在Coquina岛，作者使用<span class="highlight-fact">由芦苇制成的轻箭</span>成功射击了多只飞行中的秧鸡(Marsh-hens)。这需要极高的技巧和预判。<span class="highlight-opinion">用弓箭射失也是一种乐趣，因为你能清晰地看到箭矢差之毫厘的轨迹。</span></p>
+            </div>
+
+            <div class="cards-container">
+                <!-- Card 1 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🌿</div>
+                            <h4>芦苇箭 (Reed Arrows)</h4>
+                            <p>特殊装备</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>制作与用途</h5>
+                            <p>使用干燥的芦苇杆，一端加热矫直并装上羽毛，另一端削尖并碳化硬化。这种箭极轻且硬，非常适合50码内的近距离飞射。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🖼️</div>
+                            <h4>射击姿态</h4>
+                            <p>动作细节</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>全神贯注</h5>
+                            <p>作者描述了完美的射击姿态：身体后倾，左臂伸直，右手拉至耳边，肌肉紧绷后瞬间释放。这不仅是动作，更是一幅充满力量的画面。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter XII -->
+        <section id="chap12">
+            <h2>XII. 三周野人生活 (Three Weeks of Savage Life)</h2>
+            <div class="summary-box">
+                <p>作者独自一人与一位名叫Tommy的塞米诺尔印第安人(Seminole)在野外生活了三周。Tommy使用<span class="highlight-fact">粗糙的剖开的树苗做弓，但箭矢制作极其精良</span>。作者完全融入了原始生活，甚至采用了印第安人的着装方式。<span class="highlight-opinion">原始自由是真正的自由，时尚的衣着会扼杀灵魂中的诗意。</span></p>
+            </div>
+
+            <div class="cards-container">
+                <!-- Card 1 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🏹</div>
+                            <h4>土著箭术</h4>
+                            <p>Tommy的装备</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>弓简箭精</h5>
+                            <p>Tommy的理论是“任何木棍都能做弓，但好箭需要大量功夫”。这与现代观念不同，却展现了极高的实战效能。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🐊</div>
+                            <h4>鳄鱼惊魂</h4>
+                            <p>危险遭遇</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>被尾巴扫过</h5>
+                            <p>在射击一只迟钝的鳄鱼后，鳄鱼突然发狂。作者在躲避时绊倒，鳄鱼巨大的尾巴擦着他的身体扫过，险些致命。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter XIII & XIV -->
+        <section id="chap13">
+            <h2>XIII. 射击丘鹬与鸻鸟 (Woodcock and Plover)</h2>
+            <div class="summary-box">
+                <p>丘鹬(Woodcock)极难发现，因为它们的羽毛颜色与枯草落叶完美融合。这是一个关于<span class="highlight-fact">极度敏锐的观察力</span>的游戏。作者描述了丘鹬奇怪的进食舞蹈。而在平坦的草原上射击鸻鸟(Plover)则提供了另一种乐趣：即使射偏，看到箭矢在平地上激起的尘土也很有趣。</p>
+            </div>
+
+            <div class="cards-container">
+                <!-- Card 1 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🍂</div>
+                            <h4>伪装大师</h4>
+                            <p>丘鹬</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>隐形的目标</h5>
+                            <p>即使在几英尺外，丘鹬也能凭伪装色“隐形”。作者曾误将一团泥土当做鸟射击。只有极度耐心的搜寻才能发现它们。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">💃</div>
+                            <h4>进食舞蹈</h4>
+                            <p>丘鹬习性</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>古怪的动作</h5>
+                            <p>作者观察到丘鹬在进食时会进行奇怪的曲线跑动，突然停下像踩高跷一样上下晃动身体，将长喙插入泥土中捕食蠕虫。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter XV & XVI -->
+        <section id="chap15">
+            <h2>XV-XVI. 鹭群与狩猎哲学 (Herons & Hunting Philosophy)</h2>
+            <div class="summary-box">
+                <p>这两章总结了佛罗里达的狩猎经验。重点在于<span class="highlight-fact">潜行技巧(Woodcraft)</span>。为了射击警觉的雪鹭，作者的兄弟Will展示了教科书般的潜行：<span class="highlight-fact">像蛇一样在草丛中匍匐前进，利用每一簇杂草掩护，耗时极长只为接近几码距离</span>。作者重申，弓猎需要了解猎物习性、耐心和精准。</p>
+            </div>
+
+            <div class="cards-container">
+                <!-- Card 1 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🕵️</div>
+                            <h4>潜行艺术</h4>
+                            <p>Woodcraft</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>比射术更重要</h5>
+                            <p>对于弓猎，接近猎物（Getting within bow-shot）是第一要务。这需要像印第安人一样狡猾、耐心，利用环境掩护自己。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🐟</div>
+                            <h4>射鱼</h4>
+                            <p>另类运动</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>清水的乐趣</h5>
+                            <p>在清澈的溪流中用弓箭射击鲈鱼(Bass)是极佳的消遣。这不仅考验对折射的判断，收获的鱼肉也异常鲜美。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chapter XVII -->
+        <section id="chap17">
+            <h2>XVII. 奥克菲诺基沼泽 (Deep in the Okefinokee)</h2>
+            <p style="font-size: 0.9em; color: #666; margin-bottom: 20px;">作者：Will H. Thompson (J. Maurice Thompson 的兄弟)</p>
+            <div class="summary-box">
+                <p>Will Thompson 回忆了1866年兄弟二人深入佐治亚州奥克菲诺基沼泽的探险。这是一个关于<span class="highlight-fact">艰难跋涉、独木舟航行和丰富猎物</span>的故事。他们在“比利岛”(Billy's Island)建立了营地。本章详细描述了沼泽的原始美景、夜间的恐怖声响（如大笑猫头鹰）以及猎杀火鸡、野猫和鹰的经历。</p>
+            </div>
+
+            <div class="cards-container">
+                <!-- Card 1 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🤣</div>
+                            <h4>大笑猫头鹰</h4>
+                            <p>夜间惊魂</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>Jackass Owl</h5>
+                            <p>向导Jordan称之为“公驴猫头鹰”。它发出的疯狂、类似人类大笑的声音（Ha! ha! ha-a!）是沼泽中最令人毛骨悚然的声音。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">😼</div>
+                            <h4>野猫之死</h4>
+                            <p>双箭合璧</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>惊人的生命力</h5>
+                            <p>兄弟二人同时射中一只树上的野猫，一箭穿透脑部，一箭穿透侧腹。即便如此，野猫仍跳下树并在地上疯狂挣扎了很久才死去。</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 3 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🌽</div>
+                            <h4>火鸡陷阱</h4>
+                            <p>智取猎物</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>玉米诱饵</h5>
+                            <p>向导Jordan制作了复杂的木笼陷阱，但火鸡非常狡猾只吃外面的玉米。最终Will埋伏在陷阱旁，趁三只火鸡低头吃食时，一箭射杀了一只。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+</body>
+</html>
