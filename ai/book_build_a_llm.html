@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>从零构建大语言模型 - 深度摘要</title>
+    <style>
+        :root {
+            --bg-color: #fcfcfc;
+            --text-color: #333;
+            --primary-light: #e3f2fd;
+            --primary-color: #4facfe;
+            --accent-color: #00f2fe;
+            --card-bg: #ffffff;
+            --shadow: 0 4px 15px rgba(0,0,0,0.05);
+            --highlight-bg: #fff8e1;
+            --highlight-border: #ffe082;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        header h1 { margin: 0; font-size: 2.5em; font-weight: 300; }
+        header p { font-size: 1.1em; opacity: 0.9; margin-top: 10px; }
+
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        /* Navigation */
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .nav-btn {
+            background: white;
+            border: 1px solid #eee;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #666;
+            font-size: 0.9em;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+
+        .nav-btn.active, .nav-btn:hover {
+            background: var(--primary-light);
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        /* Sections */
+        section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            border-left: 5px solid var(--primary-color);
+            padding-left: 15px;
+            color: #444;
+            margin-bottom: 20px;
+        }
+
+        /* Highlights */
+        .highlight-box {
+            background-color: var(--highlight-bg);
+            border-left: 4px solid var(--highlight-border);
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95em;
+        }
+
+        .highlight-box strong { color: #f57f17; }
+
+        /* Flip Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        /* Flip Card Styles */
+        .flip-card {
+            background-color: transparent;
+            height: 200px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: var(--shadow);
+            border-radius: 12px;
+        }
+
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .flip-card-front {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid #f0f0f0;
+        }
+
+        .flip-card-front h3 {
+            font-size: 1.2em;
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .flip-card-back {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: rotateY(180deg);
+            font-size: 0.9em;
+            text-align: left;
+        }
+
+        .summary-text {
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+            font-size: 0.8em;
+            margin-top: 50px;
+            border-top: 1px solid #eee;
+        }
+
+        /* Tip Hint */
+        .card-hint {
+            position: absolute;
+            bottom: 10px;
+            font-size: 0.7em;
+            color: #999;
+            width: 100%;
+            text-align: center;
+            left: 0;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Build a LLM (From Scratch)</h1>
+    <p>深度解析：从零构建 GPT 模型的全流程指南</p>
+    <p style="font-size: 0.8em;">基于 Sebastian Raschka 原著 | HTML5 交互版</p>
+</header>
+
+<div class="container">
+    <!-- Navigation -->
+    <div class="nav-tabs" id="navTabs">
+        <div class="nav-btn active" onclick="showSection('ch1')">1. 理解 LLM</div>
+        <div class="nav-btn" onclick="showSection('ch2')">2. 处理文本数据</div>
+        <div class="nav-btn" onclick="showSection('ch3')">3. 注意力机制</div>
+        <div class="nav-btn" onclick="showSection('ch4')">4. GPT 架构</div>
+        <div class="nav-btn" onclick="showSection('ch5')">5. 预训练</div>
+        <div class="nav-btn" onclick="showSection('ch6')">6. 分类微调</div>
+        <div class="nav-btn" onclick="showSection('ch7')">7. 指令微调</div>
+        <div class="nav-btn" onclick="showSection('appendix')">附录 & LoRA</div>
+    </div>
+
+    <!-- Chapter 1 -->
+    <section id="ch1" class="active">
+        <h2>第一章：理解大语言模型</h2>
+        <p class="summary-text">本章介绍了大语言模型（LLMs）的基本概念，重点阐述了 Transformer 架构如何通过大规模数据集训练，从专注于特定任务的模型演变为通用的文本生成器。</p>
+        
+        <div class="highlight-box">
+            <strong>核心观点：</strong> LLM 的本质是“预测下一个词”（Next-token Prediction）。尽管任务简单，但在海量数据和参数规模下，涌现出了翻译、推理等复杂能力。
+        </div>
+
+        <div class="cards-grid">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>Transformer 架构</h3>
+                        <div class="card-hint">悬停/点击翻转查看详情</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>现代 LLM 的基石。包含编码器（Encoder）和解码器（Decoder）。GPT 仅使用了 Decoder 部分，专注于生成任务。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>预训练 (Pretraining)</h3>
+                        <div class="card-hint">悬停/点击翻转查看详情</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>第一阶段训练。在海量未标记文本上进行自监督学习，让模型理解语言结构和世界知识。产出“基座模型”。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>微调 (Fine-tuning)</h3>
+                        <div class="card-hint">悬停/点击翻转查看详情</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>第二阶段训练。在较小的标记数据集上训练，使模型适应特定任务（如分类）或遵循指令（如聊天）。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chapter 2 -->
+    <section id="ch2">
+        <h2>第二章：处理文本数据</h2>
+        <p class="summary-text">神经网络无法直接理解文本。本章详细讲解了将文本转换为模型可读数值向量的完整流程。</p>
+
+        <div class="highlight-box">
+            <strong>事实：</strong> GPT 类模型通常使用 <strong>BPE (Byte Pair Encoding)</strong> 分词器，它能在词汇表大小和处理未登录词（Unknown words）之间取得平衡。
+        </div>
+
+        <div class="cards-grid">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>Tokenization (分词)</h3>
+                        <div class="card-hint">悬停/点击查看</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>将文本拆分为更小的单元（Token）。可以是单词、字符或子词。BPE 是目前主流的子词分词算法。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>Embedding (嵌入)</h3>
+                        <div class="card-hint">悬停/点击查看</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>将离散的 Token ID 映射为连续的向量空间。相似语义的词在向量空间中距离更近。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>Positional Encoding</h3>
+                        <div class="card-hint">位置编码</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>由于自注意力机制不包含序列顺序信息，必须向 Embedding 中加入位置向量，让模型知道词的顺序。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chapter 3 -->
+    <section id="ch3">
+        <h2>第三章：编写注意力机制</h2>
+        <p class="summary-text">这是 LLM 的核心。本章从零实现了自注意力机制，解释了模型如何理解上下文中词与词之间的关系。</p>
+
+        <div class="highlight-box">
+            <strong>核心概念：</strong> 注意力机制允许模型在生成当前词时，“回顾”输入序列中的所有其他词，并根据相关性分配不同的权重。
+        </div>
+
+        <div class="cards-grid">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>Self-Attention</h3>
+                        <div class="card-hint">自注意力</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>通过 Query(查询), Key(键), Value(值) 三个矩阵计算。公式：softmax(QK^T / √d)V。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>Causal Masking</h3>
+                        <div class="card-hint">因果掩码</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>在 GPT（解码器）中至关重要。通过掩盖矩阵的上三角，确保模型在预测时只能“看到”过去的词，不能偷看未来。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>Multi-Head Attention</h3>
+                        <div class="card-hint">多头注意力</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>并行运行多个自注意力机制。每个“头”可以关注输入数据的不同方面（如语法、语义、韵律等）。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chapter 4 -->
+    <section id="ch4">
+        <h2>第四章：从零实现 GPT 模型</h2>
+        <p class="summary-text">本章将前面的组件组装成一个完整的 GPT 架构。构建了 Transformer Block，这是模型深度的来源。</p>
+
+        <div class="highlight-box">
+            <strong>架构细节：</strong> 现代 GPT 架构通常采用 <strong>Pre-LayerNorm</strong>（即在注意力层和前馈层之前进行归一化），这比原始 Transformer 的 Post-LayerNorm 训练更稳定。
+        </div>
+
+        <div class="cards-grid">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>Layer Normalization</h3>
+                        <div class="card-hint">层归一化</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>将层激活值标准化为均值0、方差1。有助于稳定深层神经网络的训练过程。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>GELU Activation</h3>
+                        <div class="card-hint">激活函数</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>GPT 使用的高斯误差线性单元。相比 ReLU，它在零点附近更平滑，允许微小的负值梯度传播。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>Skip Connections</h3>
+                        <div class="card-hint">残差连接</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>将层的输入直接加到输出上。解决了深层网络中的梯度消失问题，是训练深度模型的关键。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chapter 5 -->
+    <section id="ch5">
+        <h2>第五章：在无标签数据上预训练</h2>
+        <p class="summary-text">实施训练循环。本章涵盖了损失计算、反向传播以及如何加载 OpenAI 的预训练权重以避免从头训练的巨大成本。</p>
+
+        <div class="highlight-box">
+            <strong>关键步骤：</strong> 预训练是非常昂贵的。为了教学目的，书中在小数据集上演示流程，然后通过加载 OpenAI 开源的 GPT-2 权重来获得强大的基座能力。
+        </div>
+
+        <div class="cards-grid">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>Cross-Entropy Loss</h3>
+                        <div class="card-hint">交叉熵损失</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>衡量模型预测的概率分布与实际下一个词之间的差异。训练目标是最小化这个损失。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>Decoding Strategies</h3>
+                        <div class="card-hint">解码策略</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>控制文本生成的随机性。<strong>Temperature</strong> 控制概率分布的平滑度；<strong>Top-k</strong> 限制采样范围，避免生成离谱的词。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>AdamW Optimizer</h3>
+                        <div class="card-hint">优化器</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>训练 LLM 的标准优化器。它是 Adam 算法的变体，改进了权重衰减（Weight Decay）的处理方式。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chapter 6 -->
+    <section id="ch6">
+        <h2>第六章：分类任务微调</h2>
+        <p class="summary-text">展示了如何将生成式模型转化为分类器（例如垃圾邮件检测）。这是迁移学习的一个典型应用。</p>
+
+        <div class="highlight-box">
+            <strong>技术要点：</strong> 对于分类任务，我们需要替换模型的<strong>输出层（Output Head）</strong>。从预测 50257 个词的概率，变为预测 2 个类别（垃圾/非垃圾）的概率。
+        </div>
+
+        <div class="cards-grid">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>Classification Head</h3>
+                        <div class="card-hint">分类头</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>替换掉原来用于预测下一个 Token 的线性层。新的层输出维度等于分类任务的类别数。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>Last Token Strategy</h3>
+                        <div class="card-hint">最后Token策略</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>由于因果注意力机制，序列中的最后一个 Token 聚合了整个句子的信息，因此通常使用最后一个 Token 的输出来做分类预测。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chapter 7 -->
+    <section id="ch7">
+        <h2>第七章：指令微调 (Instruction Tuning)</h2>
+        <p class="summary-text">这是让 LLM 变成聊天机器人（如 ChatGPT）的关键步骤。通过特定的数据格式训练模型遵循人类指令。</p>
+
+        <div class="highlight-box">
+            <strong>数据格式：</strong> 通常采用 Alpaca 风格：包括 Instruction（指令）、Input（可选输入）和 Response（回答）。
+        </div>
+
+        <div class="cards-grid">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>Alpaca Format</h3>
+                        <div class="card-hint">Alpaca 格式</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>一种标准的指令微调数据结构。训练时将指令和输入作为 Prompt，要求模型预测 Response。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>Loss Masking</h3>
+                        <div class="card-hint">损失掩码</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>训练时，通常只计算“回答”部分的损失，而忽略“指令”部分的损失。因为我们要模型学习如何回答，而不是复述问题。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>LLM as a Judge</h3>
+                        <div class="card-hint">以模型评测模型</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>评估生成质量很难。本章使用更强大的模型（如 Llama 3）来自动评分微调后小模型的回答质量。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Appendices -->
+    <section id="appendix">
+        <h2>附录 & 高级技术</h2>
+        <p class="summary-text">补充了 PyTorch 基础，以及更高级的训练技巧和参数高效微调方法。</p>
+
+        <div class="cards-grid">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>LoRA</h3>
+                        <div class="card-hint">低秩自适应</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>Parameter-Efficient Fine-Tuning 技术。冻结原模型权重，只训练小的低秩矩阵(A和B)。大幅降低显存需求。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>Automatic Differentiation</h3>
+                        <div class="card-hint">自动微分 (Autograd)</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>PyTorch 的核心。通过构建计算图，自动计算梯度，使得反向传播（Backpropagation）变得极其简单。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>Gradient Clipping</h3>
+                        <div class="card-hint">梯度裁剪</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>训练技巧。限制梯度的最大范数，防止“梯度爆炸”，确保训练过程的稳定性。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>Generated based on content by Sebastian Raschka | HTML5 Interactive Summary</p>
+    </footer>
+</div>
+
+<script>
+    function showSection(id) {
+        // Hide all sections
+        document.querySelectorAll('section').forEach(sec => {
+            sec.classList.remove('active');
+        });
+        
+        // Remove active class from all nav buttons
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // Show selected section
+        document.getElementById(id).classList.add('active');
+        
+        // Add active class to clicked button
+        event.target.classList.add('active');
+    }
+</script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_build_a_llm_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
