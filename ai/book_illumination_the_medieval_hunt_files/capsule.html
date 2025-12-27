@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深度解析：加斯顿·菲比斯《狩猎之书》</title>
+    <style>
+        :root {
+            --bg-color: #f9fbfd;
+            --card-bg: #ffffff;
+            --primary: #2c3e50; /* 深蓝灰 */
+            --accent: #3498db; /* 亮蓝 */
+            --highlight: #fff3cd; /* 柔和黄 */
+            --text-main: #2c3e50;
+            --text-light: #7f8c8d;
+            --border-radius: 12px;
+            --shadow-soft: 0 4px 20px rgba(0,0,0,0.05);
+            --shadow-hover: 0 10px 25px rgba(0,0,0,0.1);
+            --card-back-bg: #f0f7fa;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.7;
+            margin: 0;
+            padding-bottom: 60px;
+        }
+
+        /* 顶部区域 */
+        header {
+            background: #fff;
+            padding: 50px 20px;
+            text-align: center;
+            border-bottom: 1px solid #eaeaea;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-weight: 800;
+            font-size: 2.4rem;
+            margin: 0 0 10px 0;
+            letter-spacing: -0.5px;
+            color: var(--primary);
+        }
+
+        .meta-info {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* 导航栏 */
+        .nav-container {
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 0 20px;
+            margin-bottom: 40px;
+        }
+
+        .nav-pill {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid #e1e4e8;
+            padding: 8px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-light);
+            transition: all 0.25s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .nav-pill:hover {
+            transform: translateY(-2px);
+            color: var(--accent);
+        }
+
+        .nav-pill.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3);
+        }
+
+        /* 内容容器 */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .chapter-content {
+            display: none;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .chapter-content.active {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 摘要卡片 */
+        .summary-box {
+            background: #fff;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 40px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .summary-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, rgba(255, 243, 205, 0) 0%, rgba(255, 243, 205, 1) 100%);
+            padding: 0 4px;
+        }
+
+        /* 翻转卡片网格 */
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        /* 翻转卡片核心样式 */
+        .flip-card {
+            background-color: transparent;
+            height: 320px; /* 增加高度以容纳更多细节 */
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: left;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .flip-card:hover .flip-card-inner {
+            box-shadow: var(--shadow-hover);
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-sizing: border-box;
+            overflow-y: auto; /* 允许内容过多时滚动 */
+        }
+
+        .flip-card-front {
+            background-color: var(--card-bg);
+            border: 1px solid #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .card-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        .click-hint {
+            margin-top: auto;
+            font-size: 0.8rem;
+            color: #bdc3c7;
+            border: 1px solid #eee;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .flip-card-back {
+            background-color: var(--card-back-bg);
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .flip-card-back h4 {
+            margin-top: 0;
+            color: var(--accent);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding-bottom: 10px;
+        }
+
+        .flip-card-back ul {
+            padding-left: 20px;
+            margin: 0;
+        }
+
+        .flip-card-back li {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .scholar-ref {
+            font-size: 0.8rem;
+            color: #666;
+            font-style: italic;
+            margin-top: 15px;
+            background: rgba(255,255,255,0.5);
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        /* 底部 */
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            color: var(--text-light);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8rem; }
+            .nav-container { top: 10px; gap: 8px; }
+            .nav-pill { padding: 6px 12px; font-size: 0.8rem; }
+            .flip-card { height: 360px; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Illuminating the Medieval Hunt</h1>
+    <div class="meta-info">
+        权力与表演：深度解读加斯顿·菲比斯《狩猎之书》（BnF MS. fr. 616）<br>
+        Rebekah Pratt-Sturges 博士论文 (2017) | 艺术史与视觉文化研究
+    </div>
+</header>
+
+<div class="nav-container">
+    <div class="nav-pill active" onclick="switchTab('intro')">导论与背景</div>
+    <div class="nav-pill" onclick="switchTab('ch2')">主权与礼物</div>
+    <div class="nav-pill" onclick="switchTab('ch3')">空间与掌控</div>
+    <div class="nav-pill" onclick="switchTab('ch4')">等级与统治</div>
+    <div class="nav-pill" onclick="switchTab('ch5')">卑贱与转化</div>
+    <div class="nav-pill" onclick="switchTab('ch6')">记忆与身份</div>
+</div>
+
+<div class="container">
+
+    <!-- 导论 -->
+    <div id="intro" class="chapter-content active">
+        <div class="summary-box">
+            <div class="summary-title">📜 研究核心：作为社会表演的文本</div>
+            <p>本研究超越了传统的文本分析，运用<strong>社会艺术史</strong>和<strong>批判理论</strong>（符号学、精神分析），将这本泥金装饰手抄本视为一个“意义生成对象”。论点核心在于：狩猎不仅是娱乐，更是中世纪贵族构建身份、展示权力以及通过仪式化暴力来区分“人”与“兽”的核心机制。</p>
+        </div>
+
+        <div class="grid-cards">
+            <!-- 卡片1 -->
+            <div class="flip-card" onclick="flip(this)">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🗝️</div>
+                        <div class="card-title">物质性与系谱</div>
+                        <div class="card-subtitle">BnF MS. fr. 616 的独特性</div>
+                        <div class="click-hint">点击查看细节</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>奢华的权力光环</h4>
+                        <ul>
+                            <li><strong>系谱推测：</strong> BnF 616 被认为是加斯顿献给勃艮第公爵“勇敢者”菲利普的那本原书的直接副本（或即原书副本之一）。</li>
+                            <li><strong>艺术风格：</strong> 由巴黎的贝德福德大师（Bedford Master）工作室绘制，展示了早期15世纪巴黎宫廷艺术的巅峰。</li>
+                            <li><strong>功能：</strong> 它不仅是阅读材料，更是财富的展示和进入贵族社交网络的通行证。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- 卡片2 -->
+            <div class="flip-card" onclick="flip(this)">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">⚔️</div>
+                        <div class="card-title">正规狩猎</div>
+                        <div class="card-subtitle">Chasse à force</div>
+                        <div class="click-hint">点击查看定义</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>仪式化的战争演习</h4>
+                        <ul>
+                            <li><strong>定义：</strong> 骑马带狗在开放空间追逐大型猎物（主要是雄鹿），直至猎物精疲力竭。</li>
+                            <li><strong>社会功能：</strong> 这种低效率的狩猎方式被刻意推崇，因为它模仿了骑士战争所需的骑术和肉搏勇气。</li>
+                            <li><strong>排他性：</strong> 与陷阱捕猎不同，正规狩猎是贵族特权，用于展示身体力量和阶级优越性。</li>
+                        </ul>
+                        <div class="scholar-ref">参考理论：Susan Crane 将狩猎视为一种“人类团结的正式表达”和仪式。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第二章：主权 -->
+    <div id="ch2" class="chapter-content">
+        <div class="summary-box">
+            <div class="summary-title">👑 视觉政治：拒绝下跪的领主</div>
+            <p>加斯顿·菲比斯在政治上处于法国、英国、纳瓦拉等强权之间。他在书中通过<strong>图像学</strong>和<strong>礼物理论</strong>来宣示其独立主权。这本献给勃艮第公爵的书，看似是臣服的礼物，实则是平等的宣言。</p>
+        </div>
+
+        <div class="grid-cards">
+            <!-- 卡片1 -->
+            <div class="flip-card" onclick="flip(this)">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🎨</div>
+                        <div class="card-title">第13r页：作者肖像</div>
+                        <div class="card-subtitle">颠覆传统的图像学</div>
+                        <div class="click-hint">点击解析图像</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>不仅是作者，更是君主</h4>
+                        <ul>
+                            <li><strong>传统对比：</strong> 常见的献书图是作者跪在赞助人面前（如克里斯蒂娜·德·皮桑）。</li>
+                            <li><strong>加斯顿的姿态：</strong> 他端坐在类似王座的椅子上，被手下环绕，<span class="highlight">正面直视观众/读者</span>，手持狩猎杖（Estortoire）如同权杖。</li>
+                            <li><strong>含义：</strong> 这不仅是教学场景，更是主权宣示。他不仅是狩猎大师，更是自己领地的绝对统治者。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- 卡片2 -->
+            <div class="flip-card" onclick="flip(this)">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🎁</div>
+                        <div class="card-title">礼物的社会逻辑</div>
+                        <div class="card-subtitle">莫斯与道德经济</div>
+                        <div class="click-hint">点击查看理论</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>作为政治货币的手抄本</h4>
+                        <ul>
+                            <li><strong>替代效忠：</strong> 加斯顿拒绝向国王行封建效忠礼（Homage）。赠送这本书成为了替代性的“社会粘合剂”。</li>
+                            <li><strong>互惠性：</strong> 礼物确立了某种平等关系。接受礼物意味着承认赠予者的地位和财富（慷慨是贵族美德）。</li>
+                            <li><strong>竞争性：</strong> 通过赠送如此奢华的物品，加斯顿在“道德经济”中积累了象征资本。</li>
+                        </ul>
+                        <div class="scholar-ref">理论支持：Marcel Mauss《礼物》与 Bourdieu 的象征资本理论。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第三章：掌控 -->
+    <div id="ch3" class="chapter-content">
+        <div class="summary-box">
+            <div class="summary-title">🌳 空间生产：被驯化的自然</div>
+            <p>本章借用列斐伏尔（Henri Lefebvre）的“空间生产”理论，分析插画中的风景。中世纪猎苑（Park）并非野生自然，而是一种人造的、理想化的<strong>社会空间</strong>，旨在最大化贵族的狩猎体验。</p>
+        </div>
+
+        <div class="grid-cards">
+            <div class="flip-card" onclick="flip(this)">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🖼️</div>
+                        <div class="card-title">抽象背景的深意</div>
+                        <div class="card-subtitle">反现实主义的意图</div>
+                        <div class="click-hint">点击查看分析</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>可见的意图</h4>
+                        <ul>
+                            <li><strong>装饰性 vs. 象征性：</strong> 金色、格纹和花叶的背景并非因为画家缺乏透视技巧。</li>
+                            <li><strong>理想化：</strong> 这种抽象风格旨在消除现实中自然的混乱与不可控。它创造了一个<strong>完美的、永恒的狩猎场</strong>。</li>
+                            <li><strong>“看”的快感：</strong> 这种构图赋予读者“全知视角”（Scopophilia），即作为隐藏的掠食者，不仅控制猎物，也控制视觉空间。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="flip(this)">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🏞️</div>
+                        <div class="card-title">猎苑作为“场所”</div>
+                        <div class="card-subtitle">Space vs. Place</div>
+                        <div class="click-hint">点击查看理论</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>从空间到场所</h4>
+                        <ul>
+                            <li><strong>物理改造：</strong> 猎苑通过围栏、种植特定树木、挖掘池塘来改造自然，使其服务于狩猎仪式。</li>
+                            <li><strong>社会排斥：</strong> 围墙将平民排除在外，创造了一个仅属于精英的表演舞台。</li>
+                            <li><strong>模拟：</strong> 手抄本中的插图是现实猎苑的“拟像”（Simulacrum），进一步自然化了贵族对土地的特权。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第四章：统治 -->
+    <div id="ch4" class="chapter-content">
+        <div class="summary-box">
+            <div class="summary-title">🦁 动物等级：食物与他者</div>
+            <p>加斯顿构建了一个严格的动物等级制度。这种分类不仅基于生物学，更基于<strong>神学焦虑</strong>（关于食人与复活）和<strong>贵族价值观</strong>。人类必须不断制造“他者”来确认自己的人性。</p>
+        </div>
+
+        <div class="grid-cards">
+            <div class="flip-card" onclick="flip(this)">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🦌</div>
+                        <div class="card-title">第一级：雄鹿 (Stag)</div>
+                        <div class="card-subtitle">高贵的被捕食者</div>
+                        <div class="click-hint">点击查看详情</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>拟人化的牺牲品</h4>
+                        <ul>
+                            <li><strong>特征：</strong> 食草（洁净），拥有智慧、长寿，且会以角自卫（像骑士一样战斗）。</li>
+                            <li><strong>功能：</strong> 它是最理想的对手。征服雄鹿能赋予猎人荣耀。</li>
+                            <li><strong>待遇：</strong> 只有雄鹿和野猪配享“解剖礼”。它的肉被认为是高贵的，能增强食用者的体质。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="flip(this)">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🐗</div>
+                        <div class="card-title">第二级：野猪 (Boar)</div>
+                        <div class="card-subtitle">模糊的挑战者</div>
+                        <div class="click-hint">点击查看详情</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>危险的杂食者</h4>
+                        <ul>
+                            <li><strong>矛盾性：</strong> 它是杂食动物，既吃植物也吃腐肉，甚至被认为会挖坟吃人。</li>
+                            <li><strong>象征：</strong> 代表无理性的暴怒和色欲（Lust）。</li>
+                            <li><strong>价值：</strong> 虽然危险且不洁，但因其极度凶猛，猎杀野猪是勇气的最高证明。必须通过烹饪和仪式严格净化。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="flip(this)">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🐺</div>
+                        <div class="card-title">第三级：狼 (Wolf)</div>
+                        <div class="card-subtitle">卑贱的竞争者</div>
+                        <div class="click-hint">点击查看详情</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>污染与禁忌</h4>
+                        <ul>
+                            <li><strong>食人焦虑：</strong> 狼吃腐肉和人类尸体。如果人吃狼肉，等于间接同类相食。</li>
+                            <li><strong>地位：</strong> 被视为害虫而非高贵的对手。可以用陷阱、毒药等“不光彩”手段处死。</li>
+                            <li><strong>结果：</strong> 尸体被遗弃腐烂，它是绝对的“他者”，被排除在烹饪文化之外。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第五章：转化 -->
+    <div id="ch5" class="chapter-content">
+        <div class="summary-box">
+            <div class="summary-title">🔪 仪式化暴力：从动物到肉</div>
+            <p>借助克里斯蒂娃（Julia Kristeva）的<strong>卑贱理论（Abjection）</strong>，本章分析了“解剖礼”（Unmaking）。死亡的动物尸体处于“主客体之间”的模糊状态，令人恐惧。仪式的作用是消除这种恐惧。</p>
+        </div>
+
+        <div class="grid-cards">
+            <div class="flip-card" onclick="flip(this)">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🩸</div>
+                        <div class="card-title">解剖礼 (Unmaking)</div>
+                        <div class="card-subtitle">净化的程序</div>
+                        <div class="click-hint">点击查看解析</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>系统性的肢解</h4>
+                        <ul>
+                            <li><strong>过程：</strong> 严格按照特定顺序剥皮、切割。这不是屠夫的屠宰，而是贵族的仪式。</li>
+                            <li><strong>目的：</strong> 通过将完整的尸体分解为无法辨认的“块”，消除了它的动物性（Animality）。</li>
+                            <li><strong>理论：</strong> 这一过程将“卑贱”的尸体转化为了安全的文化客体——“肉”。它重新确立了人与兽的边界。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="flip(this)">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🐕</div>
+                        <div class="card-title">分赏仪式 (Curée)</div>
+                        <div class="card-subtitle">受控的野性</div>
+                        <div class="click-hint">点击查看解析</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>从生到熟的界限</h4>
+                        <ul>
+                            <li><strong>内容：</strong> 将内脏、血混合面包喂给猎犬。</li>
+                            <li><strong>区分：</strong> 狗吃生肉/内脏（代表野性/自然），贵族吃熟肉（代表文明/文化）。</li>
+                            <li><strong>控制：</strong> 即使在喂食时，猎犬也必须等待指令。这展示了人类对动物本能的绝对控制。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第六章：纪念 -->
+    <div id="ch6" class="chapter-content">
+        <div class="summary-box">
+            <div class="summary-title">📚 记忆的制度化</div>
+            <p>最后，本书分析了《狩猎之书》作为<strong>记忆客体（Memoria object）</strong>的功能。通过将狩猎行为编纂成书，加斯顿不仅记录了过去，更控制了未来的贵族如何表演他们的身份。</p>
+        </div>
+
+        <div class="grid-cards">
+            <div class="flip-card" onclick="flip(this)">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🧠</div>
+                        <div class="card-title">文化记忆 (Cultural Memory)</div>
+                        <div class="card-subtitle">Assmann 的理论</div>
+                        <div class="click-hint">点击查看应用</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>从个人到集体</h4>
+                        <ul>
+                            <li><strong>基础记忆：</strong> 加斯顿的书创造了一个关于“完美狩猎”的基础记忆。</li>
+                            <li><strong>身份认同：</strong> 后世贵族通过阅读此书，将自己的个人经历融入到这一集体的、神圣的贵族传统中。</li>
+                            <li><strong>不朽：</strong> 加斯顿将自己嵌入了贵族阶层的核心记忆中，从而实现了某种程度的永生。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="flip(this)">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">📖</div>
+                        <div class="card-title">作为奖杯的书籍</div>
+                        <div class="card-subtitle">羊皮纸上的统治</div>
+                        <div class="click-hint">点击查看总结</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>最终的征服</h4>
+                        <ul>
+                            <li><strong>物质隐喻：</strong> 书页本身（羊皮纸）就是动物被杀戮、剥皮、处理后的产物。</li>
+                            <li><strong>符号暴力：</strong> 在这本书中，动物被分类、被描绘、被固定在页面上，这是人类对动物世界的最终极、最持久的统治。</li>
+                            <li><strong>结论：</strong> 《狩猎之书》不仅是关于狩猎的指南，它本身就是一种狩猎行为的最高形式——通过知识和艺术捕获世界。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2025 基于 Rebekah Pratt-Sturges 博士论文生成的深度交互摘要</p>
+    </footer>
+
+</div>
+
+<script>
+    function switchTab(tabId) {
+        // 隐藏所有章节
+        const contents = document.querySelectorAll('.chapter-content');
+        contents.forEach(content => content.classList.remove('active'));
+
+        // 取消所有导航激活状态
+        const pills = document.querySelectorAll('.nav-pill');
+        pills.forEach(pill => pill.classList.remove('active'));
+
+        // 激活选中的章节和导航
+        document.getElementById(tabId).classList.add('active');
+        
+        // 找到对应的按钮并添加激活样式（通过遍历匹配文本或索引，这里简单处理，假设顺序对应或通过点击事件传递）
+        // 更健壮的方法是给按钮加ID，这里使用event.target的简单逻辑
+        event.target.classList.add('active');
+
+        // 平滑滚动
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function flip(card) {
+        card.classList.toggle('flipped');
+    }
+</script>
+
+</body>
+</html>
