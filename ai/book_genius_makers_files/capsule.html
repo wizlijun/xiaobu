@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genius Makers - 深度交互摘要</title>
+    <style>
+        :root {
+            --bg-color: #fcfcfc;
+            --text-primary: #2d3436;
+            --text-secondary: #636e72;
+            --accent-blue: #0984e3; /* 技术 */
+            --accent-purple: #6c5ce7; /* 商业 */
+            --accent-red: #d63031; /* 伦理 */
+            --accent-green: #00b894; /* 未来 */
+            --card-front-bg: #ffffff;
+            --card-back-bg: #fdfdfd;
+            --shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 3rem 1rem;
+            background: linear-gradient(135deg, #fff 0%, #f0f7fa 100%);
+            border-bottom: 1px solid #eee;
+        }
+
+        h1 {
+            font-weight: 800;
+            font-size: 2.5rem;
+            letter-spacing: -1px;
+            margin-bottom: 0.5rem;
+            color: #2d3436;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Navigation Tabs */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem auto;
+            max-width: 900px;
+            flex-wrap: wrap;
+            padding: 0 1rem;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            border: none;
+            background: #eee;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .tab-btn.active {
+            background: var(--text-primary);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Content Sections */
+        .content-section {
+            display: none;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* Introduction Block per Section */
+        .section-intro {
+            background: #fff;
+            border-left: 4px solid var(--text-primary);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+
+        .section-intro h3 { margin-top: 0; }
+
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 2rem;
+        }
+
+        /* Flip Card Styling */
+        .flip-card {
+            background-color: transparent;
+            height: 420px; /* Taller for detail */
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+            box-shadow: var(--shadow);
+            border-radius: 16px;
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        /* Front Side */
+        .flip-card-front {
+            background-color: var(--card-front-bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            border: 1px solid #f0f0f0;
+        }
+
+        .chapter-num {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #b2bec3;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+
+        .icon-wrapper {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.8;
+        }
+
+        .click-hint {
+            margin-top: auto;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        /* Back Side */
+        .flip-card-back {
+            background-color: var(--card-back-bg);
+            color: var(--text-primary);
+            transform: rotateY(180deg);
+            padding: 1.5rem;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #eaeaea;
+            overflow-y: auto; /* Allow scrolling for details */
+        }
+
+        /* Back Content Styling */
+        .detail-group {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .detail-group:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .concept-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+
+        .tag-tech { background: #e3f2fd; color: var(--accent-blue); }
+        .tag-biz { background: #f3e5f5; color: var(--accent-purple); }
+        .tag-ethics { background: #ffebee; color: var(--accent-red); }
+
+        .key-quote {
+            font-style: italic;
+            font-size: 0.9rem;
+            color: #555;
+            background: #f9f9f9;
+            padding: 10px;
+            border-left: 3px solid #ccc;
+            margin-top: 5px;
+        }
+
+        .content-text ul {
+            padding-left: 1.2rem;
+            margin: 0.5rem 0;
+            font-size: 0.95rem;
+        }
+
+        /* Scrollbar for cards */
+        .flip-card-back::-webkit-scrollbar {
+            width: 6px;
+        }
+        .flip-card-back::-webkit-scrollbar-thumb {
+            background-color: #ddd;
+            border-radius: 3px;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+            .tabs { flex-direction: column; }
+            .flip-card { height: 450px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Genius Makers</h1>
+        <div class="subtitle">深度学习编年史：从边缘科学到重塑世界的军备竞赛</div>
+    </header>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openSection(event, 'part1')">Part 1: 新机器的诞生</button>
+        <button class="tab-btn" onclick="openSection(event, 'part2')">Part 2: 谁拥有智能？</button>
+        <button class="tab-btn" onclick="openSection(event, 'part3')">Part 3: 动荡与伦理</button>
+        <button class="tab-btn" onclick="openSection(event, 'part4')">Part 4: 人类被低估了</button>
+    </div>
+
+    <!-- PART 1 -->
+    <section id="part1" class="content-section active">
+        <div class="section-intro">
+            <h3 style="color:var(--accent-blue)">第一部分：荒野求生 (1958 - 2012)</h3>
+            <p>这一部分讲述了神经网络（Neural Networks）如何从被学术界嘲笑的“伪科学”，在 Geoff Hinton 等少数坚持者的努力下，通过数十年漫长的“AI寒冬”，最终凭借大数据和 GPU 算力迎来爆发。</p>
+        </div>
+
+        <div class="grid">
+            <!-- Card 1.1 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="chapter-num">PROLOGUE & CH.1</div>
+                        <div class="icon-wrapper">🔨</div>
+                        <div class="card-title">4400万的拍卖与<br>感知机的诅咒</div>
+                        <span class="click-hint">点击查看详情</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="detail-group">
+                            <span class="detail-label">关键事件</span>
+                            <div class="content-text">
+                                <ul>
+                                    <li><strong>2012太浩湖拍卖：</strong> Hinton 及其学生（包括 Ilya Sutskever）拍卖无产品的空壳公司。百度出价凶猛，Google 最终以 4400 万美元胜出。DeepMind 因资金不足退出。</li>
+                                    <li><strong>1958 感知机诞生：</strong> Frank Rosenblatt 发明感知机，被《纽约时报》大肆炒作。</li>
+                                    <li><strong>1969 毁灭性打击：</strong> Minsky & Papert 出版《Perceptrons》，从数学上证明了单层网络的局限性，直接导致长达几十年的 AI 寒冬。</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="detail-group">
+                            <span class="detail-label">核心概念</span>
+                            <div>
+                                <span class="concept-tag tag-tech">连接主义 (Connectionism)</span>
+                                <span class="concept-tag tag-tech">反向传播 (Backprop)</span>
+                            </div>
+                        </div>
+                        <div class="detail-group">
+                            <span class="detail-label">人物语录</span>
+                            <div class="key-quote">"我不想让他们（百度）觉得我又老又朽，所以我把烫衣板架在床中间假装在做引体向上。" —— Geoff Hinton</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 1.2 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="chapter-num">CH.2 - CH.3</div>
+                        <div class="icon-wrapper">❄️</div>
+                        <div class="card-title">地下党与<br>卷积网络的孤独</div>
+                        <span class="click-hint">点击查看详情</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="detail-group">
+                            <span class="detail-label">至暗时刻</span>
+                            <div class="content-text">
+                                <ul>
+                                    <li><strong>Yann LeCun 的坚持：</strong> 在贝尔实验室开发了 LeNet（卷积神经网络），成功用于识别手写支票，但整个领域仍被 SVM 等统计方法主导。</li>
+                                    <li><strong>Hinton 的流亡：</strong> 因不满美国军方资助和里根政府政策，Hinton 移居加拿大，多伦多大学成为深度学习的“诺亚方舟”。</li>
+                                    <li><strong>更名策略：</strong> 为了论文能被录用，他们不得不将“神经网络”改称为“深度学习”。</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="detail-group">
+                            <span class="detail-label">关键技术</span>
+                            <div>
+                                <span class="concept-tag tag-tech">CNN (卷积神经网络)</span>
+                                <span class="concept-tag tag-tech">AI Winter</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 1.3 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="chapter-num">CH.4 - CH.6</div>
+                        <div class="icon-wrapper">🚀</div>
+                        <div class="card-title">AlexNet 时刻与<br>GPU 的介入</div>
+                        <span class="click-hint">点击查看详情</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="detail-group">
+                            <span class="detail-label">转折点</span>
+                            <div class="content-text">
+                                <ul>
+                                    <li><strong>语音识别突破：</strong> Hinton 的学生 George Dahl 在微软实习期间，证明深度学习在语音识别上碾压传统方法。</li>
+                                    <li><strong>ImageNet 竞赛 (2012)：</strong> Alex Krizhevsky 利用两个 Nvidia GPU 训练神经网络，错误率从 26% 降至 15%，震惊世界。</li>
+                                    <li><strong>Google Brain：</strong> Andrew Ng 和 Jeff Dean 发现了著名的“猫脸识别”，证明无监督学习的可行性。</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="detail-group">
+                            <span class="detail-label">关键概念</span>
+                            <div>
+                                <span class="concept-tag tag-tech">GPU 加速</span>
+                                <span class="concept-tag tag-tech">ImageNet</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PART 2 -->
+    <section id="part2" class="content-section">
+        <div class="section-intro">
+            <h3 style="color:var(--accent-purple)">第二部分：谁拥有智能？ (2013 - 2016)</h3>
+            <p>这一部分聚焦于企业间的军备竞赛。Google、Facebook、Microsoft 和百度开始疯狂争抢这群稀有的科学家。同时，DeepMind 作为一个致力于 AGI 的异类，被 Google 收入囊中。</p>
+        </div>
+
+        <div class="grid">
+            <!-- Card 2.1 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="chapter-num">CH.7 - CH.8</div>
+                        <div class="icon-wrapper">⚔️</div>
+                        <div class="card-title">扎克伯格入局与<br>开源战争</div>
+                        <span class="click-hint">点击查看详情</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="detail-group">
+                            <span class="detail-label">商业博弈</span>
+                            <div class="content-text">
+                                <ul>
+                                    <li><strong>Facebook FAIR：</strong> 扎克伯格亲自招募 Yann LeCun。LeCun 坚持“不离开纽约”和“必须开源”。</li>
+                                    <li><strong>开源策略：</strong> Facebook 通过开源其 AI 代码（PyTorch的前身等），打破了 Google 的封闭优势，迫使 Google 后来开源了 TensorFlow。</li>
+                                    <li><strong>微软的失落：</strong> 尽管微软研究院很早就有相关研究，但因内部官僚主义（Ballmer时代）和对传统方法的迷恋，错失了先机。</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="detail-group">
+                            <span class="detail-label">战略</span>
+                            <div>
+                                <span class="concept-tag tag-biz">开源 (Open Source)</span>
+                                <span class="concept-tag tag-biz">人才收购</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2.2 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="chapter-num">CH.10</div>
+                        <div class="icon-wrapper">♟️</div>
+                        <div class="card-title">DeepMind 与<br>AlphaGo</div>
+                        <span class="click-hint">点击查看详情</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="detail-group">
+                            <span class="detail-label">高光时刻</span>
+                            <div class="content-text">
+                                <ul>
+                                    <li><strong>收购：</strong> Google 以 6.5 亿美元收购 DeepMind。创始人 Hassabis 坚持要有“伦理委员会”（虽然并未真正生效）。</li>
+                                    <li><strong>李世石对决 (2016)：</strong> AlphaGo 在首尔 4:1 击败人类冠军。</li>
+                                    <li><strong>第37手：</strong> 机器下出了人类几千年未曾设想的一步棋。这标志着 AI 展现出某种形式的“创造力”。</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="detail-group">
+                            <span class="detail-label">关键概念</span>
+                            <div>
+                                <span class="concept-tag tag-tech">强化学习 (RL)</span>
+                                <span class="concept-tag tag-green">Sputnik时刻</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2.3 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="chapter-num">CH.9 - CH.12</div>
+                        <div class="icon-wrapper">🌍</div>
+                        <div class="card-title">百度与<br>Google 的翻译革命</div>
+                        <span class="click-hint">点击查看详情</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="detail-group">
+                            <span class="detail-label">技术落地</span>
+                            <div class="content-text">
+                                <ul>
+                                    <li><strong>机器翻译：</strong> Ilya Sutskever 推动的 Seq2Seq 模型让 Google 翻译在一夜之间质量飞跃。</li>
+                                    <li><strong>百度的角色：</strong> 百度是这一领域最早的觉醒者之一，聘请吴恩达（Andrew Ng），并在中国积极部署 AI 基础设施。</li>
+                                    <li><strong>TPU 的诞生：</strong> 为了支撑庞大的算力需求，Google 秘密研发了自己的 AI 芯片 (TPU)，摆脱了对 Nvidia 的完全依赖。</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="detail-group">
+                            <span class="detail-label">硬件</span>
+                            <div>
+                                <span class="concept-tag tag-tech">TPU</span>
+                                <span class="concept-tag tag-biz">云服务竞争</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PART 3 -->
+    <section id="part3" class="content-section">
+        <div class="section-intro">
+            <h3 style="color:var(--accent-red)">第三部分：动荡与伦理 (2016 - 2019)</h3>
+            <p>随着 AI 变得强大，副作用开始显现。偏见、假新闻、Deepfakes 以及军事化应用引发了科技公司内部员工的抗议和社会的恐慌。</p>
+        </div>
+
+        <div class="grid">
+            <!-- Card 3.1 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="chapter-num">CH.13</div>
+                        <div class="icon-wrapper">🎭</div>
+                        <div class="card-title">GANs 与<br>造假的艺术</div>
+                        <span class="click-hint">点击查看详情</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="detail-group">
+                            <span class="detail-label">发明</span>
+                            <div class="content-text">
+                                <strong>Ian Goodfellow</strong> 在酒吧争论后灵光一闪，发明了生成对抗网络 (GANs)。两个神经网络互相博弈：一个造假，一个鉴别。
+                            </div>
+                        </div>
+                        <div class="detail-group">
+                            <span class="detail-label">后果</span>
+                            <div class="content-text">
+                                <ul>
+                                    <li><strong>Deepfakes：</strong> 技术迅速被用于制造假色情视频和政治虚假视频。</li>
+                                    <li><strong>信任危机：</strong> 这一技术终结了“眼见为实”的时代，引发了对 AI 破坏民主制度的担忧。</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="detail-group">
+                            <span class="detail-label">概念</span>
+                            <span class="concept-tag tag-tech">GANs</span>
+                            <span class="concept-tag tag-ethics">虚假信息</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3.2 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="chapter-num">CH.15</div>
+                        <div class="icon-wrapper">⚖️</div>
+                        <div class="card-title">偏见与<br>大猩猩事件</div>
+                        <span class="click-hint">点击查看详情</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="detail-group">
+                            <span class="detail-label">丑闻</span>
+                            <div class="content-text">
+                                Google Photos 将非裔美国人标记为“大猩猩”。这暴露了数据集主要由白人男性构成的问题。
+                            </div>
+                        </div>
+                        <div class="detail-group">
+                            <span class="detail-label">反击</span>
+                            <div class="content-text">
+                                <strong>Joy Buolamwini</strong> (MIT) 揭露了商业人脸识别软件在深色皮肤女性上的高错误率。Timnit Gebru 成立 "Black in AI"，推动社区关注算法偏见。
+                            </div>
+                        </div>
+                        <div class="detail-group">
+                            <span class="detail-label">核心议题</span>
+                            <span class="concept-tag tag-ethics">算法偏见</span>
+                            <span class="concept-tag tag-ethics">数据集多样性</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3.3 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="chapter-num">CH.16</div>
+                        <div class="icon-wrapper">🛡️</div>
+                        <div class="card-title">Project Maven与<br>员工起义</div>
+                        <span class="click-hint">点击查看详情</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="detail-group">
+                            <span class="detail-label">冲突</span>
+                            <div class="content-text">
+                                Google 秘密参与五角大楼的 Project Maven，利用 AI 分析无人机视频。
+                            </div>
+                        </div>
+                        <div class="detail-group">
+                            <span class="detail-label">结果</span>
+                            <div class="content-text">
+                                数千名 Google 员工联名抗议，Fei-Fei Li 等高管陷入邮件丑闻。Google 最终被迫承诺不再续约，并发布了 AI 伦理准则（但也并未完全放弃国防合同）。
+                            </div>
+                        </div>
+                        <div class="detail-group">
+                            <span class="detail-label">核心议题</span>
+                            <span class="concept-tag tag-ethics">武器化 AI</span>
+                            <span class="concept-tag tag-biz">硅谷价值观</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PART 4 -->
+    <section id="part4" class="content-section">
+        <div class="section-intro">
+            <h3 style="color:var(--accent-green)">第四部分：人类被低估了 (2018 - 2020)</h3>
+            <p>AGI（通用人工智能）是宗教还是科学？OpenAI 的崛起改变了格局。与此同时，怀疑论者指出 AI 依然缺乏常识。故事的最后，图灵奖颁给了“深度学习三巨头”。</p>
+        </div>
+
+        <div class="grid">
+            <!-- Card 4.1 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="chapter-num">CH.19 - CH.20</div>
+                        <div class="icon-wrapper">🤖</div>
+                        <div class="card-title">OpenAI 与<br>AGI 的宗教</div>
+                        <span class="click-hint">点击查看详情</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="detail-group">
+                            <span class="detail-label">OpenAI 的演变</span>
+                            <div class="content-text">
+                                <ul>
+                                    <li><strong>成立初衷：</strong> Musk 和 Altman 成立 OpenAI 旨在作为 Google 的制衡力量，承诺非营利和开源。</li>
+                                    <li><strong>转变：</strong> 为了追求 AGI 需要巨大算力，转为“封顶利润”公司，接受微软 10 亿美元投资。Musk 愤而退出。</li>
+                                    <li><strong>GPT与Dota：</strong> 展示了 AI 在游戏和语言模型（GPT）上的惊人能力。</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="detail-group">
+                            <span class="detail-label">概念</span>
+                            <span class="concept-tag tag-green">AGI (通用人工智能)</span>
+                            <span class="concept-tag tag-green">Scaling Laws</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4.2 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="chapter-num">CH.18</div>
+                        <div class="icon-wrapper">🤔</div>
+                        <div class="card-title">怀疑论者：<br>Gary Marcus</div>
+                        <span class="click-hint">点击查看详情</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="detail-group">
+                            <span class="detail-label">不同的声音</span>
+                            <div class="content-text">
+                                <strong>Gary Marcus</strong> 是深度学习的主要批评者。他认为深度学习只是在大规模数据匹配，缺乏真正的推理、因果关系和常识。
+                            </div>
+                        </div>
+                        <div class="detail-group">
+                            <span class="detail-label">LeCun vs Marcus</span>
+                            <div class="content-text">
+                                两者在 NYU 进行了著名辩论。LeCun 认为数据规模可以涌现智能，而 Marcus 坚持 AI 需要预设的“先天机制”。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4.3 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="chapter-num">CH.21</div>
+                        <div class="icon-wrapper">🏆</div>
+                        <div class="card-title">图灵奖与<br>胶囊网络</div>
+                        <span class="click-hint">点击查看详情</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="detail-group">
+                            <span class="detail-label">加冕</span>
+                            <div class="content-text">
+                                2019年，<strong>Hinton, LeCun, Bengio</strong> 共同获得图灵奖。这是对他们数十年坚持边缘研究的最终认可。
+                            </div>
+                        </div>
+                        <div class="detail-group">
+                            <span class="detail-label">新的开始</span>
+                            <div class="content-text">
+                                永远不满足的 Hinton 开始质疑自己发明的反向传播，并提出 <strong>Capsules (胶囊网络)</strong>，试图解决计算机视觉中识别三维空间关系的缺陷。
+                            </div>
+                        </div>
+                        <div class="detail-group">
+                            <span class="detail-label">语录</span>
+                            <div class="key-quote">"历史将会重演，我想。" —— Hinton</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>Generated based on "Genius Makers" by Cade Metz</p>
+        <p style="color:#aaa; font-size:0.7rem; margin-top:5px;">Design Philosophy: Interactive Flip Cards | Low Cognitive Load | Comprehensive Detail</p>
+    </footer>
+
+    <script>
+        // Tab Switching Logic
+        function openSection(evt, sectionName) {
+            var i, x, tablinks;
+            x = document.getElementsByClassName("content-section");
+            for (i = 0; i < x.length; i++) {
+                x[i].classList.remove("active");
+            }
+            tablinks = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+            document.getElementById(sectionName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+
+        // Flip Card Interaction (Click for mobile/desktop uniform experience)
+        document.querySelectorAll('.flip-card').forEach(card => {
+            card.addEventListener('click', function() {
+                this.classList.toggle('flipped');
+            });
+        });
+    </script>
+</body>
+</html>
