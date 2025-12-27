@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 开发者生态：推特深度摘要</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --primary-light: #E0F2FE;
+            --primary-dark: #0284C7;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: var(--bg-color);
+            color: #334155;
+            overflow-x: hidden;
+        }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* 3D Flip Card Styles */
+        .card-container {
+            perspective: 1000px;
+            height: 260px; /* Increased height for details */
+        }
+        
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+            cursor: pointer;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .card-container:hover .card-inner, .card-container.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border: 1px solid #F1F5F9;
+            background: white;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            background: #F8FAFC;
+            text-align: left;
+            align-items: flex-start;
+            overflow-y: auto;
+        }
+
+        /* Animations */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-slide-up {
+            animation: slideUp 0.6s ease-out forwards;
+        }
+
+        /* Tab System */
+        .tab-btn {
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            background-color: #EFF6FF;
+            color: #2563EB;
+            border-bottom: 2px solid #2563EB;
+        }
+
+        /* Custom Scrollbar for back of cards */
+        .card-back::-webkit-scrollbar {
+            width: 4px;
+        }
+        .card-back::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .card-back::-webkit-scrollbar-thumb {
+            background-color: #CBD5E1;
+            border-radius: 20px;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+
+    <!-- Header Area -->
+    <header class="max-w-6xl mx-auto mb-10 text-center animate-slide-up">
+        <div class="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-blue-50 text-blue-600 text-sm font-medium mb-4">
+            <i class="fab fa-twitter"></i> 深度对话摘要
+        </div>
+        <h1 class="text-3xl md:text-4xl font-bold text-slate-800 mb-3 tracking-tight">AI 时代的开发者众生相</h1>
+        <p class="text-slate-500 max-w-2xl mx-auto text-lg">
+            基于 Andrej Karpathy (隐含) 引发的技术焦虑与赋能讨论。从“工具链变迁”到“心理建设”的全景扫描。
+        </p>
+    </header>
+
+    <div class="max-w-6xl mx-auto">
+        
+        <!-- Section 1: 核心概念翻转卡片 (Knowledge Flip Cards) -->
+        <section class="mb-16">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-slate-700 flex items-center gap-2">
+                    <i class="fas fa-lightbulb text-yellow-400"></i> 核心认知要点
+                </h2>
+                <span class="text-xs text-slate-400">鼠标悬停或点击卡片翻转</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                <!-- 卡片 1: 技能重构 -->
+                <div class="card-container animate-slide-up" style="animation-delay: 0.1s;">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="w-14 h-14 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center text-2xl mb-4 mx-auto shadow-sm">
+                                <i class="fas fa-tools"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800">经验的防御性</h3>
+                            <p class="text-sm text-slate-500 mt-2">AI 生成 vs 人工修正</p>
+                            <div class="mt-4 inline-block px-3 py-1 bg-gray-100 rounded-md text-xs font-mono text-gray-600">Human-in-the-loop</div>
+                        </div>
+                        <div class="card-back border-l-4 border-red-400">
+                            <h4 class="font-bold text-slate-800 mb-2 text-sm">核心论点</h4>
+                            <p class="text-xs text-slate-600 leading-relaxed mb-3">
+                                经验依然是护城河。AI 代码经常无法直接运行（幻觉/Bug），资深开发者的价值从“从零编写”转变为“诊断与修复”。
+                            </p>
+                            <div class="mt-auto pt-3 border-t border-slate-200 w-full">
+                                <div class="flex items-center gap-2 text-xs text-slate-500">
+                                    <i class="fas fa-user-circle"></i> Jonathan B. Seltzer
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 卡片 2: 工具演进 -->
+                <div class="card-container animate-slide-up" style="animation-delay: 0.2s;">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="w-14 h-14 bg-purple-50 text-purple-500 rounded-2xl flex items-center justify-center text-2xl mb-4 mx-auto shadow-sm">
+                                <i class="fas fa-terminal"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800">IDE 到 CLI</h3>
+                            <p class="text-sm text-slate-500 mt-2">交互界面的返祖现象</p>
+                            <div class="mt-4 inline-block px-3 py-1 bg-gray-100 rounded-md text-xs font-mono text-gray-600">Workflow Shift</div>
+                        </div>
+                        <div class="card-back border-l-4 border-purple-400">
+                            <h4 class="font-bold text-slate-800 mb-2 text-sm">技术洞察</h4>
+                            <p class="text-xs text-slate-600 leading-relaxed mb-3">
+                                这是一个反直觉的趋势。随着 Claude Code 等 Agent 的兴起，开发者正在离开复杂的图形界面（IDE），回归到高效的命令行（CLI）与 AI 直接对话。
+                            </p>
+                            <div class="mt-auto pt-3 border-t border-slate-200 w-full">
+                                <div class="flex items-center gap-2 text-xs text-slate-500">
+                                    <i class="fas fa-user-circle"></i> Wenma_Daoren
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 卡片 3: 民主化爆发 -->
+                <div class="card-container animate-slide-up" style="animation-delay: 0.3s;">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="w-14 h-14 bg-green-50 text-green-500 rounded-2xl flex items-center justify-center text-2xl mb-4 mx-auto shadow-sm">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800">编码民主化</h3>
+                            <p class="text-sm text-slate-500 mt-2">非专业人士的崛起</p>
+                            <div class="mt-4 inline-block px-3 py-1 bg-gray-100 rounded-md text-xs font-mono text-gray-600">Blue Ocean</div>
+                        </div>
+                        <div class="card-back border-l-4 border-green-400">
+                            <h4 class="font-bold text-slate-800 mb-2 text-sm">事实案例</h4>
+                            <p class="text-xs text-slate-600 leading-relaxed mb-3">
+                                "未受训练"的人通过 AI 编写了 40万+ 行代码。编程不再是精英的专利，创意与执行之间的障碍正在瓦解。
+                            </p>
+                            <div class="mt-auto pt-3 border-t border-slate-200 w-full">
+                                <div class="flex items-center gap-2 text-xs text-slate-500">
+                                    <i class="fas fa-user-circle"></i> Elisa Ellis, m a s
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 卡片 4: 焦虑与相对论 -->
+                <div class="card-container animate-slide-up" style="animation-delay: 0.4s;">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="w-14 h-14 bg-orange-50 text-orange-500 rounded-2xl flex items-center justify-center text-2xl mb-4 mx-auto shadow-sm">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800">相对剥夺感</h3>
+                            <p class="text-sm text-slate-500 mt-2">大神也会掉队？</p>
+                            <div class="mt-4 inline-block px-3 py-1 bg-gray-100 rounded-md text-xs font-mono text-gray-600">Imposter Syndrome</div>
+                        </div>
+                        <div class="card-back border-l-4 border-orange-400">
+                            <h4 class="font-bold text-slate-800 mb-2 text-sm">心理观察</h4>
+                            <p class="text-xs text-slate-600 leading-relaxed mb-3">
+                                当行业顶尖人物（如 Andrej）也表达出“跟不上”的感觉时，普通开发者会陷入恐慌（凡人没希望了）与释然（大家都一样）的叠加态。
+                            </p>
+                            <div class="mt-auto pt-3 border-t border-slate-200 w-full">
+                                <div class="flex items-center gap-2 text-xs text-slate-500">
+                                    <i class="fas fa-user-circle"></i> Sy, Raidfather
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Section 2: 分类详细摘要 (Interactive Tabs) -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden animate-slide-up" style="animation-delay: 0.5s;">
+            
+            <!-- Tab Headers -->
+            <div class="flex flex-wrap border-b border-slate-100 bg-slate-50/50">
+                <button onclick="switchTab('tab-pragmatic')" class="tab-btn active px-6 py-4 text-sm font-semibold text-slate-600 hover:text-blue-600 focus:outline-none flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-red-400"></div> 实战与技术
+                </button>
+                <button onclick="switchTab('tab-empower')" class="tab-btn px-6 py-4 text-sm font-semibold text-slate-600 hover:text-blue-600 focus:outline-none flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-green-400"></div> 赋能与未来
+                </button>
+                <button onclick="switchTab('tab-psych')" class="tab-btn px-6 py-4 text-sm font-semibold text-slate-600 hover:text-blue-600 focus:outline-none flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-purple-400"></div> 情绪与共鸣
+                </button>
+                <button onclick="switchTab('tab-philo')" class="tab-btn px-6 py-4 text-sm font-semibold text-slate-600 hover:text-blue-600 focus:outline-none flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-gray-400"></div> 哲学与观察
+                </button>
+            </div>
+
+            <!-- Tab Content Area -->
+            <div class="p-6 min-h-[300px]">
+                
+                <!-- 1. 实战与技术 (Pragmatic) -->
+                <div id="tab-pragmatic" class="tab-content grid gap-4">
+                    <div class="flex gap-4 p-4 rounded-xl bg-slate-50 hover:bg-white border border-transparent hover:border-slate-100 hover:shadow-sm transition-all">
+                        <div class="flex-shrink-0 text-red-400 mt-1"><i class="fas fa-bug"></i></div>
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <h4 class="font-bold text-slate-800 text-sm">Jonathan B. Seltzer</h4>
+                                <span class="bg-red-100 text-red-600 text-[10px] px-2 py-0.5 rounded-full">Reality Check</span>
+                            </div>
+                            <p class="text-sm text-slate-600 mt-1">"Experience still counts." AI 代码经常无法运行，经验是修复它的关键。</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 p-4 rounded-xl bg-slate-50 hover:bg-white border border-transparent hover:border-slate-100 hover:shadow-sm transition-all">
+                        <div class="flex-shrink-0 text-purple-400 mt-1"><i class="fas fa-code-branch"></i></div>
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <h4 class="font-bold text-slate-800 text-sm">Wenma_Daoren</h4>
+                                <span class="bg-purple-100 text-purple-600 text-[10px] px-2 py-0.5 rounded-full">Workflow</span>
+                            </div>
+                            <p class="text-sm text-slate-600 mt-1">"From IDE to CLI." 过去两个月使用 Claude Code 的经历，正在改变开发环境的范式。</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 p-4 rounded-xl bg-slate-50 hover:bg-white border border-transparent hover:border-slate-100 hover:shadow-sm transition-all">
+                        <div class="flex-shrink-0 text-gray-400 mt-1"><i class="fas fa-gamepad"></i></div>
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <h4 class="font-bold text-slate-800 text-sm">Raidfather</h4>
+                                <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded-full">Metaphor</span>
+                            </div>
+                            <p class="text-sm text-slate-600 mt-1">用《魔兽世界》做比喻：别在怀旧服（Classic/旧模式）偷懒了，要及时赶上现代服（Modern/AI模式）。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. 赋能与未来 (Empowerment) -->
+                <div id="tab-empower" class="tab-content hidden grid gap-4">
+                    <div class="flex gap-4 p-4 rounded-xl bg-slate-50 hover:bg-white border border-transparent hover:border-slate-100 hover:shadow-sm transition-all">
+                        <div class="flex-shrink-0 text-green-500 mt-1"><i class="fas fa-child"></i></div>
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <h4 class="font-bold text-slate-800 text-sm">Elisa Ellis</h4>
+                                <span class="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full">Success Story</span>
+                            </div>
+                            <p class="text-sm text-slate-600 mt-1">儿子不是受训程序员，却用 AI 为机器人写了 40 万行代码。展示了极低的技术门槛。</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 p-4 rounded-xl bg-slate-50 hover:bg-white border border-transparent hover:border-slate-100 hover:shadow-sm transition-all">
+                        <div class="flex-shrink-0 text-yellow-500 mt-1"><i class="fas fa-bolt"></i></div>
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <h4 class="font-bold text-slate-800 text-sm">Brent Norris & Zachary Rand</h4>
+                                <span class="bg-yellow-100 text-yellow-700 text-[10px] px-2 py-0.5 rounded-full">High Vibe</span>
+                            </div>
+                            <p class="text-sm text-slate-600 mt-1">前所未有的赋能感。"Can't build enough fast enough." 进入了超级生产力的心流状态。</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 p-4 rounded-xl bg-slate-50 hover:bg-white border border-transparent hover:border-slate-100 hover:shadow-sm transition-all">
+                        <div class="flex-shrink-0 text-blue-400 mt-1"><i class="fas fa-telescope"></i></div>
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <h4 class="font-bold text-slate-800 text-sm">m a s</h4>
+                                <span class="bg-blue-100 text-blue-600 text-[10px] px-2 py-0.5 rounded-full">Future</span>
+                            </div>
+                            <p class="text-sm text-slate-600 mt-1">想象不到的杀手级应用将在几年内出现。眼前是蔚蓝的海洋（Blue Oceans）。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. 情绪与共鸣 (Psychology) -->
+                <div id="tab-psych" class="tab-content hidden grid gap-4">
+                    <div class="flex gap-4 p-4 rounded-xl bg-slate-50 hover:bg-white border border-transparent hover:border-slate-100 hover:shadow-sm transition-all">
+                        <div class="flex-shrink-0 text-orange-400 mt-1"><i class="fas fa-exclamation-circle"></i></div>
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <h4 class="font-bold text-slate-800 text-sm">Sy</h4>
+                                <span class="bg-orange-100 text-orange-600 text-[10px] px-2 py-0.5 rounded-full">Anxiety</span>
+                            </div>
+                            <p class="text-sm text-slate-600 mt-1">"If Andrej feels like he's falling behind..." 如果大神都觉得落后，我们凡人还有希望吗？表达了普遍的焦虑。</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 p-4 rounded-xl bg-slate-50 hover:bg-white border border-transparent hover:border-slate-100 hover:shadow-sm transition-all">
+                        <div class="flex-shrink-0 text-pink-400 mt-1"><i class="fas fa-laugh-squint"></i></div>
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <h4 class="font-bold text-slate-800 text-sm">Curlheinz</h4>
+                                <span class="bg-pink-100 text-pink-600 text-[10px] px-2 py-0.5 rounded-full">Meta/Humor</span>
+                            </div>
+                            <p class="text-sm text-slate-600 mt-1">"Longest sentence I have read..." 对长文或复杂讨论的幽默解构，缓解紧张气氛。</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 p-4 rounded-xl bg-slate-50 hover:bg-white border border-transparent hover:border-slate-100 hover:shadow-sm transition-all">
+                        <div class="flex-shrink-0 text-green-400 mt-1"><i class="fas fa-check"></i></div>
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <h4 class="font-bold text-slate-800 text-sm">Riley Scheurman</h4>
+                                <span class="bg-green-100 text-green-600 text-[10px] px-2 py-0.5 rounded-full">Validation</span>
+                            </div>
+                            <p class="text-sm text-slate-600 mt-1">"So true." 对现状的简单直接的确认与共鸣。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. 哲学与观察 (Philosophy) -->
+                <div id="tab-philo" class="tab-content hidden grid gap-4">
+                    <div class="flex gap-4 p-4 rounded-xl bg-slate-50 hover:bg-white border border-transparent hover:border-slate-100 hover:shadow-sm transition-all">
+                        <div class="flex-shrink-0 text-gray-600 mt-1"><i class="fas fa-quote-left"></i></div>
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <h4 class="font-bold text-slate-800 text-sm">Raph. H.</h4>
+                                <span class="bg-gray-200 text-gray-700 text-[10px] px-2 py-0.5 rounded-full">Kuhn's Theory</span>
+                            </div>
+                            <p class="text-sm text-slate-600 mt-1">引用托马斯·库恩：具体的科学成就先于概念和理论。暗示我们正处于理论尚未形成的实践爆发期。</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 p-4 rounded-xl bg-slate-50 hover:bg-white border border-transparent hover:border-slate-100 hover:shadow-sm transition-all">
+                        <div class="flex-shrink-0 text-blue-500 mt-1"><i class="fas fa-eye"></i></div>
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <h4 class="font-bold text-slate-800 text-sm">Donald Watts</h4>
+                                <span class="bg-blue-100 text-blue-600 text-[10px] px-2 py-0.5 rounded-full">Perspective</span>
+                            </div>
+                            <p class="text-sm text-slate-600 mt-1">赞赏“受过教育且有经验”的人能诚实地面对正在发生的过程（指代原作者的坦诚）。</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center mt-12 mb-8 text-xs text-slate-300">
+            AI Generated Summary • Interactive HTML5 Card System
+        </footer>
+
+    </div>
+
+    <script>
+        function switchTab(tabId) {
+            // Hide all contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.remove('bg-blue-50');
+                btn.classList.remove('text-blue-600');
+                btn.classList.remove('border-b-2');
+                btn.classList.remove('border-blue-600');
+            });
+
+            // Show selected content
+            document.getElementById(tabId).classList.remove('hidden');
+
+            // Add active class to clicked button
+            const activeBtn = document.querySelector(`button[onclick="switchTab('${tabId}')"]`);
+            activeBtn.classList.add('active');
+        }
+        
+        // Add manual flip for mobile devices
+        document.querySelectorAll('.card-container').forEach(card => {
+            card.addEventListener('click', function() {
+                this.classList.toggle('flipped');
+            });
+        });
+    </script>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://x.com/karpathy/status/2004607146781278521" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
