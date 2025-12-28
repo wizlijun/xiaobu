@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>捣蛋鬼创造世界 - 完整精华版</title>
+    <style>
+        :root {
+            /* 基础色调 */
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-primary: #37474f;
+            --text-secondary: #607d8b;
+            --accent-color: #0288d1;
+            
+            /* 逻辑区块颜色 */
+            --def-bg: #e1f5fe; /* 定义 - 浅蓝 */
+            --def-text: #0277bd;
+            --why-bg: #fce4ec; /* Why - 浅红 */
+            --why-text: #c2185b;
+            --how-bg: #e8f5e9; /* How - 浅绿 */
+            --how-text: #2e7d32;
+
+            /* 布局参数 */
+            --border-radius: 16px;
+            --shadow: 0 10px 30px rgba(0,0,0,0.06);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 50px 20px;
+        }
+
+        /* 头部样式 */
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeIn 1s ease-out;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            color: #263238;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            font-weight: 300;
+        }
+
+        .instruction-tag {
+            display: inline-block;
+            background: #fff;
+            padding: 8px 20px;
+            border-radius: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            font-size: 0.9rem;
+            color: var(--accent-color);
+            margin-top: 25px;
+            border: 1px solid #b3e5fc;
+        }
+
+        /* 章节容器 */
+        .section {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 40px;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 6px;
+            background: var(--accent-color);
+        }
+
+        h2 {
+            color: #263238;
+            font-size: 1.8rem;
+            margin-top: 0;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-desc {
+            margin-bottom: 30px;
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            border-bottom: 1px solid #eceff1;
+            padding-bottom: 15px;
+        }
+
+        /* 翻转卡片布局 */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            height: 340px; /* 增加高度以容纳更多内容 */
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: left;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        /* 卡片正反面通用 */
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-sizing: border-box;
+        }
+
+        /* 卡片正面 */
+        .flip-card-front {
+            background-color: #ffffff;
+            border: 1px solid #eceff1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .card-icon {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #37474f;
+            margin-bottom: 8px;
+        }
+
+        .card-term {
+            font-size: 0.9rem;
+            color: #90a4ae;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        /* 卡片背面 - 结构化展示 */
+        .flip-card-back {
+            background-color: #ffffff;
+            transform: rotateY(180deg);
+            border: 1px solid #cfd8dc;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        /* 逻辑块样式 */
+        .logic-block {
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .block-def {
+            background-color: var(--def-bg);
+            color: var(--def-text);
+            border-left: 4px solid var(--def-text);
+        }
+
+        .block-why {
+            background-color: var(--why-bg);
+            color: var(--why-text);
+            border-left: 4px solid var(--why-text);
+        }
+
+        .block-how {
+            background-color: var(--how-bg);
+            color: var(--how-text);
+            border-left: 4px solid var(--how-text);
+        }
+
+        .block-label {
+            font-weight: 800;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 4px;
+            opacity: 0.9;
+        }
+
+        /* 动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        footer {
+            text-align: center;
+            color: #b0bec5;
+            font-size: 0.9rem;
+            margin-top: 60px;
+            border-top: 1px solid #eceff1;
+            padding-top: 30px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .section { padding: 25px; }
+            .flip-card { height: 360px; } /* 移动端增加高度 */
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>捣蛋鬼创造世界</h1>
+        <div class="subtitle">Trickster Makes This World: Mischief, Myth, and Art</div>
+        <p style="color: #78909c; margin-top: 10px;">作者: Lewis Hyde | 核心精读</p>
+        <div class="instruction-tag">✨ 请将鼠标悬停在卡片上，查看概念背后的 <strong>WHY（意义）</strong> 与 <strong>HOW（机制）</strong></div>
+    </header>
+
+    <!-- 第一部分 -->
+    <div class="section">
+        <h2>第一部分：自然的陷阱</h2>
+        <p class="section-desc">捣蛋鬼的智慧起源于生理需求（饥饿）。在猎手与猎物的博弈中，为了不被吃掉且能吃饱，智慧诞生了。</p>
+        
+        <div class="cards-grid">
+            <!-- 卡片1: 偷饵者 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🪝</div>
+                        <div class="card-title">偷饵者</div>
+                        <div class="card-term">The Bait Thief</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="logic-block block-why">
+                            <span class="block-label">💡 Why (存在的意义)</span>
+                            为了生存，必须超越简单的条件反射。单纯的捕食者或猎物都会被困在食物链的死循环中。
+                        </div>
+                        <div class="logic-block block-how">
+                            <span class="block-label">⚙️ How (运作机制)</span>
+                            捣蛋鬼将<strong>诱饵（目的）</strong>与<strong>钩子（陷阱）</strong>分离。他利用猎人的技术反哺自己，这是工具理性与创造性欺骗的起源。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片2: 无道之行 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🦊</div>
+                        <div class="card-title">无道之行</div>
+                        <div class="card-term">Having No Way</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="logic-block block-why">
+                            <span class="block-label">💡 Why (存在的意义)</span>
+                            拥有固定的本能或“道”（Way）虽然高效，但在环境剧变时是致命的脆弱点。
+                        </div>
+                        <div class="logic-block block-how">
+                            <span class="block-label">⚙️ How (运作机制)</span>
+                            捣蛋鬼没有固定的生存方式。他通过<strong>模仿</strong>他人、<strong>变通</strong>规则和保持<strong>多变性</strong>来适应一切环境。他的“无定性”是最大的生存优势。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第二部分 -->
+    <div class="section">
+        <h2>第二部分：双路机缘</h2>
+        <p class="section-desc">世界充满了必然性，但也充满了意外。捣蛋鬼是“偶然性”的神，他在十字路口等待，利用意外打破僵局。</p>
+
+        <div class="cards-grid">
+            <!-- 卡片3: 捕捉偶然 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🕸️</div>
+                        <div class="card-title">捕捉偶然之网</div>
+                        <div class="card-term">Net to Catch Contingency</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="logic-block block-why">
+                            <span class="block-label">💡 Why (存在的意义)</span>
+                            完美的秩序意味着停滞和死亡。系统需要外部的“噪音”和“意外”来触发进化和创新。
+                        </div>
+                        <div class="logic-block block-how">
+                            <span class="block-label">⚙️ How (运作机制)</span>
+                            如艺术家约翰·凯奇（John Cage）利用随机性。通过<strong>放弃主观控制（Non-intention）</strong>，编织一张能“捕捉”意外的网，让世界原本的丰富性自然显现。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片4: 赫尔墨斯的礼物 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🐢</div>
+                        <div class="card-title">赫尔墨斯的礼物</div>
+                        <div class="card-term">Hermaion (Lucky Find)</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="logic-block block-why">
+                            <span class="block-label">💡 Why (存在的意义)</span>
+                            传统的交换基于互惠和义务，容易形成封闭的死循环，让人窒息。
+                        </div>
+                        <div class="logic-block block-how">
+                            <span class="block-label">⚙️ How (运作机制)</span>
+                            通过“意外发现”（如出门撞见乌龟做成琴）。这种获得<strong>不需要劳动，也不需要互惠</strong>，从而打破了封闭的经济和道德循环，引入了新的价值。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第三部分 -->
+    <div class="section">
+        <h2>第三部分：污秽工作</h2>
+        <p class="section-desc">污秽只是“放错位置的物质”。捣蛋鬼负责处理被文化排斥的事物（性、死亡、排泄物），防止秩序因过度洁癖而枯竭。</p>
+
+        <div class="cards-grid">
+            <!-- 卡片5: 污秽工作 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">💩</div>
+                        <div class="card-title">污秽工作</div>
+                        <div class="card-term">Dirt Work</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="logic-block block-why">
+                            <span class="block-label">💡 Why (存在的意义)</span>
+                            秩序是通过排除“污秽”建立的，但极度的纯洁会导致不育。为了复兴，必须重新接触被排除的活力。
+                        </div>
+                        <div class="logic-block block-how">
+                            <span class="block-label">⚙️ How (运作机制)</span>
+                            捣蛋鬼把被排除的“污秽”带回神圣中心（如在教堂撒野，或像荣格梦见上帝排泄）。这是一种<strong>复兴仪式</strong>，让僵化的秩序重新接触真实的混沌。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片6: 无耻之言 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🙊</div>
+                        <div class="card-title">无耻之言</div>
+                        <div class="card-term">Shameless Speech</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="logic-block block-why">
+                            <span class="block-label">💡 Why (存在的意义)</span>
+                            当文化规范（如种族歧视、沉默规则）变成压迫的陷阱时，礼貌就是共谋。
+                        </div>
+                        <div class="logic-block block-how">
+                            <span class="block-label">⚙️ How (运作机制)</span>
+                            像汤亭亭或弗雷德里克·道格拉斯那样，说出“不该说的话”。<strong>打破沉默的契约</strong>，不仅是反抗，更是重塑身份认同边界的必要手段。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第四部分：深度解析 -->
+    <div class="section" style="border-left-color: #7b1fa2;">
+        <h2 style="color: #4a148c;">第四部分：文化的陷阱（深度解析）</h2>
+        <p class="section-desc">我们生活在文化结构中，但有时结构会变成牢笼。捣蛋鬼是这个结构的“关节”，负责连接、拆解与重组。</p>
+
+        <div class="cards-grid">
+            <!-- 核心概念卡片：文化作为结构 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🏗️</div>
+                        <div class="card-title">文化的陷阱</div>
+                        <div class="card-term">Structure as Trap</div>
+                        <p style="font-size:0.8rem; color:#90a4ae; margin-top:5px;">词源：Artus (关节/技艺)</p>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="logic-block block-def">
+                            <span class="block-label">📘 定义 (Definition)</span>
+                            这里的“结构”指社会构建的<strong>分类系统和边界</strong>（如黑/白、神圣/世俗）。当这些分类僵化为“绝对真理”时，结构就变成了陷阱。
+                        </div>
+                        <div class="logic-block block-why">
+                            <span class="block-label">💡 Why (存在的意义)</span>
+                            没有结构（关节），身体无法站立；但结构如果无法弯曲（关节僵死），身体就无法移动或适应变化。
+                        </div>
+                        <div class="logic-block block-how">
+                            <span class="block-label">⚙️ How (运作机制)</span>
+                            捣蛋鬼揭示<strong>所有结构都是人造的</strong>，因此是可以改变的。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片8: 关节工 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🦴</div>
+                        <div class="card-title">关节工</div>
+                        <div class="card-term">Artus-Worker</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="logic-block block-why">
+                            <span class="block-label">💡 Why (存在的意义)</span>
+                            如果世界完全被分割（天与地、神与人完全隔离），生命能量将无法流动，系统将枯竭。
+                        </div>
+                        <div class="logic-block block-how">
+                            <span class="block-label">⚙️ How (运作机制)</span>
+                            捣蛋鬼在固定的分类之间活动。他不仅能拆解旧关节，也能像翻译官一样，在不同领域间建立新的、临时的连接，保持社会的<strong>灵活性</strong>。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片9: 能指猴 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🐵</div>
+                        <div class="card-title">能指猴</div>
+                        <div class="card-term">Signifying Monkey</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="logic-block block-why">
+                            <span class="block-label">💡 Why (存在的意义)</span>
+                            面对绝对的权力结构（如狮子代表的霸权），硬碰硬会导致毁灭。需要一种更微妙的抵抗方式。
+                        </div>
+                        <div class="logic-block block-how">
+                            <span class="block-label">⚙️ How (运作机制)</span>
+                            通过<strong>语言游戏</strong>（双关、隐喻、反讽）。捣蛋鬼滑动词语的意义，让僵化的权力在阐释的迷宫中迷失，从而在象征层面战胜强者。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 结论 -->
+    <div class="section" style="border-left-color: #43a047; background: #f1f8e9;">
+        <h2 style="color: #2e7d32;">结论：丰饶的预言</h2>
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 250px;">
+                <h3 style="font-size: 1.2rem; color: #1b5e20;">🚀 捣蛋鬼的使命</h3>
+                <p>捣蛋鬼不仅是破坏者，他们是<strong>先知</strong>。但他们不预言未来，而是<strong>揭示当下的丰饶 (Plenitude)</strong>。</p>
+            </div>
+            <div style="flex: 1; min-width: 250px;">
+                <h3 style="font-size: 1.2rem; color: #1b5e20;">🧠 我们的功课</h3>
+                <p>当捣蛋鬼打破既定规则时，我们看到了被规则排除在外的广阔世界。如果要在这个多变的世界生存，我们需要唤醒心中的捣蛋鬼，保持思维的弹性，在“没有路”的地方走出路来。</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Interactive Summary based on "Trickster Makes This World" by Lewis Hyde</p>
+    </footer>
+</div>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_trickster_makes_this_world_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
