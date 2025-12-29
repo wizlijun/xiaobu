@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code 全景深度解构 (Jared @ Prompt Layer)</title>
+    <style>
+        :root {
+            --primary: #4f46e5; /* Indigo */
+            --primary-light: #e0e7ff;
+            --secondary: #0ea5e9; /* Sky */
+            --accent: #f43f5e; /* Rose */
+            --success: #10b981; /* Emerald */
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.7;
+            overflow-y: scroll;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Hero Section */
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding: 40px;
+            background: linear-gradient(135deg, #fff 0%, #f1f5f9 100%);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        .meta {
+            font-size: 1rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .meta span {
+            background: #fff;
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+
+        /* Navigation */
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 40px;
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+            background: rgba(248, 250, 252, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 10px;
+            border-radius: 16px;
+        }
+
+        .nav-btn {
+            padding: 12px 24px;
+            border: none;
+            background: white;
+            color: var(--text-muted);
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            border: 1px solid transparent;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            color: var(--primary);
+        }
+
+        .nav-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* Content Areas */
+        .section {
+            display: none;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            padding-left: 15px;
+            border-left: 5px solid var(--primary);
+            color: var(--text-main);
+        }
+
+        /* Timeline (History) */
+        .timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            background-color: var(--primary-light);
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin-left: -2px;
+        }
+        .timeline-item {
+            padding: 10px 40px;
+            position: relative;
+            background-color: inherit;
+            width: 50%;
+            box-sizing: border-box;
+        }
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            right: -10px;
+            background-color: white;
+            border: 4px solid var(--secondary);
+            top: 15px;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        .left { left: 0; }
+        .right { left: 50%; }
+        .right::after { left: -10px; }
+        
+        .content-box {
+            padding: 20px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        /* Flip Cards */
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            width: 100%;
+            height: 260px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+        }
+
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            box-sizing: border-box;
+            border: 1px solid var(--border);
+        }
+
+        .flip-card-front {
+            background: white;
+        }
+
+        .flip-card-back {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            transform: rotateY(180deg);
+            text-align: left;
+            align-items: flex-start;
+            overflow-y: auto;
+        }
+
+        .icon-large {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .card-tag {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
+        /* Detail List */
+        .detail-list li {
+            margin-bottom: 12px;
+            padding-left: 20px;
+            position: relative;
+        }
+        .detail-list li::before {
+            content: "•";
+            color: var(--primary);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        /* Tool Table */
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .tool-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent);
+            box-shadow: var(--shadow);
+        }
+        
+        .tool-name {
+            font-weight: 800;
+            font-family: monospace;
+            font-size: 1.1rem;
+            color: var(--accent);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* Comparison Cards */
+        .competitor-card {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        .competitor-icon {
+            font-size: 2.5rem;
+            background: var(--bg);
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        /* Highlights */
+        .highlight {
+            background-color: #fef9c3;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media screen and (max-width: 768px) {
+            .timeline::after { left: 31px; }
+            .timeline-item { width: 100%; padding-left: 70px; padding-right: 25px; }
+            .timeline-item::after { left: 21px; }
+            .left::after, .right::after { left: 21px; }
+            .right { left: 0%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Claude Code 深度解构</h1>
+            <p style="font-size: 1.2rem; color: #475569;">"Bash is All You Need" — 探究自主编程 Agent 的极简主义革命</p>
+            <div class="meta">
+                <span>🎤 讲者: Jared (Prompt Layer)</span>
+                <span>📅 2025年 AI Engineer 峰会</span>
+                <span>⏱️ 核心摘要</span>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-btn active" onclick="switchTab('history')">🕰️ 演变与哲学</button>
+            <button class="nav-btn" onclick="switchTab('architecture')">🏗️ 核心架构</button>
+            <button class="nav-btn" onclick="switchTab('mechanisms')">⚙️ 关键机制</button>
+            <button class="nav-btn" onclick="switchTab('landscape')">⚔️ 竞品格局</button>
+            <button class="nav-btn" onclick="switchTab('future')">🚀 评估与未来</button>
+        </div>
+
+        <!-- Section 1: History & Philosophy -->
+        <div id="history" class="section active">
+            <h2 class="section-title">从复制粘贴到自主 Agent 的演变</h2>
+            
+            <div class="timeline">
+                <div class="timeline-item left">
+                    <div class="content-box">
+                        <h4>Phase 1: 复制粘贴时代</h4>
+                        <p>ChatGPT 刚出现时，开发者手动复制代码，来回粘贴。这是最原始的交互。</p>
+                    </div>
+                </div>
+                <div class="timeline-item right">
+                    <div class="content-box">
+                        <h4>Phase 2: Cursor (早期)</h4>
+                        <p>VS Code 的 fork 版本，引入 `Cmd+K`。最初体验一般，但开启了 IDE 集成的先河。</p>
+                    </div>
+                </div>
+                <div class="timeline-item left">
+                    <div class="content-box">
+                        <h4>Phase 3: Cursor Assistant / Composer</h4>
+                        <p>引入 Agent 概念，多文件编辑，速度极快。</p>
+                    </div>
+                </div>
+                <div class="timeline-item right">
+                    <div class="content-box">
+                        <h4>Phase 4: Claude Code (Headless)</h4>
+                        <p><strong>无头模式，彻底的自主性。</strong> 不再是辅助写代码，而是接管终端，自主循环。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 50px; background: white; padding: 30px; border-radius: 16px; border: 2px dashed var(--primary);">
+                <h3 style="color: var(--primary); margin-top: 0;">核心哲学：极简主义 (Zen of Python)</h3>
+                <p>Claude Code 之所以现在能成功，是因为它放弃了早期 Agent 复杂的“过度工程化”，回归了最简单的设计：</p>
+                <ul class="detail-list">
+                    <li><strong>Simple Architecture:</strong> 简单的循环结构优于复杂的图（DAG）。</li>
+                    <li><strong>Better Models:</strong> 依赖 Anthropic 模型强大的 Tool Calling 能力，而不是复杂的代码脚手架。</li>
+                    <li><strong>Get out of the way:</strong> 给它工具，然后让开，让模型自己探索和纠错。</li>
+                    <li><strong>Bash is all you need:</strong> Bash 是通用适配器，因为训练数据中包含海量 Shell 脚本，模型天生擅长。</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 2: Architecture -->
+        <div id="architecture" class="section">
+            <h2 class="section-title">Claude Code 的架构拆解</h2>
+            <p>没有复杂的向量库，没有复杂的检索链，只有简单的工具循环。</p>
+
+            <div class="grid-cards">
+                <!-- Card 1 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <span class="icon-large">📜</span>
+                            <div class="card-title">Constitution (宪法)</div>
+                            <div class="card-tag">CLAUDE.md</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>CLAUDE.md / .ai-docs</h4>
+                            <p><strong>极简记忆库：</strong></p>
+                            <p>不再使用复杂的向量数据库来“理解”代码库。直接使用一个 Markdown 文件记录项目指令。</p>
+                            <p><strong>优势：</strong> 用户和 Agent 都可以读写，透明、简单、有效。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <span class="icon-large">🔄</span>
+                            <div class="card-title">The Master Loop</div>
+                            <div class="card-tag">N0 Loop</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>主循环 (While Loop)</h4>
+                            <p>核心代码可能只有4行：</p>
+                            <p><code>While tool_calls:</code><br>1. 运行工具<br>2. 获取结果<br>3. 喂回模型<br>4. 重复</p>
+                            <p>依赖模型自我纠错能力，而不是复杂的条件判断分支。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <span class="icon-large">💻</span>
+                            <div class="card-title">Bash Universal</div>
+                            <div class="card-tag">核心工具</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>Bash Is All You Need</h4>
+                            <p>不需要为每个操作发明新工具。</p>
+                            <p><strong>为什么？</strong> 训练数据丰富（GitHub 上无数的 Shell 脚本）。</p>
+                            <p><strong>能力：</strong> 它可以运行测试、Git 操作、文件管理、环境配置。它是连接一切的胶水。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 40px;">核心工具集 (The Toolkit)</h3>
+            <div class="tool-grid">
+                <div class="tool-card">
+                    <span class="tool-name">EDIT (Unified Diff)</span>
+                    <p>不重写整个文件。生成 Diff 片段。节省 Token，速度更快，大幅减少幻觉（因为不需要重写未修改的部分）。</p>
+                </div>
+                <div class="tool-card">
+                    <span class="tool-name">GREP / GLOB</span>
+                    <p>放弃 RAG (检索增强生成)。直接使用传统的文件搜索工具。在代码库导航中，Grep 往往比向量相似度搜索更精准。</p>
+                </div>
+                <div class="tool-card">
+                    <span class="tool-name">READ</span>
+                    <p>读取文件内容。配合 Context Compression 使用。</p>
+                </div>
+                <div class="tool-card">
+                    <span class="tool-name">Tasks (Sub-Agents)</span>
+                    <p>为了防止上下文污染，将任务分叉给子 Agent。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Mechanisms -->
+        <div id="mechanisms" class="section">
+            <h2 class="section-title">关键机制：如何在限制中跳舞</h2>
+            
+            <div class="grid-cards">
+                <!-- To-Dos -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <span class="icon-large">✅</span>
+                            <div class="card-title">To-Dos (待办事项)</div>
+                            <div class="card-tag">规划与恢复</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>结构化的 Prompt 注入</h4>
+                            <p><strong>定义：</strong> 不是代码强制的，而是通过 System Prompt 注入的结构化文本。</p>
+                            <p><strong>作用：</strong> 
+                                <br>1. 强制模型规划。
+                                <br>2. <strong>崩溃恢复：</strong> 如果 Agent 崩溃，重启后读取 To-Do 列表即可知道进度。
+                                <br>3. 改善 UX，让用户知道 Agent 在干什么。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sub-Agents -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <span class="icon-large">🐙</span>
+                            <div class="card-title">Sub-Agents (Tasks)</div>
+                            <div class="card-tag">上下文隔离</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>子智能体机制</h4>
+                            <p><strong>问题：</strong> 上下文越长，模型越笨。</p>
+                            <p><strong>方案：</strong> 对于“研究”、“阅读文档”、“运行测试”等任务，启动一个全新的 Agent（Task）。</p>
+                            <p><strong>关键点：</strong> 子 Agent 跑完后，只返回<strong>最终结果</strong>给主 Agent，中间过程的噪音直接丢弃，保持主上下文干净。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Async Buffer -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <span class="icon-large">📉</span>
+                            <div class="card-title">H2A Async Buffer</div>
+                            <div class="card-tag">上下文压缩</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>IO 与推理分离</h4>
+                            <p>当输出（如大量 Log）填满上下文（如达到 92%）时，自动触发压缩。</p>
+                            <p><strong>策略：</strong> 保留头部和尾部，概括或丢弃中间部分。确保持续运行而不爆显存/Token。</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Skills -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <span class="icon-large">🧩</span>
+                            <div class="card-title">Skills (技能)</div>
+                            <div class="card-tag">扩展能力</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>按需加载的 System Prompt</h4>
+                            <p>类似于插件。例如“深度研究”、“Office文档处理”、“特定代码风格”。</p>
+                            <p>只有在需要时才加载进上下文，避免通用 Prompt 过于臃肿。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px; background: #fff; padding: 20px; border-radius: 12px; box-shadow: var(--shadow);">
+                <h4>🧠 System Prompt Leaks (泄露的提示词策略)</h4>
+                <ul class="detail-list">
+                    <li><strong>Concise Outputs:</strong> 严禁废话，不要说 "Here is..."。</li>
+                    <li><strong>Tool usage over text:</strong> 强迫模型用工具行动，而不是用文本解释它要行动。</li>
+                    <li><strong>No Comments:</strong> 尽量不要在代码中添加无关注释（减少 Token）。</li>
+                    <li><strong>Read before Edit:</strong> 强制先读取文件确认内容（虽然可能增加 Token，但减少错误）。</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 4: Landscape -->
+        <div id="landscape" class="section">
+            <h2 class="section-title">百家争鸣：不同的设计哲学</h2>
+            <p>Jared 认为没有一种“最好的”架构，就像没有最好的心理治疗师一样（AI Therapist Problem）。不同的场景需要不同的设计。</p>
+
+            <div class="competitor-card">
+                <div class="competitor-icon">🤖</div>
+                <div>
+                    <h3>CodeAct (OpenAI 早期 / 开源社区)</h3>
+                    <p><span class="highlight">Rust Core</span> | <span class="highlight">Event Driven</span></p>
+                    <p><strong>特点：</strong> 开源，强调内核级的沙盒（Linux Land / Seatbelt）。架构上更偏向事件驱动和并发线程。适合研究和极客。</p>
+                </div>
+            </div>
+
+            <div class="competitor-card">
+                <div class="competitor-icon">⚡</div>
+                <div>
+                    <h3>Cursor / Composer</h3>
+                    <p><span class="highlight">UI First</span> | <span class="highlight">Speed</span> | <span class="highlight">Distilled Models</span></p>
+                    <p><strong>特点：</strong> 极致的速度。使用特定微调（Fine-tuning）的小模型（蒸馏模型）来实现低延迟。利用用户数据建立了强大的护城河。适合日常高频编码。</p>
+                </div>
+            </div>
+
+            <div class="competitor-card">
+                <div class="competitor-icon">🤝</div>
+                <div>
+                    <h3>AMP (Sourcegraph)</h3>
+                    <p><span class="highlight">Context Handoff</span> | <span class="highlight">Model Switching</span></p>
+                    <p><strong>特点：</strong> 
+                        <br>1. <strong>模型切换：</strong> 可以在 Fast, Smart, Oracle (推理模型) 之间切换。
+                        <br>2. <strong>Context Handoff (交接)：</strong> 就像游戏中“切换武器比换弹夹快”。通过开启新线程并将必要上下文交接过去，来规避上下文过长的问题。</p>
+                </div>
+            </div>
+
+            <div class="competitor-card">
+                <div class="competitor-icon">🦊</div>
+                <div>
+                    <h3>Claude Code</h3>
+                    <p><span class="highlight">CLI First</span> | <span class="highlight">Human-like</span></p>
+                    <p><strong>特点：</strong> 最像人类开发者的行为（使用 Bash, Git, Diff）。适合处理环境配置、大型重构、跨文件依赖等复杂任务。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 5: Future & Evals -->
+        <div id="future" class="section">
+            <h2 class="section-title">未来趋势与评估标准</h2>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                <!-- Evals -->
+                <div class="content-box">
+                    <h3 style="color: var(--accent);">如何评估 Agent? (Evals)</h3>
+                    <p>基准测试（Benchmarks）大多已沦为营销工具，意义不大。</p>
+                    <p><strong>推荐方案：</strong></p>
+                    <ul class="detail-list">
+                        <li><strong>Agent Smell (嗅觉测试):</strong> 监控行为指标。它调用了多少次工具？重试了多少次？是否陷入死循环？</li>
+                        <li><strong>Backtesting (回测):</strong> 记录真实的历史数据，反复跑测试。</li>
+                        <li><strong>End-to-End Tests:</strong> 关注结果而非过程。例如：给一个破坏的仓库，看它能否修复并通过测试。</li>
+                    </ul>
+                </div>
+
+                <!-- Future -->
+                <div class="content-box">
+                    <h3 style="color: var(--primary);">未来趋势 (Next)</h3>
+                    <ul class="detail-list">
+                        <li><strong>Headless SDKs:</strong> 
+                            <br>未来可能不需要直接调用 LLM API，而是调用“Claude Code SDK”。
+                            <br><i>场景：</i> 每天凌晨自动运行脚本 -> 启动 Headless Claude -> 读取最新代码 -> 更新文档 -> 提交 PR。全自动，无人值守。
+                        </li>
+                        <li><strong>Mega Tool vs Many Tools:</strong>
+                            <br>Jared 预测：我们会倾向于更少、更强大的工具（如 Bash），而不是几百个细碎的工具。
+                        </li>
+                        <li><strong>Rigorous Tools:</strong>
+                            <br>对于需要严格格式输出的任务（如特定格式的报告），构建严格的、确定性的工具，而不是依赖模型的发挥。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="margin-top: 40px; text-align: center;">
+                <h3>核心总结 (Takeaways)</h3>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
+                    <span class="card-tag" style="font-size: 1rem; padding: 10px 20px;">Trust the Model (相信模型)</span>
+                    <span class="card-tag" style="font-size: 1rem; padding: 10px 20px;">Simple Design Wins (简单致胜)</span>
+                    <span class="card-tag" style="font-size: 1rem; padding: 10px 20px;">Bash is All You Need</span>
+                    <span class="card-tag" style="font-size: 1rem; padding: 10px 20px;">Context is the Enemy (管理上下文)</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function switchTab(tabId) {
+            // Remove active class from all buttons and sections
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+
+            // Add active class to clicked button and target section
+            document.querySelector(`[onclick="switchTab('${tabId}')"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+            
+            // Scroll to top of content
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
