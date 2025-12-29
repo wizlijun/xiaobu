@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全景摘要：《山地人：火器、陷阱与工具》</title>
+    <style>
+        :root {
+            --bg-color: #f3f4f6;
+            --text-primary: #1f2937;
+            --text-secondary: #4b5563;
+            --accent-color: #2563eb;
+            --card-bg: #ffffff;
+            --header-gradient: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            --highlight-bg: #fff7ed;
+            --highlight-border: #f97316;
+            --skill-bg: #ecfdf5; /* 技能章节的特有背景色 */
+            --skill-border: #10b981;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 头部样式 */
+        header {
+            background: var(--header-gradient);
+            padding: 4rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid #bfdbfe;
+        }
+
+        h1 {
+            color: #1e3a8a;
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #64748b;
+            margin-bottom: 1.5rem;
+        }
+
+        .meta {
+            display: inline-block;
+            background: rgba(255,255,255,0.8);
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.9rem;
+            color: var(--accent-color);
+            border: 1px solid #bfdbfe;
+        }
+
+        /* 主容器 */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* 章节标题 */
+        .chapter-title {
+            display: flex;
+            align-items: center;
+            margin-top: 3.5rem;
+            margin-bottom: 1.5rem;
+            color: #111827;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+        }
+
+        .chapter-num {
+            background: var(--accent-color);
+            color: white;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            margin-right: 12px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+        }
+
+        .chapter-num.skill {
+            background: var(--skill-border);
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+        }
+
+        /* 翻转卡片网格 */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* 翻转卡片核心样式 */
+        .flip-card {
+            background-color: transparent;
+            height: 340px; 
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: left;
+            transition: transform 0.8s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-radius: 12px;
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        /* 卡片正面 */
+        .flip-card-front {
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+            border: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .icon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
+        }
+
+        .keyword {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .sub-keyword {
+            color: #9ca3af;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .click-hint {
+            margin-top: 1.5rem;
+            font-size: 0.8rem;
+            color: #d1d5db;
+            background: #f9fafb;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        /* 卡片背面 */
+        .flip-card-back {
+            background-color: #f8fafc;
+            color: var(--text-primary);
+            transform: rotateY(180deg);
+            border: 1px solid #cbd5e1;
+        }
+
+        .flip-card-back h4 {
+            margin: 0 0 0.8rem 0;
+            color: var(--accent-color);
+            font-size: 1.1rem;
+            border-bottom: 1px dashed #cbd5e1;
+            padding-bottom: 0.5rem;
+        }
+
+        .flip-card-back ul {
+            padding-left: 1.2rem;
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .flip-card-back li {
+            margin-bottom: 0.8rem;
+        }
+
+        /* 重点框样式 */
+        .highlight {
+            background-color: var(--highlight-bg);
+            border-left: 4px solid var(--highlight-border);
+            padding: 1rem 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 1.05rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .highlight strong {
+            color: #c2410c;
+        }
+
+        /* 技能部分特殊样式 */
+        .skill-section .keyword {
+            color: #059669;
+        }
+        .skill-section .flip-card-back h4 {
+            color: #059669;
+            border-color: #6ee7b7;
+        }
+        .skill-section .flip-card-back {
+            background-color: #f0fdf4;
+            border-color: #a7f3d0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #9ca3af;
+            font-size: 0.9rem;
+            border-top: 1px solid #e5e7eb;
+            margin-top: 4rem;
+            background-color: white;
+        }
+
+        /* 滚动条美化 */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8rem; }
+            .flip-card { height: 360px; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>山地人：火器、陷阱与工具</h1>
+        <div class="subtitle">Firearms, Traps, and Tools of the Mountain Men</div>
+        <div class="meta">作者：Carl P. Russell · 知识图谱版</div>
+    </header>
+
+    <div class="container">
+        <div class="highlight">
+            <strong>📚 核心主旨：</strong> 本书通过详细考证19世纪初美国西部皮毛贸易中的<strong>物质文化</strong>，揭示了“山地人”（Mountain Men）如何利用铁制工具在荒野生存、与印第安人互动，并推动美国疆域扩张。不仅有“物”的历史，更有使用这些物品的<strong>“技艺与知识”</strong>。
+        </div>
+
+        <!-- 第一章 -->
+        <div class="chapter-title">
+            <div class="chapter-num">1</div>
+            <h2>历史背景：皮毛贸易与西部扩张</h2>
+        </div>
+        <div class="card-grid">
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🎩</div>
+                        <div class="keyword">海狸帽</div>
+                        <div class="sub-keyword">The Beaver Hat</div>
+                        <div class="click-hint">点击翻转</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>驱动历史的时尚</h4>
+                        <ul>
+                            <li><strong>历史动力：</strong> 19世纪初，欧美绅士流行佩戴由海狸绒毛压制成的毡帽。这种时尚需求是美国西部探险的直接经济动力。</li>
+                            <li><strong>资源枯竭：</strong> 欧洲海狸几近灭绝，导致目光转向北美未开发的河流。</li>
+                            <li><strong>终结：</strong> 1840年代丝绸帽的兴起导致海狸皮价格暴跌，山地人时代随之终结。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">⛺</div>
+                        <div class="keyword">荒野集会</div>
+                        <div class="sub-keyword">Rendezvous System</div>
+                        <div class="click-hint">点击翻转</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>1825-1840年的商业模式</h4>
+                        <ul>
+                            <li><strong>威廉·阿什利 (William Ashley)</strong> 发明，替代了固定贸易站模式。</li>
+                            <li><strong>运作方式：</strong> 每年夏季在绿河等地举办集会。圣路易斯的车队带来物资，换取捕猎者一年的皮毛。</li>
+                            <li><strong>意义：</strong> 它是山地人生活的经济核心，也是信息交换和社交狂欢的中心。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🗺️</div>
+                        <div class="keyword">地缘政治</div>
+                        <div class="sub-keyword">Expansionism</div>
+                        <div class="click-hint">点击翻转</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>皮毛即领土</h4>
+                        <ul>
+                            <li><strong>英美竞争：</strong> 美国的山地人与英国的哈德逊湾公司 (HBC) 在俄勒冈地区展开激烈竞争。</li>
+                            <li><strong>先锋：</strong> Jedediah Smith 等人不仅是捕猎者，更是探险家，他们的探索直接导致了后来美国对加利福尼亚和俄勒冈的吞并。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第二章 -->
+        <div class="chapter-title">
+            <div class="chapter-num">2</div>
+            <h2>火器：生存与贸易的工具</h2>
+        </div>
+        <div class="card-grid">
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🎯</div>
+                        <div class="keyword">1803型步枪</div>
+                        <div class="sub-keyword">U.S. Rifle Model 1803</div>
+                        <div class="click-hint">点击翻转</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>Lewis & Clark 的武器</h4>
+                        <ul>
+                            <li><strong>首款军用：</strong> 美国第一款专门设计的军用步枪，在远征中经受了考验。</li>
+                            <li><strong>特点：</strong> 短枪管（33英寸）、.54口径、半枪托。比长步枪更适合在独木舟和丛林中使用。</li>
+                            <li><strong>气枪外交：</strong> 刘易斯携带的吉拉多尼无声连发气枪，是震慑印第安人的“大药”（Big Medicine）。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">💥</div>
+                        <div class="keyword">霍肯步枪</div>
+                        <div class="sub-keyword">The Hawken Rifle</div>
+                        <div class="click-hint">点击翻转</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>山地人的挚爱</h4>
+                        <ul>
+                            <li><strong>圣路易斯制造：</strong> 由 Hawken 兄弟打造，代表了平原步枪的巅峰。</li>
+                            <li><strong>设计哲学：</strong> 牺牲射程，换取杀伤力和耐用性。重枪管、大口径（.50-.53），能一击放倒野牛或灰熊。</li>
+                            <li><strong>耐用性：</strong> 铁制配件代替了易碎的黄铜，适应马背上的粗暴使用。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">📦</div>
+                        <div class="keyword">西北贸易枪</div>
+                        <div class="sub-keyword">The Northwest Gun</div>
+                        <div class="click-hint">点击翻转</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>通用的滑膛枪</h4>
+                        <ul>
+                            <li><strong>普及性：</strong> 19世纪西部最常见的贸易火器，轻便耐用，结构简单。</li>
+                            <li><strong>识别特征：</strong> 龙/蛇形侧板 (Serpent Sideplate)，大扳机护圈（方便冬天戴手套操作）。</li>
+                            <li><strong>多功能：</strong> 发射独头弹打鹿，发射散弹打鸟，是印第安人和船夫的首选。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第三章 -->
+        <div class="chapter-title">
+            <div class="chapter-num">3</div>
+            <h2>捕兽夹：行业的引擎</h2>
+        </div>
+        <div class="card-grid">
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">⚙️</div>
+                        <div class="keyword">双弹簧钢夹</div>
+                        <div class="sub-keyword">Beaver Trap</div>
+                        <div class="click-hint">点击翻转</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>手工锻造的精密仪器</h4>
+                        <ul>
+                            <li><strong>规格：</strong> 重约5磅，带有强力的双板簧。</li>
+                            <li><strong>价值：</strong> 极为贵重，常被打上主人的缩写以防被盗。</li>
+                            <li><strong>来源：</strong> 早期由铁匠手工打造，后来 Sewell Newhouse 在奥奈达公社实现了标准化生产（Newhouse No.4）。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🧬</div>
+                        <div class="keyword">海狸香</div>
+                        <div class="sub-keyword">Castoreum</div>
+                        <div class="click-hint">点击翻转</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>致命的诱惑</h4>
+                        <ul>
+                            <li><strong>本质：</strong> 取自海狸香腺的分泌物，利用海狸强烈的领地意识。</li>
+                            <li><strong>使用：</strong> 捕猎者将其涂在陷阱上方的树枝上（"Bait stick"）。</li>
+                            <li><strong>效果：</strong> 海狸闻香而来，为了探查“入侵者”而踩中水下的陷阱踏板。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第四章 -->
+        <div class="chapter-title">
+            <div class="chapter-num">4</div>
+            <h2>刀具：从剥皮到格斗</h2>
+        </div>
+        <div class="card-grid">
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🔪</div>
+                        <div class="keyword">绿河刀</div>
+                        <div class="sub-keyword">Green River Knife</div>
+                        <div class="click-hint">点击翻转</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>"Up to Green River"</h4>
+                        <ul>
+                            <li><strong>起源：</strong> 马萨诸塞州的 J. Russell & Co. 制造，刀刃根部印有 "Green River Works"。</li>
+                            <li><strong>文化符号：</strong> "Up to Green River"（直插绿河）成为俗语，意为“干得彻底”或“一刀毙命”（刺到商标处）。</li>
+                            <li><strong>用途：</strong> 极其锋利的屠宰刀，兼具剥皮和格斗功能。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">⚔️</div>
+                        <div class="keyword">博伊刀</div>
+                        <div class="sub-keyword">The Bowie Knife</div>
+                        <div class="click-hint">点击翻转</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>传奇格斗刀</h4>
+                        <ul>
+                            <li><strong>特征：</strong> 重型单刃，带有护手和独特的凹形刀尖（Clip point）。</li>
+                            <li><strong>地位：</strong> 1830年代后传入西部，虽不如廉价的“剥皮刀”普及，但因其作为武器的优越性而备受推崇。</li>
+                            <li><strong>来源：</strong> 早期多由英国谢菲尔德 (Sheffield) 出口到美国。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🪝</div>
+                        <div class="keyword">弯刀</div>
+                        <div class="sub-keyword">The Crooked Knife</div>
+                        <div class="click-hint">点击翻转</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>北方的万能工具</h4>
+                        <ul>
+                            <li><strong>用户：</strong> 北方印第安人和加拿大船夫（Voyageurs）的必备神器。</li>
+                            <li><strong>用法：</strong> 刀身弯曲，单手向内拉削使用，功能类似刨子。</li>
+                            <li><strong>重要性：</strong> 它是制造独木舟肋骨、雪鞋框和船桨的唯一工具。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第五章 -->
+        <div class="chapter-title">
+            <div class="chapter-num">5</div>
+            <h2>斧头：伐木与战争</h2>
+        </div>
+        <div class="card-grid">
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🪓</div>
+                        <div class="keyword">美式斧的进化</div>
+                        <div class="sub-keyword">American Ax</div>
+                        <div class="click-hint">点击翻转</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>平衡的艺术</h4>
+                        <ul>
+                            <li><strong>法式斧：</strong> 早期贸易斧没有斧背（poll），重心靠前，砍伐时容易晃动。</li>
+                            <li><strong>美式斧：</strong> 增加了厚重的斧背以平衡刀刃重量。这种改进使得砍伐精度和力量大幅提升，是拓荒者清理森林的主力。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">☮️</div>
+                        <div class="keyword">烟斗战斧</div>
+                        <div class="sub-keyword">Pipe Tomahawk</div>
+                        <div class="click-hint">点击翻转</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>外交礼器</h4>
+                        <ul>
+                            <li><strong>双重性：</strong> 一端是斧刃（战争），一端是烟斗钵（和平），手柄中空作为烟杆。</li>
+                            <li><strong>用途：</strong> 白人制造并赠予印第安首领的高级外交礼物。</li>
+                            <li><strong>工艺：</strong> 制作精美，常镶嵌银饰，代表了当时边疆铁匠的最高工艺水平。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🛡️</div>
+                        <div class="keyword">密苏里战斧</div>
+                        <div class="sub-keyword">Missouri War Hatchet</div>
+                        <div class="click-hint">点击翻转</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>特定市场的产物</h4>
+                        <ul>
+                            <li><strong>形态：</strong> 刀刃巨大且薄，没有斧背，眼孔简单。</li>
+                            <li><strong>现象：</strong> 尽管设计在白人看来低效，但在密苏里河流域的印第安人中极受欢迎。铁匠必须按此样式制造才能换取印第安人的玉米。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第六 & 七章 -->
+        <div class="chapter-title">
+            <div class="chapter-num">6-7</div>
+            <h2>铁匠与杂项工具</h2>
+        </div>
+        <div class="card-grid">
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🔨</div>
+                        <div class="keyword">铁匠铺</div>
+                        <div class="sub-keyword">The Forge</div>
+                        <div class="click-hint">点击翻转</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>荒野中的工厂</h4>
+                        <ul>
+                            <li><strong>关键人物：</strong> 如 Lewis & Clark 探险队的 John Shields。没有铁匠修理枪支和打造工具换取食物，探险队无法生存。</li>
+                            <li><strong>贸易核心：</strong> 贸易站的铁匠铺是外交中心，为印第安人修理枪支是维持友好关系的最有效手段。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🧵</div>
+                        <div class="keyword">生存小件</div>
+                        <div class="sub-keyword">Iron Miscellany</div>
+                        <div class="click-hint">点击翻转</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>不起眼但必须</h4>
+                        <ul>
+                            <li><strong>火镰 (Fire Steels)：</strong> 生存的根本，常作为礼物大量分发。</li>
+                            <li><strong>锥子 (Awls)：</strong> 消耗量巨大的贸易品，用于缝制鹿皮衣物。</li>
+                            <li><strong>冰凿 (Ice Chisels)：</strong> 北方冬季生存的关键，用于凿冰捕鱼或设陷阱。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第八章：新增章节 -->
+        <div class="chapter-title">
+            <div class="chapter-num skill">8</div>
+            <h2>技艺与生存智慧：知识就是力量</h2>
+        </div>
+        <div class="card-grid skill-section">
+            <!-- 技能卡片1：捕猎技术 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🦦</div>
+                        <div class="keyword">捕猎技艺</div>
+                        <div class="sub-keyword">Trapping Know-How</div>
+                        <div class="click-hint">点击查看技能细节</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>不仅仅是放个夹子</h4>
+                        <ul>
+                            <li><strong>读懂踪迹：</strong> 能够识别海狸的活动路线和栖息地。</li>
+                            <li><strong>溺亡陷阱设置 (Drowning Set)：</strong> 必须精确设置滑杆和深水锚定，确保海狸中夹后潜入深水溺亡，防止其逃脱或被其他动物破坏皮毛。</li>
+                            <li><strong>皮毛处理：</strong> 剥皮时必须保留尾巴（作为食物），并使用柳木圈将皮绷紧干燥，这直接决定了皮毛的品相和价格。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 技能卡片2：野外生存 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🔥</div>
+                        <div class="keyword">荒野生存</div>
+                        <div class="sub-keyword">Wilderness Survival</div>
+                        <div class="click-hint">点击查看技能细节</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>与死神赛跑</h4>
+                        <ul>
+                            <li><strong>取火技术：</strong> 熟练使用火镰、燧石和引火绒（Punk，通常是腐烂的枫木）。</li>
+                            <li><strong>窖藏 (Caching)：</strong> 挖掘隐蔽的地窖储存皮毛和物资，需在此点火掩盖挖掘痕迹，并移除多余土方以防被发现。</li>
+                            <li><strong>急救手术：</strong> 使用屠宰刀和烧红的铁条处理坏疽或箭伤（如 Dr. Whitman 为 Jim Bridger 取出背后的箭头）。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 技能卡片3：维修与制造 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🛠️</div>
+                        <div class="keyword">野外维修</div>
+                        <div class="sub-keyword">Field Craft</div>
+                        <div class="click-hint">点击查看技能细节</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>没有备件怎么办？</h4>
+                        <ul>
+                            <li><strong>枪支维护：</strong> 在马背上使用模具浇筑铅弹；使用湿牛皮 (Rawhide) 包裹断裂的枪托，干燥收缩后比木头还坚硬。</li>
+                            <li><strong>造船术：</strong> 仅用斧头和手锛 (Adz) 就能在几天内挖出独木舟，或使用水牛皮和柳条制作“公牛船” (Bullboat) 渡河。</li>
+                            <li><strong>废物利用：</strong> 将废旧铁箍打磨成箭头或刮刀。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 技能卡片4：贸易智慧 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🤝</div>
+                        <div class="keyword">贸易与外交</div>
+                        <div class="sub-keyword">Trade & Diplomacy</div>
+                        <div class="click-hint">点击查看技能细节</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>跨文化的博弈</h4>
+                        <ul>
+                            <li><strong>价值换算：</strong> 熟练掌握“Made Beaver”（标准海狸皮）作为货币单位与其他商品的兑换率。</li>
+                            <li><strong>心理战：</strong> 懂得何时展示武力（如气枪），何时赠送礼物（如烟斗战斧或朱砂）。</li>
+                            <li><strong>手语：</strong> 掌握平原印第安手语是跨部落交流的必备技能。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Generated based on "Firearms, Traps, and Tools of the Mountain Men" by Carl P. Russell.</p>
+    </footer>
+
+</body>
+</html>
