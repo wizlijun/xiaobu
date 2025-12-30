@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>野外生存指南 - 深度精华摘要</title>
+    <style>
+        :root {
+            --primary-color: #388e3c; /* 森林绿 */
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #263238;
+            --text-light: #546e7a;
+            --accent-warning: #e64a19; /* 警示红 - 用于反常识 */
+            --accent-info: #0288d1; /* 信息蓝 - 用于独特技巧 */
+            --shadow: 0 8px 16px rgba(0,0,0,0.08);
+            --radius: 12px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .header-hero {
+            background: linear-gradient(135deg, #ffffff 0%, #e8f5e9 100%);
+            padding: 40px 20px;
+            text-align: center;
+            border-bottom: 1px solid #c8e6c9;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin: 0 0 10px 0;
+            font-size: 2rem;
+        }
+
+        .intro-text {
+            max-width: 600px;
+            margin: 0 auto;
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        .main-container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 0 15px;
+        }
+
+        /* 章节容器 */
+        .chapter {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .chapter-title {
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            background: #fff;
+            border-bottom: 1px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .chapter-title:hover {
+            background-color: #fafafa;
+        }
+
+        .chapter.open .chapter-title {
+            background-color: #f1f8e9;
+            color: var(--primary-color);
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .chapter-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+        }
+
+        .chapter.open .chapter-body {
+            max-height: 2500px; /* 足够大 */
+            transition: max-height 0.6s ease-in;
+        }
+
+        .content-padding {
+            padding: 25px;
+        }
+
+        /* 标签 */
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-right: 8px;
+            margin-bottom: 5px;
+        }
+        .tag.unique { background-color: #e3f2fd; color: var(--accent-info); }
+        .tag.myth { background-color: #fbe9e7; color: var(--accent-warning); }
+
+        /* 翻转卡片布局 */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .flip-container {
+            perspective: 1000px;
+            height: 220px;
+            cursor: pointer;
+        }
+
+        .flipper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            border-radius: var(--radius);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+
+        .flip-container.flipped .flipper {
+            transform: rotateY(180deg);
+        }
+
+        .front, .back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: var(--radius);
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border: 1px solid #eee;
+        }
+
+        .front {
+            background-color: #fff;
+        }
+
+        /* 不同类型的卡片背景 */
+        .front.warning { border-top: 4px solid var(--accent-warning); }
+        .front.info { border-top: 4px solid var(--accent-info); }
+        .front.basic { border-top: 4px solid var(--primary-color); }
+
+        .back {
+            background-color: #f9fbe7;
+            transform: rotateY(180deg);
+            color: #333;
+            align-items: flex-start; /*背面左对齐*/
+            text-align: left;
+        }
+        
+        .back.warning-bg { background-color: #ffebee; } /* 警告类背面淡红 */
+
+        .front h3 { margin: 10px 0 5px; font-size: 1.1rem; }
+        .front p { font-size: 0.85rem; color: #777; margin: 0; }
+        .icon { font-size: 2.5rem; margin-bottom: 5px; }
+
+        .back h4 { margin: 0 0 10px 0; font-size: 1rem; color: var(--primary-color); }
+        .back.warning-bg h4 { color: var(--accent-warning); }
+        
+        .back ul, .back ol { padding-left: 20px; margin: 0; font-size: 0.9rem; }
+        .back li { margin-bottom: 6px; }
+
+        .summary-text {
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            color: #444;
+        }
+
+        /* 提示点击 */
+        .tap-hint {
+            font-size: 0.7rem;
+            color: #ccc;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 1.6rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-hero">
+    <h1>野外生存指南</h1>
+    <p class="intro-text">提炼自 Jason Marsteiner 原著 | 深度硬核版<br>包含反常识观点与独家生存技巧</p>
+</div>
+
+<div class="main-container">
+
+    <!-- 💡 使用说明 -->
+    <div style="text-align: center; margin-bottom: 20px; font-size: 0.85rem; color: #888;">
+        <span style="display:inline-block; width:10px; height:10px; background:var(--accent-warning); border-radius:50%; margin-right:5px;"></span>反常识/警告
+        <span style="display:inline-block; width:10px; height:10px; background:var(--accent-info); border-radius:50%; margin-left:15px; margin-right:5px;"></span>独家技巧
+        <span style="display:inline-block; width:10px; height:10px; background:var(--primary-color); border-radius:50%; margin-left:15px; margin-right:5px;"></span>核心基础
+    </div>
+
+    <!-- 第1章 -->
+    <div class="chapter" onclick="toggleChapter(this)">
+        <div class="chapter-title">
+            第 1 章：出发之前 (Before You Go)
+            <span>▼</span>
+        </div>
+        <div class="chapter-body">
+            <div class="content-padding">
+                <p class="summary-text">本章不仅涉及体能和心理准备，作者提出了一个非常具体且独特的“防迷失”技巧。</p>
+                <div class="card-grid">
+                    <!-- 独家技巧卡片 -->
+                    <div class="flip-container" onclick="flipCard(event, this)">
+                        <div class="flipper">
+                            <div class="front info">
+                                <div class="icon">👞</div>
+                                <h3>铝箔鞋印拓模</h3>
+                                <p>Lost Proofing 独家技巧</p>
+                                <span class="tag unique">独家</span>
+                                <div class="tap-hint">点击翻转</div>
+                            </div>
+                            <div class="back">
+                                <h4>搜救关键线索</h4>
+                                <p>不仅仅是拍照，作者建议：</p>
+                                <ul>
+                                    <li>踩在一张<strong>铝箔纸</strong>上制作鞋底的物理拓模。</li>
+                                    <li>将拓模留在车内或留给紧急联系人。</li>
+                                    <li>原因：这能给追踪专家提供最精确的深度和纹理信息，比照片更立体。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 基础卡片 -->
+                    <div class="flip-container" onclick="flipCard(event, this)">
+                        <div class="flipper">
+                            <div class="front basic">
+                                <div class="icon">3️⃣</div>
+                                <h3>“三”的法则</h3>
+                                <p>Rule of Threes</p>
+                                <div class="tap-hint">点击翻转</div>
+                            </div>
+                            <div class="back">
+                                <h4>生存极限</h4>
+                                <ul>
+                                    <li><strong>3分钟</strong>：无空气 (或大出血)。</li>
+                                    <li><strong>3小时</strong>：无庇护所 (极端环境)。</li>
+                                    <li><strong>3天</strong>：无水。</li>
+                                    <li><strong>3周</strong>：无食物。</li>
+                                    <li><em>重点：装备应围绕这四个优先级准备。</em></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第2章 -->
+    <div class="chapter" onclick="toggleChapter(this)">
+        <div class="chapter-title">
+            第 2 章：正确装备 (The Right Stuff)
+            <span>▼</span>
+        </div>
+        <div class="chapter-body">
+            <div class="content-padding">
+                <p class="summary-text">装备贵在精。作者对某件棉织品开了“特许”，这与通常的“棉花会杀人”原则形成了有趣的对比。</p>
+                <div class="card-grid">
+                    <div class="flip-container" onclick="flipCard(event, this)">
+                        <div class="flipper">
+                            <div class="front warning">
+                                <div class="icon">🧣</div>
+                                <h3>唯一的例外：Shemagh</h3>
+                                <p>关于棉织品的反直觉建议</p>
+                                <span class="tag unique">例外</span>
+                            </div>
+                            <div class="back">
+                                <h4>为什么只带这一件棉织品？</h4>
+                                <p>通常原则是“棉花致死(吸水失温)”，但作者坚持携带一条<strong>Shemagh(大方巾)</strong>，它是唯一的棉制品，用于：</p>
+                                <ul>
+                                    <li><strong>过滤水</strong>：做前置过滤。</li>
+                                    <li><strong>收集露水</strong>：棉的吸水性在这里变成了优点。</li>
+                                    <li>防晒、止血带、三角巾。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-container" onclick="flipCard(event, this)">
+                        <div class="flipper">
+                            <div class="front basic">
+                                <div class="icon">🔪</div>
+                                <h3>生存五宝</h3>
+                                <p>最难在野外制作的工具</p>
+                            </div>
+                            <div class="back">
+                                <h4>核心清单</h4>
+                                <ol>
+                                    <li><strong>全龙骨直刀</strong> (坚固核心)。</li>
+                                    <li><strong>打火棒</strong> (Ferro Rod, 优于打火机)。</li>
+                                    <li><strong>金属水壶</strong> (单层，可直接烧水)。</li>
+                                    <li><strong>雨披/天幕</strong> (快速庇护所)。</li>
+                                    <li><strong>伞绳</strong> (50英尺+)。</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第3章 (新增补充) -->
+    <div class="chapter" onclick="toggleChapter(this)">
+        <div class="chapter-title">
+            第 3 章：了解地形 (Learning the Land)
+            <span>▼</span>
+        </div>
+        <div class="chapter-body">
+            <div class="content-padding">
+                <p class="summary-text"><strong>本章包含极高价值的独家生存知识</strong>，特别是关于极地食物获取和浆果识别的特定法则。</p>
+                <div class="card-grid">
+                    <div class="flip-container" onclick="flipCard(event, this)">
+                        <div class="flipper">
+                            <div class="front info">
+                                <div class="icon">🦌</div>
+                                <h3>驯鹿苔藓的吃法</h3>
+                                <p>极地生存的硬核技巧</p>
+                                <span class="tag unique">硬核</span>
+                            </div>
+                            <div class="back">
+                                <h4>从胃里吃！</h4>
+                                <p>极地的驯鹿苔藓(Caribou moss)直接吃对人类有微毒且难以消化。</p>
+                                <p><strong>作者建议：</strong> 食用<strong>驯鹿胃里半消化</strong>的苔藓。因为驯鹿胃里的微生物已经将其分解并去毒，这是富含碳水化合物的来源。</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flip-container" onclick="flipCard(event, this)">
+                        <div class="flipper">
+                            <div class="front warning">
+                                <div class="icon">🍒</div>
+                                <h3>浆果识别法则</h3>
+                                <p>80/50/80 概率法则</p>
+                                <span class="tag unique">法则</span>
+                            </div>
+                            <div class="back warning-bg">
+                                <h4>颜色判定（仅作参考）</h4>
+                                <ul>
+                                    <li><strong>蓝色/黑色</strong>：80% 可食用。</li>
+                                    <li><strong>红色</strong>：50% 可食用（赌博风险大）。</li>
+                                    <li><strong>白色</strong>：<span style="color:red;font-weight:bold;">80% 有毒！</span></li>
+                                </ul>
+                                <p><em>特别警示：北极熊的肝脏含有致死量的维生素A，不可食用。</em></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第4章 -->
+    <div class="chapter" onclick="toggleChapter(this)">
+        <div class="chapter-title">
+            第 4 章：回归基础 (Back to Basics)
+            <span>▼</span>
+        </div>
+        <div class="chapter-body">
+            <div class="content-padding">
+                <p class="summary-text">作者否定了一些“花哨”的生火方法，推崇实用主义。</p>
+                <div class="card-grid">
+                    <div class="flip-container" onclick="flipCard(event, this)">
+                        <div class="flipper">
+                            <div class="front warning">
+                                <div class="icon">🔍</div>
+                                <h3>别用放大镜/火石</h3>
+                                <p>反主流建议</p>
+                                <span class="tag myth">辟谣</span>
+                            </div>
+                            <div class="back warning-bg">
+                                <h4>不切实际的工具</h4>
+                                <p>作者指出：</p>
+                                <ul>
+                                    <li><strong>放大镜</strong>：必须有太阳，局限性太大。</li>
+                                    <li><strong>传统火石(Flint & Steel)</strong>：需要碳布，操作繁琐。</li>
+                                    <li><strong>推荐</strong>：打火棒 (Ferro Rod) + 凡士林棉球。打火棒在湿冷环境下依然能产生3000度火花。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第5章 -->
+    <div class="chapter" onclick="toggleChapter(this)">
+        <div class="chapter-title">
+            第 5 章：靠山吃山 (Living Off the Land)
+            <span>▼</span>
+        </div>
+        <div class="chapter-body">
+            <div class="content-padding">
+                <p class="summary-text"><strong>最强烈的警告</strong>出现在本章：关于如何测试植物是否可食。作者完全推翻了某些生存手册的教条。</p>
+                <div class="card-grid">
+                    <div class="flip-container" onclick="flipCard(event, this)">
+                        <div class="flipper">
+                            <div class="front warning">
+                                <div class="icon">☠️</div>
+                                <h3>"通用可食性测试"是错的！</h3>
+                                <p>Universal Edibility Test</p>
+                                <span class="tag myth">高危警示</span>
+                            </div>
+                            <div class="back warning-bg">
+                                <h4>不要试毒！</h4>
+                                <p>许多教材教你“涂抹皮肤-嘴唇接触-小口吞咽”来测试植物。</p>
+                                <p><strong>作者警告：绝对禁止。</strong> 例如<strong>黄华(Golden Banner)</strong>能通过所有这些测试，但吃下去会导致剧烈呕吐甚至死亡。</p>
+                                <p><strong>原则：不认识，绝不吃。</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-container" onclick="flipCard(event, this)">
+                        <div class="flipper">
+                            <div class="front info">
+                                <div class="icon">🐟</div>
+                                <h3>徒手抓鱼法</h3>
+                                <p>Hand Fishing</p>
+                            </div>
+                            <div class="back">
+                                <h4>逆向思维</h4>
+                                <p>中午天热时，鱼会躲在岩石下不进食，钓鱼无效。但这是徒手抓鱼的最佳时机：</p>
+                                <ul>
+                                    <li>缓慢移动，手伸入岩石缝隙。</li>
+                                    <li>从腹部滑向鱼鳃。</li>
+                                    <li>扣住鱼鳃甩出水面。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第6章 -->
+    <div class="chapter" onclick="toggleChapter(this)">
+        <div class="chapter-title">
+            第 6 章：导航 (Navigation)
+            <span>▼</span>
+        </div>
+        <div class="chapter-body">
+            <div class="content-padding">
+                <p class="summary-text">摒弃对电子设备的依赖，甚至摒弃某些民间传说。</p>
+                <div class="card-grid">
+                    <div class="flip-container" onclick="flipCard(event, this)">
+                        <div class="flipper">
+                            <div class="front warning">
+                                <div class="icon">🌲</div>
+                                <h3>苔藓不一定在北边</h3>
+                                <p>民间传说辟谣</p>
+                                <span class="tag myth">辟谣</span>
+                            </div>
+                            <div class="back">
+                                <h4>不可靠的指标</h4>
+                                <p>作者指出“苔藓长在树的北面”是不可靠的。</p>
+                                <ul>
+                                    <li>苔藓生长取决于湿度和阴影，可能出现在任何方向。</li>
+                                    <li>在南半球，阴面甚至是南面。</li>
+                                    <li><strong>替代方案</strong>：使用太阳与手掌测量法，或北斗七星。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="flip-container" onclick="flipCard(event, this)">
+                        <div class="flipper">
+                            <div class="front basic">
+                                <div class="icon">📿</div>
+                                <h3>Ranger Beads (游骑兵算珠)</h3>
+                                <p>硬核测距工具</p>
+                            </div>
+                            <div class="back">
+                                <h4>如何使用</h4>
+                                <ul>
+                                    <li><strong>下层9颗珠</strong>：每走100米（基于你的双步数Pace Count），拨下1颗。</li>
+                                    <li><strong>上层4颗珠</strong>：每走1000米（即下层拨完），拨下1颗上层珠，复位下层。</li>
+                                    <li>这是无GPS环境下最精确的距离计算法。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第7章 -->
+    <div class="chapter" onclick="toggleChapter(this)">
+        <div class="chapter-title">
+            第 7 章：急救 (Applying First Aid)
+            <span>▼</span>
+        </div>
+        <div class="chapter-body">
+            <div class="content-padding">
+                <p class="summary-text">急救需要野蛮的实用主义。</p>
+                <div class="card-grid">
+                    <div class="flip-container" onclick="flipCard(event, this)">
+                        <div class="flipper">
+                            <div class="front info">
+                                <div class="icon">🌡️</div>
+                                <h3>"死"的定义</h3>
+                                <p>关于失温的救援原则</p>
+                                <span class="tag unique">原则</span>
+                            </div>
+                            <div class="back">
+                                <h4>温暖了才算死</h4>
+                                <p><strong>"No one is dead until they are warm and dead."</strong></p>
+                                <p>极度失温的人可能看起来没有生命体征，但在复温后可能苏醒且无永久损伤。不要轻易放弃对“冻僵尸体”的急救。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-container" onclick="flipCard(event, this)">
+                        <div class="flipper">
+                            <div class="front basic">
+                                <div class="icon">🤕</div>
+                                <h3>M.A.R.C.H. 协议</h3>
+                                <p>创伤评估顺序</p>
+                            </div>
+                            <div class="back">
+                                <h4>优先级</h4>
+                                <ol>
+                                    <li><strong>M (Massive hemorrhage)</strong>: 大出血 (止血带是首选)。</li>
+                                    <li><strong>A (Airway)</strong>: 气道。</li>
+                                    <li><strong>R (Respiratory)</strong>: 呼吸。</li>
+                                    <li><strong>C (Circulation)</strong>: 循环。</li>
+                                    <li><strong>H (Hypothermia)</strong>: 失温 (外伤后容易失温)。</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // 简单的章节折叠逻辑
+    function toggleChapter(element) {
+        // 关闭其他打开的章节（可选，为了保持整洁）
+        // document.querySelectorAll('.chapter').forEach(c => {
+        //     if(c !== element) c.classList.remove('open');
+        // });
+        element.classList.toggle('open');
+    }
+
+    // 卡片翻转逻辑，防止冒泡触发章节折叠
+    function flipCard(event, element) {
+        event.stopPropagation();
+        element.classList.toggle('flipped');
+    }
+</script>
+
+</body>
+</html>
