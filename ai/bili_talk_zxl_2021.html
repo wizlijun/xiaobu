@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2021 微信8.0 张小龙深度对谈复盘</title>
+    <style>
+        :root {
+            --primary-color: #07C160; /* 微信绿 */
+            --primary-light: #E7F8ED;
+            --bg-color: #FAFAFA;
+            --card-bg: #FFFFFF;
+            --text-main: #1F1F1F;
+            --text-secondary: #666666;
+            --text-highlight: #2B2B2B;
+            --shadow-card: 0 8px 24px rgba(0,0,0,0.06);
+            --shadow-hover: 0 12px 32px rgba(7, 193, 96, 0.15);
+            --radius: 16px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px 80px;
+        }
+
+        /* 头部设计 */
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .year-tag {
+            display: inline-block;
+            background-color: var(--text-main);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            opacity: 0.8;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            letter-spacing: -1px;
+            background: linear-gradient(120deg, #1d1d1f 0%, #4a4a4a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-top: 5px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* 导航标签系统 */
+        .nav-wrapper {
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .tabs {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(12px);
+            padding: 8px;
+            border-radius: 50px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            display: inline-flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .tab-btn {
+            border: none;
+            background: transparent;
+            padding: 10px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background-color: var(--text-main);
+            color: #fff;
+            transform: scale(1.02);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background-color: #f0f0f0;
+            color: var(--text-main);
+        }
+
+        /* 内容区块动画 */
+        .section {
+            display: none;
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section-header {
+            margin-bottom: 30px;
+            padding-left: 15px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .section-header p {
+            margin: 5px 0 0;
+            color: var(--text-secondary);
+        }
+
+        /* 知识翻转卡片布局 */
+        .flip-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            height: 420px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-card);
+            padding: 30px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .flip-card-front {
+            background-color: var(--card-bg);
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .flip-card-front:hover {
+            box-shadow: var(--shadow-hover);
+        }
+
+        .flip-card-back {
+            background-color: var(--text-main);
+            color: #fff;
+            transform: rotateY(180deg);
+            justify-content: flex-start;
+            text-align: left;
+            overflow-y: auto;
+        }
+
+        /* 卡片内容样式 */
+        .icon-large {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .card-concept {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--text-main);
+        }
+
+        .card-question {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .click-hint {
+            margin-top: auto;
+            font-size: 0.85rem;
+            color: var(--primary-color);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .back-title {
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            font-weight: 700;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 10px;
+        }
+
+        .back-content h4 {
+            margin: 15px 0 5px 0;
+            font-size: 1.1rem;
+            color: #fff;
+        }
+
+        .back-content p {
+            margin: 0 0 10px 0;
+            font-size: 0.95rem;
+            color: rgba(255,255,255,0.85);
+        }
+
+        .highlight-text {
+            background: rgba(7, 193, 96, 0.2);
+            padding: 2px 4px;
+            border-radius: 4px;
+            color: #fff;
+        }
+
+        /* 金句模块 */
+        .quote-block {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: var(--shadow-card);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quote-block::before {
+            content: "“";
+            position: absolute;
+            top: -20px;
+            left: 20px;
+            font-size: 8rem;
+            color: var(--primary-light);
+            font-family: serif;
+            z-index: 0;
+        }
+
+        .quote-content {
+            position: relative;
+            z-index: 1;
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--text-highlight);
+            line-height: 1.6;
+        }
+
+        .quote-author {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-align: right;
+            font-weight: 600;
+        }
+
+        /* 详情折叠/手风琴 */
+        .details-box {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .details-summary {
+            padding: 20px 25px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: background 0.2s;
+        }
+
+        .details-summary:hover {
+            background: #fcfcfc;
+        }
+
+        .details-summary::after {
+            content: '+';
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        details[open] .details-summary::after {
+            content: '-';
+        }
+
+        .details-content {
+            padding: 0 25px 25px;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .tag-fact { background: #e3f2fd; color: #1565c0; }
+        .tag-opinion { background: #e8f5e9; color: #2e7d32; }
+
+        /* 动画关键帧 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .flip-card { height: 450px; }
+            .tab-btn { padding: 8px 16px; font-size: 0.9rem; }
+            .container { padding-top: 20px; }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="year-tag">2021</div>
+        <h1>微信 8.0 · 核心认知复盘</h1>
+        <div class="subtitle">张小龙对谈实录：关于社交语境、算法局限与产品哲学的深度剖析</div>
+    </header>
+
+    <div class="nav-wrapper">
+        <nav class="tabs">
+            <button class="tab-btn active" onclick="openTab(event, 'social')">👤 社交与表达</button>
+            <button class="tab-btn" onclick="openTab(event, 'content')">📹 内容与算法</button>
+            <button class="tab-btn" onclick="openTab(event, 'philosophy')">🧠 哲学与工匠</button>
+            <button class="tab-btn" onclick="openTab(event, 'story')">☕ 幕后故事</button>
+        </nav>
+    </div>
+
+    <!-- 章节 1: 社交与表达 -->
+    <div id="social" class="section active">
+        <div class="section-header">
+            <h2>重构社交语境</h2>
+            <p>从“PC时代的签名”到“移动时代的直播”</p>
+        </div>
+
+        <div class="quote-block">
+            <div class="quote-content">
+                “人的第一反应是视觉化的。只有人（相比动物）会多过一道大脑的逻辑思考，但最懒、最直接的反应依然是视觉。”
+            </div>
+            <div class="quote-author">—— 张小龙谈表情升级</div>
+        </div>
+
+        <div class="flip-grid">
+            <!-- 知识卡片 1 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <span class="icon-large">💭</span>
+                        <div class="card-concept">概念辨析：状态 vs 签名</div>
+                        <div class="card-question">许多人认为微信“状态”是复刻QQ签名，为什么张小龙认为两者本质不同？</div>
+                        <div class="click-hint">点击翻转查看核心差异 ↻</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-title">认知翻转</div>
+                        <div class="back-content">
+                            <h4>💻 PC时代：QQ签名</h4>
+                            <p>场景是坐在电脑前。你在<span class="highlight-text">“想”</span>什么？这是一种静态的、大脑的思考结果。</p>
+                            
+                            <h4>📱 移动时代：微信状态</h4>
+                            <p>场景是随时随地。你在<span class="highlight-text">“做”</span>什么？你在哪里？这是一种实时的（Live）、动态的信号。</p>
+                            
+                            <h4>💡 核心洞察</h4>
+                            <p>“状态”不是为了让你写一句话，而是为了让同频的人（如同在发呆、同在听歌）找到彼此。它是社交的实时连接点。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 知识卡片 2 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <span class="icon-large">🎆</span>
+                        <div class="card-concept">设计哲学：表情的结构化</div>
+                        <div class="card-question">为什么要做满屏的炸弹和烟花？是为了年轻化吗？</div>
+                        <div class="click-hint">点击翻转查看设计逻辑 ↻</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-title">设计复盘</div>
+                        <div class="back-content">
+                            <h4>🚫 误解：年轻化战略</h4>
+                            <p>微信不做“特定人群”的功能（如老年版、儿童版）。好产品是跨年龄的。表情升级不是为了取悦年轻人。</p>
+                            
+                            <h4>✅ 正解：情绪的直接宣泄</h4>
+                            <p>在手机上，文字表达情绪太绕了。扔出一个炸弹，屏幕震动，这种<span class="highlight-text">视觉+触觉</span>的反馈是最原始、最有效的表达。</p>
+                            
+                            <h4>🛠️ 高级的产品设计</h4>
+                            <p>“没有增加新东西，但在原有框架下做出了新效果。”——复用已有的emoji符号，通过技术渲染赋予其动态交互，这是比生造一个新功能更高级的设计。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 章节 2: 内容与算法 -->
+    <div id="content" class="section">
+        <div class="section-header">
+            <h2>内容分发的方法论</h2>
+            <p>机器推荐 vs 社交推荐的边界在哪里？</p>
+        </div>
+
+        <div class="flip-grid">
+            <!-- 知识卡片 3 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <span class="icon-large">⚖️</span>
+                        <div class="card-concept">理论模型：成本与价值</div>
+                        <div class="card-question">为什么张小龙坚持认为社交推荐（朋友点赞）比机器算法更高级，尤其是在某些领域？</div>
+                        <div class="click-hint">点击翻转查看底层逻辑 ↻</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-title">推荐系统的边界</div>
+                        <div class="back-content">
+                            <h4>⚡ 低成本消费：算法优势</h4>
+                            <p>短视频（15秒）、短图文。用户付出时间成本极低，适合机器根据兴趣快速喂养。</p>
+                            
+                            <h4>💰 高成本消费：社交优势</h4>
+                            <p>长视频（1小时电影）、购买商品（花钱）。当用户需要付出<span class="highlight-text">大量时间或金钱</span>时，由于试错成本高，机器推荐失效。</p>
+                            
+                            <h4>💡 结论</h4>
+                            <p><strong>朋友的背书（社交推荐）</strong> 是帮助用户筛选高价值、高成本内容的最有效过滤器。未来长视频和交易，社交推荐潜力巨大。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 知识卡片 4 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <span class="icon-large">🆔</span>
+                        <div class="card-concept">产品定位：视频号的本质</div>
+                        <div class="card-question">为什么叫“视频号”而不是“微信视频”？</div>
+                        <div class="click-hint">点击翻转查看定义 ↻</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-title">作为ID的载体</div>
+                        <div class="back-content">
+                            <h4>📂 传统理解：文件容器</h4>
+                            <p>过去发视频（如朋友圈），视频只是一个媒体文件。</p>
+                            
+                            <h4>👤 视频号理解：身份ID</h4>
+                            <p>视频号的核心是<span class="highlight-text">“号”（Identity）</span>。它是机构和个人在微信生态中，通过视频内容长期存在、建立连接的<strong>公开身份</strong>。</p>
+                            
+                            <h4>🌊 结构化数据</h4>
+                            <p>视频不再是单纯的文件，而是像公众号文章一样，变成了可以被标准化、被推荐、被流转的结构化数据。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 章节 3: 哲学与工匠 -->
+    <div id="philosophy" class="section">
+        <div class="section-header">
+            <h2>产品经理的自我修养</h2>
+            <p>在数据主义盛行的时代，重申“人”的价值</p>
+        </div>
+
+        <div class="quote-block">
+            <div class="quote-content">
+                “如果产品经理只看数据，那生产方便面的产品经理最牛逼。但即便只是设计一个咖啡杯，把它做到极致，也是伟大的产品经理。”
+            </div>
+            <div class="quote-author">—— 关于工匠精神 vs 数据驱动</div>
+        </div>
+
+        <div class="flip-grid">
+            <!-- 知识卡片 5 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <span class="icon-large">🧬</span>
+                        <div class="card-concept">思维模型：归纳 vs 演绎</div>
+                        <div class="card-question">AI越来越强大，人类产品经理会被取代吗？张小龙用逻辑学术语给出了答案。</div>
+                        <div class="click-hint">点击翻转查看核心区别 ↻</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-title">人与AI的鸿沟</div>
+                        <div class="back-content">
+                            <h4>🤖 AI：归纳法 (Induction)</h4>
+                            <p>AI需要喂入10万张猫的照片，才能归纳出猫的特征。AI是基于过去数据的总结，它无法产生<span class="highlight-text">意外的惊喜</span>。</p>
+                            
+                            <h4>🧠 人：演绎法 (Deduction)</h4>
+                            <p>小孩子看一只猫，就能通过逻辑推理认出所有的猫。产品经理是设计师，设计是逻辑演绎的过程。通过少量样本推理出未来，这是AI目前做不到的。</p>
+                            
+                            <h4>💡 结论</h4>
+                            <p>不要做数据的奴隶。要有自己的逻辑假设和世界观。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 知识卡片 6 -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <span class="icon-large">🚦</span>
+                        <div class="card-concept">战略选择：不做“极速版”</div>
+                        <div class="card-question">为了增长数据，为什么微信不做“极速版”？</div>
+                        <div class="click-hint">点击翻转查看价值观 ↻</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-title">目标与路径</div>
+                        <div class="back-content">
+                            <h4>🚫 拒绝数字努力</h4>
+                            <p>“不要做数字的努力。” 如果目标是DAU增长，手段是做极速版，这就是为了数字而放弃产品原则。</p>
+                            
+                            <h4>🛣️ 选择的奢侈</h4>
+                            <p>虽然大家都在追求增长，但<span class="highlight-text">路径是可以选择的</span>。即便想要更多用户，微信也不愿意通过割裂体验（做两个版本）来换取数据。保持产品的统一性和尊严是更重要的选择。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 章节 4: 幕后故事 -->
+    <div id="story" class="section">
+        <div class="section-header">
+            <h2>彩蛋与个人侧写</h2>
+            <p>那些未被官方通稿提及的细节</p>
+        </div>
+
+        <details class="details-box">
+            <summary class="details-summary">
+                <span>🌺 启动页“因为看见，所以存在”的由来</span>
+            </summary>
+            <div class="details-content">
+                <p><span class="tag tag-fact">事实</span> 这句话并不是精心策划的文案，而是张小龙在一次<strong>“特别正经且无聊”的会议</strong>上开小差时写下的。</p>
+                <p><span class="tag tag-opinion">解读</span> 灵感来源于<strong>王阳明心学</strong>（花在山中自开自落）与<strong>量子力学</strong>（观察者效应）的结合。隐喻在社交网络中，朋友如果互不关注、没有互动，在某种意义上他就是“不存在”的；只有当你“看见”他，关系才坍缩为现实。</p>
+            </div>
+        </details>
+
+        <details class="details-box">
+            <summary class="details-summary">
+                <span>🎸 为什么喜欢“五条人”乐队？</span>
+            </summary>
+            <div class="details-content">
+                <p><span class="tag tag-fact">事实</span> 8.0发布会后，张小龙甚至在直播间和五条人一起唱歌。他提到自己和五条人都在广州的<strong>石牌桥</strong>生活过，有共同的地缘记忆。</p>
+                <p><span class="tag tag-opinion">观点</span> 他喜欢五条人歌词里的真实感和粗粝的人性，就像当年第一次听到崔健时的冲击一样。这与他做产品的理念互通：<strong>追求真实（Real），而非精致的虚假。</strong></p>
+            </div>
+        </details>
+
+        <details class="details-box">
+            <summary class="details-summary">
+                <span>⚽ 运动偏好：不只是为了健身</span>
+            </summary>
+            <div class="details-content">
+                <p><span class="tag tag-fact">事实</span> 张小龙擅长网球、高尔夫、足球，甚至开卡丁车比专业看场小伙还快。但他不喜欢单纯的滑雪（休闲式）。</p>
+                <p><span class="tag tag-opinion">观点</span> 他对运动有极强的<strong>竞技心态</strong>。要么不做，要做就要按专业竞技的标准去训练。在足球场上，他自嘲脚法一般，但<strong>速度极快</strong>，靠“生吃”对手得分。</p>
+            </div>
+        </details>
+
+        <details class="details-box">
+            <summary class="details-summary">
+                <span>🕖 关于“996”与工作时间</span>
+            </summary>
+            <div class="details-content">
+                <p><span class="tag tag-fact">事实</span> 主持人问他几点下班，他纠正说应该问“几点上班”。</p>
+                <p><span class="tag tag-opinion">观点</span> 微信团队相对自由，来得晚走得晚，结果导向。这反映了一种更宽松、更注重创造力而非工时的管理文化。</p>
+            </div>
+        </details>
+    </div>
+
+</div>
+
+<script>
+    // 简单的Tab切换逻辑
+    function openTab(evt, tabName) {
+        var i, section, tabBtn;
+        
+        // 隐藏所有内容区
+        section = document.getElementsByClassName("section");
+        for (i = 0; i < section.length; i++) {
+            section[i].className = section[i].className.replace(" active", "");
+        }
+        
+        // 取消所有按钮激活状态
+        tabBtn = document.getElementsByClassName("tab-btn");
+        for (i = 0; i < tabBtn.length; i++) {
+            tabBtn[i].className = tabBtn[i].className.replace(" active", "");
+        }
+        
+        // 激活当前
+        document.getElementById(tabName).className += " active";
+        evt.currentTarget.className += " active";
+        
+        // 平滑滚动回顶部
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    }
+</script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.youtube.com/watch?v=cu52wy_vjrc" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
