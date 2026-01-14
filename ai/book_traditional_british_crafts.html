@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英国传统工艺全览 (Traditional British Crafts) - 深度交互摘要</title>
+    <style>
+        :root {
+            --bg-color: #fafafa;
+            --text-main: #333;
+            --text-light: #666;
+            --highlight-land: #4caf50; /* 土地篇主题色 */
+            --bg-land: #e8f5e9;
+            --highlight-sea: #0288d1;  /* 水域篇主题色 */
+            --bg-sea: #e1f5fe;
+            --card-width: 320px;
+            --card-height: 480px;
+            --transition: 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* 头部设计 */
+        header {
+            text-align: center;
+            padding: 50px 20px;
+            background: #fff;
+            border-bottom: 1px solid #eee;
+            position: relative;
+        }
+
+        h1 {
+            font-weight: 200;
+            font-size: 2.5rem;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1rem;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* 导航切换器 */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            gap: 20px;
+        }
+
+        .tab-btn {
+            padding: 12px 35px;
+            border-radius: 50px;
+            border: none;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #999;
+            font-weight: 500;
+        }
+
+        .tab-btn.active-land {
+            background-color: var(--highlight-land);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .tab-btn.active-sea {
+            background-color: var(--highlight-sea);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        /* 内容网格 */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            display: none; /* 默认隐藏 */
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            justify-items: center;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .container.show {
+            display: grid;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 翻转卡片核心样式 */
+        .flip-card {
+            background-color: transparent;
+            width: var(--card-width);
+            height: var(--card-height);
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform var(--transition);
+            transform-style: preserve-3d;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+        }
+
+        .flip-card:hover .flip-card-inner {
+            box-shadow: 0 15px 30px rgba(0,0,0,0.12);
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            overflow: hidden;
+            background: white;
+        }
+
+        /* 正面设计 */
+        .flip-card-front {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .icon-large {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .card-en-title {
+            font-size: 0.9rem;
+            color: #888;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+
+        .chapter-tags {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .tag {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .hint-text {
+            margin-top: auto;
+            font-size: 0.8rem;
+            color: #ccc;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* 背面设计 (详细内容) */
+        .flip-card-back {
+            transform: rotateY(180deg);
+            padding: 25px;
+            text-align: left;
+            overflow-y: auto; /* 允许内容过多时滚动 */
+            font-size: 0.9rem;
+            box-sizing: border-box;
+        }
+
+        /* 滚动条美化 */
+        .flip-card-back::-webkit-scrollbar {
+            width: 4px;
+        }
+        .flip-card-back::-webkit-scrollbar-thumb {
+            background-color: rgba(0,0,0,0.1);
+            border-radius: 4px;
+        }
+
+        /* 土地篇背面配色 */
+        #section-land .flip-card-back {
+            background-color: var(--bg-land);
+            border: 1px solid #c8e6c9;
+        }
+        #section-land h3 { color: #2e7d32; border-bottom: 2px solid #a5d6a7; }
+        #section-land strong { color: #1b5e20; background: rgba(255,255,255,0.6); padding: 0 4px; }
+
+        /* 水域篇背面配色 */
+        #section-sea .flip-card-back {
+            background-color: var(--bg-sea);
+            border: 1px solid #b3e5fc;
+        }
+        #section-sea h3 { color: #0277bd; border-bottom: 2px solid #81d4fa; }
+        #section-sea strong { color: #01579b; background: rgba(255,255,255,0.6); padding: 0 4px; }
+
+        h3 {
+            font-size: 1.1rem;
+            margin-top: 0;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+        }
+
+        ul {
+            padding-left: 18px;
+            margin: 0;
+        }
+
+        li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8rem; }
+            .container { gap: 20px; }
+            .flip-card { width: 100%; height: auto; min-height: 450px; }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>TRADITIONAL BRITISH CRAFTS</h1>
+    <p class="subtitle">通过这些知识翻转卡片，重温英国从土地到海洋的传统技艺与生存智慧。<br>涵盖原书所有章节，提炼核心术语与工艺细节。</p>
+</header>
+
+<div class="tabs">
+    <button class="tab-btn active-land" onclick="switchTab('land')">🌿 依靠土地生活 (Living off the Land)</button>
+    <button class="tab-btn" onclick="switchTab('sea')">🌊 依靠河流与海洋 (Living off the River & Sea)</button>
+</div>
+
+<!-- ================= 土地篇 ================= -->
+<div id="section-land" class="container show">
+
+    <!-- 1. 耕作与收获 -->
+    <div class="flip-card" onclick="flip(this)">
+        <div class="flip-card-inner">
+            <div class="flip-card-front">
+                <div class="icon-large">🌾</div>
+                <div class="card-title">耕作与丰收</div>
+                <div class="card-en-title">Farming & Harvest</div>
+                <div class="chapter-tags">
+                    <span class="tag">犁地</span>
+                    <span class="tag">农业队</span>
+                    <span class="tag">收割</span>
+                    <span class="tag">干草</span>
+                </div>
+                <div class="hint-text">点击查看工艺详情</div>
+            </div>
+            <div class="flip-card-back">
+                <h3>从土地到餐桌</h3>
+                <ul>
+                    <li><strong>重型犁 (Heavy Plough):</strong> 引入了犁刀(coulter)、犁铲(share)和犁壁(mouldboard)，彻底改变了中世纪的田地形状，使其变为长条形以减少掉头次数。</li>
+                    <li><strong>农业队 (Agricultural Gangs):</strong> 19世纪臭名昭著的制度。工头带领妇女儿童进行除石、除草等艰苦劳动。<strong>1867年《农业队法》</strong>对此进行了管制。</li>
+                    <li><strong>收割仪式:</strong> <strong>谷灵 (Corn Spirit)</strong> 被认为躲在最后的一束谷物中。这束谷物被做成“玉米娃娃”(Corn Dolly)保存过冬，以确保存续。</li>
+                    <li><strong>制作干草 (Making Hay):</strong> 必须在草开花但未结籽时收割。需要极其关注天气，因为湿草堆会发酵甚至自燃。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 畜牧与羊毛 -->
+    <div class="flip-card" onclick="flip(this)">
+        <div class="flip-card-inner">
+            <div class="flip-card-front">
+                <div class="icon-large">🐑</div>
+                <div class="card-title">畜牧与羊毛</div>
+                <div class="card-en-title">Shepherds & Wool</div>
+                <div class="chapter-tags">
+                    <span class="tag">牧羊</span>
+                    <span class="tag">剪羊毛</span>
+                    <span class="tag">赶牲口</span>
+                    <span class="tag">制革</span>
+                </div>
+                <div class="hint-text">点击查看工艺详情</div>
+            </div>
+            <div class="flip-card-back">
+                <h3>羊背上的国家</h3>
+                <ul>
+                    <li><strong>牧羊人 (Shepherd):</strong> 必备工具是<strong>牧羊杖 (Crook)</strong>，用于钩住羊腿或颈部。他们使用古老的凯尔特计数法（Yan, Tan, Tethera...）。</li>
+                    <li><strong>剪羊毛 (Wool Clip):</strong> 中世纪时羊毛是国家财富之源。<strong>梳理 (Carding)</strong> 用于短羊毛，<strong>精梳 (Combing)</strong> 用于长羊毛。</li>
+                    <li><strong>赶牲口 (Droving):</strong> 苏格兰和威尔士的牲畜通过古老的路径被赶往伦敦市场。赶牛人不仅运货，还充当信使和银行家的角色。</li>
+                    <li><strong>制革 (Tanning):</strong> 使用橡树皮(Oak bark)中的单宁酸。涉及极脏的工序，如使用狗粪(Pure/Drench)来软化皮革。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 乡村纺织 -->
+    <div class="flip-card" onclick="flip(this)">
+        <div class="flip-card-inner">
+            <div class="flip-card-front">
+                <div class="icon-large">🧶</div>
+                <div class="card-title">乡村纺织</div>
+                <div class="card-en-title">Rural Textiles</div>
+                <div class="chapter-tags">
+                    <span class="tag">设得兰针织</span>
+                    <span class="tag">哈里斯花呢</span>
+                    <span class="tag">亚麻</span>
+                    <span class="tag">蕾丝</span>
+                </div>
+                <div class="hint-text">点击查看工艺详情</div>
+            </div>
+            <div class="flip-card-back">
+                <h3>纤维的艺术</h3>
+                <ul>
+                    <li><strong>设得兰针织 (Shetland Knitting):</strong> 羊毛不是剪的，而是通过<strong>Rooing</strong>（拔毛）获得。费尔岛(Fair Isle)图案色彩鲜艳。蕾丝披肩精细到可以穿过婚戒。</li>
+                    <li><strong>哈里斯粗花呢 (Harris Tweed):</strong> 必须在外赫布里底群岛手工编织。著名的工序是<strong>缩绒 (Waulking)</strong>，通过浸泡尿液并捶打使布料紧密。</li>
+                    <li><strong>亚麻 (Linen):</strong> 爱尔兰特产。工序极为繁琐：沤麻(Retting)、打麻(Scutching)、梳麻(Hackling)。</li>
+                    <li><strong>蕾丝 (Lace):</strong> 分为<strong>棒槌蕾丝 (Bobbin lace)</strong>（在枕头上用大头针编织）和<strong>针绣蕾丝 (Needlepoint)</strong>。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. 林地与树篱 -->
+    <div class="flip-card" onclick="flip(this)">
+        <div class="flip-card-inner">
+            <div class="flip-card-front">
+                <div class="icon-box icon-large">🌳</div>
+                <div class="card-title">林地与树篱</div>
+                <div class="card-en-title">Woodland Crafts</div>
+                <div class="chapter-tags">
+                    <span class="tag">树篱整枝</span>
+                    <span class="tag">林业</span>
+                    <span class="tag">矮林作业</span>
+                    <span class="tag">手杖</span>
+                </div>
+                <div class="hint-text">点击查看工艺详情</div>
+            </div>
+            <div class="flip-card-back">
+                <h3>森林的馈赠</h3>
+                <ul>
+                    <li><strong>树篱整枝 (Hedge-laying):</strong> 将活树干半切开并压弯（称为<strong>Pleachers</strong>），编织在一起形成防牲畜的活围栏。</li>
+                    <li><strong>矮林作业 (Coppicing):</strong> 定期砍伐树根处，促使其萌发直杆。榛木(Hazel)用于制作栅栏(Hurdles)，栗木用于围栏。</li>
+                    <li><strong>椅匠 (Bodgers):</strong> 在白蜡木林中搭建简易工棚，使用<strong>杆式车床 (Pole-lathe)</strong>现场制作温莎椅的腿部。</li>
+                    <li><strong>手杖制作:</strong> 利用树木自然生长的弯曲或结节制作手柄，黑刺李(Blackthorn)是常用材料。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. 建筑与石材 -->
+    <div class="flip-card" onclick="flip(this)">
+        <div class="flip-card-inner">
+            <div class="flip-card-front">
+                <div class="icon-large">🏰</div>
+                <div class="card-title">建筑与石材</div>
+                <div class="card-en-title">Building Crafts</div>
+                <div class="chapter-tags">
+                    <span class="tag">石匠</span>
+                    <span class="tag">燧石敲击</span>
+                    <span class="tag">茅草</span>
+                    <span class="tag">灰泥浮雕</span>
+                </div>
+                <div class="hint-text">点击查看工艺详情</div>
+            </div>
+            <div class="flip-card-back">
+                <h3>永恒的结构</h3>
+                <ul>
+                    <li><strong>干石墙 (Dry-stone Walling):</strong> 不使用砂浆。关键在于放置贯穿墙体厚度的<strong>拉结石 (Through-stones)</strong>以确保结构稳定。</li>
+                    <li><strong>石匠 (Mason):</strong> 分为<strong>案头石匠 (Banker mason)</strong>（雕刻装饰）和<strong>安装石匠 (Fixer mason)</strong>（现场砌筑）。</li>
+                    <li><strong>燧石敲击 (Flint Knapping):</strong> 利用燧石的贝壳状断口，敲击出平整面用于建筑（Flushwork）或制作枪用燧石。</li>
+                    <li><strong>灰泥浮雕 (Pargetting):</strong> 在房屋外墙湿灰泥上制作装饰性图案，既美观又防水，常见于萨福克。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. 金属与车轮 -->
+    <div class="flip-card" onclick="flip(this)">
+        <div class="flip-card-inner">
+            <div class="flip-card-front">
+                <div class="icon-large">⚒️</div>
+                <div class="card-title">金属与车轮</div>
+                <div class="card-en-title">Forge & Wheel</div>
+                <div class="chapter-tags">
+                    <span class="tag">铁匠</span>
+                    <span class="tag">蹄铁匠</span>
+                    <span class="tag">车轮匠</span>
+                </div>
+                <div class="hint-text">点击查看工艺详情</div>
+            </div>
+            <div class="flip-card-back">
+                <h3>力量与精度</h3>
+                <ul>
+                    <li><strong>铁匠 (Blacksmith):</strong> 村庄的核心，制造工具、门铰链等。需掌握从“樱桃红”到“白热”的各种火候。</li>
+                    <li><strong>蹄铁匠 (Farrier):</strong> 专门负责马匹钉掌。需根据马蹄形状现场锻造蹄铁，并处理马蹄疾病。</li>
+                    <li><strong>车轮匠 (Wheelwright):</strong> 结合不同木材特性：<strong>榆木</strong>做轮毂（不裂），<strong>橡木</strong>做辐条（强壮），<strong>白蜡木</strong>做轮辋（有弹性）。<strong>装铁箍 (Tyring)</strong> 是将烧红的铁圈套上木轮，冷却收缩紧固的过程。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. 饮食制作 -->
+    <div class="flip-card" onclick="flip(this)">
+        <div class="flip-card-inner">
+            <div class="flip-card-front">
+                <div class="icon-large">🍺</div>
+                <div class="card-title">饮食与发酵</div>
+                <div class="card-en-title">Food & Drink</div>
+                <div class="chapter-tags">
+                    <span class="tag">酿酒</span>
+                    <span class="tag">苹果酒</span>
+                    <span class="tag">制桶</span>
+                    <span class="tag">奶酪</span>
+                </div>
+                <div class="hint-text">点击查看工艺详情</div>
+            </div>
+            <div class="flip-card-back">
+                <h3>味觉的传统</h3>
+                <ul>
+                    <li><strong>酿酒 (Brewer):</strong> 啤酒花(Hops)的引入区别了Beer和Ale。麦芽制造(Malting)是关键步骤。</li>
+                    <li><strong>苹果酒 (Cider):</strong> 使用富含单宁的专用苹果。将果肉堆成“奶酪层”(Cheese)进行压榨。曾是农场工人的工资一部分。</li>
+                    <li><strong>制桶 (Coopering):</strong> 极高超的木工技艺。<strong>湿桶 (Wet cooper)</strong> 制作存放液体的桶，橡木板需精确拼合。</li>
+                    <li><strong>奶酪 (Cheese):</strong> 使用凝乳酶(Rennet)使牛奶凝结。切达(Cheddar)涉及特殊的堆叠凝乳工艺(Cheddaring)。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 8. 精细工艺 -->
+    <div class="flip-card" onclick="flip(this)">
+        <div class="flip-card-inner">
+            <div class="flip-card-front">
+                <div class="icon-large">🏺</div>
+                <div class="card-title">精细工艺</div>
+                <div class="card-en-title">Fine Crafts</div>
+                <div class="chapter-tags">
+                    <span class="tag">陶艺</span>
+                    <span class="tag">玻璃</span>
+                    <span class="tag">银匠</span>
+                    <span class="tag">造纸</span>
+                </div>
+                <div class="hint-text">点击查看工艺详情</div>
+            </div>
+            <div class="flip-card-back">
+                <h3>手与火的艺术</h3>
+                <ul>
+                    <li><strong>乡村陶艺 (Country Potter):</strong> 生产实用的红陶，如牛奶盘、面包缸。使用本地粘土，主要做实用器皿。</li>
+                    <li><strong>玻璃制造 (Glassmaking):</strong> 将沙子和草木灰熔化。<strong>吹制 (Blowing)</strong> 和利用重力塑形是核心技术。</li>
+                    <li><strong>银匠 (Silversmith):</strong> 必须有纯度印记(Hallmarks)。通过锤打平整的银板使其升起成型(Raising)。</li>
+                    <li><strong>手工造纸 (Hand-made Paper):</strong> 利用碎布浆。核心工人是<strong>捞纸工 (Vatman)</strong>，利用带网框的模具捞出纸浆形成纸张。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 9. 能源与生存 -->
+    <div class="flip-card" onclick="flip(this)">
+        <div class="flip-card-inner">
+            <div class="flip-card-front">
+                <div class="icon-large">🔥</div>
+                <div class="card-title">能源与生存</div>
+                <div class="card-en-title">Fuel & Survival</div>
+                <div class="chapter-tags">
+                    <span class="tag">泥炭</span>
+                    <span class="tag">风车</span>
+                    <span class="tag">偷猎者</span>
+                    <span class="tag">克罗夫特</span>
+                </div>
+                <div class="hint-text">点击查看工艺详情</div>
+            </div>
+            <div class="flip-card-back">
+                <h3>生存的智慧</h3>
+                <ul>
+                    <li><strong>切泥炭 (Peat Cutting):</strong> 在缺乏树木的地区（如苏格兰高地）是主要燃料。使用长铲(Slane)切块并堆叠干燥。</li>
+                    <li><strong>风车 (Windmills):</strong> 磨面粉或排水。设计有定风尾翼(Fantail)自动对准风向。磨石需定期修整(Dressing)。</li>
+                    <li><strong>偷猎者 (The Poacher):</strong> 被视为反抗缺席地主的民间英雄。使用勒狗(Lurchers)和长网捕兔，或在河中“挠”鳟鱼(Tickling trout)。</li>
+                    <li><strong>克罗夫特 (Crofting):</strong> 苏格兰高地的小农耕作制度，生活艰苦，常需兼职捕鱼或编织。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ================= 水域篇 ================= -->
+<div id="section-sea" class="container">
+
+    <!-- 10. 水力与湿地 -->
+    <div class="flip-card" onclick="flip(this)">
+        <div class="flip-card-inner">
+            <div class="flip-card-front">
+                <div class="icon-large">💧</div>
+                <div class="card-title">水力与湿地</div>
+                <div class="card-en-title">Water Power & Wetlands</div>
+                <div class="chapter-tags">
+                    <span class="tag">水磨坊</span>
+                    <span class="tag">灯心草工艺</span>
+                    <span class="tag">捕鳗</span>
+                </div>
+                <div class="hint-text">点击查看工艺详情</div>
+            </div>
+            <div class="flip-card-back">
+                <h3>河流的利用</h3>
+                <ul>
+                    <li><strong>水磨坊 (Watermills):</strong> 利用水流驱动磨石。<strong>上射式(Overshot)</strong>水轮效率最高。磨坊不仅磨面，还用于缩绒、驱动锻锤。</li>
+                    <li><strong>灯心草工艺 (Rushwork):</strong> 收割河边的灯心草，用于编织椅座、地垫，甚至剥皮以此做烛芯(Rushlights)。</li>
+                    <li><strong>捕鳗 (Catching Eels):</strong> 鳗鱼是重要的食物来源。使用柳条编制的<strong>鳗鱼篓 (Eel-bucks)</strong>、抄网或叉子捕捉。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 11. 船只建造 -->
+    <div class="flip-card" onclick="flip(this)">
+        <div class="flip-card-inner">
+            <div class="flip-card-front">
+                <div class="icon-large">⛵</div>
+                <div class="card-title">船只建造</div>
+                <div class="card-en-title">Boat Building</div>
+                <div class="chapter-tags">
+                    <span class="tag">皮划艇</span>
+                    <span class="tag">造船</span>
+                    <span class="tag">帆船驳船</span>
+                </div>
+                <div class="hint-text">点击查看工艺详情</div>
+            </div>
+            <div class="flip-card-back">
+                <h3>浮于水面</h3>
+                <ul>
+                    <li><strong>皮划艇 (Coracle):</strong> 威尔士泰菲河(Teifi)上的古老小船。柳条骨架覆以防水布（古时为兽皮），单人背负，专门用于网捕鲑鱼。</li>
+                    <li><strong>造船 (Boatbuilding):</strong> 
+                        <br>- <strong>熟料搭接 (Clinker):</strong> 船板重叠（维京风格），轻便灵活。
+                        <br>- <strong>平接 (Carvel):</strong> 船板平铺，需填塞缝隙(Caulking)，结构坚固。</li>
+                    <li><strong>帆船驳船 (Sailing Barges):</strong> 泰晤士河的特征。平底设计(Flat-bottomed)使其能在浅滩坐底，巨大的红帆只需两人操作。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 12. 海洋捕捞 -->
+    <div class="flip-card" onclick="flip(this)">
+        <div class="flip-card-inner">
+            <div class="flip-card-front">
+                <div class="icon-large">🦞</div>
+                <div class="card-title">海洋捕捞</div>
+                <div class="card-en-title">Harvesting the Sea</div>
+                <div class="chapter-tags">
+                    <span class="tag">海钓</span>
+                    <span class="tag">贝类</span>
+                    <span class="tag">龙虾</span>
+                    <span class="tag">熏制</span>
+                </div>
+                <div class="hint-text">点击查看工艺详情</div>
+            </div>
+            <div class="flip-card-back">
+                <h3>大海的收获</h3>
+                <ul>
+                    <li><strong>捕鱼:</strong> 鲱鱼(Herring)曾是巨大产业，苏格兰渔家女随船队南下处理鱼获。流刺网(Drift nets)用于表层鱼，拖网(Trawl)用于底层鱼。</li>
+                    <li><strong>贝类 (Shellfish):</strong> 曾经是穷人的食物。惠特斯特布尔(Whitstable)的<strong>牡蛎</strong>最为著名。</li>
+                    <li><strong>龙虾 (Lobster):</strong> 使用柳条编制的<strong>龙虾笼 (Pots/Creels)</strong>，设计为“易进难出”。</li>
+                    <li><strong>熏制 (Smoking):</strong> 最初是为了保存食物（如熏鱼Kippers, Arbroath Smokies）。木烟中的甲醛起到防腐作用。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 13. 海洋装备 -->
+    <div class="flip-card" onclick="flip(this)">
+        <div class="flip-card-inner">
+            <div class="flip-card-front">
+                <div class="icon-large">⚓</div>
+                <div class="card-title">海洋装备</div>
+                <div class="card-en-title">Marine Gear</div>
+                <div class="chapter-tags">
+                    <span class="tag">制绳</span>
+                    <span class="tag">制网</span>
+                    <span class="tag">制帆</span>
+                </div>
+                <div class="hint-text">点击查看工艺详情</div>
+            </div>
+            <div class="flip-card-back">
+                <h3>航海的筋骨</h3>
+                <ul>
+                    <li><strong>制绳 (Rope Making):</strong> 在长长的<strong>制绳场 (Rope-walks)</strong>进行。工人后退行走，将大麻纤维捻成纱线，再绞合成绳。布里德波特(Bridport)是中心。</li>
+                    <li><strong>制网 (Net Making):</strong> 通常是妇女的工作。使用网针(Needle)和量板(Mesh pin)手工编织。需用橡树皮鞣液处理以防腐。</li>
+                    <li><strong>制帆 (Sailmakers):</strong> 这是一个需要巨大空间的工艺（制帆阁楼）。使用特制的<strong>顶针手掌 (Sailmaker's palm)</strong>来推针缝合厚重的帆布。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function switchTab(section) {
+        // 隐藏所有容器
+        document.getElementById('section-land').classList.remove('show');
+        document.getElementById('section-sea').classList.remove('show');
+        
+        // 移除按钮激活状态
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active-land');
+            btn.classList.remove('active-sea');
+        });
+
+        // 激活当前
+        document.getElementById('section-' + section).classList.add('show');
+        
+        // 激活对应按钮颜色
+        const activeBtn = document.querySelector(`.tab-btn[onclick="switchTab('${section}')"]`);
+        if(section === 'land') {
+            activeBtn.classList.add('active-land');
+        } else {
+            activeBtn.classList.add('active-sea');
+        }
+    }
+
+    function flip(card) {
+        card.classList.toggle('flipped');
+    }
+</script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_traditional_british_crafts_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
