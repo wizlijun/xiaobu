@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>杰克·韦尔奇商业智慧卡片</title>
+    <style>
+        :root {
+            --bg-color: #fcfcfc;
+            --card-front-bg: #ffffff;
+            --card-back-bg: #eef5fc; /* 极浅的GE蓝 */
+            --text-primary: #2c3e50;
+            --text-secondary: #5f6c7b;
+            --accent-color: #005696; /* GE Blue */
+            --accent-light: #4da3ff;
+            --shadow: 0 4px 20px rgba(0,0,0,0.06);
+            --transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 20px 40px;
+            background: #fff;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        h1 {
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin: 0;
+            color: var(--accent-color);
+            font-size: 2rem;
+        }
+
+        p.subtitle {
+            color: var(--text-secondary);
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+
+        /* 导航栏 */
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 30px 20px;
+            position: sticky;
+            top: 0;
+            background: rgba(252, 252, 252, 0.95);
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+
+        .nav-btn {
+            border: none;
+            background: transparent;
+            padding: 10px 20px;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 30px;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .nav-btn:hover {
+            background-color: rgba(0, 86, 150, 0.05);
+            color: var(--accent-color);
+        }
+
+        .nav-btn.active {
+            background-color: var(--accent-color);
+            color: white;
+            box-shadow: 0 4px 10px rgba(0, 86, 150, 0.2);
+        }
+
+        /* 内容区域 */
+        .content-area {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 60vh;
+        }
+
+        .category-section {
+            display: none;
+            animation: fadeUp 0.6s ease-out;
+        }
+
+        .category-section.active {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 翻转卡片设计 */
+        .card-container {
+            perspective: 1000px;
+            height: 280px;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+        }
+
+        .card-container:hover .card-inner,
+        .card-container.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 25px;
+            box-sizing: border-box;
+        }
+
+        .card-front {
+            background-color: var(--card-front-bg);
+            border: 1px solid #f0f0f0;
+        }
+
+        .card-back {
+            background-color: var(--card-back-bg);
+            transform: rotateY(180deg);
+            border: 1px solid #dcebf7;
+            text-align: left;
+            align-items: flex-start;
+        }
+
+        /* 卡片内容样式 */
+        .icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--accent-color);
+            opacity: 0.8;
+        }
+
+        .term {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .hint {
+            font-size: 0.85rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 15px;
+        }
+
+        .definition-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: var(--accent-color);
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: block;
+            width: 100%;
+            border-bottom: 1px solid rgba(0,86,150,0.1);
+            padding-bottom: 5px;
+        }
+
+        .definition-text {
+            font-size: 1rem;
+            color: #444;
+            line-height: 1.7;
+        }
+
+        .highlight-text {
+            background-color: rgba(255, 243, 205, 0.6);
+            padding: 0 4px;
+            border-radius: 2px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 50px;
+            color: #ccc;
+            font-size: 0.8rem;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 600px) {
+            .nav-container {
+                gap: 8px;
+            }
+            .nav-btn {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+            .card-container {
+                height: 320px; /* 移动端卡片稍高以容纳文字 */
+            }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>JACK WELCH</h1>
+    <p class="subtitle">商业本质 · 核心法则 · 领导力</p>
+</header>
+
+<div class="nav-container">
+    <button class="nav-btn active" onclick="showCategory('nature')">商业的本质</button>
+    <button class="nav-btn" onclick="showCategory('people')">关于“人”</button>
+    <button class="nav-btn" onclick="showCategory('strategy')">战略与执行</button>
+    <button class="nav-btn" onclick="showCategory('leadership')">CEO的职责</button>
+</div>
+
+<div class="content-area">
+
+    <!-- 1. 商业的本质 -->
+    <div id="nature" class="category-section active">
+        <!-- Card -->
+        <div class="card-container" onclick="this.classList.toggle('flipped')">
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="icon">🍳</div>
+                    <div class="term">商业是什么？</div>
+                    <div class="hint">点击翻转查看核心定义</div>
+                </div>
+                <div class="card-back">
+                    <span class="definition-title">核心观点</span>
+                    <p class="definition-text">商业不是火箭科学，没有标准答案。它更像是<strong>“嗅觉、感觉和触觉”</strong>（Smell, Feel, and Touch）。商业就像做菜，厨房里往往是混乱和肮脏的，只有端上桌时才显得完美。别在这个过程中寻求完美的公式。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card -->
+        <div class="card-container" onclick="this.classList.toggle('flipped')">
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="icon">⚖️</div>
+                    <div class="term">诚信 (Integrity)</div>
+                    <div class="hint">第一价值观</div>
+                </div>
+                <div class="card-back">
+                    <span class="definition-title">基石</span>
+                    <p class="definition-text">诚信是竞争力的基石，不是与其对立的。它意味着不仅要在法律上合规，更要在道德上坦荡。<span class="highlight-text">只有在诚信的基础上，才能谈速度和激情。</span>没有诚信，其他一切归零。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card -->
+        <div class="card-container" onclick="this.classList.toggle('flipped')">
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="icon">☯️</div>
+                    <div class="term">商业悖论</div>
+                    <div class="hint">管理者必须面对的现实</div>
+                </div>
+                <div class="card-back">
+                    <span class="definition-title">平衡的艺术</span>
+                    <p class="definition-text">商业就是管理悖论：既要短期业绩（吃饱饭），又要长期投入（做梦想）。既要削减成本（硬），又要拥抱员工（软）。<span class="highlight-text">任何傻瓜都能做好其中一样，只有领导者能同时做好两样。</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 关于“人” -->
+    <div id="people" class="category-section">
+        <!-- Card -->
+        <div class="card-container" onclick="this.classList.toggle('flipped')">
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="icon">🧬</div>
+                    <div class="term">区分 (Differentiation)</div>
+                    <div class="hint">最残酷也最仁慈的制度</div>
+                </div>
+                <div class="card-back">
+                    <span class="definition-title">20-70-10 原则</span>
+                    <p class="definition-text">必须将员工分为：<br>• <strong>Top 20%：</strong> 热爱、奖励、拥抱他们。<br>• <strong>Middle 70%：</strong> 培训、激励、那是公司的基石。<br>• <strong>Bottom 10%：</strong> 必须离开。这不残酷，让不合适的人混到中年才失业才是残酷。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card -->
+        <div class="card-container" onclick="this.classList.toggle('flipped')">
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="icon">⚡</div>
+                    <div class="term">4E + 1P</div>
+                    <div class="hint">选人标准</div>
+                </div>
+                <div class="card-back">
+                    <span class="definition-title">领导力模型</span>
+                    <div class="definition-text" style="font-size: 0.9rem;">
+                        <strong>Energy：</strong>拥有充沛的精力。<br>
+                        <strong>Energize：</strong>善于激励他人。<br>
+                        <strong>Edge：</strong>有决断力，对是非说是或非。<br>
+                        <strong>Execute：</strong>执行力，能拿到结果。<br>
+                        <strong>Passion：</strong>激情，对工作和生活充满强烈的在乎。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card -->
+        <div class="card-container" onclick="this.classList.toggle('flipped')">
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="icon">🤝</div>
+                    <div class="term">人 > 战略</div>
+                    <div class="hint">优先次序</div>
+                </div>
+                <div class="card-back">
+                    <span class="definition-title">经验总结</span>
+                    <p class="definition-text">先把人选对，策略其次。一个完美的战略如果由平庸的人执行会失败；一个普通的战略如果由充满了激情和智慧的人（A类人才）执行，往往能创造奇迹。<span class="highlight-text">你实际上是“租用”人才，但你要“拥有”这个生意。</span></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Card -->
+        <div class="card-container" onclick="this.classList.toggle('flipped')">
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="icon">🦁</div>
+                    <div class="term">自信 (Self-Confidence)</div>
+                    <div class="hint">生产力的来源</div>
+                </div>
+                <div class="card-back">
+                    <span class="definition-title">核心驱动力</span>
+                    <p class="definition-text">自信的人不需要复杂的PPT，不需要官僚流程来掩饰自己。自信带来简单（Simplicity），简单带来速度（Speed）。管理者的核心任务就是向员工体内注入自信。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 战略与执行 -->
+    <div id="strategy" class="category-section">
+        <!-- Card -->
+        <div class="card-container" onclick="this.classList.toggle('flipped')">
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="icon">🏆</div>
+                    <div class="term">数一数二</div>
+                    <div class="hint">No.1 or No.2</div>
+                </div>
+                <div class="card-back">
+                    <span class="definition-title">战略核心</span>
+                    <p class="definition-text">如果你在一个市场中不能做到第一或第二，你就在被边缘化。必须<span class="highlight-text">修复、出售或关闭</span>（Fix, Sell, or Close）那些平庸的业务。不要为了面子或历史原因死守烂摊子。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card -->
+        <div class="card-container" onclick="this.classList.toggle('flipped')">
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="icon">🌐</div>
+                    <div class="term">无边界 (Boundaryless)</div>
+                    <div class="hint">组织形态</div>
+                </div>
+                <div class="card-back">
+                    <span class="definition-title">打破墙壁</span>
+                    <p class="definition-text">最好的想法可以来自任何地方：底层员工、供应商、甚至是竞争对手。打破部门、职级、地理的墙。奖励那些寻找并应用他人想法的人，而不是奖励“非在此发明不予采用”（NIH）的人。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card -->
+        <div class="card-container" onclick="this.classList.toggle('flipped')">
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="icon">🎯</div>
+                    <div class="term">六西格玛 (Six Sigma)</div>
+                    <div class="hint">不仅是统计学</div>
+                </div>
+                <div class="card-back">
+                    <span class="definition-title">关于体验</span>
+                    <p class="definition-text">由于平均值会掩盖问题，六西格玛的核心是消灭<strong>变异（Variation）</strong>。客户感受到的不是你的平均发货速度，而是他能不能按时收到货。它是培养未来领导者的通用语言。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card -->
+        <div class="card-container" onclick="this.classList.toggle('flipped')">
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="icon">🛒</div>
+                    <div class="term">后台变前台</div>
+                    <div class="hint">外包的逻辑</div>
+                </div>
+                <div class="card-back">
+                    <span class="definition-title">资源配置</span>
+                    <p class="definition-text">把你的“后台”（如食堂、印刷、低端制造）变成别人的“前台”。让专业的人做专业的事，让那些工作成为别人的核心业务，这样他们会做得更好、更便宜。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. CEO的职责 -->
+    <div id="leadership" class="category-section">
+        <!-- Card -->
+        <div class="card-container" onclick="this.classList.toggle('flipped')">
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="icon">🗣️</div>
+                    <div class="term">首席解释官</div>
+                    <div class="hint">沟通的频率</div>
+                </div>
+                <div class="card-back">
+                    <span class="definition-title">重复的力量</span>
+                    <p class="definition-text">你必须一遍又一遍地重复你的愿景，直到你都要吐了为止。那时，你的员工才刚刚开始听进去。沟通必须是压倒性的、夸张的、持续的。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card -->
+        <div class="card-container" onclick="this.classList.toggle('flipped')">
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="icon">🔪</div>
+                    <div class="term">坦诚 (Candor)</div>
+                    <div class="hint">最大的效率工具</div>
+                </div>
+                <div class="card-back">
+                    <span class="definition-title">面对现实</span>
+                    <p class="definition-text">大多数组织深受“虚假友好”之害。坦诚能让每个人都知道自己的位置，知道业务的真实情况。面对现实，按照世界本来的样子（而不是你希望的样子）去处理问题。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card -->
+        <div class="card-container" onclick="this.classList.toggle('flipped')">
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="icon">🚀</div>
+                    <div class="term">延展目标 (Stretch)</div>
+                    <div class="hint">拒绝预算博弈</div>
+                </div>
+                <div class="card-back">
+                    <span class="definition-title">设定梦想</span>
+                    <p class="definition-text">预算通常是“讨价还价”的结果（我要10，你给5，成交7）。延展目标是不设上限的梦想。即使你没达到延展目标，你的成绩也往往比保守的预算要好得多。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card -->
+        <div class="card-container" onclick="this.classList.toggle('flipped')">
+            <div class="card-inner">
+                <div class="card-front">
+                    <div class="icon">🎉</div>
+                    <div class="term">庆祝 (Celebrations)</div>
+                    <div class="hint">工作的调味剂</div>
+                </div>
+                <div class="card-back">
+                    <span class="definition-title">必须有趣</span>
+                    <p class="definition-text">商业不仅仅是工作，它应该是有趣的。一定要庆祝胜利，哪怕是微小的胜利。如果工作没有乐趣，你就无法保持长久的激情。不要做一个无聊的管理者。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    Generated based on Jack Welch's "Jack: Straight from the Gut"
+</footer>
+
+<script>
+    function showCategory(id) {
+        // 隐藏所有部分
+        const sections = document.querySelectorAll('.category-section');
+        sections.forEach(sec => sec.classList.remove('active'));
+
+        // 取消所有按钮激活状态
+        const btns = document.querySelectorAll('.nav-btn');
+        btns.forEach(btn => btn.classList.remove('active'));
+
+        // 激活当前选中的部分和按钮
+        document.getElementById(id).classList.add('active');
+        
+        // 找到对应的按钮并激活（通过遍历匹配文本内容或索引，这里简单处理假设点击触发）
+        const clickedBtn = Array.from(btns).find(btn => btn.getAttribute('onclick').includes(id));
+        if(clickedBtn) clickedBtn.classList.add('active');
+    }
+</script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_jack_straight_from_the_gut_files/book.html" target="_blank">源链接</a>
+    <h3>附件</h3>
+        <div class="attachment-item">
+            <h4>中文epub <span class="file-size">(6.1M)</span></h4>
+            <a href="book_jack_straight_from_the_gut_files/book.epub" class="download-btn" download>下载</a>
+        </div>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
