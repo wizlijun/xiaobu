@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深度书摘：《索引：一部历史》</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --container-bg: #ffffff;
+            --primary-color: #2c3e50; /* 深蓝灰 */
+            --secondary-color: #3498db; /* 亮蓝 */
+            --accent-color: #e67e22; /* 活力橙，用于强调 */
+            --text-main: #2c3e50;
+            --text-light: #596e79;
+            --border-radius: 12px;
+            --card-front-bg: #f8f9fa;
+            --card-back-bg: #34495e;
+            --shadow-light: 0 4px 6px rgba(0,0,0,0.05);
+            --shadow-hover: 0 12px 24px rgba(0,0,0,0.12);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 进度条 */
+        .progress-container {
+            width: 100%;
+            height: 5px;
+            background: #ccc;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+        }
+        .progress-bar {
+            height: 5px;
+            background: var(--secondary-color);
+            width: 0%;
+        }
+
+        header {
+            background: white;
+            padding: 4rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-light);
+            font-weight: 300;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .main-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 1.5rem 4rem 1.5rem;
+        }
+
+        /* 核心论点区 */
+        .thesis-box {
+            background: #fff;
+            border-left: 6px solid var(--accent-color);
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 3rem;
+            box-shadow: var(--shadow-light);
+        }
+
+        .thesis-title {
+            font-weight: 700;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        /* 章节卡片 */
+        .chapter-card {
+            background: var(--container-bg);
+            border-radius: var(--border-radius);
+            padding: 2.5rem;
+            margin-bottom: 3rem;
+            box-shadow: var(--shadow-light);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chapter-number {
+            font-size: 5rem;
+            color: rgba(0,0,0,0.03);
+            position: absolute;
+            top: -10px;
+            right: 10px;
+            font-weight: 900;
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        .chapter-title {
+            font-size: 1.8rem;
+            color: var(--secondary-color);
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+
+        .content-text {
+            margin-bottom: 2rem;
+            font-size: 1.05rem;
+            text-align: justify;
+        }
+
+        .highlight-phrase {
+            background: linear-gradient(120deg, #e0f7fa 0%, #e0f7fa 100%);
+            background-repeat: no-repeat;
+            background-size: 100% 40%;
+            background-position: 0 88%;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .quote-box {
+            font-style: italic;
+            color: #555;
+            border-left: 3px solid #ccc;
+            padding-left: 1rem;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+            background: #fafafa;
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* 翻转卡片网格 */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            width: 100%;
+            height: 180px; /* 增加高度以容纳更多细节 */
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        }
+
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: var(--border-radius);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.2rem;
+            box-sizing: border-box;
+        }
+
+        .flip-card-front {
+            background-color: var(--card-front-bg);
+            color: var(--text-main);
+            border: 1px solid #ececec;
+        }
+
+        .icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--secondary-color);
+        }
+
+        .card-term {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .card-hint {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 8px;
+        }
+
+        .flip-card-back {
+            background-color: var(--card-back-bg);
+            color: #ecf0f1;
+            transform: rotateY(180deg);
+            text-align: left;
+            font-size: 0.9rem;
+            align-items: flex-start;
+            justify-content: flex-start;
+            overflow-y: auto; /* 防止内容溢出 */
+        }
+
+        .flip-card-back strong {
+            color: var(--secondary-color); /* 背面标题高亮 */
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1rem;
+        }
+
+        /* 导航 */
+        .toc-nav {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 3rem;
+            position: sticky;
+            top: 10px;
+            z-index: 99;
+            background: rgba(255,255,255,0.9);
+            padding: 10px;
+            border-radius: 30px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-light);
+            font-size: 0.85rem;
+            padding: 6px 14px;
+            border-radius: 20px;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem;
+            color: #888;
+            font-size: 0.9rem;
+            border-top: 1px solid #eee;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .chapter-card { padding: 1.5rem; }
+            .grid-container { grid-template-columns: 1fr; }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<div class="progress-container">
+    <div class="progress-bar" id="myBar"></div>
+</div>
+
+<header>
+    <h1>索引：一部历史</h1>
+    <div class="subtitle">Index, A History of the: A Bookish Adventure from Medieval Manuscripts to the Digital Age</div>
+    <div style="margin-top: 20px; font-weight: 500;">作者：丹尼斯·邓肯 (Dennis Duncan)</div>
+</header>
+
+<div class="main-container">
+
+    <div class="toc-nav">
+        <a href="#thesis" class="nav-link">核心论点</a>
+        <a href="#intro" class="nav-link">引言</a>
+        <a href="#ch1" class="nav-link">1.字母序</a>
+        <a href="#ch2" class="nav-link">2.诞生</a>
+        <a href="#ch3" class="nav-link">3.页码</a>
+        <a href="#ch4" class="nav-link">4.焦虑</a>
+        <a href="#ch5" class="nav-link">5.武器化</a>
+        <a href="#ch6" class="nav-link">6.虚构</a>
+        <a href="#ch7" class="nav-link">7.通用</a>
+        <a href="#ch8" class="nav-link">8.数字</a>
+    </div>
+
+    <!-- 核心论点 -->
+    <div id="thesis" class="thesis-box">
+        <div class="thesis-title">全书核心脉络</div>
+        <p>本书不仅是关于一种检索工具的历史，更是关于<strong>人类如何组织知识、管理信息焦虑</strong>的历史。作者区分了两条平行的历史线索：</p>
+        <ol style="margin-top: 10px; padding-left: 20px;">
+            <li style="margin-bottom: 8px;"><strong>语词索引 (Concordance)</strong>：机械、客观，关注“词”在何处出现。这是 Ctrl+F 的前身。</li>
+            <li><strong>主题索引 (Subject Index)</strong>：主观、解释性，关注“概念”是什么。这是人类智慧的体现。</li>
+        </ol>
+        <p style="margin-top: 10px;">从修道院的羊皮纸到硅谷的服务器，索引始终处于“高效获取知识”与“丧失深度阅读”的张力之中。</p>
+    </div>
+
+    <!-- 引言 -->
+    <div id="intro" class="chapter-card">
+        <div class="chapter-number">0</div>
+        <div class="chapter-title">引言：为书本绘制地图</div>
+        
+        <div class="content-text">
+            <p>索引是一种节省时间的工具，是书本内容的“地图”。它与目录（Table of Contents）有本质区别：目录反映了作者的创作逻辑（线性），而索引则赋予了读者打破顺序、直接访问内容的权力（非线性）。</p>
+            <p>邓肯指出，现代人普遍拥有的“搜索习惯”并非互联网时代的独创，而是有着近800年的历史。索引是<strong>册页书（Codex）</strong>时代的产物，因为卷轴无法支持高效的随机翻页。</p>
+        </div>
+
+        <div class="quote-box">
+            “索引从不只是一个中立的工具。它是通往文本的后门，有时甚至比正门（阅读全文）更受欢迎。”
+        </div>
+
+        <div class="grid-container">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">📜 vs 📖</div>
+                        <div class="card-term">卷轴 vs 册页</div>
+                        <div class="card-hint">物理形态决定检索方式</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>物理基础</strong>
+                        在卷轴时代，查找特定段落极其痛苦（必须展开整卷）。册页书（Codex）的出现，允许读者瞬间翻到任何一页，这使得索引的诞生在物理上成为可能。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🔍</div>
+                        <div class="card-term">谷歌的本质</div>
+                        <div class="card-hint">现代类比</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>互联网索引</strong>
+                        谷歌并不是在搜索整个互联网，而是在搜索它自己建立的“互联网索引”。这个原理与中世纪的圣经索引并无二致，只是规模不同。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🧠</div>
+                        <div class="card-term">两种索引</div>
+                        <div class="card-hint">核心分类</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>Word vs Concept</strong>
+                        1. 语词索引 (Concordance)：列出单词出现的位置（如圣经索引）。<br>
+                        2. 主题索引 (Subject Index)：列出概念和主题（如历史书索引）。<br>
+                        前者是自动化的，后者需要人类智慧。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">⏰</div>
+                        <div class="card-term">时间经济学</div>
+                        <div class="card-hint">索引的目的</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>节省生命</strong>
+                        索引本质上是关于“时间”的。它是对生命有限性的回应——我们没有时间读完所有的书，或者重读整本书来找一句话。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第一章 -->
+    <div id="chap1" class="chapter-card">
+        <div class="chapter-number">1</div>
+        <div class="chapter-title">第1章：秩序问题 (关于字母顺序)</div>
+        
+        <div class="content-text">
+            <p>我们习以为常的“按字母顺序排列”（A-Z）并非天生直观，它是人类认知史上的一次巨大飞跃。在古代和中世纪早期，字母顺序长期被拒绝使用。</p>
+            <p>中世纪学者认为世界是上帝按神圣等级创造的，知识应当按<strong>逻辑层级</strong>（如天使-人类-动物）排列。使用字母顺序被视为一种智力上的懒惰，因为它切断了事物内在的联系，将它们<span class="highlight-phrase">任意地</span>并置在一起。</p>
+        </div>
+
+        <div class="grid-container">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🔤</div>
+                        <div class="card-term">任意性 (Arbitrariness)</div>
+                        <div class="card-hint">字母顺序的核心特征</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>优势即劣势</strong>
+                        字母顺序没有任何逻辑含义（B并不比A次要，只是发音不同）。这种“零上下文”特性使其成为最通用的检索工具，但也因此曾被视为“反理性”和低级的。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">📚</div>
+                        <div class="card-term">《书目表》(Pinakes)</div>
+                        <div class="card-hint">亚历山大图书馆</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>古代先驱</strong>
+                        诗人学者卡利马科斯（Callimachus）编撰的巨著。面对海量藏书，分类法失效，他不得不采用字母顺序来列出作者，这是已知最早的大规模应用。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">⛪</div>
+                        <div class="card-term">中世纪的抵抗</div>
+                        <div class="card-hint">为何不用字母序？</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>神圣秩序</strong>
+                        中世纪修道院认为，把“蚂蚁”(Ant) 放在“天使”(Angel) 旁边仅仅因为拼写相近，是对上帝创造的完美层级秩序的亵渎。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">📖</div>
+                        <div class="card-term">第一本英语字典</div>
+                        <div class="card-hint">Cawdrey (1604)</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>用户教育</strong>
+                        罗伯特·考德里出版《字母表》时，不得不写前言教读者如何使用字母顺序：“如果词以A开头，请看书的前面；以V开头，请看后面。”说明当时这并非基本常识。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第二章 -->
+    <div id="chap2" class="chapter-card">
+        <div class="chapter-number">2</div>
+        <div class="chapter-title">第2章：索引的诞生 (教学与布道)</div>
+        
+        <div class="content-text">
+            <p>13世纪初，两股力量推动了现代索引的诞生：<strong>大学的兴起</strong>和<strong>行乞修会的布道需求</strong>。学者和传教士不再进行冥想式的全本阅读，他们需要快速在《圣经》和教父著作中找到论据来辩论或布道。</p>
+            <p>这一时期诞生了两种截然不同的索引原型，分别由两位巨人确立：牛津的罗伯特·格罗斯泰斯特和巴黎的圣谢尔的休。</p>
+        </div>
+
+        <div class="grid-container">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🦁</div>
+                        <div class="card-term">区分集 (Distinctiones)</div>
+                        <div class="card-hint">主题索引的前身</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>概念索引</strong>
+                        格罗斯泰斯特发明的工具。通过复杂的符号系统，标记出一个词（如“狮子”）在圣经中不同的象征意义（既可指基督，也可指魔鬼）。这是为了理解概念，而非字面搜索。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">📝</div>
+                        <div class="card-term">语词索引 (Concordance)</div>
+                        <div class="card-hint">圣谢尔的休</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>字面索引</strong>
+                        巴黎的休（Hugh of St Cher）组织了500名多米尼克会修士，将圣经中每个单词的每次出现位置都列了出来。这是完全客观的、机械的，是现代搜索引擎的直系祖先。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🔖</div>
+                        <div class="card-term">章节划分</div>
+                        <div class="card-hint">史蒂芬·朗顿</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>定位系统</strong>
+                        在页码出现前，如何定位？坎特伯雷大主教朗顿（Langton）确立了我们今天使用的《圣经》章节划分（如马太福音第5章）。这为跨版本的索引提供了通用坐标。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🕶️</div>
+                        <div class="card-term">第一副眼镜</div>
+                        <div class="card-hint">绘画中的细节</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>精细阅读的象征</strong>
+                        在一幅描绘圣谢尔的休的壁画中，他戴着眼镜（尽管那是时代错置）。这象征着索引编制需要高度集中和精细的视觉工作，与传统的修道院朗读截然不同。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第三章 -->
+    <div id="chap3" class="chapter-card">
+        <div class="chapter-number">3</div>
+        <div class="chapter-title">第3章：没有它我们在哪？ (页码奇迹)</div>
+        
+        <div class="content-text">
+            <p>索引依赖于定位器（Locator）。最伟大的定位器就是<strong>页码</strong>。令人惊讶的是，页码的普及比古腾堡印刷术晚了几十年。</p>
+            <p>在手抄本时代，页码毫无意义，因为每一本手抄书的页数都不同。只有印刷术保证了同一版次的每一本书内容都在同一页，这使得<span class="highlight-phrase">通用的页码索引</span>成为可能。</p>
+        </div>
+
+        <div class="grid-container">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">1️⃣</div>
+                        <div class="card-term">1470年：页码诞生</div>
+                        <div class="card-hint">历史时刻</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>维尔纳·罗莱温克</strong>
+                        在他的一篇布道词《Sermo》的页边空白处，出现了第一个印刷的阿拉伯数字页码。这一微小的创新彻底改变了书籍导航的方式。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🏷️</div>
+                        <div class="card-term">签名标记 (Signatures)</div>
+                        <div class="card-hint">页码的前身</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>装订工的记号</strong>
+                        书页底部如 A1, A2 的标记。原本是给装订工排序用的，但在页码普及前，早期的索引常引用这些标记来定位内容。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">⚖️</div>
+                        <div class="card-term">通用性 vs 精确性</div>
+                        <div class="card-hint">定位器的权衡</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>权衡</strong>
+                        按“章/节”索引：适用该书的所有版本（通用），但查找范围大。<br>
+                        按“页码”索引：定位极快且精确，但仅适用于特定版本（版次依赖）。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">📄</div>
+                        <div class="card-term">空白页恐惧</div>
+                        <div class="card-hint">早期印刷</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>页码为何迟到？</strong>
+                        早期印刷商模仿手抄本，认为页码破坏了版面的美感。直到索引的需求变得迫切，页码才从边缘走向标准配置。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第四章 -->
+    <div id="chap4" class="chapter-card">
+        <div class="chapter-number">4</div>
+        <div class="chapter-title">第4章：地图还是疆域 (受审的索引)</div>
+        
+        <div class="content-text">
+            <p>随着索引的普及，一种深深的文化焦虑随之而来。学者们开始担心人们不再从头到尾阅读书籍，而是通过查阅索引进行肤浅的“索引式学习”（Index Learning）。</p>
+            <p>这种焦虑反映了对“知识获取捷径”的恐惧——如果不用付出阅读整本书的辛苦努力就能显得博学，那么学问的价值何在？</p>
+        </div>
+
+        <div class="grid-container">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🐍</div>
+                        <div class="card-term">抓鳗鱼的尾巴</div>
+                        <div class="card-hint">亚历山大·波普</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>著名讽刺</strong>
+                        诗人波普（Pope）写道：“索引式学习即使没让学生读得脸色苍白，也能抓住科学鳗鱼的尾巴。” 意指虽然没下苦功，却掌握了知识的要点（或仅仅是假象）。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🏰</div>
+                        <div class="card-term">后门 (Postern Gate)</div>
+                        <div class="card-hint">比喻</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>不想走正门</strong>
+                        斯威夫特（Swift）讽刺那些只读索引的人，就像是“想要描述一座宫殿，却只看了它的后门（或厕所）”。索引被视为一种投机取巧的入口。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">📜</div>
+                        <div class="card-term">柏拉图的幽灵</div>
+                        <div class="card-hint">技术恐惧</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>历史重演</strong>
+                        就像柏拉图在《费德鲁斯篇》中担心书写会削弱记忆力一样，近代学者担心索引会削弱深度阅读能力。每当新的信息技术出现，这种焦虑就会复活。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🔭</div>
+                        <div class="card-term">伽利略的抱怨</div>
+                        <div class="card-hint">科学革命</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>书本 vs 自然</strong>
+                        伽利略嘲笑那些经院哲学家，当遇到自然现象时，他们不是去观察世界，而是去查亚里士多德著作的索引，看古人是怎么说的。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第五章 -->
+    <div id="chap5" class="chapter-card">
+        <div class="chapter-number">5</div>
+        <div class="chapter-title">第5章：别让托利党人编我的索引 (武器化)</div>
+        <p>17至18世纪，索引不再仅仅是检索工具，它变成了政治斗争和文学嘲讽的致命武器。这是索引历史上最“喧闹”的时期。</p>
+        <p>敌对的作者或党派（辉格党与托利党）会为对手的书编写恶意索引，通过断章取义、讽刺性的条目来羞辱作者，甚至扭曲书的原意。这种战术被称为<span class="highlight-phrase">索引诽谤</span>。</p>
+
+        <div class="grid-container">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">⚔️</div>
+                        <div class="card-term">本特利 vs 波义耳</div>
+                        <div class="card-hint">第一次索引战争</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>学术羞辱</strong>
+                        在这场著名的古典学术论战中，威廉·金（代表波义耳方）为本特利的书编写了一个恶搞索引，包含条目如“他的极其愚蠢，第X页”、“他的卖弄学问，第Y页”，开创了索引攻击的先河。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🕵️</div>
+                        <div class="card-term">奥德米克森</div>
+                        <div class="card-hint">最著名的流氓索引者</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>恶意篡改</strong>
+                        辉格党人奥德米克森受雇为一本托利党历史书编索引。他利用这个机会，通过索引条目彻底颠覆了原书的观点。例如，书中写某人被“非法处决”，索引条目却写成“罪有应得”。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🍳</div>
+                        <div class="card-term">热锅生子丑闻</div>
+                        <div class="card-hint">Warming Pan</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>政治阴谋</strong>
+                        关于詹姆斯二世之子是冒牌货的谣言（说是用暖床锅带进宫的）。奥德米克森在索引中故意强化这个谣言：“暖床锅，对詹姆斯国王的王后非常有用”。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">📜</div>
+                        <div class="card-term">麦考利的遗言</div>
+                        <div class="card-hint">本章标题来源</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>党派之争</strong>
+                        大历史学家麦考利深知索引的威力，据说他曾警告出版商：“别让该死的托利党人编我的历史书索引！”他知道索引能重新定义读者对书的理解。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第六章 -->
+    <div id="chap6" class="chapter-card">
+        <div class="chapter-number">6</div>
+        <div class="chapter-title">第6章：为虚构作品编索引 (命名之难)</div>
+        
+        <div class="content-text">
+            <p>通常小说是没有索引的。因为小说是让人沉浸体验的，而不是用来检索数据的。但当小说真的带有索引时，通常是为了游戏、讽刺，或是作为一种后设文学（Metafiction）的实验。</p>
+            <p>为虚构作品编索引面临巨大的挑战：如何命名一个角色的情感？如何索引一个隐喻？这暴露了索引在处理“不可量化”内容时的局限性。</p>
+        </div>
+
+        <div class="grid-container">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">💧</div>
+                        <div class="card-term">眼泪索引</div>
+                        <div class="card-hint">The Index to Tears</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>讽刺感伤主义</strong>
+                        亨利·莫利为小说《多情的人》编写的索引，按顺序列出了书中每一次哭泣（如“落下一滴泪”、“泪流满面”等），通过量化嘲笑了该书过度的感伤。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🐇</div>
+                        <div class="card-term">路易斯·卡罗尔</div>
+                        <div class="card-hint">《西尔薇与布鲁诺》</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>荒谬的逻辑</strong>
+                        《爱丽丝》的作者在他的另一部小说中编写了异想天开的索引，如“非常清醒，其不便之处”或“这一章没什么好索引的”。他利用索引进行逻辑游戏。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🔥</div>
+                        <div class="card-term">《微暗的火》</div>
+                        <div class="card-hint">纳博科夫</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>索引即叙事</strong>
+                        在这部小说中，索引不再是附属品，而是小说核心情节的一部分。读者必须在诗歌、注释和索引之间跳跃，才能拼凑出完整的故事线索。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">📏</div>
+                        <div class="card-term">理查德森的野心</div>
+                        <div class="card-hint">《克拉丽莎》</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>道德手册</strong>
+                        塞缪尔·理查德森为他的长篇小说编写了巨大的“道德索引”，试图将小说情节转化为格言警句，想把小说变成一本道德教科书，而非单纯的娱乐。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第七章 -->
+    <div id="chap7" class="chapter-card">
+        <div class="chapter-number">7</div>
+        <div class="chapter-title">第7章：通往所有知识的钥匙 (通用索引)</div>
+        
+        <div class="content-text">
+            <p>到了维多利亚时代，随着出版物数量的爆炸，单一书籍的索引已无法满足需求。人们开始梦想建立一个包含所有人类知识的“通用索引”（Universal Index）。</p>
+            <p>这是前数字时代的“谷歌梦”。这一时期见证了索引编制从个人手艺向工业化协作的转变，虽然最终未能实现完全的“世界索引”，但诞生了现代图书馆学的基石。</p>
+        </div>
+
+        <div class="grid-container">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">⚡</div>
+                        <div class="card-term">米涅神父</div>
+                        <div class="card-hint">Patrologia Latina</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>索引工厂</strong>
+                        雅克-保罗·米涅雇佣了数百名被贬职的神父，为217卷的《拉丁教父集》编写了宏大的索引。他称赞自己的索引如同“铁路”和“电力”一样，压缩了时空。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🏛️</div>
+                        <div class="card-term">索引协会</div>
+                        <div class="card-hint">The Index Society</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>宏大却失败</strong>
+                        1877年在伦敦成立，旨在通过会员协作编纂通用索引。由于目标过于宏大、资金短缺以及缺乏有效的分类体系，最终难以为继。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">📰</div>
+                        <div class="card-term">普尔索引</div>
+                        <div class="card-hint">成功的案例</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>期刊索引</strong>
+                        威廉·普尔（William Poole）意识到虽然做不出全书索引，但可以做期刊文章索引。他动员各地图书馆员分工协作，成功编制了《期刊文献索引》，解决了即时知识检索难题。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🕵️</div>
+                        <div class="card-term">福尔摩斯</div>
+                        <div class="card-hint">虚构的索引大师</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>个人知识库</strong>
+                        福尔摩斯保持着详尽的剪报索引系统。这反映了维多利亚时代的一种理想：通过个人索引来掌控混乱的世界信息。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第八章 -->
+    <div id="chap8" class="chapter-card">
+        <div class="chapter-number">8</div>
+        <div class="chapter-title">第8章：卢德米拉与洛塔里娅 (搜索时代的索引)</div>
+        
+        <div class="content-text">
+            <p>在数字时代，计算机彻底改变了索引。搜索引擎（Google）本质上是一个巨大的自动化<strong>语词索引</strong>。我们似乎回到了最初——计算机擅长匹配字符串（像13世纪的圣谢尔的休），却不擅长理解概念（像格罗斯泰斯特）。</p>
+            <p>本章借用卡尔维诺小说中的两个人物做比喻：卢德米拉代表传统的、沉浸式的阅读；洛塔里娅代表计算机式的分析阅读（词频统计）。</p>
+        </div>
+
+        <div class="grid-container">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🤖</div>
+                        <div class="card-term">Ctrl+F 的局限</div>
+                        <div class="card-hint">语词 vs 主题的回归</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>找不到概念</strong>
+                        Ctrl+F 是现代的“语词索引”。它能找到书中所有“爱”字，但找不到一段描写爱却没用“爱”这个字的段落。只有人类编写的“主题索引”能做到这一点。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">#️⃣</div>
+                        <div class="card-term">标签 (Hashtag)</div>
+                        <div class="card-hint">大众分类法</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>自发索引</strong>
+                        #标签 是数字时代的索引形式。它不是自上而下的权威分类，而是自下而上的“大众分类法”（Folksonomy），混乱但充满生命力。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">💼</div>
+                        <div class="card-term">Bagwell太太</div>
+                        <div class="card-hint">佩皮斯日记索引</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>人类的智慧</strong>
+                        一个优秀的索引员能讲故事。在佩皮斯日记的索引中，关于Bagwell太太的条目通过页码串联，讲述了一个完整的偷情故事。这是机器算法无法提取的叙事。
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🌐</div>
+                        <div class="card-term">Google = Alphabet</div>
+                        <div class="card-hint">终极隐喻</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>字母表的胜利</strong>
+                        Google的母公司名为 Alphabet（字母表），这完美地呼应了索引的历史。无论技术如何进步，我们依然依赖古老的字母顺序来驯服信息的洪流。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2024 书籍摘要生成 | 基于 Dennis Duncan 《Index, A History of the》 | Designed for Deep Reading</p>
+    </footer>
+</div>
+
+<script>
+    // 简单的滚动进度条
+    window.onscroll = function() {myFunction()};
+    function myFunction() {
+        var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        var scrolled = (winScroll / height) * 100;
+        document.getElementById("myBar").style.width = scrolled + "%";
+    }
+</script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_index_a_history_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
