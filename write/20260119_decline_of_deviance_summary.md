@@ -10,7 +10,7 @@
 **Adam Mastroianni**
 2025年10月28日
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F62657e3f-652f-4886-bc2d-327c541573c5_3024x4032.jpeg)
+![](https://substackcdn.com/image/fetch/$s_!ct9q!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F8d788070-ccb5-4cf6-8c1f-f8ee02fca241_1678x1167.jpeg)
 *照片来源：我爸*
 
 现在的人不如以前那么“怪”了。这听起来可能有点奇怪，但来自社会各个领域的数据都强有力地指向同一个方向：我们正处于一场恶作剧的衰退期、一场循规蹈矩的危机，以及一场平庸的流行病之中。**离经叛道（Deviance）正在衰落。**
@@ -28,34 +28,34 @@ c) 这种趋势纯粹是坏事，而事实上它是积极与消极的混合体�
 ### 1. 正在消失的捣蛋鬼
 让我们从数据清晰、全面且被忽视的地方开始：与父母和祖父母相比，今天的青少年简直是一群“乖宝宝”。例如，高中生饮酒的可能性不到 1990 年代的一半：
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F090680d2-9659-436f-b883-7c30f40d7c71_2330x1646.png)
+![](https://substackcdn.com/image/fetch/$s_!u_8Y!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fe189f069-0ee1-4fab-8cc5-f034372f3277_2112x660.png)
 
 他们吸烟、发生性行为或打架的可能性也降低了，滥用止痛药、使用冰毒、摇头丸、致幻剂、吸入剂和海洛因的可能性也降低了。（现在的孩子不是用电子烟代替抽烟了吗？不：电子烟的使用率在 2015 年至 2023 年期间也有所下降。）大麻的使用在 90 年代末达到顶峰，当时几乎 50% 的高中生报告说他们至少吸过一次。现在这个数字降到了 30%。现在的孩子们甚至更喜欢系安全带。
 
 令人惊讶的是，他们带枪去学校的可能性也降低了：
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F00b65377-ad27-4a0b-80a2-f87c95b6c382_2298x1670.png)
+![](https://substackcdn.com/image/fetch/$s_!_JDa!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fd39a2eaa-5e10-47c1-9425-36460648e793_2112x716.png)
 
 所有这些发现都依赖于调查问卷，所以也许是越来越多的孩子每年都在撒谎？好吧，生孩子这事儿很难撒谎，而自 1990 年代初以来，青少年怀孕率也大幅下降：
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F96c09a89-22a0-432a-bc96-1b5e28373b75_1876x1488.png)
+![](https://substackcdn.com/image/fetch/$s_!nuY7!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Ff7e12cd7-030d-4a54-b16a-13f0066fa396_2132x822.png)
 
 ### 2. 成年人也循规蹈矩了
 成年人的出格行为也比以前少了。例如，犯罪率在过去三十年里下降了一半：
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F4c730bd0-b3b3-4f9e-a89c-5d9e5782a17e_2074x1252.png)
+![](https://substackcdn.com/image/fetch/$s_!VvrQ!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F112adf86-8540-4ed5-ba7c-77b43cd5641f_1280x966.png)
 
 这是来自北爱尔兰关于“反社会行为事件”的类似数据，因为他们恰好追踪了这些数据：
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fe6f7f631-0e49-411a-ab55-090623d8c114_1188x736.png)
+![](https://substackcdn.com/image/fetch/$s_!EjDJ!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Ff7f6d801-f4e9-4885-aa1c-2102875bebfc_1368x594.png)
 
 连环杀人案也在减少：
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fe2450536-f009-41e9-9743-f62d854737d9_1000x524.jpeg)
+![](https://substackcdn.com/image/fetch/$s_!PAba!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F57b1f4b5-0af3-4bb1-b248-8cb1ce0e2336_725x467.png)
 
 另一种正在消失的离经叛道形式：人们似乎不再加入邪教了。宗教历史学家、一本关于邪教书籍的作者菲利普·詹金斯（Philip Jenkins）报告说，“与 1970 年代相比，邪教问题几乎完全消失了”。[1]（鉴于邪教的增加会对詹金斯的新书销量更有利，我倾向于在这个问题上相信他。）关于邪教的形成没有全面的数据集，但 Roger’s Bacon 分析了一个热门且长寿播客中报道过的邪教，发现其中大多数始于 60 年代、70 年代和 80 年代，而在 2000 年之后急剧下降 [2]：
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F162e8316-f6d3-4613-8884-638e55554605_1280x959.png)
+![](https://substackcdn.com/image/fetch/$s_!_2Zg!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fe96c0cba-d689-41c1-a51f-5acaca021915_486x268.png)
 
 犯罪和邪教绝对是离经叛道的，它们似乎正在减少。这很好。但令人惊讶的是：中性和积极形式的离经叛道似乎也变得越来越罕见。例如——
 
@@ -66,11 +66,11 @@ c) 这种趋势纯粹是坏事，而事实上它是积极与消极的混合体�
 
 关于这一点我完全错了。自 1980 年代中期以来，美国人搬家的可能性越来越小：
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F8f2c3248-18c7-4340-9a3b-285b7385d38b_2246x1576.png)
+![](https://substackcdn.com/image/fetch/$s_!mt7d!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F36417624-bf69-4152-b47d-4294565f4339_2767x1380.png)
 
 这种效应主要是由年轻人驱动的：
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F81b37fa0-a0aa-43e0-82d2-8a9d16b50e0f_2224x1704.png)
+![](https://substackcdn.com/image/fetch/$s_!ATAz!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F9c9e0e4f-e415-44db-b5c9-378098eb5f82_1044x759.png)
 
 如今，“典型的成年人居住地距离其母亲仅 18 英里”。
 
@@ -79,7 +79,7 @@ c) 这种趋势纯粹是坏事，而事实上它是积极与消极的混合体�
 
 几年前，我分析了一堆数据，发现所有流行艺术形式都变成了“寡头垄断”：越来越少的艺术家和特许经营权占据了越来越多的市场份额。例如，在 2000 年之前，票房最高的电影中只有大约 25% 是前传、续集、衍生剧等。现在这个比例是 75%。
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F62c2f6d2-3c22-4416-860e-8f5b40d6c0b9_3264x2368.png)
+![](https://substackcdn.com/image/fetch/$s_!GOmK!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F6c136987-1a28-4c85-bdf6-186a39563ac1_600x380.png)
 
 电视、音乐、电子游戏和书籍的情况也是如此——所有这些都已经“寡头化”了。正如泰德·吉奥亚（Ted Gioia）指出的那样，我们仍在阅读关于 1960 年代发明的超级英雄的漫画书，购买几十年前首演的百老汇演出门票，听着我们父母和祖父母听过的相同音乐。
 
@@ -87,7 +87,7 @@ c) 这种趋势纯粹是坏事，而事实上它是积极与消极的混合体�
 
 此外，现在每本小说的封面看起来都像这样：
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F062c3f81-4204-4532-a56e-812675971a80_1472x1468.jpeg)
+![](https://substackcdn.com/image/fetch/$s_!CHYg!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F800bb610-c6c9-4556-881b-396b5b28a3e1_800x450.png)
 
 但是等等，难道我们不应该被淹没在新的、开创性的艺术中吗？每天，人们向 Spotify 上传约 10 万首歌曲，向 YouTube 上传 370 万个视频。[3] 即使考虑到斯特金定律（Sturgeon’s Law，“90% 的东西都是垃圾”），剩下的好东西仍然多到一个人一辈子也欣赏不完。然而，职业艺术评论家却在抱怨文化已经陷入停滞。根据《纽约时报杂志》的说法：
 
@@ -96,7 +96,7 @@ c) 这种趋势纯粹是坏事，而事实上它是积极与消极的混合体�
 ### 5. 互联网不再有趣
 还记得互联网长这样的时候吗？
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F4a905a8f-2092-491d-af22-e1d8825227d8_540x364.gif)
+![](https://substackcdn.com/image/fetch/$s_!Stw9!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Ff6269cf1-9d51-46d6-992f-184fcf1d93fb_800x600.png)
 
 这是来自艺术/研究项目 One Terabyte of Kilobyte Age 的图片，该项目保存了旧版 Geocities（雅虎地球村）页面的截图。
 那个时代早已一去不复返。逛一逛网页设计博物馆（Web Design Museum），你会立即注意到两件事：
@@ -106,32 +106,31 @@ c) 这种趋势纯粹是坏事，而事实上它是积极与消极的混合体�
 
 几个例子：
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F3b2e533c-3932-4e08-8e65-27f27e69f332_1600x958.jpeg)
+![](https://substackcdn.com/image/fetch/$s_!Kb9-!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F4483deed-1541-42a5-b348-78881c77373a_1920x1080.jpeg)
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fe6413280-9289-4d33-a44d-f952136e65a7_1600x961.jpeg)
+![](https://substackcdn.com/image/fetch/$s_!Ex_s!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fdc2f5032-8cc4-4a66-844c-b4acbc366364_1920x1080.jpeg)
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F6131c905-2d6f-47cf-89f5-4752c1071253_1600x948.jpeg)
+![](https://substackcdn.com/image/fetch/$s_!IgCR!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F5746862e-ae59-407a-8ef8-c1cc730a55dc_1920x1080.jpeg)
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F5890886c-548c-48c5-9507-1b033d61184d_1600x1171.jpeg)
 
 同样的同质化也发生在用户自己创建的互联网部分。每个 MySpace 页面都是灾难性的大杂烩；除了照片外，每个 Facebook 个人资料都是一样的。在 TikTok 和 Instagram 上，每个网红听起来都一样 [4]。在 YouTube 上，每个视频缩略图看起来都像是出自同一个内容工厂：
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F693b3612-4022-48a0-9e90-27a90f11acb4_1206x1236.jpeg)
+![](https://substackcdn.com/image/fetch/$s_!mLNQ!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F8fb9ef20-11e5-4c97-aea8-0f069c1883e5_825x413.png)
 
 毫无疑问，互联网基本上还是一个诡异的管道，每天都会挤出一个新的怪东西：暴走漫画（Trollface）、Momo 挑战、斯基比迪马桶（skibidi toilet）。但请注意，许多这些迷因（meme）的原材料通常已有几十年历史：超级英雄（1930s-1970s）、星球大战（1977）、马里奥（1981）、宝可梦（1996）、海绵宝宝（1999）、悲伤青蛙 Pepe（2005）、愤怒的小鸟（2009）、小黄人（2010）、我的世界（2011）。还记得十年前，人们发现了一部德国电影，里面有一段希特勒大喊大叫的长镜头，然后他们开始修改字幕让希特勒抱怨不同的事情吗？好吧，他们现在还在这么做。
 
 ### 6. 建筑越来越缺乏质感
 物理世界看起来也越来越千篇一律。正如 Alex Murrell 记录的那样 [5]，现在世界上每个咖啡馆都有同样的资产阶级波西米亚（bourgeois boho）风格：
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fa954f9a3-5c77-4a7b-a45e-d29a0094b9f2_1000x1251.png)
+![](https://substackcdn.com/image/fetch/$s_!mRqm!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F2e99086c-438c-428d-9bea-4039ff97c851_2454x1406.png)
 
 每栋新公寓楼看起来都像这样：
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F073e5a59-f9c2-409e-ad2f-0c58e8055a40_1000x1334.png)
+![](https://substackcdn.com/image/fetch/$s_!Kims!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fa3b83cef-75fc-4a50-861d-2f4b7ccef9f8_2454x1364.png)
 
 记者 Kyle Chayka 记录了每个 AirBnB 现在看起来都一样。甚至超级富豪的大公司也在这种外观的办公室里工作：
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F354d8bc0-d9bd-49e0-b384-ad669e46a6f6_1000x1334.png)
+![](https://substackcdn.com/image/fetch/$s_!50gI!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F75ec686a-8dbf-4f39-a523-9612b0cd8e30_593x454.png)
 *谷歌公司总部。来源：Scott Alexander。*
 
 人们通常认为我们不再建造有趣、华丽的建筑是因为付钱给工匠在石头和木头上雕刻图案变得太贵了。[6] 但研究人员 Samuel Hughes 认为这种“供给侧”的说法站不住脚：许多看起来必须手工完成的建筑装饰实际上可以用机器廉价完成，而且使用的往往是我们早就拥有的技术。我们仍然有能力建造有趣的建筑——我们只是选择不这样做。
@@ -139,26 +138,26 @@ c) 这种趋势纯粹是坏事，而事实上它是积极与消极的混合体�
 ### 7. 品牌？更像是……“平”牌。
 品牌似乎正在趋同于同一种标志：没有图像，只有用看起来有点像 Futura 的无衬线字体写成的文字。[7]
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F249a044d-161b-439f-b986-e4d0d046f4bd_1000x750.png)
+![](https://substackcdn.com/image/fetch/$s_!-PmC!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F26b6797f-6039-40f5-b739-0442cde5a492_2483x1419.png)
 
 一项对品牌 Twitter 账户的分析发现，它们听起来越来越像：
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F09903936-a82f-45a8-ac14-7264a4d6b797_1600x722.jpeg)
+![](https://substackcdn.com/image/fetch/$s_!IZqV!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F8e3b548e-61a1-4bfd-92a3-ce544cd64068_1000x586.gif)
 
 大多数汽车现在都是黑色、银色、灰色或白色的 [8]：
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fa9543e33-7258-45ad-ac6a-20d0f4d38c64_1600x1174.png)
+![](https://substackcdn.com/image/fetch/$s_!cxto!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F24e98dd7-8709-49b4-8d30-568707b1d7fd_1080x740.png)
 
 当一家英国科学博物馆联盟分析其藏品的颜色随时间的变化时，他们发现了类似的趋势，黑色、灰色和白色的比例稳步上升：
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F3888352b-c918-4061-9c8e-3298c91a4593_1020x762.png)
+![](https://substackcdn.com/image/fetch/$s_!sXvh!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fcff6ed41-5f87-4e1c-8ce0-5151c2f7e9c8_1225x676.png)
 
 ### 8. 科学停滞不前
 科学需要离经叛道的思维。所以也就不足为奇了，当我们看到其他地方的离经叛道在减少时，我们也看到了科学进步率的下降。新观点越来越难以取代旧观点，专家们认为较新的发现不如较旧的发现令人印象深刻，而且我们人均做出的重大创新也比 50 年前少了。
 
 当你阅读较旧的科学著作时，你会立刻发现这种科学的“平庸化”。正如 Roger’s Bacon（就是做邪教分析的那位）指出的那样，科学论文过去是有风格的。现在它们听起来都一样，而且都很无聊。例如，基本上 100% 的医学期刊文章现在都使用相同的格式（引言、方法、结果和讨论）：
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F5998126b-d368-45e0-a9cb-b430857321e9_1600x1031.png)
+![](https://substackcdn.com/image/fetch/$s_!FBmW!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Ffb14eca2-6ff0-452e-917c-e0920592b7d4_640x292.png)
 
 这不仅仅是审美上的转变。标准化你的写作也会标准化你的思维——我从亲身经历中知道，在科学论文中说任何有趣的话都很困难。
 
@@ -194,16 +193,15 @@ c) 这种趋势纯粹是坏事，而事实上它是积极与消极的混合体�
 
 首先，与其他形式的暴力不同，大规模枪击事件自 90 年代以来变得更加普遍（尽管注意 Y 轴，我们谈论的是所有犯罪中极小的一部分）：
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fa95034c4-7221-4f10-9008-54b9d0325d7e_2174x1486.png)
+![](https://substackcdn.com/image/fetch/$s_!SfdI!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F14c1768d-6858-4641-afc1-0bf2fae0ac9a_1220x796.png)
 
 婴儿的名字变得更加独特：
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F67104d49-4171-46bd-849c-f8319f39b1a5_1502x1154.png)
+![](https://substackcdn.com/image/fetch/$s_!QuUf!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F724e255e-e751-4cd6-a11b-6171cef676bd_1440x1282.png)
 
 当你查看时尚时间表时，你肯定会看到从 1960 年代到 2010 年代的变化比 1860 年代到 1910 年代的变化要多得多：
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fd90e54d7-d710-482a-995a-c6001a1d9536_1184x1312.jpeg)
-[来源](https://www.youtube.com/watch?v=daVZrMuiKWA&ab_channel=Glamour)
+![](https://substackcdn.com/image/fetch/$s_!MtTr!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fc028e7a6-5a17-49b0-9f6c-8444849e3204_734x261.png)
 
 这至少暗示了离经叛道的衰落并不是一个单调的、长达几个世纪的趋势。确实，我们拥有的大量数据表明，事情是在 1980 年代到 2000 年代之间的某个时候开始变得更加同质化的。
 
@@ -220,7 +218,7 @@ c) 这种趋势纯粹是坏事，而事实上它是积极与消极的混合体�
 
 当联邦机构进行成本效益分析时，他们必须计算出一条人命值多少钱。（否则，你怎么知道是否值得修建一条新的州际公路，它可以帮助数百万人准时上班，但可能会因空气污染导致一些额外的死亡？）他们通过询问人们愿意支付多少钱来降低死亡风险来做到这一点，然后他们用这个数字来计算“统计生命价值”（Value of a Statistical Life）。根据 Substack 博主 Linch 的分析，随着时间的推移，这些统计生命的价值已经变得越来越高：
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F0ef007c0-2646-444a-b891-628d9a2463e2_2282x1382.png)
+![](https://substackcdn.com/image/fetch/$s_!6Gy6!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fc70f8508-6774-4e44-bfe5-4a8a538234f6_1456x1026.png)
 
 我怀疑，我们现在更加珍惜生命有两个原因。第一：我们更富有了。几代人的经济发展让人们口袋里有了更多的现金，这使他们更愿意花钱去降低生命风险——既因为他们负担得起，也因为他们要投保的生活将更加愉快。但正如 Linch 指出的那样，统计生命价值的增长速度超过了 GDP，所以这不可能是全部原因。
 
@@ -236,12 +234,12 @@ c) 这种趋势纯粹是坏事，而事实上它是积极与消极的混合体�
 
 我的生活和他们的完全不同。从来没有人要求我去射杀任何人。我有大屏幕电视。我可以在 30 分钟内让人把寿司送到我家。社会保障局认为我可能会活到 80 岁。我为什么要冒这个险？我祖父母随随便便做的那些事——抽烟、搭皮卡车的顺风车、除非绝对必要否则推迟治疗——所有这些我现在都觉得不可想象。[12] 仅仅是看着他们那个时代的游乐场，我就要犯轻微的心脏病了：
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F091054df-6d7a-4298-b8ce-3221bfed572e_680x517.jpeg)
+![](https://substackcdn.com/image/fetch/$s_!Umap!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fb660811e-b3c9-493b-b7d5-0e9f626d9dc4_640x463.png)
 *1912年的游乐场（[来源](https://rarehistoricalphotos.com/playground-equipment-old-photos/)）*
 
 我知道生活并不感觉特别容易、安全或舒适。气候变化、核战争、威权主义、收入不平等等问题呢？毫无疑问，危险和劣势仍然比比皆是。但是看，100 年前，你可能会死于一根刺。我们不再生活在那个世界了，我们身体的一部分捕捉到了这一点并采取了相应的行动。
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F24458b5a-7b3b-4395-9279-d5a86a67f1b6_1600x1361.jpeg)
+![](https://substackcdn.com/image/fetch/$s_!6rju!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F563f5c69-2afc-475d-8c43-d192e6d692ac_700x444.png)
 
 事实上，采取慢生活策略不一定是有意识的行为，大概率不是。像大多数心理活动一样，如果你不能有意识地搞砸它，它会运作得更好。它在后台运行，将每一个决定推向更安全的选项。这些选择随着时间的推移而复利，像保龄球道上的护栏一样限制了你生活的轨迹。最终这种循环变得自我强化，因为发散的思维来自发散的生活，反之亦然。[13]
 
@@ -260,7 +258,7 @@ c) 这种趋势纯粹是坏事，而事实上它是积极与消极的混合体�
 
 所有这一切都在我们的能力范围内，但我们必须决定去做。这是历史上第一次，特立独行成为一种选择。而且这是一个艰难的选择，因为我们比以往任何时候都更输不起。如果我们想要一个更有趣的未来，如果我们想要让我们兴奋的艺术和让我们开悟的科学，那么我们就必须容忍地下室里有几个非法的洞，并且必须有人足够勇敢地爬下去。
 
-![](https://substackcdn.com/image/fetch/w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F59041b65-021c-43f5-a764-777274026040_1000x828.jpeg)
+![](https://substackcdn.com/image/fetch/$s_!XELV!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F87706d9b-ae4b-4bf1-9f36-2057e0d9c14b_2067x1434.png)
 *1982年，阿图罗·迪·莫迪卡在他自己动手建造的地下室里（[来源](https://chargingbull.com/history-2)）*
 
 *Experimental History 鼓励你离家出走并开设一个博客*
