@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WOODCRAFT: 分章详解摘要</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-main: #2d3436;
+            --text-light: #636e72;
+            --accent: #0984e3;
+            --card-bg: #ffffff;
+            --highlight: #fff3cd;
+            --shadow: 0 4px 6px rgba(0,0,0,0.05);
+            --hover-transform: translateY(-5px);
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* Hero Header */
+        header {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 15px rgba(9, 132, 227, 0.2);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            letter-spacing: 1px;
+        }
+
+        p.subtitle {
+            margin-top: 10px;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 60px;
+        }
+
+        /* Chapter Navigation (Sticky) */
+        .nav-bar {
+            position: sticky;
+            top: 0;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 0;
+            z-index: 1000;
+            border-bottom: 1px solid #eee;
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .nav-list {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 0 20px;
+        }
+
+        .nav-item {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 5px 12px;
+            border-radius: 20px;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 30px;
+        }
+
+        /* Card Styling */
+        .chapter-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            border-top: 4px solid var(--accent);
+        }
+
+        .chapter-card:hover {
+            transform: var(--hover-transform);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .chapter-num {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: #b2bec3;
+            letter-spacing: 1px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .chapter-title {
+            font-size: 1.4rem;
+            margin: 0 0 15px 0;
+            color: #2d3436;
+        }
+
+        .summary-text {
+            font-size: 0.95rem;
+            color: var(--text-light);
+            margin-bottom: 20px;
+            text-align: justify;
+            flex-grow: 1;
+        }
+
+        /* Flashcard Component */
+        .flashcard-scene {
+            height: 140px;
+            margin: 15px 0;
+            perspective: 600px;
+            cursor: pointer;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .flashcard.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            box-sizing: border-box;
+            border: 1px dashed #dfe6e9;
+        }
+
+        .face-front {
+            background-color: #fcfcfc;
+        }
+
+        .face-front h4 {
+            margin: 0;
+            color: var(--accent);
+            font-size: 1.1rem;
+        }
+
+        .face-front span {
+            font-size: 0.8rem;
+            color: #b2bec3;
+            margin-top: 5px;
+        }
+
+        .face-back {
+            background-color: var(--accent);
+            color: white;
+            transform: rotateY(180deg);
+            border: none;
+            align-items: flex-start;
+            text-align: left;
+            overflow-y: auto;
+        }
+
+        .face-back strong {
+            display: block;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            margin-bottom: 5px;
+            padding-bottom: 3px;
+            width: 100%;
+        }
+
+        .face-back p {
+            margin: 0;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        /* Golden Sentence */
+        .golden-quote {
+            margin-top: 15px;
+            padding: 10px 15px;
+            background-color: var(--highlight);
+            border-radius: 6px;
+            font-style: italic;
+            font-size: 0.9rem;
+            color: #5d5d5d;
+            border-left: 3px solid #fdcb6e;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            color: #b2bec3;
+            padding: 40px 0;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-list { justify-content: flex-start; }
+            h1 { font-size: 1.8rem; }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>WOODCRAFT 分章精读</h1>
+    <p class="subtitle">E.H. Kreps · 全书13章核心知识点拆解 · 交互式学习</p>
+</header>
+
+<div class="nav-bar">
+    <div class="nav-list">
+        <div class="nav-item active" onclick="scrollToTop()">全部</div>
+        <div class="nav-item" onclick="scrollToId('c1')">营地建设</div>
+        <div class="nav-item" onclick="scrollToId('c3')">食物</div>
+        <div class="nav-item" onclick="scrollToId('c5')">生火</div>
+        <div class="nav-item" onclick="scrollToId('c7')">斧头</div>
+        <div class="nav-item" onclick="scrollToId('c8')">雪鞋</div>
+        <div class="nav-item" onclick="scrollToId('c11')">导航</div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="grid">
+
+        <!-- Chapter 1 -->
+        <div class="chapter-card" id="c1">
+            <div class="chapter-num">Chapter 1</div>
+            <div class="chapter-title">建造大本营</div>
+            <div class="summary-text">
+                深入荒野需建造原木小屋。选址要诀：靠近水源、有枯木（燃料）和生木（建材）、排水良好的高地。作者详述了仅用斧头建造 10x14 英尺小屋的全过程，包括地基铺设、墙体切口、以及如何制作门窗。
+            </div>
+            <div class="flashcard-scene" onclick="flipCard(this)">
+                <div class="flashcard">
+                    <div class="card-face face-front">
+                        <h4>Scoop Roof</h4>
+                        <span>(铲状原木屋顶)</span>
+                        <span>点击翻转查看结构</span>
+                    </div>
+                    <div class="card-face face-back">
+                        <strong>无钉防水结构</strong>
+                        <p>将原木剖开并挖槽。一层槽口朝上排列（如瓦底），一层槽口朝下扣合（如瓦盖），中间垫苔藓。这是冬季无法剥树皮时的最佳屋顶方案。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="golden-quote">“在捕猎者的小屋里，锯材就像亚麻餐巾一样格格不入。”</div>
+        </div>
+
+        <!-- Chapter 2 -->
+        <div class="chapter-card" id="c2">
+            <div class="chapter-num">Chapter 2</div>
+            <div class="chapter-title">营地布置与家具</div>
+            <div class="summary-text">
+                舒适的营地需要好的炉灶和床。作者教导如何用铁皮制作方形炉灶（比圆形更实用）。床铺应离开地面，桌凳可就地取材。最关键的是防鼠，因为老鼠会毁坏食物和皮毛。
+            </div>
+            <div class="flashcard-scene" onclick="flipCard(this)">
+                <div class="flashcard">
+                    <div class="card-face face-front">
+                        <h4>Balsam Bed</h4>
+                        <span>(香脂冷杉床)</span>
+                        <span>点击翻转查看铺法</span>
+                    </div>
+                    <div class="card-face face-back">
+                        <strong>丛林席梦思</strong>
+                        <p>使用细小的冷杉枝条，像铺瓦片一样，近乎垂直地插入床架，茎部朝下。这种床铺柔软、有弹性且散发香气，需定期更换保持新鲜。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="golden-quote">“奢侈品在使用中会变成必需品。”</div>
+        </div>
+
+        <!-- Chapter 3 -->
+        <div class="chapter-card" id="c3">
+            <div class="chapter-num">Chapter 3</div>
+            <div class="chapter-title">户外食物指南</div>
+            <div class="summary-text">
+                户外食品五原则：轻便、耐存、高营养、均衡、易打包。作者列出了详细的购物清单（面粉、培根、豆类、干果等）。强调必须携带干果和醋（或果汁）以防坏血病，并强烈反对携带含水罐头（易冻裂）和鸡蛋。
+            </div>
+            <div class="flashcard-scene" onclick="flipCard(this)">
+                <div class="flashcard">
+                    <div class="card-face face-front">
+                        <h4>Short-Order Meals</h4>
+                        <span>(快速餐)</span>
+                        <span>点击翻转查看概念</span>
+                    </div>
+                    <div class="flashcard">
+                    </div>
+                    <div class="card-face face-back">
+                        <strong>路餐策略</strong>
+                        <p>除正餐外，必须准备如燕麦粥、班诺克面包（Bannock）、培根等能快速烹饪的食物，以应对精疲力尽回到营地的时刻。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="golden-quote">“送货员会把东西送到后门...但对于户外人来说，情况完全不同。”</div>
+        </div>
+
+        <!-- Chapter 4 -->
+        <div class="chapter-card" id="c4">
+            <div class="chapter-num">Chapter 4</div>
+            <div class="chapter-title">不同用途的火</div>
+            <div class="summary-text">
+                不同木材用途不同：硬木产生余烬适合烹饪，软木起火快适合取暖。烹饪火要小而集中，取暖火要大。作者还介绍了如何在雨天生火以及如何保护火柴。
+            </div>
+            <div class="flashcard-scene" onclick="flipCard(this)">
+                <div class="flashcard">
+                    <div class="card-face face-front">
+                        <h4>Rainy Day Fire</h4>
+                        <span>(雨天生火法)</span>
+                        <span>点击翻转查看技巧</span>
+                    </div>
+                    <div class="card-face face-back">
+                        <strong>火的屋顶</strong>
+                        <p>将两根原木平行放置，上方斜靠木头形成“屋顶”遮挡雨水。在下方生火，利用屋顶内侧燃烧的余烬不断补充下方火堆。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="golden-quote">“无数生命被一根火柴拯救，也有无数财产被这根小木棍毁灭。”</div>
+        </div>
+
+        <!-- Chapter 5 -->
+        <div class="chapter-card" id="c5">
+            <div class="chapter-num">Chapter 5</div>
+            <div class="chapter-title">原始取火与安全</div>
+            <div class="summary-text">
+                除了常备防水盒装火柴，作者讲解了弓钻取火（极难，需完全干燥木材）、燧石取火、透镜取火以及枪支取火法。强调了防火安全，离家前必须熄灭炉火。
+            </div>
+            <div class="flashcard-scene" onclick="flipCard(this)">
+                <div class="flashcard">
+                    <div class="card-face face-front">
+                        <h4>Gun Fire Method</h4>
+                        <span>(枪支取火)</span>
+                        <span>点击翻转查看技巧</span>
+                    </div>
+                    <div class="card-face face-back">
+                        <strong>绝境求生</strong>
+                        <p>取出子弹头，用干燥的棉布或引火物代替弹头塞入（可倒出少许火药）。向引火堆开枪，棉布会着火阴燃，吹气引燃火焰。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="golden-quote">“火必须时刻被严密监视。”</div>
+        </div>
+
+        <!-- Chapter 6 -->
+        <div class="chapter-card" id="c6">
+            <div class="chapter-num">Chapter 6</div>
+            <div class="chapter-title">毯子与御寒</div>
+            <div class="summary-text">
+                毯子不产热，只留温。羊毛毯优于棉毯（棉湿后冰冷）。但在零下40度的极寒中，普通毯子无效。作者推崇印第安人的“兔皮毯”，这是唯一无需彻夜生火也能安睡的装备。
+            </div>
+            <div class="flashcard-scene" onclick="flipCard(this)">
+                <div class="flashcard">
+                    <div class="card-face face-front">
+                        <h4>Rabbit Skin Blanket</h4>
+                        <span>(兔皮毯)</span>
+                        <span>点击翻转查看制作</span>
+                    </div>
+                    <div class="card-face face-back">
+                        <strong>编织的温暖</strong>
+                        <p>将兔皮趁湿切成细条，使其卷曲成绳，在木框上编织成网状。其极其蓬松的结构能锁住大量空气，保暖性远超羊毛。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="golden-quote">“所谓冷，只是热的缺失。”</div>
+        </div>
+
+        <!-- Chapter 7 -->
+        <div class="chapter-card" id="c7">
+            <div class="chapter-num">Chapter 7</div>
+            <div class="chapter-title">樵夫之斧及其使用</div>
+            <div class="summary-text">
+                斧头是丛林生存之本。推荐2磅重、30-34英寸山核桃木（Hickory）长柄的斧头。详细讲解了如何选择钢材（韧性好）、如何伐木、去枝以及磨斧头的正确几何形状。
+            </div>
+            <div class="flashcard-scene" onclick="flipCard(this)">
+                <div class="flashcard">
+                    <div class="card-face face-front">
+                        <h4>The Perfect Grind</h4>
+                        <span>(完美磨削)</span>
+                        <span>点击翻转查看形状</span>
+                    </div>
+                    <div class="card-face face-back">
+                        <strong>防卡死设计</strong>
+                        <p>斧刃最厚处不应在中间，而应在距刃口2/3处。刃角（Inside Corner）应磨薄。这种凸形弧面能确保持久的锋利度和劈裂能力。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="golden-quote">“它能跳得更高、潜得更深...比任何其他工具都更经得起弯曲而不折断。”</div>
+        </div>
+
+        <!-- Chapter 8 -->
+        <div class="chapter-card" id="c8">
+            <div class="chapter-num">Chapter 8</div>
+            <div class="chapter-title">雪鞋制作指南</div>
+            <div class="summary-text">
+                详细教程：如何从原木（白蜡木或白桦木）劈开、蒸煮、弯曲制作雪鞋框架。重点讲解了使用生牛皮（Rawhide）进行复杂的网面编织，包括鞋头、中部和鞋跟的不同编织法。
+            </div>
+            <div class="flashcard-scene" onclick="flipCard(this)">
+                <div class="flashcard">
+                    <div class="card-face face-front">
+                        <h4>Rawhide Preparation</h4>
+                        <span>(生皮处理)</span>
+                        <span>点击翻转查看工艺</span>
+                    </div>
+                    <div class="card-face face-back">
+                        <strong>材料关键</strong>
+                        <p>必须使用未鞣制的生皮。去毛后拉伸干燥，使用前再次浸泡。湿皮编织干燥后会剧烈收缩，从而绷紧整个雪鞋结构。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="golden-quote">“拆解一双旧雪鞋是学习编织的最好方法。”</div>
+        </div>
+
+        <!-- Chapter 9 -->
+        <div class="chapter-card" id="c9">
+            <div class="chapter-num">Chapter 9</div>
+            <div class="chapter-title">雪鞋的使用</div>
+            <div class="summary-text">
+                不同地形需不同雪鞋：开阔地用长窄型，丛林用短圆的“熊掌型”。行走时不要抬起脚，要拖着雪鞋尾部滑行。保养关键是防止受潮和被老鼠啃食。
+            </div>
+            <div class="flashcard-scene" onclick="flipCard(this)">
+                <div class="flashcard">
+                    <div class="card-face face-front">
+                        <h4>Bear Paw</h4>
+                        <span>(熊掌式)</span>
+                        <span>点击翻转查看特点</span>
+                    </div>
+                    <div class="card-face face-back">
+                        <strong>丛林利器</strong>
+                        <p>一种没有尾巴的椭圆形短雪鞋。虽然直线速度慢，但在岩石多、灌木密的地区极其灵活，适合转向和翻越障碍。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="golden-quote">“大自然是雪鞋的发明者。”</div>
+        </div>
+
+        <!-- Chapter 10 -->
+        <div class="chapter-card" id="c10">
+            <div class="chapter-num">Chapter 10</div>
+            <div class="chapter-title">冬季林中旅行</div>
+            <div class="summary-text">
+                冬季着装必须全羊毛（Wool），采用多层穿衣法。脚部穿莫卡辛鞋（Moccasin）搭配多层羊毛袜。旅行时要学会开路（Breaking trail）和标记路线。不要穿橡胶鞋，除非雪很湿。
+            </div>
+            <div class="flashcard-scene" onclick="flipCard(this)">
+                <div class="flashcard">
+                    <div class="card-face face-front">
+                        <h4>Moccasin</h4>
+                        <span>(莫卡辛软鞋)</span>
+                        <span>点击翻转查看优势</span>
+                    </div>
+                    <div class="card-face face-back">
+                        <strong>干雪之选</strong>
+                        <p>在严寒干雪中，透气的鹿皮软鞋优于防水鞋。它能让脚部汗气排出，防止冻伤，且不会磨损雪鞋的网面。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="golden-quote">“北方的寒霜从不发出警告。”</div>
+        </div>
+
+        <!-- Chapter 11 -->
+        <div class="chapter-card" id="c11">
+            <div class="chapter-num">Chapter 11</div>
+            <div class="chapter-title">无径之林穿行 (上)</div>
+            <div class="summary-text">
+                “直觉”不可靠。在陌生丛林必须依靠指南针、太阳和地标。作者提出了“以营地为圆心，向外辐射探索，逐步扩大熟悉区域”的科学探索策略。
+            </div>
+            <div class="flashcard-scene" onclick="flipCard(this)">
+                <div class="flashcard">
+                    <div class="card-face face-front">
+                        <h4>Landmark Strategy</h4>
+                        <span>(地标策略)</span>
+                        <span>点击翻转查看</span>
+                    </div>
+                    <div class="card-face face-back">
+                        <strong>三角定位</strong>
+                        <p>在行进中不断回头确认地标（如山峰、怪树）与自己的相对位置。结合指南针角度，时刻构建心中的地图。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="golden-quote">“一个人能犯的最大错误之一就是怀疑他的指南针。”</div>
+        </div>
+
+        <!-- Chapter 12 -->
+        <div class="chapter-card" id="c12">
+            <div class="chapter-num">Chapter 12</div>
+            <div class="chapter-title">无径之林穿行 (下)</div>
+            <div class="summary-text">
+                如果迷路：不要惊慌，回到已知点。盲目行走必绕圈（因人腿长短力道不一）。作者详细介绍了在没有指南针时，如何利用手表和太阳辨别真南。
+            </div>
+            <div class="flashcard-scene" onclick="flipCard(this)">
+                <div class="flashcard">
+                    <div class="card-face face-front">
+                        <h4>Watch Compass</h4>
+                        <span>(手表辨向)</span>
+                        <span>点击翻转查看原理</span>
+                    </div>
+                    <div class="card-face face-back">
+                        <strong>时间即方向</strong>
+                        <p>将时针指向太阳。时针与表盘“12”点之间的夹角中线，即为南方（北半球）。下午时，取时针逆向回12点的中间位置。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="golden-quote">“最容易迷路的方式，就是在没有任何向导的情况下试图穿越陌生地域。”</div>
+        </div>
+
+        <!-- Chapter 13 -->
+        <div class="chapter-card" id="c13">
+            <div class="chapter-num">Chapter 13</div>
+            <div class="chapter-title">马匹打包术</div>
+            <div class="summary-text">
+                使用马匹驮运时，装备包括驮鞍、Alforjas（帆布驮袋）、毯子。马匹负重不应超150-200磅。详细图解了“钻石结”（Diamond Hitch），这是固定货物的核心技能。
+            </div>
+            <div class="flashcard-scene" onclick="flipCard(this)">
+                <div class="flashcard">
+                    <div class="card-face face-front">
+                        <h4>The Diamond Hitch</h4>
+                        <span>(钻石结)</span>
+                        <span>点击翻转查看作用</span>
+                    </div>
+                    <div class="card-face face-back">
+                        <strong>驮运灵魂</strong>
+                        <p>通过一根绳子在货物顶部编织成菱形结构。它能从四个方向同时收紧货物，马匹越颠簸绳结越紧，防止货物在山路上松脱。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="golden-quote">“永远不要让驮马超载。”</div>
+        </div>
+
+    </div>
+</div>
+
+<footer>
+    <p>© 2026 Interactive Summary based on E.H. Kreps "WOODCRAFT". Generated by AI.</p>
+</footer>
+
+<script>
+    function flipCard(element) {
+        element.querySelector('.flashcard').classList.toggle('is-flipped');
+    }
+
+    function scrollToId(id) {
+        const element = document.getElementById(id);
+        const headerOffset = 80;
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+        window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth"
+        });
+        
+        // Update active state in nav
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+
+    function scrollToTop() {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        document.querySelector('.nav-item').classList.add('active');
+    }
+</script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_woodcraft_kreps1913_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
