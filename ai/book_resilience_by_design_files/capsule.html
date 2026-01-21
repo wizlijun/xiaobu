@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resilience by Design - 深度交互摘要</title>
+    <style>
+        :root {
+            --primary-hue: 210; /* 蓝色基调 */
+            --primary: hsl(var(--primary-hue), 80%, 50%);
+            --primary-light: hsl(var(--primary-hue), 80%, 95%);
+            --primary-dark: hsl(var(--primary-hue), 80%, 30%);
+            --accent: #ff7e67;
+            --text-main: #2c3e50;
+            --text-light: #7f8c8d;
+            --bg-body: #f4f7f6;
+            --card-bg: #ffffff;
+            --shadow: 0 4px 20px rgba(0,0,0,0.06);
+            --transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 布局容器 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: 100vh;
+        }
+
+        /* 侧边导航 */
+        .sidebar {
+            background: var(--card-bg);
+            padding: 30px 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            border-right: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.02);
+        }
+
+        .book-cover {
+            padding: 0 20px 30px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+
+        .book-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+
+        .book-author {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .nav-item {
+            padding: 12px 25px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.95rem;
+            border-left: 4px solid transparent;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-item:hover {
+            background-color: var(--primary-light);
+            color: var(--primary-dark);
+        }
+
+        .nav-item.active {
+            background-color: #fff;
+            border-left-color: var(--primary);
+            color: var(--primary-dark);
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .chapter-num {
+            font-size: 0.8rem;
+            margin-right: 10px;
+            opacity: 0.6;
+            min-width: 20px;
+        }
+
+        /* 主内容区域 */
+        .main-content {
+            padding: 40px 60px;
+            max-width: 900px;
+        }
+
+        .chapter-view {
+            display: none;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .chapter-view.active {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chapter-header {
+            margin-bottom: 40px;
+        }
+
+        .chapter-header h2 {
+            font-size: 2.2rem;
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+        }
+
+        .chapter-intro {
+            font-size: 1.1rem;
+            color: #555;
+            background: #fff;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border-left: 5px solid var(--accent);
+        }
+
+        /* 知识区块 */
+        .section-title {
+            font-size: 1.4rem;
+            margin: 40px 0 20px;
+            display: flex;
+            align-items: center;
+            color: var(--primary-dark);
+        }
+        
+        .section-title::before {
+            content: '';
+            display: block;
+            width: 8px;
+            height: 24px;
+            background: var(--primary);
+            margin-right: 12px;
+            border-radius: 4px;
+        }
+
+        /* 翻转卡片网格 */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            height: 240px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            box-shadow: var(--shadow);
+            border-radius: 16px;
+        }
+
+        .flip-card:hover .flip-card-inner, .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 25px;
+            box-sizing: border-box;
+        }
+
+        .flip-card-front {
+            background-color: #fff;
+            color: var(--text-main);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .card-term {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .card-tag {
+            font-size: 0.85rem;
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .flip-card-back {
+            background: linear-gradient(135deg, var(--primary), #2980b9);
+            color: white;
+            transform: rotateY(180deg);
+            text-align: left;
+            align-items: flex-start;
+        }
+
+        .flip-card-back p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        /* 重点列表 */
+        .key-points {
+            background: #fff;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+        }
+
+        .point-item {
+            display: flex;
+            margin-bottom: 15px;
+            align-items: baseline;
+        }
+
+        .point-icon {
+            color: var(--secondary-color);
+            margin-right: 12px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        /* 金句引用 */
+        .quote-box {
+            margin: 40px 0;
+            padding: 30px;
+            background: linear-gradient(to right, #ffffff, #f8f9fa);
+            border-radius: 8px;
+            position: relative;
+            border: 1px solid #eee;
+        }
+
+        .quote-text {
+            font-size: 1.3rem;
+            font-style: italic;
+            color: #34495e;
+            font-family: "Georgia", serif;
+            line-height: 1.5;
+            position: relative;
+            z-index: 1;
+        }
+
+        .quote-text::before {
+            content: "“";
+            font-size: 6rem;
+            position: absolute;
+            top: -40px;
+            left: -20px;
+            color: rgba(0,0,0,0.05);
+            z-index: -1;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                height: auto;
+                position: relative;
+                padding: 10px;
+                white-space: nowrap;
+                overflow-x: auto;
+                border-right: none;
+                border-bottom: 1px solid #eee;
+                display: flex;
+                align-items: center;
+            }
+            .book-cover { display: none; }
+            .nav-menu { display: flex; }
+            .nav-item { padding: 10px 15px; border-left: none; border-bottom: 3px solid transparent; }
+            .nav-item.active { border-left: none; border-bottom-color: var(--primary); }
+            .main-content { padding: 20px; }
+            .flip-card { height: 280px; } /* 移动端卡片高度增加以容纳文字 */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 侧边导航 -->
+    <nav class="sidebar">
+        <div class="book-cover">
+            <div class="book-title">Resilience by Design</div>
+            <div class="book-author">Ian Snape & Mike Weeks</div>
+        </div>
+        <ul class="nav-menu" id="navMenu">
+            <!-- 导航项由JS生成 -->
+        </ul>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="main-content" id="contentArea">
+        <!-- 章节内容由JS生成 -->
+    </main>
+</div>
+
+<script>
+    // 完整的12章详细数据
+    const chapters = [
+        {
+            id: 1,
+            title: "重新定义韧性",
+            subtitle: "Resilience",
+            intro: "压力不是外界强加给你的，而是你对环境的反应。韧性不是一种特质，而是一种可以被设计的选择。",
+            cards: [
+                {
+                    icon: "🔄",
+                    term: "四种选择模型",
+                    tag: "应对策略",
+                    desc: "面对压力环境的四种选择：<br>1. <strong>保持压力</strong>（无为，有害健康）<br>2. <strong>改变环境</strong>（消除外部风险）<br>3. <strong>离开</strong>（彻底脱离环境）<br>4. <strong>发展韧性</strong>（由内而外改变反应）"
+                },
+                {
+                    icon: "🛡️",
+                    term: "韧性精英",
+                    tag: "反脆弱",
+                    desc: "不仅仅是“反弹”回原状，而是具备<strong>反脆弱性 (Anti-fragile)</strong>。这意味着在混乱、压力和不确定性中，能够变得更强、更好。他们是人群中前5%的适应者。"
+                },
+                {
+                    icon: "💊",
+                    term: "压力是一种信息",
+                    tag: "重新认知",
+                    desc: "压力不是敌人，它和疼痛一样，是一种生理信号。<br><strong>误区：</strong>工作量导致压力（由外而内）。<br><strong>真相：</strong>压力是我们内在应对能力的过载（由内而外）。"
+                }
+            ],
+            points: [
+                "<strong>由内而外的视角：</strong> 你无法总是控制外部世界，但你可以设计你的内在反应系统。",
+                "<strong>相关性非因果性：</strong> 高压环境与职业倦怠高度相关，但并非直接导致。韧性强的人能在高压环境中创造健康的微环境。",
+                "<strong>失败的反弹：</strong> 许多人将韧性误解为“忍受”，直到彻底崩溃。真正的韧性包括及时补充“韧性桶”的能量。"
+            ],
+            quote: "如果压力是21世纪的全球流行病，那么韧性就是解药。它不仅是生存，更是在动荡中蓬勃发展。"
+        },
+        {
+            id: 2,
+            title: "意义建构",
+            subtitle: "Sensemaking",
+            intro: "我们要吞下'红药丸'：承认我们感知的不是客观现实，而是大脑为了生存而构建的简化模型。",
+            cards: [
+                {
+                    icon: "🗺️",
+                    term: "地图不等于疆域",
+                    tag: "认知偏差",
+                    desc: "我们的大脑通过过滤大量信息来构建现实的'地图'。这不仅导致了<strong>非注意盲视 (Inattentional Blindness)</strong>（看不见大猩猩），也意味着我们可以通过重绘地图来改变体验。"
+                },
+                {
+                    icon: "🐈",
+                    term: "隐喻的力量",
+                    tag: "潜意识桥梁",
+                    desc: "隐喻连接意识与潜意识。'猫玩线团'——每个人脑海中的图像都不同。改变描述困境的隐喻（例如从'被压垮'改为'在冲浪'），就能改变生理和情绪反应。"
+                },
+                {
+                    icon: "⚖️",
+                    term: "自我校准",
+                    tag: "提升感知",
+                    desc: "疼痛和情绪是基于感知的推断。就像幻肢痛一样，这种推断可能出错。通过训练（如正念、身体扫描），我们可以提高对内部信号的校准精度。"
+                }
+            ],
+            points: [
+                "<strong>适应性胜过真理：</strong> 进化让我们看到的是'利于生存'的东西，而不是'真实'的东西。利用这一点，我们可以选择更有利于韧性的视角。",
+                "<strong>记忆的可塑性：</strong> 记忆不是录像，是重构。改变记忆的模态（如将创伤记忆从彩色变成黑白线条画），可以降低其负面影响。",
+                "<strong>语言重塑现实：</strong> 哪怕是'撞车'和'碰车'这样词汇的微小差异，也会改变目击者对速度的记忆。"
+            ],
+            quote: "你永远无法知晓绝对的现实。你只能拥有近似值，既然如此，为什么不选择一个让你更有力量的近似值呢？"
+        },
+        {
+            id: 3,
+            title: "思维模式",
+            subtitle: "Thinking",
+            intro: "思考不仅发生在大脑，它是具身的（Embodied）。学会关闭逻辑脑，利用身体智慧和直觉进行快速决策。",
+            cards: [
+                {
+                    icon: "⭕",
+                    term: "OODA 循环",
+                    tag: "决策模型",
+                    desc: "<strong>观察(Observe)→调整(Orient)→决策(Decide)→行动(Act)</strong>。这是一个高速反馈闭环。关键在于'调整'阶段，打破固有偏见，利用直觉快速响应。避免陷入OO-OO-OO（犹豫不决）。"
+                },
+                {
+                    icon: "👅",
+                    term: "舌头下垂法",
+                    tag: "Tongue Drop",
+                    desc: "一种停止内心喋喋不休（Self-talk）的生理黑客技巧。<strong>放松舌头，让其充满口腔底部</strong>。这能物理阻断与语言中枢的微细肌肉连接，瞬间带来思维静默。"
+                },
+                {
+                    icon: "🧠",
+                    term: "三脑理论",
+                    tag: "分布式认知",
+                    desc: "我们有三个'大脑'：<strong>头脑</strong>（逻辑/语言）、<strong>心脏</strong>（价值/情感，12万神经元）、<strong>肠道</strong>（直觉/本能，5亿神经元）。高效决策需要三者协同。"
+                }
+            ],
+            points: [
+                "<strong>神经可塑性 (Neuroplasticity)：</strong> 老狗也能学新把戏。大脑结构可以终身改变，关键在于保持好奇心和挑战。'不使用即废弃'。",
+                "<strong>镜像神经元：</strong> '猴子看，猴子做'。我们通过观察无意识地模仿他人的行为和状态。选择你周围的人，因为你正在下载他们的操作系统。",
+                "<strong>左脑解释器：</strong> 左脑喜欢编故事来解释右脑和身体的直觉反应。学会识别并在需要时关闭它，直接通过感官获取信息。"
+            ],
+            quote: "思维是具身的。我们在行动中思考，而不仅仅是在头脑中。不要让你的逻辑脑成为暴君，它应该是一个优秀的仆人。"
+        },
+        {
+            id: 4,
+            title: "状态管理",
+            subtitle: "State",
+            intro: "状态决定行为，行为决定结果。并没有'坏'情绪，只有不适合当下的状态强度。你可以设计并控制它。",
+            cards: [
+                {
+                    icon: "🔗",
+                    term: "卓越链条",
+                    tag: "改变机制",
+                    desc: "<strong>呼吸 ↔ 生理姿态 ↔ 状态 ↔ 表现</strong>。这是一个双向链条。当你感到焦虑（状态差）时，最快的方法不是'想开点'，而是改变呼吸和姿势。"
+                },
+                {
+                    icon: "📦",
+                    term: "箱式呼吸法",
+                    tag: "特种部队技巧",
+                    desc: "<strong>吸气4秒-屏息4秒-呼气4秒-屏息4秒</strong>。重复循环。这能强制调节自主神经系统，从交感神经（战斗/逃跑）切换到副交感神经（冷静/恢复）。"
+                },
+                {
+                    icon: "🌞",
+                    term: "太阳能板姿态",
+                    tag: "姿态调整",
+                    desc: "想象胸骨上有一块太阳能板。调整姿势，让这块板正对太阳（挺胸抬头）。微小的生理调整能瞬间改变激素水平和情绪状态。"
+                }
+            ],
+            points: [
+                "<strong>情绪是模拟信号：</strong> 情绪不是开关（0或1），而是模拟量（0-10）。学会调节旋钮。适度的焦虑（3分）可以提高警觉，过度的焦虑（9分）会导致瘫痪。",
+                "<strong>身体扫描 (Body Scan)：</strong> 像复印机扫描光线一样，从头到脚扫描身体，寻找并主动释放紧张。这是提高内感受力（Interoception）的基础。",
+                "<strong>微生物组的影响：</strong> 肠道菌群直接影响情绪（产生95%的血清素）。通过饮食改善肠道健康也是状态管理的一部分。"
+            ],
+            quote: "如果你想从抑郁中获得乐趣，你就得像查理·布朗那样垂头丧气地站着。生理姿态直接锁定你的情绪状态。"
+        },
+        {
+            id: 5,
+            title: "视角转换",
+            subtitle: "Perspectives",
+            intro: "灵活地在不同感知位置间切换，是处理冲突、建立同理心和从创伤中抽离的核心技能。",
+            cards: [
+                {
+                    icon: "1️⃣",
+                    term: "第一位置 (Self)",
+                    tag: "沉浸体验",
+                    desc: "<strong>'我'的视角</strong>。通过自己的眼睛看，用自己的身体感受。优点：真实体验、明确需求。缺点：容易陷入情绪，缺乏大局观。"
+                },
+                {
+                    icon: "2️⃣",
+                    term: "第二位置 (Other)",
+                    tag: "同理心",
+                    desc: "<strong>'对方'的视角</strong>。想象穿上对方的鞋子，模仿对方的姿态。优点：建立亲和力、理解他人意图。缺点：容易迷失自我，过度承担他人情绪。"
+                },
+                {
+                    icon: "3️⃣",
+                    term: "第三位置 (Observer)",
+                    tag: "抽离/元认知",
+                    desc: "<strong>'观察者'视角</strong>（墙上的苍蝇）。看着'我'和'对方'互动。优点：客观、理智、无情绪，适合复盘和处理创伤。缺点：冷漠、缺乏连接。"
+                }
+            ],
+            points: [
+                "<strong>位置锚定：</strong> 在房间里物理地移动位置来代表不同的心理视角，能帮助大脑更清晰地切换。",
+                "<strong>创伤处理：</strong> 将创伤记忆置于第三视角（看黑白电影），可以剥离强烈的情绪电荷，使其成为单纯的信息。",
+                "<strong>避免固化：</strong> 韧性在于流动性。不要卡在任何一个位置。医生需要第三位置来动手术，但需要第二位置来安慰病人。"
+            ],
+            quote: "通过改变你在物理空间中的位置，你可以改变你的心理视角。这种灵活性是解决人际冲突的钥匙。"
+        },
+        {
+            id: 6,
+            title: "环境与情境",
+            subtitle: "Context",
+            intro: "没有万能的策略，只有适合情境的策略。你需要根据环境的复杂度来调整你的决策模式。",
+            cards: [
+                {
+                    icon: "🧩",
+                    term: "Cynefin 框架",
+                    tag: "情境感知",
+                    desc: "<strong>简单(Clear)：</strong>照章办事。<br><strong>繁杂(Complicated)：</strong>专家分析。<br><strong>复杂(Complex)：</strong>摸着石头过河（试错）。<br><strong>混乱(Chaotic)：</strong>先止血再思考。错误的情境判断会导致灾难。"
+                },
+                {
+                    icon: "🚪",
+                    term: "门阶模式",
+                    tag: "防溢出",
+                    desc: "防止工作压力污染家庭生活。在跨越物理门槛（如家门、车门）时，利用这几秒钟进行身体扫描和状态重置。<strong>把垃圾留在门外</strong>。"
+                },
+                {
+                    icon: "🐀",
+                    term: "老鼠乐园",
+                    tag: "环境与成瘾",
+                    desc: "孤立的老鼠会药物成瘾；但在社交丰富、环境优越的'老鼠乐园'中，它们拒绝毒品。这意味着：<strong>成瘾往往是对恶劣环境的适应，而非单纯的生化依赖。</strong>"
+                }
+            ],
+            points: [
+                "<strong>注意力管理 > 时间管理：</strong> 区分'任务模式'（单线程，消除干扰）和'创造模式'（多线程，允许发散）。不要试图一边回邮件一边做深度思考。",
+                "<strong>部落主义：</strong> 我们是部落动物。了解你所处环境的部落规则（显性和隐性），决定是融入、改变还是离开。",
+                "<strong>黑天鹅与灰犀牛：</strong> 韧性意味着不仅要应对不可预测的黑天鹅，更要正视视而不见的灰犀牛（大概率且影响巨大的危机）。"
+            ],
+            quote: "如果你不能改变环境，就改变你对环境的反应；或者，利用你的主动权，彻底换一个环境。"
+        },
+        {
+            id: 7,
+            title: "信号识别",
+            subtitle: "Signals",
+            intro: "疼痛、压力、直觉都是潜意识发出的信号。不要因为不喜欢这些信使带来的消息就杀掉它们（例如单纯依赖药物）。",
+            cards: [
+                {
+                    icon: "🏔️",
+                    term: "珠穆朗玛峰模式",
+                    tag: "高风险决策",
+                    desc: "在死亡区，认知偏差（如沉没成本、身份认同）会覆盖生存信号。必须设定不可逾越的<strong>底线 (Line in the sand)</strong>，并训练自己识别微弱的直觉报警（如胃部紧缩）。"
+                },
+                {
+                    icon: "⚠️",
+                    term: "不要麻醉信使",
+                    tag: "药物副作用",
+                    desc: "依赖药物（如止痛药、抗抑郁药）来消除症状，可能会切断重要的反馈回路，导致你在没有保护机制的情况下继续受损。要理解信号背后的意图。"
+                },
+                {
+                    icon: "🚦",
+                    term: "是/否/也许",
+                    tag: "身体信号校准",
+                    desc: "通过回忆确定性场景，建立身体的信号系统。当身体感觉'也许'时，这通常意味着'不'，或者是'需要更多信息'。学会信任这种非语言的智慧。"
+                }
+            ],
+            points: [
+                "<strong>习得性疼痛：</strong> 慢性疼痛往往是神经系统'卡'在了报警模式，即使组织已愈合。通过MIRROR等方法可以重塑神经通路，消除疼痛。",
+                "<strong>安慰剂与反安慰剂：</strong> 信念可以治愈也可以致病。如果你相信压力有害，它就会杀人；如果你相信压力是助力，它就是资源。",
+                "<strong>直觉是高级智能：</strong> 直觉不是魔法，它是潜意识对复杂模式的极速识别。在复杂情境中，直觉往往优于逻辑分析。"
+            ],
+            quote: "许多人在沙子里埋头苦干，却忽略了正在发射的求救信号。哪怕是'也许'的感觉，也是潜意识在保护你。"
+        },
+        {
+            id: 8,
+            title: "意图与结果",
+            subtitle: "Intentions",
+            intro: "许多人专注于摆脱问题（Remedy），却忘了定义他们真正想要什么（Outcome）。",
+            cards: [
+                {
+                    icon: "🎯",
+                    term: "OIC 模式",
+                    tag: "决策导航",
+                    desc: "<strong>O (Outcome)：</strong>结果，你具体想要什么？<br><strong>I (Intention)：</strong>意图，这背后的深层目的是什么？<br><strong>C (Consequences)：</strong>后果，实现它会有什么副作用？"
+                },
+                {
+                    icon: "📝",
+                    term: "SMARTER 目标",
+                    tag: "目标设定",
+                    desc: "在SMART基础上增加：<br><strong>E (Ecology)：</strong>生态平衡，它是否符合你的整体生活系统？<br><strong>R (Risk)：</strong>风险，你准备好应对'如果失败'的情况了吗？"
+                },
+                {
+                    icon: "🔍",
+                    term: "PRO 模型",
+                    tag: "问题转结果",
+                    desc: "从<strong>问题(Problem)</strong>转向<strong>补救(Remedy)</strong>，最终必须导向<strong>结果(Outcome)</strong>。补救只是'不想要X'，结果才是'想要Y'。能量随关注点流动。"
+                }
+            ],
+            points: [
+                "<strong>不仅是为什么，而是为了什么：</strong> 问'为什么'容易让人找借口或陷入过去；问'为了什么'（意图）能让人面向未来，寻找资源。",
+                "<strong>连贯性 (Coherence)：</strong> 你的行动、目标和深层意图必须是一致的。就像婚礼上的客人，虽然行为各异，但意图统一（庆祝新人）。",
+                "<strong>人生使命 (Raison d'etre)：</strong> 找到你的内在驱动力。对于能在极端逆境中生存下来的人（如弗兰克尔），意义是最大的生存资源。"
+            ],
+            quote: "爱丽丝问猫走哪条路，猫说这取决于你想去哪。如果你不知道要去哪，走哪条路都无所谓。但如果你想要韧性，你必须知道你的意图。"
+        },
+        {
+            id: 9,
+            title: "重构",
+            subtitle: "Reframing",
+            intro: "没有任何事件本身带有意义，意义是我们赋予的。重构就是改变赋予意义的框架，从而改变事件对我们的影响。",
+            cards: [
+                {
+                    icon: "🖼️",
+                    term: "重构的三要素",
+                    tag: "E-I-I 模型",
+                    desc: "<strong>证据 (Evidence)：</strong>实际发生了什么（客观事实）。<br><strong>推论 (Inference)：</strong>我对此的解释（主观故事）。<br><strong>影响 (Impact)：</strong>我的情绪和反应。<br>改变推论，就能改变影响。"
+                },
+                {
+                    icon: "🤡",
+                    term: "黑色幽默",
+                    tag: "防御机制",
+                    desc: "急救人员常使用黑色幽默。这不仅是发泄，更是一种强大的<strong>重构</strong>。它创造了心理距离，让不可承受的现实变得可控，从而保护心理健康。"
+                },
+                {
+                    icon: "🧪",
+                    term: "怀疑主义",
+                    tag: "防操纵",
+                    desc: "无论是面对邪教、假新闻还是伪科学，保持健康的怀疑。检查证据的来源，寻找利益冲突（Follow the money），不要轻信'科学证明'的标签。"
+                }
+            ],
+            points: [
+                "<strong>反馈不是失败：</strong> '没有失败，只有反馈'。这是一个经典的重构。将错误视为数据点，输入到你的OODA循环中进行修正。",
+                "<strong>六步重构法 (N-step Reframing)：</strong> 与潜意识沟通，感谢旧行为（如吸烟）背后的积极意图（如放松），然后协商出新的、更健康的行为来满足该意图。",
+                "<strong>区分事实与信念：</strong> 科学不是真理，是证伪的过程。信仰是不需要证据的信任。混淆两者会让你变得脆弱。"
+            ],
+            quote: "如果它看起来像鸭子，叫声像鸭子，走路像鸭子，那它可能就是鸭子。除非你重构了视角，发现那是兔子（鸭兔错觉）。"
+        },
+        {
+            id: 10,
+            title: "心流",
+            subtitle: "Flow",
+            intro: "心流是一种完全沉浸的状态，在这种状态下，表现最佳，且感觉最好。它可以通过设计进入。",
+            cards: [
+                {
+                    icon: "🌊",
+                    term: "暂时性额叶低功耗",
+                    tag: "神经机制",
+                    desc: "<strong>Transient Hypofrontality</strong>。进入心流时，大脑的前额叶皮层（负责自我批评、时间感、理性分析）会暂时'下线'。这让你摆脱自我怀疑，纯粹行动。"
+                },
+                {
+                    icon: "🔤",
+                    term: "字母游戏",
+                    tag: "心流诱导",
+                    desc: "一种强行进入心流的练习。看着随机字母表，大声读出字母，同时根据标记举起左手、右手或双手。这种高强度的双侧脑处理任务能迅速阻断杂念。"
+                },
+                {
+                    icon: "⚠️",
+                    term: "心流的阴暗面",
+                    tag: "成瘾性",
+                    desc: "心流会释放多巴胺、内啡肽等强效神经化学物质。极限运动员或前线人员可能会对心流上瘾，在日常生活中感到空虚，甚至为了快感而追逐不必要的危险。"
+                }
+            ],
+            points: [
+                "<strong>挑战与技能的平衡：</strong> 心流通道位于焦虑（挑战过高）和无聊（技能过高）之间。要设计略高于现有技能水平的挑战（约4%）。",
+                "<strong>消除干扰：</strong> 心流需要完全的专注。关闭通知，创造环境。一旦被打断，重新进入心流可能需要20分钟以上。",
+                "<strong>用于恢复：</strong> 心流不仅用于工作表现，也可以是一种深度恢复。通过运动或爱好进入心流，可以让疲惫的逻辑脑得到真正的休息。"
+            ],
+            quote: "在心流中，没有时间，没有自我，只有当下。这是人类表现的巅峰体验，也是极佳的韧性状态。"
+        },
+        {
+            id: 11,
+            title: "休息",
+            subtitle: "Rest",
+            intro: "休息不是偷懒，而是主动的恢复策略。没有高质量的恢复，就没有持续的高绩效。不要等到崩溃才休息。",
+            cards: [
+                {
+                    icon: "💤",
+                    term: "R90 睡眠方案",
+                    tag: "睡眠周期",
+                    desc: "不要执着于每晚8小时。按<strong>90分钟的睡眠周期</strong>计算。目标是每周获得约35个周期。关注一周的总量，而不是单晚的得失，这样能减轻睡眠焦虑。"
+                },
+                {
+                    icon: "🔋",
+                    term: "强力小睡",
+                    tag: "Power Nap",
+                    desc: "最佳时长是<strong>10-20分钟</strong>。这能提神而不进入深度睡眠（避免醒后的睡眠惯性/昏沉感）。配合'咖啡小睡'（睡前喝咖啡）效果更佳。"
+                },
+                {
+                    icon: "⏰",
+                    term: "昼夜节律",
+                    tag: "生物钟",
+                    desc: "顺应你的生物钟（云雀型或猫头鹰型）。利用早晨的蓝光唤醒，晚上的红光/黑暗助眠。在能量低谷期（通常是下午2点）安排低认知任务或休息。"
+                }
+            ],
+            points: [
+                "<strong>班尼斯特的秘密：</strong> 罗杰·班尼斯特打破四分钟一英里纪录的关键，不仅是刻苦训练，还有他在赛前敢于去苏格兰爬山，彻底休息了两周。",
+                "<strong>识别倦怠信号：</strong> 每个人的信号不同（如腿抖、切菜切到手、对人失去耐心）。建立你的早期预警系统，在红灯亮起前停车加油。",
+                "<strong>睡眠债：</strong> 缺乏睡眠会导致类似醉酒的认知损伤。睡眠债必须偿还，且带有高额利息。"
+            ],
+            quote: "这是一场马拉松，不是短跑。但即使是马拉松运动员也会喝水。战略性停顿是前进的一部分。"
+        },
+        {
+            id: 12,
+            title: "生活方式",
+            subtitle: "Lifestyle",
+            intro: "生活方式不是为了寻求虚幻的'平衡'，而是拥有主导权（Agency），根据优先级进行果断的'分诊'。",
+            cards: [
+                {
+                    icon: "🏥",
+                    term: "生活分诊",
+                    tag: "Triage",
+                    desc: "像急诊室医生一样，承认资源（时间/精力）有限。你无法同时做所有事。有意识地选择<strong>优先处理</strong>某些领域（如事业冲刺期），暂时牺牲其他领域，只要这是你的主动选择。"
+                },
+                {
+                    icon: "🤏",
+                    term: "助推 (Nudge)",
+                    tag: "环境设计",
+                    desc: "不要仅靠意志力。设计你的环境，让好习惯更容易发生（如把跑鞋放在门口，把垃圾食品藏起来）。成为你生活的架构师。",
+                },
+                {
+                    icon: "🤝",
+                    term: "合理调整",
+                    tag: "工作设计",
+                    desc: "在工作中，为了适应个人需求（如神经多样性、家庭责任）而重新协商工作方式。这不是特权，而是为了让人发挥最大效能的双赢策略。"
+                }
+            ],
+            points: [
+                "<strong>避开生活陷阱：</strong> 警惕随着收入增加而无意识膨胀的消费欲望（生活方式通胀），这会让你为了维持生活而被工作绑架，失去选择自由。",
+                "<strong>财富与健康：</strong> 汉斯·罗斯林的数据显示世界在变好。利用你的资源（Level 4 收入）来投资于真正的健康和教育，建立长期的韧性储备。",
+                "<strong>健康素养：</strong> 成为自己健康的CEO。不要盲目相信药物广告或激进疗法。理解相对风险与绝对风险的区别（如NNT指标）。"
+            ],
+            quote: "生活就像一盒巧克力，你可以闭着眼睛拿，也可以看说明书选。拥有主导权，就是设计你想吃的那一颗。"
+        }
+    ];
+
+    // 初始化页面
+    const navMenu = document.getElementById('navMenu');
+    const contentArea = document.getElementById('contentArea');
+
+    // 生成导航和内容
+    chapters.forEach((chapter, index) => {
+        // 导航项
+        const li = document.createElement('li');
+        li.className = `nav-item ${index === 0 ? 'active' : ''}`;
+        li.innerHTML = `<span class="chapter-num">${String(chapter.id).padStart(2, '0')}</span> ${chapter.title}`;
+        li.onclick = () => switchChapter(index);
+        navMenu.appendChild(li);
+
+        // 章节内容
+        const view = document.createElement('div');
+        view.className = `chapter-view ${index === 0 ? 'active' : ''}`;
+        view.innerHTML = `
+            <div class="chapter-header">
+                <h2>${String(chapter.id).padStart(2, '0')} ${chapter.title}</h2>
+                <div class="chapter-intro">
+                    <strong>核心洞察：</strong> ${chapter.intro}
+                </div>
+            </div>
+
+            <div class="section-title">关键概念卡片 (点击翻转)</div>
+            <div class="card-grid">
+                ${chapter.cards.map(card => `
+                    <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="card-icon">${card.icon}</div>
+                                <div class="card-term">${card.term}</div>
+                                <div class="card-tag">${card.tag}</div>
+                                <div style="margin-top:15px;font-size:0.8rem;color:#999">点击查看详情</div>
+                            </div>
+                            <div class="flip-card-back">
+                                <p>${card.desc}</p>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+
+            <div class="section-title">深度解析 & 事实</div>
+            <div class="key-points">
+                ${chapter.points.map(point => `
+                    <div class="point-item">
+                        <div class="point-icon">➤</div>
+                        <div>${point}</div>
+                    </div>
+                `).join('')}
+            </div>
+
+            <div class="quote-box">
+                <div class="quote-text">${chapter.quote}</div>
+            </div>
+        `;
+        contentArea.appendChild(view);
+    });
+
+    // 切换章节函数
+    function switchChapter(index) {
+        // 更新导航状态
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => item.classList.remove('active'));
+        navItems[index].classList.add('active');
+
+        // 更新内容显示
+        const views = document.querySelectorAll('.chapter-view');
+        views.forEach(view => view.classList.remove('active'));
+        views[index].classList.add('active');
+
+        // 移动端：点击后滚动到内容区
+        if (window.innerWidth <= 900) {
+            window.scrollTo({
+                top: document.querySelector('.main-content').offsetTop - 60,
+                behavior: 'smooth'
+            });
+        } else {
+            // 桌面端：平滑滚动到顶部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+</script>
+
+</body>
+</html>
