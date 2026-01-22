@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Andy Ping (MIT CSAIL) 深度访谈摘要：机器人与语言模型</title>
+    <style>
+        :root {
+            --primary-hue: 210; /* 蓝色基调 */
+            --primary-color: hsl(var(--primary-hue), 80%, 50%);
+            --primary-light: hsl(var(--primary-hue), 80%, 95%);
+            --text-main: #333;
+            --text-secondary: #666;
+            --bg-body: #f8f9fa;
+            --card-bg: #ffffff;
+            
+            /* 语义标签颜色 */
+            --tag-fact-bg: #e3f2fd; --tag-fact-text: #1565c0;
+            --tag-opinion-bg: #fff3e0; --tag-opinion-text: #ef6c00;
+            --tag-term-bg: #e8f5e9; --tag-term-text: #2e7d32;
+            --tag-context-bg: #f3e5f5; --tag-context-text: #7b1fa2;
+
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.7;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        /* 头部设计 */
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border-top: 5px solid var(--primary-color);
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+
+        .profile-sub {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+        }
+
+        /* 标签组件 */
+        .tag {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.8em;
+            vertical-align: middle;
+            display: inline-block;
+            margin-right: 4px;
+        }
+        .tag.fact { background: var(--tag-fact-bg); color: var(--tag-fact-text); }
+        .tag.opinion { background: var(--tag-opinion-bg); color: var(--tag-opinion-text); }
+        .tag.term { background: var(--tag-term-bg); color: var(--tag-term-text); }
+        .tag.context { background: var(--tag-context-bg); color: var(--tag-context-text); }
+
+        /* 卡片交互设计 */
+        .accordion {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            padding: 25px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            position: relative;
+        }
+
+        .card-header::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: transparent;
+            transition: background 0.3s;
+        }
+
+        .card.active .card-header::before {
+            background: var(--primary-color);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-icon {
+            font-size: 1.4rem;
+        }
+
+        .toggle-icon {
+            width: 24px;
+            height: 24px;
+            position: relative;
+            transition: transform 0.3s;
+        }
+
+        .toggle-icon::after, .toggle-icon::before {
+            content: "";
+            position: absolute;
+            background: #ccc;
+            border-radius: 2px;
+            transition: background 0.3s;
+        }
+
+        .toggle-icon::before { width: 2px; height: 100%; left: 50%; transform: translateX(-50%); }
+        .toggle-icon::after { height: 2px; width: 100%; top: 50%; transform: translateY(-50%); }
+
+        .card.active .toggle-icon { transform: rotate(45deg); }
+        .card.active .toggle-icon::after, .card.active .toggle-icon::before { background: var(--primary-color); }
+
+        /* 内容区域 */
+        .card-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background-color: #fcfcfc;
+        }
+
+        .content-inner {
+            padding: 0 30px 30px 30px;
+            border-top: 1px solid #eee;
+            color: #4a5568;
+        }
+
+        /* 内容排版 */
+        .key-takeaway {
+            background-color: var(--primary-light);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid var(--primary-color);
+            font-weight: 500;
+        }
+
+        .detail-section {
+            margin-top: 20px;
+        }
+
+        .detail-title {
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #718096;
+            margin-bottom: 10px;
+            font-weight: 700;
+            border-bottom: 2px solid #edf2f7;
+            padding-bottom: 5px;
+        }
+
+        ul { padding-left: 20px; margin: 0; }
+        li { margin-bottom: 8px; }
+        
+        strong { color: #2d3748; }
+
+        /* 导航提示 */
+        .nav-hint {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #a0aec0;
+            font-size: 0.9rem;
+        }
+
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Andy Ping 访谈摘要</h1>
+        <div class="profile-sub">
+            MIT CSAIL 博士生 | 研究方向：语言引导的机器人抽象学习
+        </div>
+        <div class="legend">
+            <span class="tag fact">事实 Fact</span>
+            <span class="tag opinion">观点 Opinion</span>
+            <span class="tag term">术语 Term</span>
+            <span class="tag context">背景 Context</span>
+        </div>
+    </header>
+
+    <div class="nav-hint">点击下方卡片展开详细内容</div>
+
+    <div class="accordion">
+
+        <!-- 1. 个人背景 -->
+        <div class="card" onclick="toggleCard(this)">
+            <div class="card-header">
+                <h2 class="card-title"><span class="card-icon">🎓</span> 1. 个人背景与学术归属</h2>
+                <div class="toggle-icon"></div>
+            </div>
+            <div class="card-content">
+                <div class="content-inner">
+                    <div class="key-takeaway">
+                        Andy Ping 是 MIT CSAIL 四年级博士生，其研究具有跨学科性质，结合了“交互式机器人”与“自然语言处理”。
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-title">详细信息</div>
+                        <ul>
+                            <li><span class="tag fact">导师阵容</span> 共同指导老师为 <strong>Julie Shaw</strong>（Interactive Robotics Group，交互机器人组）和 <strong>Jacob Andreas</strong>（Language and Intelligence Group，语言与智能组）。</li>
+                            <li><span class="tag fact">研究核心</span> 如何利用<strong>人类反馈 (Human Feedback)</strong> 高效地教导机器人，使其能快速适应新环境。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 核心问题 -->
+        <div class="card" onclick="toggleCard(this)">
+            <div class="card-header">
+                <h2 class="card-title"><span class="card-icon">🧩</span> 2. 痛点：手动指定任务的局限性</h2>
+                <div class="toggle-icon"></div>
+            </div>
+            <div class="card-content">
+                <div class="content-inner">
+                    <div class="key-takeaway">
+                        在机器人设计中，“手动列出所有注意事项”几乎是不可能的，且现有的奖励函数方法难以扩展。
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-title">具体案例：倒咖啡</div>
+                        <p>Andy 举了一个生动的例子来说明“抽象”的复杂性：</p>
+                        <ul>
+                            <li><strong>显性需求：</strong> 用户希望机器人把咖啡端过来，放在面前特定的距离。</li>
+                            <li><strong>隐性约束（常识）：</strong> 机器人必须知道 <span class="tag term">负面约束</span>，例如<strong>“不要把咖啡放在笔记本电脑上”</strong>，因为有泼溅导致损坏电子设备的风险。</li>
+                        </ul>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-title">现有方法的缺陷</div>
+                        <ul>
+                            <li><span class="tag opinion">不可扩展</span> 很难先验地（A Priori）指定所有特征。</li>
+                            <li><span class="tag term">传统手段</span> 编写奖励函数 (Reward Functions) 或提供演示 (Demonstrations) 通常只能针对单一环境，难以泛化到新场景。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 解决方案 -->
+        <div class="card" onclick="toggleCard(this)">
+            <div class="card-header">
+                <h2 class="card-title"><span class="card-icon">🧠</span> 3. 核心项目：语言引导的抽象</h2>
+                <div class="toggle-icon"></div>
+            </div>
+            <div class="card-content">
+                <div class="content-inner">
+                    <div class="key-takeaway">
+                        项目名称：<strong>Learning from Language Guided Abstractions</strong>。利用大语言模型（LLM）中蕴含的人类通用知识，自动推断任务的关键特征。
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-title">核心逻辑</div>
+                        <ul>
+                            <li><span class="tag context">背景</span> 人类在互联网上积累了海量知识，这些知识隐含在预训练语言模型中。</li>
+                            <li><span class="tag term">机制</span> 使用 LLM 来指定对于完成某个任务来说，哪些要素是重要的（Care about），哪些是不重要的。</li>
+                            <li><span class="tag opinion">成效</span> 这种方法能极大提高学习效率，减少对人类反馈数据的需求量，并增强机器人对新环境的泛化能力。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 挑战与权衡 -->
+        <div class="card" onclick="toggleCard(this)">
+            <div class="card-header">
+                <h2 class="card-title"><span class="card-icon">⚖️</span> 4. 永恒的挑战：通用常识 vs 个性化</h2>
+                <div class="toggle-icon"></div>
+            </div>
+            <div class="card-content">
+                <div class="content-inner">
+                    <div class="key-takeaway">
+                        机器人需要在“大家都知道的常识”和“用户个人的怪癖”之间找到平衡点。
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-title">平衡点分析</div>
+                        <ul>
+                            <li><span class="tag term">通用先验 (General Prior)</span> 语言模型可以告诉机器人通用的规则（如：咖啡别放电脑上）。</li>
+                            <li><span class="tag term">个性化偏好 (Personalized)</span> 语言模型无法知道特定用户的喜好（如：我喜欢把杯子放左手边）。</li>
+                        </ul>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-title">研究方向</div>
+                        <p><span class="tag opinion">未来工作</span> 如何区分何时该查询 LLM 获取通用知识，何时该直接询问人类用户以获取个性化反馈？这是目前持续探索的领域。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. 案例研究：波士顿动力 -->
+        <div class="card" onclick="toggleCard(this)">
+            <div class="card-header">
+                <h2 class="card-title"><span class="card-icon">🐕</span> 5. 实战案例：Spot 机器狗捡垃圾</h2>
+                <div class="toggle-icon"></div>
+            </div>
+            <div class="card-content">
+                <div class="content-inner">
+                    <div class="key-takeaway">
+                        与 <strong>Boston Dynamics AI Institute</strong> 合作，在真实的 Spot 机器人上实现了基于语义理解的垃圾分类。
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-title">技术流水线 (Pipeline)</div>
+                        <ol>
+                            <li><span class="tag fact">感知</span> 机器狗的摄像头看到物体，通过视觉模型分割并生成标签（例如：“橘子” Orange）。</li>
+                            <li><span class="tag fact">推理</span> 系统向语言模型提问：“在‘扔掉这个物体’的语境下，‘橘子’应该去哪个垃圾桶？”</li>
+                            <li><span class="tag fact">决策</span> LLM 利用常识回答：“堆肥桶 (Compost Bin)”。</li>
+                            <li><span class="tag fact">对比</span> 若识别到“铝罐”，LLM 则会建议“回收桶 (Recycling Bin)”。</li>
+                        </ol>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-title">巨大优势</div>
+                        <ul>
+                            <li><span class="tag opinion">效率提升</span> 以前需要向机器人展示 10,000 个例子才能让它学会分类；现在只需要视觉识别+语言模型推理即可获得极佳的<strong>“起点”</strong>。</li>
+                            <li><span class="tag context">修正</span> 如果用户是一个讨厌回收的“坏人”，系统仍需针对其进行微调，但初始的常识基础已经大大降低了教学成本。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. 研究方法论 -->
+        <div class="card" onclick="toggleCard(this)">
+            <div class="card-header">
+                <h2 class="card-title"><span class="card-icon">🔬</span> 6. 标准研究流程 (三部曲)</h2>
+                <div class="toggle-icon"></div>
+            </div>
+            <div class="card-content">
+                <div class="content-inner">
+                    <div class="detail-section">
+                        <ul>
+                            <li><strong>第一阶段：理论形式化 (Formalization)</strong>
+                                <br>确定研究问题，从理论层面定义框架，论证“如果这能成功，为什么它是有意义的”。</li>
+                            <li><strong>第二阶段：仿真模拟 (Simulation)</strong>
+                                <br>在虚拟环境中运行算法，验证其基本可行性。</li>
+                            <li><strong>第三阶段：真机与真人 (Real World)</strong>
+                                <br>转移到物理机器人（如 Spot）上，并必须引入<strong>真实的人类用户</strong>进行测试。Andy 强调必须验证系统能否与真实世界的人有效互动。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. 职业愿景 -->
+        <div class="card" onclick="toggleCard(this)">
+            <div class="card-header">
+                <h2 class="card-title"><span class="card-icon">🏛️</span> 7. 职业愿景：学术与政策的交汇</h2>
+                <div class="toggle-icon"></div>
+            </div>
+            <div class="card-content">
+                <div class="content-inner">
+                    <div class="key-takeaway">
+                        Andy 计划留在学术界，但深受其过往<strong>白宫科技政策</strong>工作经历的影响，致力于连接技术与社会政策。
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-title">双重驱动力</div>
+                        <ul>
+                            <li><span class="tag opinion">学术自由</span> 倾向于成为教授，因为珍视探索各种有趣问题的学术自由。</li>
+                            <li><span class="tag context">政策背景</span> 在攻读博士学位之前，他曾在<strong>白宫 (The White House)</strong> 从事科技政策工作。</li>
+                            <li><span class="tag opinion">社会影响</span> 希望通过学术职位，继续参与关于“AI 系统如何影响社会”的公共讨论，并与政策制定者合作。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer style="text-align: center; margin-top: 60px; color: #a0aec0; font-size: 0.85rem;">
+        <p>Generated based on transcript analysis | Strict Integrity Check Applied</p>
+    </footer>
+</div>
+
+<script>
+    function toggleCard(card) {
+        // 切换当前卡片状态
+        const isActive = card.classList.contains('active');
+        const content = card.querySelector('.card-content');
+        
+        // 关闭所有其他卡片（手风琴模式，如不需要可注释掉下面这块代码）
+        document.querySelectorAll('.card').forEach(c => {
+            c.classList.remove('active');
+            c.querySelector('.card-content').style.maxHeight = null;
+        });
+
+        if (!isActive) {
+            card.classList.add('active');
+            content.style.maxHeight = content.scrollHeight + "px";
+        } else {
+            // 如果原本是打开的，上面的关闭逻辑已经处理了，这里只需要确保它是关闭状态
+            card.classList.remove('active');
+            content.style.maxHeight = null;
+        }
+    }
+</script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.bilibili.com/video/BV1LfzLBiEiB/" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
