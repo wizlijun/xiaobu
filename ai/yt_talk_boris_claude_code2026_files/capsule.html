@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boris Cherny: 软件工程的未来、杠杆与范式转移</title>
+    <style>
+        :root {
+            --primary: #2563eb;        /* 核心蓝 */
+            --primary-light: #eff6ff;
+            --secondary: #475569;      /* 次级灰 */
+            --bg-body: #f1f5f9;        /* 整体背景 */
+            --bg-card: #ffffff;
+            --border: #e2e8f0;
+            
+            /* 语义标签色 */
+            --tag-prediction-bg: #f5f3ff; 
+            --tag-prediction-text: #7c3aed; /* 预测 - 紫色 */
+            
+            --tag-advice-bg: #ecfdf5;
+            --tag-advice-text: #059669;     /* 建议 - 绿色 */
+            
+            --tag-insight-bg: #fff7ed;
+            --tag-insight-text: #ea580c;    /* 洞见 - 橙色 */
+            
+            --tag-tech-bg: #f0f9ff;
+            --tag-tech-text: #0284c7;       /* 技术栈 - 蓝色 */
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: #1e293b;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            line-height: 1.6;
+        }
+
+        /* 侧边栏 */
+        aside {
+            width: 320px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            box-shadow: 4px 0 24px rgba(0,0,0,0.02);
+            z-index: 20;
+        }
+
+        .profile-header {
+            padding: 32px 24px;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        }
+
+        .profile-role {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--secondary);
+            font-weight: 700;
+            margin-top: 8px;
+        }
+
+        .nav-container {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--secondary);
+            font-weight: 500;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background-color: #f8fafc;
+            color: var(--primary);
+            border-color: var(--border);
+        }
+
+        .nav-item.active {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            border-color: #bfdbfe;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        /* 主内容 */
+        main {
+            flex: 1;
+            padding: 40px 60px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        .section-header {
+            max-width: 900px;
+            margin: 0 auto 40px;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-desc {
+            font-size: 16px;
+            color: #64748b;
+            max-width: 700px;
+        }
+
+        /* 卡片设计 */
+        .card-grid {
+            max-width: 900px;
+            margin: 0 auto;
+            display: grid;
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.08);
+            border-color: #cbd5e1;
+        }
+
+        .card.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 1px var(--primary);
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1.4;
+        }
+
+        .badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .badge {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        
+        .b-pred { background: var(--tag-prediction-bg); color: var(--tag-prediction-text); }
+        .b-adv { background: var(--tag-advice-bg); color: var(--tag-advice-text); }
+        .b-ins { background: var(--tag-insight-bg); color: var(--tag-insight-text); }
+        .b-tech { background: var(--tag-tech-bg); color: var(--tag-tech-text); border: 1px solid #bae6fd; }
+
+        .summary {
+            color: #475569;
+            font-size: 15px;
+            margin-bottom: 0;
+        }
+
+        /* 展开详情 */
+        .details {
+            max-height: 0;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .card.expanded .details {
+            max-height: 1000px;
+            opacity: 1;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px dashed var(--border);
+        }
+
+        .detail-item {
+            margin-bottom: 20px;
+        }
+
+        .detail-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 800;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            display: block;
+            letter-spacing: 0.05em;
+        }
+
+        .detail-text {
+            color: #334155;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        .highlight-phrase {
+            background: linear-gradient(120deg, rgba(37, 99, 235, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%);
+            color: #1e40af;
+            font-weight: 600;
+            padding: 0 4px;
+            border-radius: 4px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            body { flex-direction: column; height: auto; overflow: auto; }
+            aside { width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
+            main { padding: 30px 20px; }
+            .nav-container { display: flex; overflow-x: auto; padding: 10px; }
+            .nav-item { white-space: nowrap; margin-bottom: 0; margin-right: 10px; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<aside>
+    <div class="profile-header">
+        <h1 style="margin:0; font-size: 22px;">Boris Cherny</h1>
+        <div class="profile-role">Creator of Claude Code</div>
+        <div class="profile-role" style="color:#94a3b8; font-weight:500;">Ex-Meta Principal Engineer</div>
+    </div>
+    <div class="nav-container" id="nav-container">
+        <!-- JS 生成导航 -->
+    </div>
+</aside>
+
+<main>
+    <div id="section-header" class="section-header"></div>
+    <div id="card-grid" class="card-grid"></div>
+</main>
+
+<script>
+    // === 核心数据结构：专注于软件工程视角 ===
+    const engineeringData = [
+        {
+            id: "paradigm-shift",
+            title: "AI 时代的编程范式转移",
+            icon: "⚡️",
+            desc: "从手动编写每一行代码，到指挥 AI 代理军团，工程师的角色正在发生本质变化。",
+            cards: [
+                {
+                    title: "从 Coder 到 Orchestrator (编排者)",
+                    tags: [{type: "pred", text: "范式预测"}, {type: "tech", text: "Agents"}],
+                    summary: "工程师不再需要长时间沉浸在单一代码块中，而是需要同时管理 20 个不同的上下文。",
+                    details: [
+                        { label: "现象", text: "Boris 观察到团队成员（如 Daisy）在周末设置了 20 个 Quad Code 节点（AI Agents）并发工作，两天内完成了整个插件系统的构建。" },
+                        { label: "新技能树", text: "未来的核心技能不是打字速度或语法记忆，而是<span class='highlight-phrase'>上下文切换能力</span>、任务拆解能力以及对 AI 产出的审查能力。" },
+                        { label: "生产力暴增", text: "得益于 Quad Code，Anthropic 内部每位工程师的生产力增长了近 70%。" }
+                    ]
+                },
+                {
+                    title: "Vibe Coding vs. 生产级工程",
+                    tags: [{type: "advice", text: "工程标准"}, {type: "tech", text: "Code Review"}],
+                    summary: "AI 编程并不意味着降低标准。原型可以随意，但生产代码必须严谨。",
+                    details: [
+                        { label: "Vibe Coding", text: "对于一次性脚本、原型验证，可以使用 'Vibe Coding'（随性生成，不求甚解）。" },
+                        { label: "生产红线", text: "对于生产环境代码，无论是由人写的还是模型生成的，<span class='highlight-phrase'>Review 标准必须完全一致</span>。如果模型生成的代码质量差，坚决不合并，要求模型重构。" }
+                    ]
+                },
+                {
+                    title: "为未来的模型构建 (Build for Future Models)",
+                    tags: [{type: "ins", text: "产品策略"}, {type: "tech", text: "Scaling Laws"}],
+                    summary: "不要基于当下的模型能力限制你的工具设计，要赌模型能力的指数级增长。",
+                    details: [
+                        { label: "Quad Code 的教训", text: "起初 Quad Code 只能处理 10% 的任务，非常难用。但 Ben (Manager) 坚持要求 Boris 为“6个月后的模型”设计工具。当 Claude 3.5 发布时，工具能力瞬间解锁至 90%。" },
+                        { label: "启示", text: "在 AI 工程领域，<span class='highlight-phrase'>提前一步思考</span>（Think a step ahead）是至关重要的，要预判 Scaling Laws 带来的能力跃升。" }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "engineering-leverage",
+            title: "工程杠杆与自动化",
+            icon: "🛠",
+            desc: "区分平庸工程师与优秀工程师的关键：如何利用工具和自动化产生不对称的产出。",
+            cards: [
+                {
+                    title: "Side Quest 作为杠杆",
+                    tags: [{type: "ins", text: "成长黑客"}, {type: "tech", text: "Undux/Lint"}],
+                    summary: "解决那些“阻碍你日常工作”的问题，通常能带来最大的组织影响力。",
+                    details: [
+                        { label: "Lint 规则即杠杆", text: "Boris 的原则：如果在 Code Review 中对同一个问题评论了 3 次，就必须写一个 Lint 规则来自动检测它。这被称为<span class='highlight-phrase'>“免费的杠杆”</span>。" },
+                        { label: "Undux 案例", text: "因为讨厌 Redux 的样板代码，他编写了 Undux。为了推广，他不是被动等待，而是主动抓取内部抱怨 Redux 的帖子，定向进行 Tech Talk，最终成为主流方案。" }
+                    ]
+                },
+                {
+                    title: "被忽视的测试领域：超大数据集",
+                    tags: [{type: "tech", text: "Testing"}, {type: "tech", text: "Big Data"}],
+                    summary: "很多工程师只写单元测试，却忽略了生产环境中的数据规模带来的边界情况。",
+                    details: [
+                        { label: "问题", text: "在 Facebook Group，很少有人测试“拥有 1000 万成员的群组”会发生什么。这种盲区导致了大量生产环境故障（SEV）。" },
+                        { label: "工程解法", text: "Boris 推动建立了针对<span class='highlight-phrase'>超大数据集（Large Datasets）</span>的自动化测试基础设施，在代码上线前模拟极端数据场景。" }
+                    ]
+                },
+                {
+                    title: "Unshipping (功能移除) 的艺术",
+                    tags: [{type: "advice", text: "技术债务"}, {type: "tech", text: "Instagram"}],
+                    summary: "最优秀的代码是没写的代码，其次是删除的代码。",
+                    details: [
+                        { label: "概念", text: "Unshipping 指主动删除低使用率的功能。屏幕空间和代码维护成本都是有限资源。" },
+                        { label: "执行", text: "必须设定严格的使用率阈值。如果一个功能只有 1% 的用户使用，即使他们会生气，也应该为了剩下 99% 用户的体验和代码库的健康而删除它。" }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "tech-management",
+            title: "技术领导力与架构决策",
+            icon: "🧠",
+            desc: "当工程问题演变为组织问题时，Tech Lead 应该如何应对？",
+            cards: [
+                {
+                    title: "3小时战争室：大型项目定界 (Scoping)",
+                    tags: [{type: "advice", text: "项目管理"}, {type: "tech", text: "Architecture"}],
+                    summary: "面对数百人年的工程项目，不要陷入细节泥潭，要快速识别风险。",
+                    details: [
+                        { label: "操作手册", text: "将所有 Tech Lead 关在房间里 3 小时，分组进行架构设计竞赛。不要给他们空白文档，要给他们一个“稻草人”（Straw man，初步靶子方案）去攻击和修改。" },
+                        { label: "核心发现", text: "通常 80% 的设计是共识（无需讨论），只有 20% 是分歧。定界的核心就是<span class='highlight-phrase'>识别并前置这 20% 的风险</span>。" }
+                    ]
+                },
+                {
+                    title: "Disagree and Commit (不同意但执行) 的升华",
+                    tags: [{type: "story", text: "软技能"}, {type: "tech", text: "Data Modeling"}],
+                    summary: "如何优雅地处理与资深工程师的技术分歧，并最终赢得信任？",
+                    details: [
+                        { label: "案例背景", text: "在数据模型设计上，Boris 与资深大佬 Bob 意见相左。Boris 选择了妥协并全力支持执行。" },
+                        { label: "结果", text: "执行过程中的痛苦证明 Bob 的方案过于复杂。Boris 最终主导了回滚。因为前期的全力支持，这次回滚不仅没破坏关系，反而证明了 Boris 的技术判断力和成熟度，助他晋升。" }
+                    ]
+                }
+            ]
+        },
+        {
+            id: "career-growth",
+            title: "工程师职业生涯指北",
+            icon: "🚀",
+            desc: "从断臂编程的顿悟到通才的胜利，Boris 的职业路径复盘。",
+            cards: [
+                {
+                    title: "通用型工程师 (Generalist) 的崛起",
+                    tags: [{type: "pred", text: "人才趋势"}, {type: "advice", text: "T型人才"}],
+                    summary: "在 AI 辅助下，边界正在消失。最受青睐的是“技术多面手”。",
+                    details: [
+                        { label: "Anthropic 实践", text: "没有“后端工程师”或“产品经理”的严格区分，只有 MTS (Member of Technical Staff)。" },
+                        { label: "能力模型", text: "会写代码的产品经理、懂用户调研的工程师、能做设计的全栈。Boris 强调，不要被大公司的“泳道”限制，<span class='highlight-phrase'>跨越边界解决问题</span>的人拥有最高杠杆。" }
+                    ]
+                },
+                {
+                    title: "用类型思考 (Think in Types)",
+                    tags: [{type: "tech", text: "TypeScript"}, {type: "tech", text: "Haskell"}],
+                    summary: "学习强类型语言（如 Scala/Haskell/TS）是提升代码思维的最佳路径。",
+                    details: [
+                        { label: "推荐书籍", text: "<strong>《Scala 函数式编程》</strong>。即使你不写 Scala，它也会永久改变你构建软件的思维方式。" },
+                        { label: "核心价值", text: "类型签名（Type Signatures）比代码本身更重要。好的类型设计能让错误在编译期而非运行期暴露。" }
+                    ]
+                },
+                {
+                    title: "终极建议：运用常识 (Common Sense)",
+                    tags: [{type: "advice", text: "First Principles"}],
+                    summary: "大公司的异化往往让人忘记最简单的道理。",
+                    details: [
+                        { label: "为什么难", text: "组织惯性、激励错位、复杂的流程都会让你偏离常识。" },
+                        { label: "回归本源", text: "无论技术多复杂，核心永远是：<span class='highlight-phrase'>弄清楚用户想要什么，然后用最简单的方式造出来。</span>" }
+                    ]
+                }
+            ]
+        }
+    ];
+
+    // === DOM 元素 ===
+    const navContainer = document.getElementById('nav-container');
+    const sectionHeader = document.getElementById('section-header');
+    const cardGrid = document.getElementById('card-grid');
+
+    // === 渲染逻辑 ===
+    function renderNav() {
+        navContainer.innerHTML = engineeringData.map((section, index) => `
+            <div class="nav-item ${index === 0 ? 'active' : ''}" onclick="switchSection(${index})">
+                <span style="font-size:18px">${section.icon}</span>
+                <span>${section.title}</span>
+            </div>
+        `).join('');
+    }
+
+    function renderContent(index) {
+        const data = engineeringData[index];
+        
+        // 渲染标题区
+        sectionHeader.innerHTML = `
+            <div class="section-title">
+                <span>${data.icon}</span>
+                <span>${data.title}</span>
+            </div>
+            <div class="section-desc">${data.desc}</div>
+        `;
+
+        // 渲染卡片
+        cardGrid.innerHTML = data.cards.map(card => {
+            const tagsHtml = card.tags.map(tag => {
+                let cls = '';
+                if(tag.type === 'pred') cls = 'b-pred';
+                if(tag.type === 'advice') cls = 'b-adv';
+                if(tag.type === 'ins') cls = 'b-ins';
+                if(tag.type === 'tech') cls = 'b-tech';
+                return `<span class="badge ${cls}">${tag.text}</span>`;
+            }).join('');
+
+            const detailsHtml = card.details.map(d => `
+                <div class="detail-item">
+                    <span class="detail-label">${d.label}</span>
+                    <div class="detail-text">${d.text}</div>
+                </div>
+            `).join('');
+
+            return `
+                <div class="card" onclick="toggleDetails(this)">
+                    <div class="card-top">
+                        <div class="card-title">${card.title}</div>
+                        <div style="color:var(--primary); font-size:20px;">+</div>
+                    </div>
+                    <div class="badges">${tagsHtml}</div>
+                    <p class="summary">${card.summary}</p>
+                    <div class="details">
+                        ${detailsHtml}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // === 交互逻辑 ===
+    window.switchSection = function(index) {
+        // 更新导航状态
+        document.querySelectorAll('.nav-item').forEach((el, i) => {
+            el.classList.toggle('active', i === index);
+        });
+        
+        // 重新渲染内容（带淡入动画）
+        const main = document.querySelector('main');
+        main.style.opacity = 0;
+        setTimeout(() => {
+            renderContent(index);
+            main.style.opacity = 1;
+        }, 200);
+    }
+
+    window.toggleDetails = function(card) {
+        const wasExpanded = card.classList.contains('expanded');
+        
+        // 手风琴模式：关闭其他
+        document.querySelectorAll('.card.expanded').forEach(c => {
+            if (c !== card) {
+                c.classList.remove('expanded');
+                c.classList.remove('active');
+                c.querySelector('.card-top div:last-child').innerText = '+';
+            }
+        });
+
+        if (!wasExpanded) {
+            card.classList.add('expanded');
+            card.classList.add('active');
+            card.querySelector('.card-top div:last-child').innerText = '−';
+        } else {
+            card.classList.remove('expanded');
+            card.classList.remove('active');
+            card.querySelector('.card-top div:last-child').innerText = '+';
+        }
+    }
+
+    // 初始化
+    document.querySelector('main').style.transition = 'opacity 0.3s ease';
+    renderNav();
+    renderContent(0);
+
+</script>
+</body>
+</html>
