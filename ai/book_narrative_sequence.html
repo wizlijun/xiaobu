@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深度摘要：当代叙事学中的叙事序列</title>
+    <style>
+        :root {
+            --bg-body: #f7f9fc;
+            --bg-card: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #596a7d;
+            --accent-blue: #3498db;
+            --accent-light: #e1f0fa;
+            --accent-green: #27ae60;
+            --accent-green-light: #eafaf1;
+            --accent-purple: #9b59b6;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 8px 16px rgba(0,0,0,0.08);
+            --transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 顶部导航 */
+        header {
+            background: linear-gradient(135deg, #fff, #f8fbfd);
+            padding: 60px 20px;
+            text-align: center;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+            color: var(--text-primary);
+        }
+
+        header .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            font-weight: 300;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: -30px auto 40px;
+            padding: 0 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 胶囊标签 */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .badge-concept { background: var(--accent-light); color: var(--accent-blue); }
+        .badge-theory { background: var(--accent-green-light); color: var(--accent-green); }
+
+        /* 章节容器 (手风琴) */
+        .chapter-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            transition: var(--transition);
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+
+        .chapter-section:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .chapter-header {
+            padding: 25px 30px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            user-select: none;
+        }
+
+        .chapter-title h2 {
+            margin: 0;
+            font-size: 1.4rem;
+            color: var(--text-primary);
+        }
+
+        .chapter-title span {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+            font-weight: 400;
+        }
+
+        .toggle-btn {
+            width: 32px;
+            height: 32px;
+            background: var(--accent-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-blue);
+            transition: transform 0.4s;
+        }
+
+        .chapter-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.6s cubic-bezier(0, 1, 0, 1);
+            background: #fbfbfb;
+        }
+
+        .chapter-section.active .toggle-btn {
+            transform: rotate(180deg);
+            background: var(--accent-blue);
+            color: #fff;
+        }
+
+        .chapter-section.active .chapter-content {
+            max-height: 3000px; /* 允许展开 */
+            padding: 30px;
+            border-top: 1px solid #eee;
+        }
+
+        /* 网格布局 */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        /* 翻转卡片 */
+        .flip-card {
+            background-color: transparent;
+            height: 320px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: left;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            padding: 25px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 正面样式 */
+        .flip-card-front {
+            background-color: #fff;
+            border-top: 4px solid var(--accent-blue);
+        }
+
+        .author-name {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #999;
+            margin-bottom: 10px;
+        }
+
+        .concept-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .concept-preview {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            flex-grow: 1;
+        }
+
+        .tap-hint {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--accent-blue);
+            margin-top: auto;
+            opacity: 0.7;
+        }
+
+        /* 背面样式 */
+        .flip-card-back {
+            background: linear-gradient(145deg, #3498db, #2980b9);
+            color: white;
+            transform: rotateY(180deg);
+            overflow-y: auto;
+        }
+
+        .flip-card-back strong {
+            color: #ffd700; /* 金色高亮 */
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1rem;
+        }
+
+        .flip-card-back p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        /* 金句框 */
+        .quote-box {
+            background-color: #fff;
+            border-left: 5px solid var(--accent-purple);
+            padding: 20px 30px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+            color: #666;
+            position: relative;
+        }
+        
+        .quote-box::before {
+            content: "“";
+            font-size: 4rem;
+            color: var(--accent-purple);
+            opacity: 0.15;
+            position: absolute;
+            top: -10px;
+            left: 10px;
+        }
+
+        /* 结论对比表 */
+        .comparison-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .comparison-table th {
+            background-color: #f1f4f8;
+            padding: 15px;
+            text-align: left;
+            color: var(--text-primary);
+            width: 50%;
+        }
+
+        .comparison-table td {
+            padding: 15px;
+            border-top: 1px solid #eee;
+            vertical-align: top;
+            font-size: 0.95rem;
+        }
+
+        .term {
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: #bbb;
+            font-size: 0.9rem;
+        }
+
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Narrative Sequence</h1>
+    <div class="subtitle">当代叙事学中的叙事序列 · 核心要点全解析</div>
+    <div style="margin-top: 20px; font-size: 0.9rem; color: #7f8c8d;">
+        编者: Raphaël Baroni & Françoise Revaz | 交互式摘要
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- Introduction -->
+    <div class="chapter-section active">
+        <div class="chapter-header">
+            <div class="chapter-title">
+                <h2>导论：从静态到动态的转变</h2>
+                <span>Introduction by Raphaël Baroni</span>
+            </div>
+            <div class="toggle-btn">▼</div>
+        </div>
+        <div class="chapter-content">
+            <p style="font-size: 1.1rem; margin-bottom: 20px;">
+                叙事学正在经历一场深刻的认识论转变：从关注作为一个固定结构的“故事”（Fabula），转向关注读者在阅读过程中构建意义的动态过程。
+            </p>
+            <div class="card-grid">
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <span class="badge badge-theory">历史背景</span>
+                            <div class="concept-title">叙事理论的演变</div>
+                            <div class="concept-preview">从亚里士多德的“开头、中间、结尾”到现代的复杂模型，对 Plot（情节）的定义一直在变。</div>
+                            <div class="tap-hint">点击查看详情</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <strong>三种情节观 (Kukkonen):</strong>
+                            <p>1. <strong>固定结构：</strong> 故事事件的全局配置。</p>
+                            <p>2. <strong>渐进式结构化：</strong> 读者在阅读中感知到的事件连接（建构主义）。</p>
+                            <p>3. <strong>作者设计：</strong> 作者为达到特定效果的结构安排。</p>
+                            <p>本书强调第2和第3点，关注文本的动态性和读者的情感/认知参与。</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <span class="badge badge-concept">核心冲突</span>
+                            <div class="concept-title">客观主义 vs. 建构主义</div>
+                            <div class="concept-preview">叙事序列究竟是文本中固有的，还是读者在头脑中构建的？</div>
+                            <div class="tap-hint">点击查看详情</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <strong>认识论的张力：</strong>
+                            <p><strong>客观主义：</strong> 侧重于具体化或理想化的 Fabula（故事本身），认为结构存在于文本中。</p>
+                            <p><strong>建构主义：</strong> 侧重于叙事表现形式与受众主观体验之间的<strong>交互</strong>。Fabula 不是现成的，而是读者在阅读过程中通过一系列“溯因推理”（Abduction）逐步产生的。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Part I -->
+    <div class="chapter-section">
+        <div class="chapter-header">
+            <div class="chapter-title">
+                <h2>第一部分：序列的理论化</h2>
+                <span>Theorizing Sequence: Prince, Pier, Hühn</span>
+            </div>
+            <div class="toggle-btn">▼</div>
+        </div>
+        <div class="chapter-content">
+            <div class="quote-box">
+                “对于后古典叙事学来说，回答‘什么是叙事序列’实际上是为了回答‘为什么叙事’。”
+            </div>
+            
+            <div class="card-grid">
+                <!-- Gerald Prince -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="author-name">Gerald Prince</div>
+                            <div class="concept-title">古典与后古典的张力</div>
+                            <div class="concept-preview">关于语境在叙事定义中扮演角色的讨论。</div>
+                            <div class="tap-hint">点击翻转</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <strong>核心观点：</strong>
+                            <p>古典叙事学虽然承认语境的重要性，但为了形式分析往往将其“括号化”（暂时搁置）。</p>
+                            <p>后古典叙事学则强调文本与语境的交互。风险在于：如果过度强调语境，可能会淹没文本本身的特性。Prince 认为理解叙事序列不仅是识别结构，更涉及认知、情感和语用功能。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- John Pier -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="author-name">John Pier</div>
+                            <div class="concept-title">构型与图解象似性</div>
+                            <div class="concept-preview">序列不是现成的，它是通过符号学机制涌现的。</div>
+                            <div class="tap-hint">点击翻转</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <strong>序列是原型的 (Prototypical)：</strong>
+                            <p>引用皮尔士（Peirce）的理论，叙事序列是一种<strong>“图解象似性” (Diagrammatic Iconicity)</strong>。它不是简单的事件链，而是一个随阅读过程动态构型的逻辑图表。</p>
+                            <p>序列产生于“被讲述的事”与“讲述行为”之间的间隙，依赖读者的<strong>溯因推理 (Abductive Reasoning)</strong> 来填充。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Peter Hühn -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="author-name">Peter Hühn</div>
+                            <div class="concept-title">事件性 (Eventfulness)</div>
+                            <div class="concept-preview">什么是事件？未发生的事情也可以是事件吗？</div>
+                            <div class="tap-hint">点击翻转</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <strong>事件定义的修正：</strong>
+                            <p>并非所有变化都是“事件”。只有那些对既定规范构成<strong>决定性、意外且有后果的偏离</strong>才具备“事件性”。这高度依赖文化语境。</p>
+                            <p><strong>非事件 (Non-event)：</strong>如果读者强烈期待某事发生而它没有发生，这种“缺失”本身就具有极高的事件性（如《等待戈多》）。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Part II -->
+    <div class="chapter-section">
+        <div class="chapter-header">
+            <div class="chapter-title">
+                <h2>第二部分：叙事进程的修辞视角</h2>
+                <span>Rhetorical Perspectives: Phelan, Segal, Baroni</span>
+            </div>
+            <div class="toggle-btn">▼</div>
+        </div>
+        <div class="chapter-content">
+            <p>这一部分强调叙事是一种<strong>交流行为</strong>，关注作者如何通过文本设计引导读者的反应。</p>
+
+            <div class="card-grid">
+                <!-- James Phelan -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="author-name">James Phelan</div>
+                            <div class="concept-title">特权式作者披露</div>
+                            <div class="concept-preview">当作者告诉读者角色不知道的事情时，会发生什么？</div>
+                            <div class="tap-hint">点击翻转</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <strong>Privileged Authorial Disclosure：</strong>
+                            <p>分析案例：Wolff 的《脑中子弹》。作者通过“非叙述”（Disnarration，讲述未发生的事或角色未想到的事）向读者揭示角色的过去。</p>
+                            <p><strong>效果：</strong>打破了读者单纯跟随角色视角的默认模式，建立了读者与作者之间更高层面的伦理和情感联系，从而改变叙事进程的动力学。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Eyal Segal -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="author-name">Eyal Segal</div>
+                            <div class="concept-title">多重结局与功能多价性</div>
+                            <div class="concept-preview">结局的改变如何重塑整个故事的意义？</div>
+                            <div class="tap-hint">点击翻转</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <strong>结局的特权地位：</strong>
+                            <p>结局是赋予整体意义的关键点。引用 Doležel 的<strong>“功能多价性” (Functional Polyvalence)</strong>：同一事件在不同序列中具有不同功能。</p>
+                            <p>分析《远大前程》或《银翼杀手》的多重结局：修改结局不仅改变结尾，更回溯性地改变了整个叙事的因果逻辑和伦理评价。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Raphaël Baroni -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="author-name">Raphaël Baroni</div>
+                            <div class="concept-title">情节的虚拟性与重读</div>
+                            <div class="concept-preview">为什么我们在重读已知结局的故事时，仍会感到悬念？</div>
+                            <div class="tap-hint">点击翻转</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <strong>悬念悖论的解：</strong>
+                            <p>情节不是线性的必然，而是可能性的矩阵。在重读时，未实现的<strong>“虚拟性” (Virtualities)</strong> ——即角色在故事中表达的希望、恐惧和计划——依然有效。</p>
+                            <p><strong>价值导向假设：</strong>我们虽然知道结局（认知上确定），但受角色情感影响，依然渴望一个更好或不同的结果（情感/伦理上不确定）。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Part III -->
+    <div class="chapter-section">
+        <div class="chapter-header">
+            <div class="chapter-title">
+                <h2>第三部分：非文学叙事中的序列</h2>
+                <span>Non-literary Narratives: Comics, Music, Reality</span>
+            </div>
+            <div class="toggle-btn">▼</div>
+        </div>
+        <div class="chapter-content">
+            <div class="card-grid">
+                <!-- Comics -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="author-name">Boillat & Revaz</div>
+                            <div class="concept-title">连环画中的序列</div>
+                            <div class="concept-preview">以《小萨米喷嚏》为例，探讨重复中的叙事张力。</div>
+                            <div class="tap-hint">点击翻转</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <strong>重复与变奏：</strong>
+                            <p>每一集《小萨米》结局都一样（打喷嚏破坏一切）。但这并非没有叙事性。</p>
+                            <p><strong>吸引力逻辑 (Logic of Attractions)：</strong> 读者关注的不是“结局是什么”，而是“如何发生”。通过背景中的微小变化（脚本变异）和视觉奇观，序列依然产生兴趣。这是一种基于<strong>重复结构中的微观悬念</strong>。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Music -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="author-name">Michael Toolan</div>
+                            <div class="concept-title">音乐叙事性</div>
+                            <div class="concept-preview">纯器乐音乐真的没有叙事吗？</div>
+                            <div class="tap-hint">点击翻转</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <strong>反驳怀疑论：</strong>
+                            <p>虽然音乐没有语义指涉，但听众倾向于将音乐<strong>“叙事化” (Narrativizing)</strong> 以辅助理解和沉浸。</p>
+                            <p><strong>机制：</strong> 乐器可被视为“角色”或“声音”，乐章的张力与解决模拟了情节发展。音乐叙事是一种典型的<strong>建构主义</strong>体验——故事不在音符里，而在听众的构建中。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Matrix -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="author-name">Emma Kafalenos</div>
+                            <div class="concept-title">现实矩阵的叙事化</div>
+                            <div class="concept-preview">如何理解历史事件（如9/11）的多重解释？</div>
+                            <div class="tap-hint">点击翻转</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <strong>矩阵 (Matrix)：</strong>
+                            <p>现实是一个包含无限关联事件的巨大网络（矩阵）。</p>
+                            <p><strong>叙事化过程：</strong> 不同的群体通过从矩阵中选择不同的事件并排列顺序（Sjuzhet），构建出截然不同的因果解释（Fabula）。例如，9/11是从袭击开始讲（恐怖主义），还是从几十年前的外交政策开始讲（因果报应），导致完全不同的叙事意义。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Part IV -->
+    <div class="chapter-section">
+        <div class="chapter-header">
+            <div class="chapter-title">
+                <h2>第四部分：不自然与非线性序列</h2>
+                <span>Unnatural & Nonlinear: Richardson, Ryan</span>
+            </div>
+            <div class="toggle-btn">▼</div>
+        </div>
+        <div class="chapter-content">
+            <p>当叙事打破了常规的时间和因果逻辑，我们需要新的理论工具。</p>
+            
+            <div class="card-grid">
+                <!-- Richardson -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="author-name">Brian Richardson</div>
+                            <div class="concept-title">非自然叙事序列</div>
+                            <div class="concept-preview">对极端的、不可能的叙事结构的分类。</div>
+                            <div class="tap-hint">点击翻转</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <strong>挑战拟真性：</strong>
+                            <p>现代和后现代文学创造了超越现实逻辑的序列：</p>
+                            <ul style="padding-left: 20px; margin: 5px 0;">
+                                <li><strong>倒叙/逆行：</strong> 时间倒流（如《时光倒流》）。</li>
+                                <li><strong>可变 Sjuzhet：</strong> 章节顺序可打乱（如《不幸者》）。</li>
+                                <li><strong>否定话语：</strong> 叙述后又被否定的情节（如《法国中尉的女人》多重结局）。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ryan -->
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="author-name">Marie-Laure Ryan</div>
+                            <div class="concept-title">序列、线性与空间性</div>
+                            <div class="concept-preview">为“固定叙事顺序”辩护，反驳后现代对线性的轻视。</div>
+                            <div class="tap-hint">点击翻转</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <strong>线性的必要性：</strong>
+                            <p>尽管超文本和网络叙事强调“空间性”和“多路径”，但Ryan认为<strong>叙事的核心本质依然是时间性和线性的</strong>。</p>
+                            <p>电子游戏虽然允许空间漫游，但其通关逻辑（任务链）依然是严格的序列。没有序列，就没有因果和连贯性，也就失去了叙事带来的沉浸感。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conclusion -->
+    <div class="chapter-section">
+        <div class="chapter-header">
+            <div class="chapter-title">
+                <h2>结论：叙事理论的认识论问题</h2>
+                <span>Passalacqua & Pianzola</span>
+            </div>
+            <div class="toggle-btn">▼</div>
+        </div>
+        <div class="chapter-content">
+            <div class="quote-box">
+                “我们提议用‘客观主义’与‘建构主义’的对立来替代‘古典’与‘后古典’的模糊区分。”
+            </div>
+            
+            <p>全书的争论最终归结为两种认识论范式的冲突。以下是两者的核心差异：</p>
+
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th style="color: var(--text-secondary);">特征</th>
+                        <th>客观主义范式 (Objectivist)</th>
+                        <th>建构主义范式 (Constructivist)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="term">本体论地位</td>
+                        <td>叙事是文本<strong>固有</strong>的属性（Immanent property）。</td>
+                        <td>叙事是解释者在特定语境下<strong>赋予</strong>对象的属性（Context-dependent）。</td>
+                    </tr>
+                    <tr>
+                        <td class="term">定义基础</td>
+                        <td>基于句法和语义特征（如：必须包含事件、必须有行动者）。</td>
+                        <td>基于语用学条件（Pragmatics）和认知过程（Cognitive processes）。</td>
+                    </tr>
+                    <tr>
+                        <td class="term">方法论</td>
+                        <td>寻找不变的叙事要素。</td>
+                        <td>遵循<strong>普罗透斯原则 (Proteus Principle)</strong>：形式与功能之间是多对多的关系（同一形式可有不同功能，反之亦然）。</td>
+                    </tr>
+                    <tr>
+                        <td class="term">优势</td>
+                        <td>便于形式分类和结构分析。</td>
+                        <td>更有利于跨学科整合（如认知科学），适应非典型叙事（如音乐、抽象艺术）。</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    <p>© 2023 Generated Summary based on "Narrative Sequence in Contemporary Narratology"</p>
+</footer>
+
+<script>
+    // 手风琴交互
+    document.querySelectorAll('.chapter-header').forEach(header => {
+        header.addEventListener('click', () => {
+            const section = header.parentElement;
+            section.classList.toggle('active');
+        });
+    });
+
+    // 翻转卡片交互
+    document.querySelectorAll('.flip-card').forEach(card => {
+        card.addEventListener('click', () => {
+            card.classList.toggle('flipped');
+        });
+    });
+</script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_narrative_sequence_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
