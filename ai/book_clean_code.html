@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《代码整洁之道》全书精读 & 第8章深度解析</title>
+    <meta name="description" content="Robert C. Martin《代码整洁之道》全书核心要点及边界章节深度交互式摘要">
+    <style>
+        :root {
+            /* 全局通用变量 (基于全书摘要风格) */
+            --bg-body: #f4f7f6;
+            --bg-card: #ffffff;
+            --primary-color: #4a90e2; /* 蓝色主调 */
+            --primary-dark: #357abd;
+            --text-main: #333333;
+            --text-secondary: #666666;
+            --border-color: #e1e4e8;
+            --accent-quote: #f39c12;
+            --card-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            --card-back-bg: linear-gradient(135deg, #4a90e2 0%, #50c9c3 100%);
+
+            /* 第8章深度模式专用变量 (紫色调) */
+            --ch8-primary: #9b59b6;
+            --ch8-dark: #8e44ad;
+            --ch8-back-bg: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+            --ch8-quote-border: #f1c40f;
+            --ch8-bg-light: #fdfbff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 顶部导航 */
+        header {
+            background: #fff;
+            padding: 60px 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin: 0 0 10px 0;
+            color: var(--text-main);
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            font-weight: 300;
+        }
+
+        .intro-text {
+            max-width: 700px;
+            margin: 20px auto 0;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px 60px 20px;
+        }
+
+        /* 章节模块通用样式 */
+        .chapter-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+            border-left: 6px solid var(--primary-color);
+            transition: transform 0.3s ease;
+        }
+
+        .chapter-section:hover {
+            transform: translateY(-3px);
+        }
+
+        .chapter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .chapter-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .chapter-badge {
+            background-color: #e3f2fd;
+            color: var(--primary-color);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        /* 金句样式 */
+        .golden-quote {
+            background: #fff8e1;
+            padding: 15px 20px;
+            border-left: 4px solid var(--accent-quote);
+            font-style: italic;
+            color: #5d4037;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .golden-quote::before {
+            content: "❝";
+            font-size: 2rem;
+            color: var(--accent-quote);
+            margin-right: 10px;
+            line-height: 0;
+        }
+
+        /* 翻转卡片容器 */
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+
+        /* 翻转卡片核心样式 */
+        .flip-card {
+            background-color: transparent;
+            height: 240px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .flip-card.active .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .flip-card-front {
+            background-color: #fff;
+            border: 1px solid #eee;
+        }
+
+        .flip-card-back {
+            background: var(--card-back-bg);
+            color: white;
+            transform: rotateY(180deg);
+            text-align: left;
+            align-items: flex-start;
+            justify-content: flex-start;
+            overflow-y: auto;
+        }
+
+        .card-icon {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .card-hint {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 10px;
+        }
+
+        .back-content h4, .back-text h4 {
+            margin: 0 0 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            padding-bottom: 5px;
+            font-size: 1.1rem;
+            width: 100%;
+        }
+
+        .back-content p, .back-text p {
+            font-size: 0.95rem;
+            margin: 5px 0;
+            line-height: 1.5;
+        }
+
+        /* 详情展开区域 (通用) */
+        .expand-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 0.95rem;
+            cursor: pointer;
+            padding: 10px 0;
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            outline: none;
+            width: 100%;
+            text-align: left;
+            border-top: 1px solid #eee;
+            margin-top: 15px;
+        }
+
+        .expand-btn:hover {
+            color: var(--primary-dark);
+        }
+
+        .expand-btn::after {
+            content: '+';
+            margin-left: auto;
+            font-size: 1.2rem;
+            transition: transform 0.3s;
+        }
+
+        .expand-btn.open::after {
+            transform: rotate(45deg);
+        }
+
+        .details-panel, .details-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .details-content.show {
+            max-height: 1000px; /* 近似无限高 */
+            padding: 15px;
+            margin-top: 10px;
+        }
+
+        .details-inner {
+            padding: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .list-item {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .list-item::before {
+            content: "•";
+            color: var(--primary-color);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        /* ========== 第8章深度详解 特有样式 ========== */
+        .deep-dive-trigger {
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+            color: var(--ch8-primary);
+            text-align: center;
+            padding: 15px;
+            margin-top: 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            border: 2px dashed var(--ch8-primary);
+        }
+        
+        .deep-dive-trigger:hover {
+            background: #e1bee7;
+            transform: scale(1.01);
+        }
+
+        .deep-dive-container {
+            display: none; /* 默认隐藏 */
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 3px solid var(--ch8-primary);
+            background-color: var(--ch8-bg-light);
+            border-radius: 0 0 12px 12px;
+            padding: 20px;
+        }
+
+        .deep-dive-container.active {
+            display: block;
+            animation: fadeIn 0.6s;
+        }
+
+        /* 第8章内部模块 */
+        .ch8-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 10px rgba(155, 89, 182, 0.1);
+            border-left: 4px solid var(--ch8-primary);
+        }
+
+        .ch8-title {
+            color: var(--ch8-dark);
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .ch8-tag {
+            background: #f3e5f5;
+            color: var(--ch8-primary);
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+        }
+
+        /* 第8章专用紫色卡片 */
+        .purple-card .flip-card-back {
+            background: var(--ch8-back-bg);
+        }
+        .purple-card .card-icon {
+            color: var(--ch8-primary);
+        }
+
+        code {
+            background: #f0f0f0;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: Consolas, Monaco, monospace;
+            color: #c7254e;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .chapter-section { padding: 20px; }
+            .card-container, .card-grid { grid-template-columns: 1fr; }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Clean Code</h1>
+    <div class="subtitle">代码整洁之道 · 全书精读 & 第8章深度解析</div>
+    <div class="intro-text">
+        <p>基于 Robert C. Martin (Uncle Bob) 的经典巨著。本书不仅关于代码，更关于职业素养。</p>
+        <p>👇 点击卡片翻转查看详情 | 特别包含第8章完整深度内容</p>
+    </div>
+</header>
+
+<main>
+
+    <!-- 第1章 -->
+    <section class="chapter-section">
+        <div class="chapter-header">
+            <div class="chapter-title">第1章：整洁代码 (Clean Code)</div>
+            <span class="chapter-badge">价值观</span>
+        </div>
+        <div class="golden-quote">稍后等于永不 (Later equals never)。—— 勒布朗法则</div>
+        
+        <div class="card-container">
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🏕️</div>
+                        <div class="card-title">童子军军规</div>
+                        <div class="card-hint">点击翻转查看定义</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <h4>The Boy Scout Rule</h4>
+                            <p><strong>“让营地比你来时更干净。”</strong></p>
+                            <p>这是本书最核心的建议。每次签入代码时，都要让代码比签出时更整洁一点。不需要大改，改好一个变量名、拆分一个过长的函数即可防止代码腐烂。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🌀</div>
+                        <div class="card-title">混乱的代价</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <h4>生产力归零</h4>
+                            <p>随着代码混乱度的增加，团队生产力会逐渐趋近于零。增加人手只会制造更多混乱（因为新人不熟悉系统）。</p>
+                            <p><strong>唯一出路：</strong> 保持代码整洁。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🎨</div>
+                        <div class="card-title">代码感 (Code Sense)</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <h4>程序员的艺术</h4>
+                            <p>整洁代码不仅仅是原则，更是一种像画家一样的“代码感”。</p>
+                            <p>它能让你看到代码的坏味道，并本能地知道如何通过一系列微小的重构将其转化为整洁的代码。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 第2章 -->
+    <section class="chapter-section">
+        <div class="chapter-header">
+            <div class="chapter-title">第2章：有意义的命名</div>
+            <span class="chapter-badge">基础技艺</span>
+        </div>
+        
+        <div class="card-container">
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🏷️</div>
+                        <div class="card-title">名副其实</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <h4>Intention-Revealing</h4>
+                            <p>变量、函数或类的名称应该回答所有的大问题：</p>
+                            <p>它为什么存在？它做什么？怎么用？</p>
+                            <p>如果名称需要注释来补充，那这个名称就不及格。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🚫</div>
+                        <div class="card-title">避免思维映射</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <h4>明确而非聪明</h4>
+                            <p>不应当让读者在脑中把你的名称翻译成他们熟知的名称。</p>
+                            <p>例如：单字母变量名（除循环中的i,j,k外）通常是糟糕的。<strong>清晰是王道。</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="expand-btn" onclick="toggleSection(this)">展开更多命名规则</button>
+        <div class="details-panel">
+            <div class="details-inner">
+                <div class="list-item"><strong>做有意义的区分：</strong> 避免 `ProductInfo` 或 `ProductData` 这种废话，它们和 `Product` 没区别。</div>
+                <div class="list-item"><strong>使用可搜索的名称：</strong> 单字母名称和数字常量很难搜索。名称长短应与其作用域大小相对应。</div>
+                <div class="list-item"><strong>类名：</strong> 应当是名词或名词短语（如 `Customer`），避免 `Manager`, `Processor` 等笼统词。</div>
+                <div class="list-item"><strong>方法名：</strong> 应当是动词或动词短语（如 `postPayment`）。</div>
+                <div class="list-item"><strong>领域术语：</strong> 优先使用解决方案领域（CS术语）和问题领域（业务术语）的名称。</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 第3章 -->
+    <section class="chapter-section">
+        <div class="chapter-header">
+            <div class="chapter-title">第3章：函数 (Functions)</div>
+            <span class="chapter-badge">核心结构</span>
+        </div>
+        <div class="golden-quote">函数的第一规则是短小。第二规则是还要更短小。</div>
+
+        <div class="card-container">
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">1️⃣</div>
+                        <div class="card-title">只做一件事</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <h4>Do One Thing</h4>
+                            <p>函数应该做一件事。做好这件事。只做这件事。</p>
+                            <p>如果一个函数内部包含多个抽象层级（如既有HTML生成又有路径解析），它就是做了多件事。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🧱</div>
+                        <div class="card-title">单一抽象层级</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <h4>One Level of Abstraction</h4>
+                            <p>函数中的所有语句都要在同一抽象层级上。</p>
+                            <p><strong>降级法则：</strong> 代码应像读报纸文章一样，自顶向下。每个函数后面都紧跟下一层级的函数。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">📥</div>
+                        <div class="card-title">参数规则</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <h4>越少越好</h4>
+                            <p>最理想的参数数量是0，其次是1，再次是2。</p>
+                            <p><strong>标识参数(Flag Argument)是丑陋的：</strong> 传入布尔值意味着函数至少做两件事。应该拆分为两个函数。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="expand-btn" onclick="toggleSection(this)">展开高级函数技巧</button>
+        <div class="details-panel">
+            <div class="details-inner">
+                <div class="list-item"><strong>Switch语句：</strong> 天生做N件事，违反开闭原则(OCP)。应利用<strong>多态</strong>将Switch埋在抽象工厂地下。</div>
+                <div class="list-item"><strong>无副作用：</strong> 避免函数在“检查密码”的同时“初始化Session”。这会导致时序性耦合。</div>
+                <div class="list-item"><strong>指令与询问分离 (CQS)：</strong> 函数要么做什么事(指令)，要么回答什么事(询问)，二者不可兼得。</div>
+                <div class="list-item"><strong>抽离Try/Catch：</strong> 错误处理本身就是一件事。Try/Catch块的主体部分应该被抽离成一个单独的函数。</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 第4章 -->
+    <section class="chapter-section">
+        <div class="chapter-header">
+            <div class="chapter-title">第4章：注释 (Comments)</div>
+            <span class="chapter-badge">维护</span>
+        </div>
+        <div class="golden-quote">注释的恰当用法是弥补我们在用代码表达意图时遭遇的失败。</div>
+
+        <div class="card-container">
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🤥</div>
+                        <div class="card-title">注释会撒谎</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <h4>代码在变，注释不常变</h4>
+                            <p>程序员不能坚持维护注释。不准确的注释比没注释坏得多。</p>
+                            <p>真理只存在于代码中。别给糟糕的代码加注释——<strong>重写它</strong>。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🗑️</div>
+                        <div class="card-title">必须删除的注释</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <h4>Clean Up!</h4>
+                            <ul>
+                                <li><strong>注释掉的代码：</strong> 绝对禁止！</li>
+                                <li><strong>日志式注释：</strong> 交给Git处理。</li>
+                                <li><strong>循规蹈矩的注释：</strong> 不要给每个getter/setter写注释。</li>
+                                <li><strong>右括号后的注释：</strong> 说明函数太长了。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <button class="expand-btn" onclick="toggleSection(this)">展开：什么样的注释是好的？</button>
+        <div class="details-panel">
+            <div class="details-inner">
+                <div class="list-item"><strong>法律信息：</strong> 如版权声明。</div>
+                <div class="list-item"><strong>解释意图：</strong> 解释代码 *为什么* 这么做（代码本身只能展示 *做了什么*）。</div>
+                <div class="list-item"><strong>警示：</strong> 警告其他程序员某些后果（如“运行时间很长”）。</div>
+                <div class="list-item"><strong>TODO：</strong> 记录待办事项（但要定期清理）。</div>
+                <div class="list-item"><strong>放大：</strong> 强调看似不重要但实际至关重要的细节。</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 第5章 -->
+    <section class="chapter-section">
+        <div class="chapter-header">
+            <div class="chapter-title">第5章：格式 (Formatting)</div>
+            <span class="chapter-badge">沟通</span>
+        </div>
+        <div class="card-container">
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">📰</div>
+                        <div class="card-title">报纸隐喻</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <h4>Vertical Formatting</h4>
+                            <p>源文件应像报纸文章一样。</p>
+                            <p>名称应当简单且一目了然。最顶部给出高层次概念和算法。细节往下渐次展开。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">📏</div>
+                        <div class="card-title">垂直距离</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <h4>关系越紧密，距离越近</h4>
+                            <p><strong>变量声明：</strong> 应尽可能靠近其使用位置。</p>
+                            <p><strong>相关函数：</strong> 若A调用B，B应紧随A之后（自顶向下），形成自然的阅读流。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 第6章 -->
+    <section class="chapter-section">
+        <div class="chapter-header">
+            <div class="chapter-title">第6章：对象和数据结构</div>
+            <span class="chapter-badge">架构</span>
+        </div>
+        <div class="card-container">
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">⚡</div>
+                        <div class="card-title">反对称性</div>
+                        <div class="card-hint">对象与数据结构的本质对立</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <h4>Data/Object Anti-Symmetry</h4>
+                            <p><strong>对象：</strong> 隐藏数据，暴露行为。便于添加新对象类型，难以添加新行为（需修改所有类）。</p>
+                            <p><strong>数据结构：</strong> 暴露数据，没有行为。便于添加新行为（只需改函数），难以添加新数据类型。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🤐</div>
+                        <div class="card-title">迪米特法则</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <h4>Law of Demeter</h4>
+                            <p>模块不应了解它所操作对象的内部情形。</p>
+                            <p><strong>火车失事(Train Wrecks)：</strong> <br><code>ctxt.getOptions().getScratchDir()...</code><br>这是典型的反例。如果是对象，应告诉它做什么，而不是问它内部有什么。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 第7章 -->
+    <section class="chapter-section">
+        <div class="chapter-header">
+            <div class="chapter-title">第7章：错误处理</div>
+            <span class="chapter-badge">健壮性</span>
+        </div>
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+            <div class="list-item"><strong>使用异常而非返回码：</strong> 返回码会搞乱调用者代码，异常将错误处理与业务逻辑分离。</div>
+            <div class="list-item"><strong>先写 Try-Catch-Finally：</strong> 它们定义了程序的范围（事务性）。</div>
+            <div class="list-item"><strong>使用不可控异常 (Unchecked Exceptions)：</strong> 可控异常违反开闭原则(OCP)，因为底层修改签名会导致顶层修改。</div>
+            <div class="list-item"><strong>别返回 Null：</strong> 这会增加无数的 null 检查。</div>
+            <div class="list-item"><strong>别传递 Null：</strong> 除非API强制，否则禁止传递Null，这会导致运行时错误。</div>
+        </div>
+    </section>
+
+    <!-- 第8章：全书摘要 + 深度集成 -->
+    <section class="chapter-section">
+        <div class="chapter-header">
+            <div class="chapter-title">第8章：边界 (Boundaries)</div>
+            <span class="chapter-badge">集成与接口</span>
+        </div>
+        <p>我们很少控制系统中的全部软件。如何将第三方代码（库、框架）整洁地整合进我们的系统？</p>
+        
+        <!-- 摘要卡片 -->
+        <div class="card-container">
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🧪</div>
+                        <div class="card-title">学习性测试</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <h4>Learning Tests</h4>
+                            <p>不要直接在生产代码中尝试第三方API。</p>
+                            <p>编写测试来验证我们对第三方API的理解。这不仅免费，还能在第三方库升级时自动检测兼容性。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🛡️</div>
+                        <div class="card-title">适配器模式</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <h4>Adapter Pattern</h4>
+                            <p>不要让第三方代码的细节泄露到系统中。使用适配器（Adapter）封装边界接口，如 `Map`。</p>
+                            <p>这样当第三方代码变动时，只需修改适配器一处。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 深度展开按钮 -->
+        <div class="deep-dive-trigger" onclick="toggleDeepDive()">
+            ✨ 点击展开：第8章完整深度解析 (Full Deep Dive)
+        </div>
+
+        <!-- 深度内容容器 (嵌入的第8章详情) -->
+        <div id="ch8-deep-dive" class="deep-dive-container">
+            <h3 style="color:var(--ch8-dark); text-align:center; margin-bottom:30px;">—— 边界 (Boundaries) 深度详解 ——</h3>
+
+            <!-- 核心冲突 -->
+            <div class="ch8-section">
+                <div class="ch8-title">
+                    1. 接口的张力 (The Tension)
+                    <span class="ch8-tag">核心背景</span>
+                </div>
+                <div class="golden-quote" style="border-color: var(--ch8-quote-border);">
+                    第三方程序包追求**通用性**，而使用者追求**针对性**。这种张力会导致系统边界出现问题。
+                </div>
+                <p>最典型的例子是 Java 的 <code>java.util.Map</code>。它功能强大（clear, get, put...），但这恰恰是它的风险。</p>
+                <div style="background:#f4f4f4; padding:15px; border-radius:8px; margin-top:15px;">
+                    <strong>案例：Map 的风险</strong><br>
+                    <ul style="margin:10px 0; padding-left:20px;">
+                        <li>风险：传递 Map 给接收者，接收者有权调用 <code>clear()</code>，但这可能不是你的本意。</li>
+                        <li>解决方案：不要将 Map 在系统中到处传递。将其<strong>封装</strong>在一个类（如 <code>Sensors</code>）中，只暴露业务需要的方法（如 <code>getById</code>）。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 核心策略卡片 -->
+            <div class="ch8-section">
+                <div class="ch8-title">
+                    2. 核心应对策略
+                    <span class="ch8-tag">方法论</span>
+                </div>
+                <div class="card-container">
+                    <!-- 紫色主题卡片 -->
+                    <div class="flip-card purple-card" onclick="this.classList.toggle('active')">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="card-icon">🔌</div>
+                                <div class="card-title">使用尚不存在的代码</div>
+                            </div>
+                            <div class="flip-card-back">
+                                <div class="back-content">
+                                    <h4>Adapter Pattern</h4>
+                                    <p>当连接的子系统API还没设计好时：</p>
+                                    <p>1. 定义一个我们<strong>希望拥有</strong>的接口。<br>
+                                    2. 编写代码调用这个接口。<br>
+                                    3. 当真实API可用时，写适配器来桥接。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flip-card purple-card" onclick="this.classList.toggle('active')">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <div class="card-icon">📦</div>
+                                <div class="card-title">封装边界</div>
+                            </div>
+                            <div class="flip-card-back">
+                                <div class="back-content">
+                                    <h4>Encapsulation</h4>
+                                    <p>避免让太多代码知道第三方库的细节。</p>
+                                    <p>通过<strong>包装 (Wrapping)</strong> 或 <strong>适配器 (Adapter)</strong>，将第三方代码限制在极少的类中。方便更换库或模拟测试。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实战案例 -->
+            <div class="ch8-section">
+                <div class="ch8-title">
+                    3. 实战：Log4j 的学习
+                    <span class="ch8-tag">案例</span>
+                </div>
+                <p>不要直接阅读冗长的文档，而是通过编写测试来探索。</p>
+                <div style="background:#fff; border:1px solid #eee; padding:15px; border-radius:8px;">
+                    <p><strong>Log4j 学习性测试过程：</strong></p>
+                    <ol>
+                        <li>尝试打印 "hello" → 发现缺少 Appender。</li>
+                        <li>添加 ConsoleAppender → 发现缺少输出流。</li>
+                        <li>添加 PatternLayout → 成功。</li>
+                        <li><strong>最终成果：</strong> 得到一组可工作的初始化代码，并将其封装到自己的 Logger 类中，隔离 Log4j 边界。</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- 总结 -->
+            <div class="ch8-section" style="background:#f3e5f5; border:none;">
+                <h4 style="color:var(--ch8-dark); margin-top:0;">本章检查清单 Checklist</h4>
+                <ul style="list-style:none; padding:0; color:#555;">
+                    <li>✅ <strong>依靠你能控制的东西：</strong> 如果无法控制第三方代码，也要控制与它的连接方式。</li>
+                    <li>✅ <strong>管理边界：</strong> 尽量减少引用第三方代码的地方。</li>
+                    <li>✅ <strong>使用 Wrapper/Adapter：</strong> 让代码读起来像是在使用自己的业务语言。</li>
+                    <li>✅ <strong>编写边界测试：</strong> 确保第三方库的升级不会破坏系统。</li>
+                </ul>
+            </div>
+            
+            <div style="text-align:center; margin-top:20px;">
+                <button onclick="toggleDeepDive()" style="background:var(--ch8-primary); color:white; border:none; padding:10px 20px; border-radius:20px; cursor:pointer;">收起详情</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 第9章 -->
+    <section class="chapter-section">
+        <div class="chapter-header">
+            <div class="chapter-title">第9章：单元测试</div>
+            <span class="chapter-badge">TDD</span>
+        </div>
+        <div class="golden-quote">测试代码和生产代码一样重要。</div>
+
+        <div class="card-container">
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">⚖️</div>
+                        <div class="card-title">TDD 三定律</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <ol style="padding-left: 20px;">
+                                <li>在编写不能通过的单元测试前，不可编写生产代码。</li>
+                                <li>只编写刚好无法通过的单元测试（编译失败也算）。</li>
+                                <li>只编写刚好能通过当前失败测试的生产代码。</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🚀</div>
+                        <div class="card-title">F.I.R.S.T. 原则</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <p><strong>Fast:</strong> 运行要快。</p>
+                            <p><strong>Independent:</strong> 相互独立，无依赖。</p>
+                            <p><strong>Repeatable:</strong> 任何环境可重复。</p>
+                            <p><strong>Self-Validating:</strong> 输出布尔值。</p>
+                            <p><strong>Timely:</strong> 及时编写。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p style="margin-top:20px;"><strong>每个测试一个断言：</strong> 尽量保持每个测试函数只测试一个概念。</p>
+    </section>
+
+    <!-- 第10章 -->
+    <section class="chapter-section">
+        <div class="chapter-header">
+            <div class="chapter-title">第10章：类 (Classes)</div>
+            <span class="chapter-badge">组织</span>
+        </div>
+        <ul class="list-item" style="list-style: none;">
+            <div class="list-item"><strong>单一权责原则 (SRP)：</strong> 类应该只有一个修改的理由。类名应该能描述其权责。</div>
+            <div class="list-item"><strong>内聚性 (Cohesion)：</strong> 类应该只有少量的实体变量。类中的方法应该操作这些变量。高内聚意味着方法和变量相互依赖，逻辑是一个整体。</div>
+            <div class="list-item"><strong>为了修改而组织：</strong> 对类进行开放-封闭原则 (OCP) 的设计。通过扩展系统而非修改现有代码来添加新功能。</div>
+        </ul>
+    </section>
+
+    <!-- 第11章 -->
+    <section class="chapter-section">
+        <div class="chapter-header">
+            <div class="chapter-title">第11章：系统 (Systems)</div>
+            <span class="chapter-badge">宏观视角</span>
+        </div>
+        <div class="card-container">
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🏗️</div>
+                        <div class="card-title">构造与使用分离</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <p>软件系统应将启始过程（对象的构造和依赖关系连接）与运行时的逻辑分离开来。</p>
+                            <p><strong>方法：</strong> 将全部构造过程搬迁到 main 模块中，或使用<strong>依赖注入 (DI)</strong> 容器。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">✂️</div>
+                        <div class="card-title">横切关注点 (AOP)</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <p>持久化、事务、安全等关注点不应污染业务对象（POJO）。</p>
+                            <p>使用<strong>面向切面编程 (AOP)</strong> 能够实现模块化，将这些关注点非侵入式地集成到系统中。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 第12章 -->
+    <section class="chapter-section">
+        <div class="chapter-header">
+            <div class="chapter-title">第12章：迭进 (Emergence)</div>
+            <span class="chapter-badge">设计演进</span>
+        </div>
+        <div class="golden-quote">简单设计四原则（按重要性排序）</div>
+        
+        <div class="card-container">
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">1️⃣</div>
+                        <div class="card-title">运行所有测试</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <p>系统必须是可验证的。全面测试推动了低耦合、高内聚的设计。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">2️⃣</div>
+                        <div class="card-title">不可重复</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <p>消除重复是重构的核心。重复代表了额外的工作、额外的风险和不必要的复杂性。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">3️⃣</div>
+                        <div class="card-title">表达程序员意图</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <p>代码应清晰表达作者的想法。使用好名字、小函数、标准设计模式名称。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">4️⃣</div>
+                        <div class="card-title">减少类/方法数量</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <p>在遵循前三条原则的基础上，避免过度设计。防止无意义的教条主义。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 第13章 -->
+    <section class="chapter-section">
+        <div class="chapter-header">
+            <div class="chapter-title">第13章：并发编程</div>
+            <span class="chapter-badge">高级话题</span>
+        </div>
+        <p>并发是一种解耦策略：解耦“做什么(What)”和“何时做(When)”。</p>
+        
+        <button class="expand-btn" onclick="toggleSection(this)">展开并发防御原则与执行模型</button>
+        <div class="details-panel">
+            <div class="details-inner">
+                <h4>防御原则</h4>
+                <div class="list-item"><strong>单一权责原则(SRP)：</strong> 将并发代码与非并发代码分离。</div>
+                <div class="list-item"><strong>限制数据作用域：</strong> 严格限制对共享数据的访问（synchronized）。</div>
+                <div class="list-item"><strong>使用数据副本：</strong> 避免共享数据的最好方法就是不共享。</div>
+                <div class="list-item"><strong>线程应尽可能独立：</strong> 让每个线程在自己的世界里运行，不与其他线程共享数据。</div>
+                
+                <h4>执行模型</h4>
+                <div class="list-item">生产者-消费者 (Producer-Consumer)</div>
+                <div class="list-item">读者-作者 (Readers-Writers)</div>
+                <div class="list-item">宴席哲学家 (Dining Philosophers)</div>
+                
+                <h4>警惕陷阱</h4>
+                <p>死锁(Deadlock)、活锁(Livelock)、饥饿(Starvation)。</p>
+                <p><strong>测试建议：</strong> 编写会引起问题的测试，然后在不同的配置和负载下频繁运行（Jiggling策略）。不要忽略一次性失败。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 第14-16章：案例研究 -->
+    <section class="chapter-section" style="background: #fdfdfd; border-left-color: #95a5a6;">
+        <div class="chapter-header">
+            <div class="chapter-title">第14-16章：案例研究</div>
+            <span class="chapter-badge">实战</span>
+        </div>
+        <div class="card-container">
+            <div class="flip-card" onclick="this.classList.toggle('active')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🔨</div>
+                        <div class="card-title">渐进式重构</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="back-content">
+                            <h4>Successive Refinement</h4>
+                            <p><strong>核心教训：</strong> 这一章通过Args程序的演变展示了，整洁代码不是一蹴而就的。</p>
+                            <p>必须先写出脏代码（但要有测试覆盖！），然后进行一系列微小的、安全的重构步骤，最终得到整洁的代码。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p style="margin-top: 15px; font-size: 0.9rem; color: #666;">注：第15章分析了JUnit框架内部，第16章重构了SerialDate，均强调了测试覆盖率和持续改进的重要性。</p>
+    </section>
+
+    <!-- 第17章 -->
+    <section class="chapter-section">
+        <div class="chapter-header">
+            <div class="chapter-title">第17章：味道与启发</div>
+            <span class="chapter-badge">清单</span>
+        </div>
+        <p>这是作者总结的“代码异味”终极清单，是全书的浓缩。</p>
+        
+        <button class="expand-btn" onclick="toggleSection(this)">展开完整“代码异味”清单</button>
+        <div class="details-panel">
+            <div class="details-inner">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <h4>注释 (Comments)</h4>
+                        <div class="list-item"><strong>C1:</strong> 不恰当的信息（如修改历史，应在git里）。</div>
+                        <div class="list-item"><strong>C2:</strong> 废弃的注释（过时了就删掉）。</div>
+                        <div class="list-item"><strong>C5:</strong> 注释掉的代码（直接删掉！）。</div>
+                    </div>
+                    <div>
+                        <h4>函数 (Functions)</h4>
+                        <div class="list-item"><strong>F1:</strong> 参数过多。</div>
+                        <div class="list-item"><strong>F2:</strong> 输出参数（反直觉）。</div>
+                        <div class="list-item"><strong>F3:</strong> 标识参数（布尔值参数意味着做两件事）。</div>
+                        <div class="list-item"><strong>F4:</strong> 死函数（永不被调用，删掉）。</div>
+                    </div>
+                    <div>
+                        <h4>一般性问题 (General)</h4>
+                        <div class="list-item"><strong>G5:</strong> 重复（万恶之源）。</div>
+                        <div class="list-item"><strong>G6:</strong> 抽象层级错误（高层概念在基类，底层细节在派生类）。</div>
+                        <div class="list-item"><strong>G9:</strong> 死代码（永不执行）。</div>
+                        <div class="list-item"><strong>G14:</strong> 特性依恋（Feature Envy）。</div>
+                        <div class="list-item"><strong>G25:</strong> 用命名常量替代魔法数。</div>
+                    </div>
+                    <div>
+                        <h4>名称 (Names)</h4>
+                        <div class="list-item"><strong>N1:</strong> 采用描述性名称。</div>
+                        <div class="list-item"><strong>N5:</strong> 长范围使用长名称。</div>
+                        <div class="list-item"><strong>N6:</strong> 避免编码（不要加 m_ 前缀）。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<script>
+    // 通用折叠/展开逻辑
+    function toggleSection(btn) {
+        btn.classList.toggle('open');
+        var panel = btn.nextElementSibling;
+        if (panel.style.maxHeight) {
+            panel.style.maxHeight = null;
+        } else {
+            panel.style.maxHeight = panel.scrollHeight + "px";
+        }
+    }
+
+    // 第8章深度模式切换
+    function toggleDeepDive() {
+        var diveContainer = document.getElementById('ch8-deep-dive');
+        diveContainer.classList.toggle('active');
+        
+        // 自动滚动到展开位置
+        if(diveContainer.classList.contains('active')){
+            setTimeout(() => {
+                diveContainer.scrollIntoView({behavior: "smooth", block: "start"});
+            }, 100);
+        }
+    }
+</script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_clean_code_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
