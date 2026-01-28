@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent OS 2.0: 全链路规范驱动开发系统深度解析</title>
+    <style>
+        :root {
+            --primary: #0f172a; /* Slate 900 */
+            --primary-light: #334155; /* Slate 700 */
+            --accent: #3b82f6; /* Blue 500 */
+            --accent-glow: rgba(59, 130, 246, 0.15);
+            --bg: #ffffff;
+            --bg-alt: #f8fafc;
+            --border: #e2e8f0;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --radius: 12px;
+            --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        /* 0. Header */
+        header {
+            margin-bottom: 80px;
+            text-align: center;
+            position: relative;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background: var(--primary);
+            color: #fff;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        header h1 {
+            font-size: 3.5rem;
+            line-height: 1.1;
+            margin: 0 0 20px 0;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1.5px;
+        }
+
+        header p {
+            font-size: 1.25rem;
+            color: var(--text-sub);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* Common Section Styles */
+        section {
+            margin-bottom: 100px;
+        }
+
+        .section-header {
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-num {
+            font-size: 4rem;
+            font-weight: 900;
+            color: #f1f5f9;
+            line-height: 1;
+        }
+
+        .section-title h2 {
+            font-size: 2rem;
+            margin: 0;
+            color: var(--primary);
+        }
+
+        .section-title span {
+            color: var(--text-sub);
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        /* 1. The Conflict (Problem/Solution) */
+        .conflict-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .conflict-card {
+            padding: 40px;
+            border-radius: var(--radius);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .conflict-card.problem {
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+        }
+
+        .conflict-card.solution {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+        }
+
+        .conflict-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .conflict-card h3 {
+            margin-top: 0;
+            font-size: 1.5rem;
+        }
+
+        .conflict-card ul {
+            padding-left: 20px;
+            margin-bottom: 0;
+        }
+
+        .conflict-card li {
+            margin-bottom: 10px;
+        }
+
+        /* 2. The Artifact Pipeline (Workflow) */
+        .pipeline-wrapper {
+            position: relative;
+            padding-left: 40px;
+        }
+
+        .pipeline-line {
+            position: absolute;
+            left: 19px;
+            top: 20px;
+            bottom: 50px;
+            width: 2px;
+            background: var(--border);
+            z-index: 0;
+        }
+
+        .pipeline-step {
+            position: relative;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 25px 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-card);
+            transition: all 0.3s ease;
+            z-index: 1;
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .pipeline-step:hover {
+            border-color: var(--accent);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .step-marker {
+            position: absolute;
+            left: -41px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background: var(--bg);
+            border: 2px solid var(--accent);
+            color: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            z-index: 2;
+        }
+
+        .file-artifact {
+            min-width: 140px;
+            background: var(--primary);
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .file-icon { font-size: 1.5rem; margin-bottom: 5px; }
+
+        .step-info h3 { margin: 0 0 10px 0; font-size: 1.3rem; }
+        .step-info p { margin: 0; color: var(--text-sub); font-size: 0.95rem; }
+
+        /* 3. Execution Modes (Comparison) */
+        .mode-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .mode-col {
+            padding: 40px;
+            background: var(--bg);
+        }
+
+        .mode-col:first-child {
+            border-right: 1px solid var(--border);
+            background: #fdfdfd;
+        }
+
+        .mode-col:last-child {
+            background: #f8fafc;
+        }
+
+        .mode-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tag-simple { color: #16a34a; background: #dcfce7; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; }
+        .tag-advanced { color: #7c3aed; background: #f3e8ff; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; }
+
+        /* 4. Flip Cards (Key Concepts) */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            height: 300px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: var(--shadow-card);
+            border-radius: var(--radius);
+        }
+
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
+        .flip-card-front {
+            background-color: var(--bg);
+            border: 1px solid var(--border);
+        }
+
+        .flip-card-back {
+            background-color: var(--primary);
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        /* Quotes */
+        .quote-box {
+            background: linear-gradient(135deg, #f8fafc, #fff);
+            border-left: 5px solid var(--accent);
+            padding: 30px;
+            border-radius: 8px;
+            font-style: italic;
+            font-size: 1.1rem;
+            color: var(--primary-light);
+            margin-top: 20px;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .conflict-container, .mode-comparison { grid-template-columns: 1fr; }
+            .pipeline-step { flex-direction: column; }
+            .step-marker { left: -10px; top: -20px; transform: none; }
+            .pipeline-wrapper { padding-left: 0; }
+            .pipeline-line { display: none; }
+            .mode-col:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="badge">Builder Methods Presents</div>
+        <h1>Agent OS 2.0</h1>
+        <p>一个工具无关、技术栈无关的开源 AI 协作操作系统</p>
+        <p style="font-size: 0.9rem; margin-top: 10px; color: var(--accent);">By Brian Castle</p>
+    </header>
+
+    <!-- 1. The Core Problem & Solution -->
+    <section>
+        <div class="section-header">
+            <div class="section-num">01</div>
+            <div class="section-title">
+                <span>Core Concept</span>
+                <h2>核心冲突与解决方案</h2>
+            </div>
+        </div>
+        
+        <div class="conflict-container">
+            <!-- Problem -->
+            <div class="conflict-card problem">
+                <span class="card-icon">🌪️</span>
+                <h3>问题：Drift (漂移)</h3>
+                <p>AI 编码代理（如 Cursor, Claude）能力很强，但缺乏持久性。</p>
+                <ul>
+                    <li><strong>重复劳动：</strong> 你必须反复解释编码规范。</li>
+                    <li><strong>不一致：</strong> 完成一个功能后，AI 会忘记之前的约定。</li>
+                    <li><strong>死循环：</strong> 不断修正同样的错误，重写本不该那样写的代码。</li>
+                </ul>
+                <div class="quote-box">"Suddenly you're stuck in this loop... re-explaining your coding standards."</div>
+            </div>
+
+            <!-- Solution -->
+            <div class="conflict-card solution">
+                <span class="card-icon">🧭</span>
+                <h3>方案：Alignment (对齐)</h3>
+                <p>Agent OS 是一个基于文件的操作系统，用于强制实施<strong>规范驱动开发 (Spec-Driven Development)</strong>。</p>
+                <ul>
+                    <li><strong>强制对齐：</strong> 让 AI 锁定你的风格和模式。</li>
+                    <li><strong>系统化：</strong> 将混乱的对话转化为结构化的工程流程。</li>
+                    <li><strong>工具无关：</strong> 兼容 Cloud Code, Cursor, CodeEx, Gemini 等所有工具。</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. The Artifact Pipeline -->
+    <section>
+        <div class="section-header">
+            <div class="section-num">02</div>
+            <div class="section-title">
+                <span>The Workflow</span>
+                <h2>全链路文件流 (Pipeline)</h2>
+            </div>
+        </div>
+        <p style="margin-bottom: 40px; color: var(--text-sub);">Agent OS 的核心是将开发过程拆解为 5 个明确阶段，每个阶段都产出具体的文件工件。</p>
+
+        <div class="pipeline-wrapper">
+            <div class="pipeline-line"></div>
+
+            <!-- Phase 0 -->
+            <div class="pipeline-step">
+                <div class="step-marker">0</div>
+                <div class="file-artifact">
+                    <div class="file-icon">🏁</div>
+                    <div>Product<br>Context</div>
+                </div>
+                <div class="step-info">
+                    <h3>Plan Product (产品规划)</h3>
+                    <p><strong>频率：</strong> 项目启动时运行一次。</p>
+                    <p><strong>作用：</strong> 在代码库中创建三个文件，定义产品的使命 (Mission)、路线图 (Roadmap) 和技术栈 (Tech Stack)。这是 AI 的“长期记忆”和“宪法”。</p>
+                </div>
+            </div>
+
+            <!-- Phase 1 -->
+            <div class="pipeline-step">
+                <div class="step-marker">1</div>
+                <div class="file-artifact">
+                    <div class="file-icon">📝</div>
+                    <div>requirements.md</div>
+                </div>
+                <div class="step-info">
+                    <h3>Shape Spec (塑形规范)</h3>
+                    <p><strong>频率：</strong> 每个新功能开始时。</p>
+                    <p><strong>交互：</strong> 战略规划阶段。Agent 会问几轮针对性问题，你只需确认或修正。支持上传 Mockups 和截图来调整 UI 细节。</p>
+                </div>
+            </div>
+
+            <!-- Phase 2 -->
+            <div class="pipeline-step">
+                <div class="step-marker">2</div>
+                <div class="file-artifact">
+                    <div class="file-icon">📋</div>
+                    <div>spec.md</div>
+                </div>
+                <div class="step-info">
+                    <h3>Write Spec (编写规范)</h3>
+                    <p><strong>频率：</strong> 需求确认后。</p>
+                    <p><strong>作用：</strong> 正式化。Agent 将零散的需求转化为清晰、连贯的技术规范文档。包含：概述、用例、In/Out Scope、技术实现说明。</p>
+                </div>
+            </div>
+
+            <!-- Phase 3 -->
+            <div class="pipeline-step">
+                <div class="step-marker">3</div>
+                <div class="file-artifact">
+                    <div class="file-icon">✅</div>
+                    <div>tasks.md</div>
+                </div>
+                <div class="step-info">
+                    <h3>Create Tasks (创建任务)</h3>
+                    <p><strong>频率：</strong> 编码之前。</p>
+                    <p><strong>作用：</strong> 将 Spec 拆解为清晰、可追踪、分组的实施任务列表。这是 AI 的“施工图纸”。</p>
+                </div>
+            </div>
+
+            <!-- Phase 4 -->
+            <div class="pipeline-step">
+                <div class="step-marker">4</div>
+                <div class="file-artifact">
+                    <div class="file-icon">🚀</div>
+                    <div>Production<br>Code</div>
+                </div>
+                <div class="step-info">
+                    <h3>Execution & Verification (执行与验证)</h3>
+                    <p><strong>动作：</strong> 根据任务列表编写代码。</p>
+                    <p><strong>收尾：</strong> 开发完成后，Agent OS 运行验证流程（测试）。最后阶段通常只需微调（Polish）和小修复。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Execution Modes Deep Dive -->
+    <section>
+        <div class="section-header">
+            <div class="section-num">03</div>
+            <div class="section-title">
+                <span>Implementation Strategy</span>
+                <h2>两种执行模式对比</h2>
+            </div>
+        </div>
+        <p style="margin-bottom: 20px; color: var(--text-sub);">在有了 <code>tasks.md</code> 之后，你可以根据项目规模选择不同的执行指令。</p>
+
+        <div class="mode-comparison">
+            <!-- Mode A -->
+            <div class="mode-col">
+                <div class="mode-title">
+                    🔨 Implement Tasks <span class="tag-simple">基础模式</span>
+                </div>
+                <p><strong>适用：</strong> 中小型功能，单个 Agent。</p>
+                <ul>
+                    <li>让单个 Agent 一次性处理所有任务组，或者一步步来。</li>
+                    <li>更加节省 Token。</li>
+                    <li>适合 Cursor 或单次上下文窗口能容纳的任务。</li>
+                </ul>
+            </div>
+
+            <!-- Mode B -->
+            <div class="mode-col">
+                <div class="mode-title">
+                    🎻 Orchestrate Tasks <span class="tag-advanced">高级模式</span>
+                </div>
+                <p><strong>适用：</strong> 大型复杂功能，Cloud Code (支持 Sub-agents)。</p>
+                <ul>
+                    <li><strong>Sub-agents (子代理)：</strong> 将不同的任务组委派给专门的子代理。</li>
+                    <li><strong>精准注入：</strong> 系统会为每个任务组生成<strong>针对性的 Prompts</strong>，只注入该任务所需的标准和上下文。</li>
+                    <li>利用 Cloud Code 的多 Agent 架构优势。</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Key Concepts Flip Cards -->
+    <section>
+        <div class="section-header">
+            <div class="section-num">04</div>
+            <div class="section-title">
+                <span>Knowledge Check</span>
+                <h2>核心概念解析</h2>
+            </div>
+        </div>
+
+        <div class="cards-grid">
+            <!-- Card 1 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <span style="font-size: 3rem;">🧱</span>
+                        <h3>Modular Design</h3>
+                        <p>Agent OS 是完全模块化的。</p>
+                        <p style="color:#666; font-size:0.9rem;">是否必须使用全套流程？</p>
+                    </div>
+                    <div class="flip-card-back">
+                        <h3>按需取用</h3>
+                        <p>你可以使用全部组件，也可以只使用一部分。</p>
+                        <p>你可以根据项目需求配置 Agent OS，甚至为不同类型的项目设置不同的 Coding Standards 配置文件。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <span style="font-size: 3rem;">🤖</span>
+                        <h3>Tool Agnostic</h3>
+                        <p>工具无关性。</p>
+                        <p style="color:#666; font-size:0.9rem;">它是否只支持特定的 AI？</p>
+                    </div>
+                    <div class="flip-card-back">
+                        <h3>公正的操作系统</h3>
+                        <p>Agent OS 不受任何 AI 厂商支持，它是中立的。</p>
+                        <p>无论你使用 Cloud Code, Cursor, CodeEx 还是 Gemini，它都能在其之上运行，提供一致的工作流。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <span style="font-size: 3rem;">👥</span>
+                        <h3>Team Adoption</h3>
+                        <p>团队协作。</p>
+                        <p style="color:#666; font-size:0.9rem;">仅仅是为了个人开发者吗？</p>
+                    </div>
+                    <div class="flip-card-back">
+                        <h3>组织级基础</h3>
+                        <p>许多团队将 Agent OS 作为内部 AI 采用的基础。</p>
+                        <p>它为新员工提供了清晰的指引，让每个人（不仅是 AI 专家）都能交付高质量、一致的代码。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer style="text-align: center; margin-top: 80px; padding-bottom: 40px; border-top: 1px solid #eee; padding-top: 40px; color: #94a3b8;">
+        <p>Generated based on <strong>Agent OS 2.0</strong> Transcript by <strong>Brian Castle</strong></p>
+        <p>Resource: buildermethods.com/agentos</p>
+    </footer>
+</div>
+
+</body>
+</html>
