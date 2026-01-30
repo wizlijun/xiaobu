@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>访谈深度复盘：Peter Steinberger 与 AI 驱动的软件工程革命</title>
+    <style>
+        :root {
+            --primary: #2563eb;       /* Royal Blue */
+            --secondary: #4f46e5;     /* Indigo */
+            --accent: #059669;        /* Emerald */
+            --warning: #d97706;       /* Amber */
+            --bg-body: #f9fafb;       /* Very Light Grey */
+            --bg-card: #ffffff;
+            --text-main: #111827;
+            --text-secondary: #4b5563;
+            --border-radius: 12px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.7;
+        }
+
+        .wrapper {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* 头部设计 */
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #e5e7eb;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            background: linear-gradient(120deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .meta-info {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: #e0e7ff;
+            color: var(--secondary);
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        /* 通用卡片容器 */
+        section {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 35px;
+            margin-bottom: 40px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid #f3f4f6;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        section:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-main);
+        }
+
+        h2::before {
+            content: '';
+            display: block;
+            width: 6px;
+            height: 24px;
+            background: var(--secondary);
+            border-radius: 3px;
+        }
+
+        /* 翻转卡片系统 (Flip Cards) */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            height: 260px; /* 固定高度 */
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: var(--border-radius);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 25px;
+            box-sizing: border-box;
+        }
+
+        .flip-card-front {
+            background-color: #fff;
+            border: 1px solid #e5e7eb;
+        }
+
+        .flip-card-back {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            color: white;
+            transform: rotateY(180deg);
+            text-align: left;
+            align-items: flex-start;
+            overflow-y: auto; /* 内容过多可滚动 */
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: var(--text-main);
+        }
+
+        .card-sub {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .flip-card-back h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+            color: #fbbf24; /* Gold */
+        }
+
+        .flip-card-back p {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 0 0 10px 0;
+            color: #e2e8f0;
+        }
+
+        /* 关键概念列表 */
+        .concept-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .concept-item {
+            background: #f8fafc;
+            border-left: 4px solid var(--accent);
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .concept-term {
+            font-weight: 700;
+            color: var(--text-main);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* 对比表格 */
+        .comparison-wrapper {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .highlight-bg {
+            background-color: #ecfdf5;
+            color: #065f46;
+            font-weight: 500;
+        }
+
+        /* 金句框 */
+        blockquote {
+            background: #fffbeb;
+            border-left: 5px solid #f59e0b;
+            margin: 30px 0;
+            padding: 20px 25px;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+            color: #4b5563;
+            position: relative;
+        }
+
+        blockquote::before {
+            content: "“";
+            font-size: 4rem;
+            color: #fcd34d;
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .author {
+            display: block;
+            text-align: right;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            font-weight: 600;
+            font-style: normal;
+            color: var(--text-main);
+        }
+
+        /* 手风琴详情 */
+        .accordion-details {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .accordion-summary {
+            padding: 15px 20px;
+            background-color: #fff;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            list-style: none; /* 移除默认三角 */
+        }
+        
+        .accordion-summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .accordion-summary::after {
+            content: '+';
+            font-size: 1.5rem;
+            color: var(--secondary);
+            transition: transform 0.3s;
+        }
+
+        details[open] .accordion-summary::after {
+            transform: rotate(45deg);
+        }
+
+        .accordion-content {
+            padding: 20px;
+            background-color: #f9fafb;
+            border-top: 1px solid #e5e7eb;
+            color: var(--text-secondary);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #9ca3af;
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px dashed #e5e7eb;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .badge {
+            background-color: #fee2e2;
+            color: #ef4444;
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <header>
+        <div class="tag">The Pragmatic Engineer Podcast</div>
+        <h1>Peter Steinberger: AI 时代的软件构建哲学</h1>
+        <div class="meta-info">
+            <span>🎙️ 嘉宾: Peter Steinberger (PSPDFKit 创始人)</span>
+            <span>📅 时间: 2025</span>
+            <span>🔥 核心话题: Agentic Coding, 闭环验证, 组织变革</span>
+        </div>
+    </header>
+
+    <!-- 第一部分：从零到一的传统英雄之旅 -->
+    <section>
+        <h2>🏛️ 第一章：前 AI 时代的工匠精神 (PSPDFKit)</h2>
+        <p>在 AI 介入之前，Peter 是典型的"硬核"开发者。他的职业生涯始于对 Apple 糟糕体验的愤怒，终于管理带来的职业倦怠。</p>
+        
+        <div class="cards-grid">
+            <!-- Card 1: Origin Story -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🤬</div>
+                        <div class="card-title">愤怒驱动开发</div>
+                        <div class="card-sub">创业的源动力</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h3>从 Dating App 到 PDF 帝国</h3>
+                        <p>Peter 的第一桶金来自一个利用正则"黑"进网页的同性约会 App（iPhone OS 2时代），月入 1 万美元直到被 Apple 封杀。</p>
+                        <p>后来在一家公司被老板嘲讽后，他带着"复仇"的心态创立了 PSPDFKit。通过极其精细的 <strong>Code Hygiene（代码卫生）</strong> 和用户体验，击败了功能更全的竞争对手。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: The Tech Challenge -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">📑</div>
+                        <div class="card-title">PDF 的技术地狱</div>
+                        <div class="card-sub">看似简单，实则深渊</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h3>边缘情况之王</h3>
+                        <p>曾遇到过包含 <strong>50 万个链接</strong> 的 5 万页文档，导致内存瞬间爆炸。PDF 渲染需要处理极端的资源限制（WebAssembly, C++）。</p>
+                        <p><strong>教训：</strong> 传统的软件工程必须通过严格的测试和架构设计来防御这些未知的深渊。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3: The Exit -->
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">📉</div>
+                        <div class="card-title">职业倦怠与隐退</div>
+                        <div class="card-sub">CEO 的孤独</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <h3>"人类情绪垃圾桶"</h3>
+                        <p>作为 CEO，Peter 感到极度孤独。他曾处理过"飞机因软件 Bug 停飞"的惊魂时刻（最后查明是客户篡改了代码）。</p>
+                        <p>管理 70+ 人的团队耗尽了他的热情，他在出售公司股份后，彻底消失了 3 年，甚至很少打开电脑。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 第二部分：AI 时代的觉醒 -->
+    <section style="border-left: 5px solid var(--primary);">
+        <h2>🤖 第二章：AI 时代的觉醒与"人类合并按钮"</h2>
+        <p>回归后，Peter 跳过了 Copilot 阶段，直接进入了高阶的 Agent 开发。他现在每天合并 600 个 Commits，工作方式发生了范式转移。</p>
+
+        <blockquote>
+            "我现在不写代码，我编织（Weave）它们。我不再看每一行代码，就像玩星际争霸一样，我同时指挥 5-10 个 Agent 在不同的战线上工作。"
+            <span class="author">— Peter Steinberger</span>
+        </blockquote>
+
+        <h3>核心方法论 (点击展开详情)</h3>
+        <div class="accordion-details">
+            <details>
+                <summary class="accordion-summary">🔄 Closing the Loop (闭环验证原则) <span class="badge">核心</span></summary>
+                <div class="accordion-content">
+                    <p><strong>痛点：</strong> AI 生成的代码经常有 Bug，初次运行成功率低。</p>
+                    <p><strong>解决方案：</strong> 建立一个自动化的反馈闭环。Peter 的 Agent 不仅仅是写代码，它必须能够：</p>
+                    <ol>
+                        <li>生成代码</li>
+                        <li><strong>自动运行</strong>测试或构建脚本</li>
+                        <li>读取错误日志 (StdErr)</li>
+                        <li><strong>自我修正</strong>代码，直到测试通过</li>
+                    </ol>
+                    <p><em>案例：</em> 在修复一个 macOS App 的网络问题时，Agent 自己编写了一个 CLI 工具来模拟网络请求，通过对比 TypeScript 和 Swift 的实现差异，自我诊断并修复了 Race Condition。</p>
+                </div>
+            </details>
+        </div>
+
+        <div class="accordion-details">
+            <details>
+                <summary class="accordion-summary">🧶 Code Weaving (代码编织)</summary>
+                <div class="accordion-content">
+                    <p><strong>定义：</strong> 不再是从零编写函数，而是将新功能以符合现有架构的方式"编织"进去。</p>
+                    <p><strong>操作：</strong> Peter 会告诉 Agent：“参考 `/src/utils` 文件夹下的插件架构，用同样的风格实现这个新的语音通话功能。”</p>
+                    <p><strong>结果：</strong> 这种方式让 AI 能够维护代码的一致性，甚至比人类更严格地遵守项目规范。</p>
+                </div>
+            </details>
+        </div>
+
+        <div class="accordion-details">
+            <details>
+                <summary class="accordion-summary">💀 Prompt Request > Pull Request</summary>
+                <div class="accordion-content">
+                    <p><strong>观点：</strong> 传统的 Code Review 效率低下且正在消亡。</p>
+                    <p><strong>新流程：</strong> Peter 更看重贡献者是用了什么 <strong>Prompt</strong> 生成的代码。好的 Prompt 代表了清晰的思维路径。如果只是修复小 Bug，不如直接让 Agent "Fix it"。对于复杂的 PR，他经常重写——或者说，用他自己的 Agent 根据 PR 的思路重新生成一遍代码，以确保完美符合他的架构愿景。</p>
+                </div>
+            </details>
+        </div>
+    </section>
+
+    <!-- 第三部分：Claudebot 实战 -->
+    <section>
+        <h2>🚀 第三章：Claudebot —— 疯狂的 AI 实验</h2>
+        <p>Claudebot 是 Peter 的最新力作，一个基于终端、拥有 Root 权限的个人全能助理。这不仅仅是一个软件，更是一个关于未来的预言。</p>
+
+        <div class="comparison-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th width="20%">特性</th>
+                        <th width="40%">Claudebot (AI Native)</th>
+                        <th width="40%">传统工具 / Siri</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>交互方式</strong></td>
+                        <td class="highlight-bg">全渠道 (WhatsApp, Discord, Terminal)</td>
+                        <td>孤岛式应用</td>
+                    </tr>
+                    <tr>
+                        <td><strong>权限与能力</strong></td>
+                        <td class="highlight-bg">Root 级权限，能点击屏幕、发消息、自我更新</td>
+                        <td>受限的沙盒环境</td>
+                    </tr>
+                    <tr>
+                        <td><strong>工具调用</strong></td>
+                        <td class="highlight-bg">偏爱 CLI (如 `jq`, `curl`, `ffmpeg`)</td>
+                        <td>僵化的 API 或 MCP (需预加载上下文)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>记忆系统</strong></td>
+                        <td class="highlight-bg">User.md / Soul.md (动态更新的用户画像)</td>
+                        <td>基本没有或是硬编码</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <h3>🛠️ 为什么 Peter 偏爱 CLI 而非 MCP？</h3>
+            <p>尽管 MCP (Model Context Protocol) 很火，但 Peter 认为它目前存在缺陷：<strong>上下文污染</strong>。MCP 需要预先加载所有工具定义，浪费 Token。而 CLI 工具（如 `weather-cli`）可以让 AI 通过管道（Pipe）和过滤器（如 `jq`）只提取它需要的数据（"伦敦现在的温度"），而不是加载整个 JSON 响应。</p>
+        </div>
+    </section>
+
+    <!-- 第四部分：未来展望 -->
+    <section style="background: linear-gradient(to right bottom, #fff, #f0fdf4);">
+        <h2>🔮 第四章：给未来的建议</h2>
+        
+        <div class="concept-list">
+            <li class="concept-item">
+                <span class="concept-term">对企业的冲击</span>
+                现有的大型科技公司（如 Google）可能会因为职责分工过细（PM vs Dev vs Designer）而难以适应 AI 时代。未来的团队规模将缩减 70%，需要的是全能型人才。
+            </li>
+            <li class="concept-item">
+                <span class="concept-term">新程序员的生存法则</span>
+                不要因为 AI 能写代码就停止学习。相反，要利用 AI 无限的耐心来<strong>满足好奇心</strong>。不要只问 "怎么写"，要问 "为什么这样架构"。你需要培养极强的 <strong>Agency（能动性）</strong>，能独立完成从想法到产品的全过程。
+            </li>
+            <li class="concept-item">
+                <span class="concept-term">心流的变化</span>
+                工作强度并未降低，甚至因为多线程管理 Agent 而更加烧脑。这是一种新的心流状态：从"演奏乐器"变成了"指挥交响乐"。
+            </li>
+        </div>
+    </section>
+
+    <footer>
+        <p>Generated based on The Pragmatic Engineer Podcast featuring Peter Steinberger.</p>
+        <p>⚠️ 注意：Claudebot 属于 YOLO 风格的实验项目，在生产环境中使用类似 Root 权限的 Agent 需谨慎。</p>
+    </footer>
+</div>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.bilibili.com/video/BV1LfzLBiEiB/" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
