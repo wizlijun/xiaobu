@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《大脑修复术》全书深度交互摘要</title>
+    <style>
+        :root {
+            --primary: #00838F; /* 深青色，专业且冷静 */
+            --secondary: #00ACC1; /* 亮青色 */
+            --bg-body: #F5F7FA;
+            --card-front: #FFFFFF;
+            --card-back: #E0F7FA;
+            --text-dark: #263238;
+            --text-gray: #546E7A;
+            --highlight-bg: #FFECB3;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+            --shadow-lg: 0 12px 24px rgba(0,131,143,0.15);
+            
+            /* 分类颜色 */
+            --tag-emotion: #FF7043; /* 情绪 */
+            --tag-cognition: #42A5F5; /* 认知 */
+            --tag-pathology: #AB47BC; /* 精神病理 */
+            --tag-lifestyle: #66BB6A; /* 生活方式 */
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 顶部 Header */
+        header {
+            background: linear-gradient(135deg, #ffffff 0%, #e0f7fa 100%);
+            padding: 60px 20px;
+            text-align: center;
+            border-bottom: 1px solid #dae1e7;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            color: var(--primary);
+            margin: 0 0 10px 0;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-gray);
+            font-weight: 300;
+        }
+
+        /* 核心金句栏 */
+        .golden-container {
+            max-width: 1000px;
+            margin: -30px auto 40px;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            z-index: 10;
+            border-left: 6px solid var(--secondary);
+        }
+
+        .golden-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .golden-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .quote-card {
+            background: #fafafa;
+            padding: 15px;
+            border-radius: 8px;
+            font-style: italic;
+            color: var(--text-gray);
+            font-size: 0.95rem;
+            border-left: 3px solid #ddd;
+        }
+
+        .quote-card strong { color: var(--text-dark); }
+
+        /* 分类图例 */
+        .filter-bar {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            margin: 0 10px;
+            font-size: 0.85rem;
+            color: var(--text-gray);
+        }
+        .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+
+        /* 卡片网格 */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 20px 60px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 30px;
+        }
+
+        /* 翻转卡片核心样式 */
+        .flip-card {
+            background-color: transparent;
+            height: 420px; /* 卡片高度 */
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+            transform-style: preserve-3d;
+            box-shadow: var(--shadow-sm);
+            border-radius: 16px;
+        }
+
+        .flip-card:hover .flip-card-inner, .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            padding: 25px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 正面样式 */
+        .flip-card-front {
+            background-color: var(--card-front);
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #eaeaea;
+        }
+
+        .card-tag {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .chap-num {
+            font-size: 3rem;
+            font-weight: 900;
+            color: rgba(0,0,0,0.03);
+            position: absolute;
+            top: 10px;
+            left: 20px;
+        }
+
+        .card-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+        }
+
+        .card-question {
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .card-hint {
+            margin-top: auto;
+            font-size: 0.8rem;
+            color: #bdc3c7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* 背面样式 */
+        .flip-card-back {
+            background-color: var(--card-back);
+            color: var(--text-dark);
+            transform: rotateY(180deg);
+            text-align: left;
+            align-items: flex-start;
+            overflow-y: auto;
+        }
+
+        .back-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--primary);
+            border-bottom: 2px solid rgba(0,131,143,0.1);
+            padding-bottom: 8px;
+            width: 100%;
+            margin-bottom: 15px;
+            margin-top: 0;
+        }
+
+        .term-box {
+            margin-bottom: 15px;
+        }
+
+        .term {
+            display: inline-block;
+            background: rgba(255,255,255,0.7);
+            color: #00695c;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            border: 1px solid rgba(0,105,92,0.1);
+        }
+
+        .content-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .content-list li {
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 18px;
+        }
+
+        .content-list li::before {
+            content: "•";
+            color: var(--secondary);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .highlight {
+            background: linear-gradient(180deg, rgba(255,255,255,0) 50%, #FFECB3 50%);
+            font-weight: 500;
+        }
+
+        .fix-box {
+            margin-top: auto;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            width: 100%;
+            box-sizing: border-box;
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .fix-title {
+            font-weight: bold;
+            color: var(--primary);
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-gray);
+            font-size: 0.85rem;
+            background: white;
+            margin-top: 40px;
+        }
+
+        /* 滚动条美化 */
+        .flip-card-back::-webkit-scrollbar {
+            width: 6px;
+        }
+        .flip-card-back::-webkit-scrollbar-thumb {
+            background-color: rgba(0,0,0,0.1);
+            border-radius: 3px;
+        }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🧠 大脑修复术</h1>
+    <div class="subtitle">深度解析19种心理与认知状态背后的脑科学机制</div>
+</header>
+
+<div class="golden-container">
+    <div class="golden-title">✨ 全书核心洞见 (Core Insights)</div>
+    <div class="golden-grid">
+        <div class="quote-card"><strong>关于完美：</strong>没有人的大脑是完全正常的。不正常才是常态，不完美才是才华本身。</div>
+        <div class="quote-card"><strong>关于快乐：</strong>多巴胺的作用是“让你想要”(Wanting)，而不是“让你快乐”(Liking)。上瘾是欲望，不是享受。</div>
+        <div class="quote-card"><strong>关于成长：</strong>好了伤疤忘了疼是成功人士的必备修养（心理弹性）。</div>
+        <div class="quote-card"><strong>关于环境：</strong>贫穷限制了你的想象力——资源匮乏会直接锁定大脑带宽，阻碍创造力。</div>
+    </div>
+</div>
+
+<div class="filter-bar">
+    <div class="legend-item"><div class="dot" style="background:var(--tag-emotion)"></div>情绪管理</div>
+    <div class="legend-item"><div class="dot" style="background:var(--tag-cognition)"></div>认知提升</div>
+    <div class="legend-item"><div class="dot" style="background:var(--tag-pathology)"></div>精神病理</div>
+    <div class="legend-item"><div class="dot" style="background:var(--tag-lifestyle)"></div>生活机制</div>
+</div>
+
+<div class="container">
+    <div class="grid">
+
+        <!-- 第1章：抑郁 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-tag" style="background:var(--tag-emotion)">Ch.01</div>
+                    <div class="chap-num">01</div>
+                    <div class="card-title">抑郁症</div>
+                    <div class="card-question">不仅是大脑的"感冒"，也是进化的"护身符"</div>
+                    <div class="card-hint">点击翻转查看机制</div>
+                </div>
+                <div class="flip-card-back">
+                    <h3 class="back-title">机制：防御与炎症</h3>
+                    <div class="term-box">
+                        <span class="term">神经可塑性假说</span>
+                        <span class="term">炎性反应</span>
+                        <span class="term">HPA轴</span>
+                    </div>
+                    <ul class="content-list">
+                        <li><strong>不只是情绪问题</strong>：抑郁伴随大脑海马体萎缩（神经元凋亡20%）和神经炎症。</li>
+                        <li><strong>进化意义</strong>：抑郁基因可能保护人类免受传染病（通过社交孤立），保存能量。</li>
+                        <li><strong>性别差异</strong>：女性更擅长应对慢性压力（雌激素保护），男性擅长急性压力。</li>
+                    </ul>
+                    <div class="fix-box">
+                        <span class="fix-title">🔧 修复术</span>
+                        有氧运动（促排毒）、光照疗法、攀岩（切断反刍思维）、认知行为疗法。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第2章：焦虑 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-tag" style="background:var(--tag-emotion)">Ch.02</div>
+                    <div class="chap-num">02</div>
+                    <div class="card-title">焦虑症</div>
+                    <div class="card-question">为什么现代人总觉得"有坏事要发生"？</div>
+                    <div class="card-hint">点击翻转查看机制</div>
+                </div>
+                <div class="flip-card-back">
+                    <h3 class="back-title">机制：过时的本能</h3>
+                    <div class="term-box">
+                        <span class="term">杏仁核劫持</span>
+                        <span class="term">战或逃反应</span>
+                        <span class="term">肠道菌群</span>
+                    </div>
+                    <ul class="content-list">
+                        <li><strong>错位的警报</strong>：焦虑是面对猛兽的原始反应，在面对现代抽象压力（如房贷）时失效，导致慢性皮质醇升高。</li>
+                        <li><strong>第二大脑</strong>：肠道菌群失调会直接导致焦虑（通过迷走神经）。</li>
+                        <li><strong>危害</strong>：长期焦虑会损伤海马体，抑制免疫系统，导致胃溃疡。</li>
+                    </ul>
+                    <div class="fix-box">
+                        <span class="fix-title">🔧 修复术</span>
+                        细化目标（减少不确定性）、冥想（降低皮质醇）、运动（模拟"逃跑"后的释放）。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第3章：社恐 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-tag" style="background:var(--tag-emotion)">Ch.03</div>
+                    <div class="chap-num">03</div>
+                    <div class="card-title">社交恐惧</div>
+                    <div class="card-question">你可能并不缺乏社交技巧，只是太关注自己</div>
+                    <div class="card-hint">点击翻转查看机制</div>
+                </div>
+                <div class="flip-card-back">
+                    <h3 class="back-title">机制：过度自我关注</h3>
+                    <div class="term-box">
+                        <span class="term">杏仁核过载</span>
+                        <span class="term">催产素</span>
+                        <span class="term">认知扭曲</span>
+                    </div>
+                    <ul class="content-list">
+                        <li><strong>内向≠社恐</strong>：内向是性格（充电方式），社恐是恐惧（回避行为）。</li>
+                        <li><strong>核心障碍</strong>：不是技巧缺乏，而是焦虑占用了认知资源，导致共情能力下降。</li>
+                        <li><strong>聚光灯效应</strong>：过度高估别人对自己的关注度。</li>
+                    </ul>
+                    <div class="fix-box">
+                        <span class="fix-title">🔧 修复术</span>
+                        "评委心态"（去观察别人而非审视自己）、社交失误练习（故意犯错）、腹式呼吸。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第4章：幻觉 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-tag" style="background:var(--tag-pathology)">Ch.04</div>
+                    <div class="chap-num">04</div>
+                    <div class="card-title">幻觉与妄想</div>
+                    <div class="card-question">正常人也会看到"不存在"的东西吗？</div>
+                    <div class="card-hint">点击翻转查看机制</div>
+                </div>
+                <div class="flip-card-back">
+                    <h3 class="back-title">机制：大脑的"瞎猜"</h3>
+                    <div class="term-box">
+                        <span class="term">自上而下加工</span>
+                        <span class="term">预测编码</span>
+                    </div>
+                    <ul class="content-list">
+                        <li><strong>并非精神病专属</strong>：正常人在疲劳、感官剥夺或入睡前也可能出现。</li>
+                        <li><strong>成因</strong>：当外界感官输入（自下而上）不足时，大脑内部的预测（自上而下）会喧宾夺主，产生"脑补"。</li>
+                        <li><strong>区别</strong>：精神病人的幻觉缺乏自省能力（非良性）。</li>
+                    </ul>
+                    <div class="fix-box">
+                        <span class="fix-title">🔧 修复术</span>
+                        保持充足感官输入、睡眠充足、增强自省能力。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第5章：睡眠 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-tag" style="background:var(--tag-lifestyle)">Ch.05</div>
+                    <div class="chap-num">05</div>
+                    <div class="card-title">睡眠修复</div>
+                    <div class="card-question">不睡觉真的会死人吗？</div>
+                    <div class="card-hint">点击翻转查看机制</div>
+                </div>
+                <div class="flip-card-back">
+                    <h3 class="back-title">机制：洗脑与重写</h3>
+                    <div class="term-box">
+                        <span class="term">淋巴系统(Glymphatic)</span>
+                        <span class="term">β-淀粉样蛋白</span>
+                        <span class="term">突触修剪</span>
+                    </div>
+                    <ul class="content-list">
+                        <li><strong>排毒时刻</strong>：睡眠时脑细胞间隙变大60%，脑脊液冲刷带走代谢毒素。</li>
+                        <li><strong>记忆巩固</strong>：将海马体的短期记忆"转写"入皮层长期储存，并修剪无用连接。</li>
+                        <li><strong>鬼压床</strong>：睡眠麻痹机制（保护你不做出梦中动作）的延迟解除。</li>
+                    </ul>
+                    <div class="fix-box">
+                        <span class="fix-title">🔧 修复术</span>
+                        有氧运动、睡前红光/防蓝光、固定起床时间（比固定入睡更重要）。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第6章：上瘾 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-tag" style="background:var(--tag-emotion)">Ch.06</div>
+                    <div class="chap-num">06</div>
+                    <div class="card-title">上瘾机制</div>
+                    <div class="card-question">是欲望，不是快乐</div>
+                    <div class="card-hint">点击翻转查看机制</div>
+                </div>
+                <div class="flip-card-back">
+                    <h3 class="back-title">机制：多巴胺陷阱</h3>
+                    <div class="term-box">
+                        <span class="term">奖赏预期误差</span>
+                        <span class="term">伏隔核</span>
+                        <span class="term">Wanting vs Liking</span>
+                    </div>
+                    <ul class="content-list">
+                        <li><strong>本质</strong>：多巴胺负责"想要"(Wanting)而非"喜欢"(Liking)。上瘾是追求过程的驱动力，而非结果的满足感。</li>
+                        <li><strong>随机奖赏</strong>：不确定的、超预期的奖励最能刺激多巴胺（如赌博、刷短视频）。</li>
+                        <li><strong>享乐适应</strong>：阈值不断提高，需要更强刺激。</li>
+                    </ul>
+                    <div class="fix-box">
+                        <span class="fix-title">🔧 修复术</span>
+                        利用多巴胺机制建立好习惯（学习新技能）、寻找替代奖赏。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第7章：心理弹性 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-tag" style="background:var(--tag-cognition)">Ch.07</div>
+                    <div class="chap-num">07</div>
+                    <div class="card-title">心理弹性</div>
+                    <div class="card-question">"好了伤疤忘了疼"是成功必备修养</div>
+                    <div class="card-hint">点击翻转查看机制</div>
+                </div>
+                <div class="flip-card-back">
+                    <h3 class="back-title">机制：大脑的刹车系统</h3>
+                    <div class="term-box">
+                        <span class="term">神经肽Y</span>
+                        <span class="term">倒U形曲线</span>
+                        <span class="term">表观遗传</span>
+                    </div>
+                    <ul class="content-list">
+                        <li><strong>定义</strong>：面对压力成功适应的能力（Resilience）。</li>
+                        <li><strong>生理基础</strong>：神经肽Y像"电闸"一样关闭压力反应。特种兵大脑中海马体更大，前额叶更活跃。</li>
+                        <li><strong>压力效应</strong>：适度压力增强记忆，长期压力损伤海马体。</li>
+                    </ul>
+                    <div class="fix-box">
+                        <span class="fix-title">🔧 修复术</span>
+                        运动（增加BDNF）、正念、认知重评（视困难为挑战）、社会支持。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第8章：神经可塑性 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-tag" style="background:var(--tag-lifestyle)">Ch.08</div>
+                    <div class="chap-num">08</div>
+                    <div class="card-title">终身学习</div>
+                    <div class="card-question">成年后大脑神经还能发育吗？</div>
+                    <div class="card-hint">点击翻转查看机制</div>
+                </div>
+                <div class="flip-card-back">
+                    <h3 class="back-title">机制：用进废退</h3>
+                    <div class="term-box">
+                        <span class="term">神经发生</span>
+                        <span class="term">髓鞘化</span>
+                        <span class="term">成长型心态</span>
+                    </div>
+                    <ul class="content-list">
+                        <li><strong>真相</strong>：成年后海马体仍可产生新神经元。</li>
+                        <li><strong>环境塑造</strong>：练习改变结构（如伦敦出租车司机的海马体变大）。</li>
+                        <li><strong>心态</strong>：固定型心态导致习得性无助；成长型心态促进神经连接。</li>
+                    </ul>
+                    <div class="fix-box">
+                        <span class="fix-title">🔧 修复术</span>
+                        学习新技能（如乐器、语言）、丰富环境刺激、避免长期压力。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第9章：抗衰老 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-tag" style="background:var(--tag-lifestyle)">Ch.09</div>
+                    <div class="chap-num">09</div>
+                    <div class="card-title">优雅老去</div>
+                    <div class="card-question">如何对抗大脑衰退？</div>
+                    <div class="card-hint">点击翻转查看机制</div>
+                </div>
+                <div class="flip-card-back">
+                    <h3 class="back-title">机制：认知储备</h3>
+                    <div class="term-box">
+                        <span class="term">认知储备</span>
+                        <span class="term">蓝斑神经元</span>
+                        <span class="term">REST蛋白</span>
+                    </div>
+                    <ul class="content-list">
+                        <li><strong>病程压缩</strong>：高认知储备（受教育多）的人，能推迟痴呆症状出现的时间。</li>
+                        <li><strong>老年积极效应</strong>：大脑会补偿性地更关注积极信息，选择性遗忘消极信息。</li>
+                    </ul>
+                    <div class="fix-box">
+                        <span class="fix-title">🔧 修复术</span>
+                        地中海饮食、适度节食（激活长寿酶）、双语学习、社交活动、保持目的感。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第10章：记忆力 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-tag" style="background:var(--tag-cognition)">Ch.10</div>
+                    <div class="chap-num">10</div>
+                    <div class="card-title">记忆力</div>
+                    <div class="card-question">越擅长遗忘，可能越擅长记忆</div>
+                    <div class="card-hint">点击翻转查看机制</div>
+                </div>
+                <div class="flip-card-back">
+                    <h3 class="back-title">机制：编码与重演</h3>
+                    <div class="term-box">
+                        <span class="term">海马体</span>
+                        <span class="term">赫布学习律</span>
+                        <span class="term">遗忘曲线</span>
+                    </div>
+                    <ul class="content-list">
+                        <li><strong>本质</strong>：记忆是神经元群落的周期性同步激活。</li>
+                        <li><strong>遗忘的作用</strong>：修剪无用信息，防止大脑过载，是高效记忆的前提。</li>
+                        <li><strong>提取即修改</strong>：每次回忆都会重塑记忆，导致记忆失真。</li>
+                    </ul>
+                    <div class="fix-box">
+                        <span class="fix-title">🔧 修复术</span>
+                        可视化记忆（调用古老的视觉皮层）、联想法、学习后运动、经颅电刺激。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第11章：注意力 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-tag" style="background:var(--tag-cognition)">Ch.11</div>
+                    <div class="chap-num">11</div>
+                    <div class="card-title">注意力危机</div>
+                    <div class="card-question">手机即使关机放在旁边，也会让你变笨</div>
+                    <div class="card-hint">点击翻转查看机制</div>
+                </div>
+                <div class="flip-card-back">
+                    <h3 class="back-title">机制：认知带宽竞争</h3>
+                    <div class="term-box">
+                        <span class="term">自下而上加工</span>
+                        <span class="term">多任务切换成本</span>
+                    </div>
+                    <ul class="content-list">
+                        <li><strong>大脑BUG</strong>：大脑偏爱新奇刺激（本能），抑制固定刺激（习惯），导致容易分心。</li>
+                        <li><strong>手机效应</strong>：压抑看手机的冲动会持续消耗认知资源。</li>
+                        <li><strong>多任务假象</strong>：人脑不能多任务，只能快速切换，且耗能巨大。</li>
+                    </ul>
+                    <div class="fix-box">
+                        <span class="fix-title">🔧 修复术</span>
+                        物理隔离手机、冥想训练、有氧运动（提升额叶功能）。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第12章：ADHD -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-tag" style="background:var(--tag-pathology)">Ch.12</div>
+                    <div class="chap-num">12</div>
+                    <div class="card-title">成人ADHD</div>
+                    <div class="card-question">你在听我说话吗？</div>
+                    <div class="card-hint">点击翻转查看机制</div>
+                </div>
+                <div class="flip-card-back">
+                    <h3 class="back-title">机制：网络拮抗异常</h3>
+                    <div class="term-box">
+                        <span class="term">DMN(默认网络)</span>
+                        <span class="term">注意力网络</span>
+                        <span class="term">皮质发育迟缓</span>
+                    </div>
+                    <ul class="content-list">
+                        <li><strong>核心问题</strong>：不仅是多动，更是注意缺陷。DMN与注意力网络无法正常切换，导致该专注时发呆。</li>
+                        <li><strong>优势</strong>：发散思维强，可能更具创造力，适合非重复性工作。</li>
+                    </ul>
+                    <div class="fix-box">
+                        <span class="fix-title">🔧 修复术</span>
+                        药物治疗、认知行为疗法、运动（提升抑制控制）。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第13章：创造力 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-tag" style="background:var(--tag-cognition)">Ch.13</div>
+                    <div class="chap-num">13</div>
+                    <div class="card-title">创造力</div>
+                    <div class="card-question">比记忆力和专注力更重要的核心竞争力</div>
+                    <div class="card-hint">点击翻转查看机制</div>
+                </div>
+                <div class="flip-card-back">
+                    <h3 class="back-title">机制：神游天外</h3>
+                    <div class="term-box">
+                        <span class="term">默认模式网络(DMN)</span>
+                        <span class="term">心理距离</span>
+                    </div>
+                    <ul class="content-list">
+                        <li><strong>源泉</strong>：创造力源于DMN（发呆/白日梦网络）与注意力网络的灵活配合。</li>
+                        <li><strong>阻碍</strong>：贫穷限制想象（资源匮乏锁定带宽）。</li>
+                        <li><strong>少即是多</strong>：想得越少，前额叶控制越弱，创造力越强。</li>
+                    </ul>
+                    <div class="fix-box">
+                        <span class="fix-title">🔧 修复术</span>
+                        增加心理距离（想象在远方或未来解决问题）、适度生气（短暂提升）、独处。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第14章：拖延症 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-tag" style="background:var(--tag-lifestyle)">Ch.14</div>
+                    <div class="chap-num">14</div>
+                    <div class="card-title">拖延与提前</div>
+                    <div class="card-question">猴子也有拖延症？</div>
+                    <div class="card-hint">点击翻转查看机制</div>
+                </div>
+                <div class="flip-card-back">
+                    <h3 class="back-title">机制：时间折扣</h3>
+                    <div class="term-box">
+                        <span class="term">延迟折扣</span>
+                        <span class="term">多巴胺D2受体</span>
+                        <span class="term">提前症</span>
+                    </div>
+                    <ul class="content-list">
+                        <li><strong>本能</strong>：大脑高估即时小奖赏，低估未来大奖赏。</li>
+                        <li><strong>提前症</strong>：为了消除"任务未完成"带来的认知负担而匆忙行事，本质也是焦虑。</li>
+                        <li><strong>积极拖延</strong>：为了在死线压力下爆发潜能。</li>
+                    </ul>
+                    <div class="fix-box">
+                        <span class="fix-title">🔧 修复术</span>
+                        具体化目标（而非抽象思考）、巧克力法（拆分任务并给予即时奖励）。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第15章：强迫症 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-tag" style="background:var(--tag-pathology)">Ch.15</div>
+                    <div class="chap-num">15</div>
+                    <div class="card-title">强迫症 (OCD)</div>
+                    <div class="card-question">不仅仅是爱干净，是大脑的"报错系统"坏了</div>
+                    <div class="card-hint">点击翻转查看机制</div>
+                </div>
+                <div class="flip-card-back">
+                    <h3 class="back-title">机制：无法停止的循环</h3>
+                    <div class="term-box">
+                        <span class="term">前扣带回</span>
+                        <span class="term">纹状体</span>
+                        <span class="term">习惯回路</span>
+                    </div>
+                    <ul class="content-list">
+                        <li><strong>错误警报</strong>：前扣带回不断报错，让你觉得"不对劲"，必须通过仪式（洗手/检查）缓解焦虑。</li>
+                        <li><strong>习惯固化</strong>：多巴胺过多导致习惯回路过于牢固，无法灵活切换。</li>
+                    </ul>
+                    <div class="fix-box">
+                        <span class="fix-title">🔧 修复术</span>
+                        习惯破除法（暴露反应预防）、深层脑刺激（严重者）。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第16章：心理变态 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-tag" style="background:var(--tag-pathology)">Ch.16</div>
+                    <div class="chap-num">16</div>
+                    <div class="card-title">心理变态</div>
+                    <div class="card-question">他们真的没有同理心吗？</div>
+                    <div class="card-hint">点击翻转查看机制</div>
+                </div>
+                <div class="flip-card-back">
+                    <h3 class="back-title">机制：共情开关</h3>
+                    <div class="term-box">
+                        <span class="term">眶额皮质</span>
+                        <span class="term">杏仁核</span>
+                        <span class="term">MAO-A基因</span>
+                    </div>
+                    <ul class="content-list">
+                        <li><strong>主动关闭</strong>：心理变态者并非没有共情能力，而是默认关闭，不在乎他人痛苦。</li>
+                        <li><strong>决策缺陷</strong>：过度看重即时奖赏，无法从惩罚中学习。</li>
+                        <li><strong>战士基因</strong>：若在充满爱的环境中长大，可能成为高成就者而非罪犯（如神经科学家詹姆斯·法伦）。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第17章：躁郁症 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-tag" style="background:var(--tag-pathology)">Ch.17</div>
+                    <div class="chap-num">17</div>
+                    <div class="card-title">躁郁症 (双相)</div>
+                    <div class="card-question">一半是天堂，一半是地狱</div>
+                    <div class="card-hint">点击翻转查看机制</div>
+                </div>
+                <div class="flip-card-back">
+                    <h3 class="back-title">机制：能量过载与衰竭</h3>
+                    <div class="term-box">
+                        <span class="term">线粒体异常</span>
+                        <span class="term">前额叶</span>
+                        <span class="term">细胞衰老</span>
+                    </div>
+                    <ul class="content-list">
+                        <li><strong>特征</strong>：极度亢奋（躁狂）与极度低落（抑郁）交替。躁狂期创造力爆发，抑郁期思维迟缓。</li>
+                        <li><strong>加速衰老</strong>：患者细胞端粒更短，线粒体DNA拷贝数增加。</li>
+                        <li><strong>误诊</strong>：常与精神分裂症混淆，二者共享部分基因。</li>
+                    </ul>
+                    <div class="fix-box">
+                        <span class="fix-title">🔧 修复术</span>
+                        药物（锂盐）、电休克疗法（重启大脑平衡）。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第18章：精神分裂 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-tag" style="background:var(--tag-pathology)">Ch.18</div>
+                    <div class="chap-num">18</div>
+                    <div class="card-title">精神分裂症</div>
+                    <div class="card-question">有人在大脑里装了芯片？</div>
+                    <div class="card-hint">点击翻转查看机制</div>
+                </div>
+                <div class="flip-card-back">
+                    <h3 class="back-title">机制：现实脱节</h3>
+                    <div class="term-box">
+                        <span class="term">突触修剪过度</span>
+                        <span class="term">免疫基因</span>
+                        <span class="term">阳性/阴性症状</span>
+                    </div>
+                    <ul class="content-list">
+                        <li><strong>非人格分裂</strong>：是认知、情感、行为的分裂。</li>
+                        <li><strong>症状</strong>：阳性（幻觉、妄想）；阴性（情感淡漠、社交退缩）。</li>
+                        <li><strong>成因复杂</strong>：数百个基因位点（多与免疫有关）、逆转录病毒激活、孕期感染等。大脑广泛萎缩。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第19章：身脑一体 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-tag" style="background:var(--tag-lifestyle)">Ch.19</div>
+                    <div class="chap-num">19</div>
+                    <div class="card-title">身脑一体</div>
+                    <div class="card-question">谁才是身体的主人？</div>
+                    <div class="card-hint">点击翻转查看机制</div>
+                </div>
+                <div class="flip-card-back">
+                    <h3 class="back-title">机制：第二大脑</h3>
+                    <div class="term-box">
+                        <span class="term">肠脑轴</span>
+                        <span class="term">迷走神经</span>
+                        <span class="term">弓形虫</span>
+                    </div>
+                    <ul class="content-list">
+                        <li><strong>肠道起源</strong>：帕金森病的病原蛋白可能经迷走神经从肠道传至大脑。</li>
+                        <li><strong>免疫控制</strong>：淋巴管直通大脑，免疫分子影响社交欲望。</li>
+                        <li><strong>寄生虫操纵</strong>：弓形虫感染可能改变性格，增加精神疾病和车祸风险。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<footer>
+    <p>© 内容基于姚乃琳《大脑修复术》整理生成 | 纯HTML/CSS实现，无外部依赖</p>
+    <p style="margin-top:10px; opacity:0.6;">Designed for Cognitive Lightness</p>
+</footer>
+
+</body>
+</html>
