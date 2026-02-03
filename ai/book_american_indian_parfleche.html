@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美洲印第安 Parfleche：全书深度摘要 (修复版)</title>
+    <style>
+        /* --- 核心变量 --- */
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --primary: #455a64;       /* 主色调：岩石灰 */
+            --accent: #00838f;        /* 强调色：绿松石蓝 */
+            --text-dark: #263238;
+            --text-light: #546e7a;
+            --card-back: #e0f2f1;     /* 卡片背面：极淡青色 */
+            --border-radius: 12px;
+            --shadow-sm: 0 4px 6px rgba(0,0,0,0.05);
+            --shadow-md: 0 10px 15px rgba(0,0,0,0.1);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* --- 基础排版 --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px 100px;
+        }
+
+        /* --- 头部区域 --- */
+        header {
+            text-align: center;
+            padding: 60px 0;
+            background: linear-gradient(135deg, #fff 0%, #f9f9f9 100%);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 50px;
+            border-bottom: 4px solid var(--accent);
+        }
+
+        h1 {
+            font-size: 2.4rem;
+            color: var(--text-dark);
+            margin: 0 0 10px;
+            font-weight: 300;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .meta {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #90a4ae;
+        }
+
+        /* --- 章节通用样式 --- */
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin: 60px 0 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #cfd8dc;
+        }
+
+        .section-idx {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #cfd8dc;
+            margin-right: 15px;
+            line-height: 1;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* --- 翻转卡片系统 --- */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            height: 320px; /* 固定高度确保整齐 */
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: var(--shadow-sm);
+            border-radius: var(--border-radius);
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden; /* Safari */
+            backface-visibility: hidden;
+            border-radius: var(--border-radius);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            box-sizing: border-box;
+        }
+
+        .flip-card-front {
+            background-color: var(--card-bg);
+            border: 1px solid #eceff1;
+        }
+
+        .flip-card-back {
+            background-color: var(--card-back);
+            color: var(--text-dark);
+            transform: rotateY(180deg);
+            align-items: flex-start; /* 背面左对齐 */
+            text-align: left;
+            border: 1px solid #b2dfdb;
+            overflow-y: auto; /* 内容溢出可滚动 */
+        }
+
+        .card-icon {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+
+        .card-sub {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .hint {
+            margin-top: auto;
+            font-size: 0.8rem;
+            color: var(--accent);
+            opacity: 0.8;
+        }
+
+        /* 卡片背面的知识点样式 */
+        .kp {
+            margin-bottom: 12px;
+            width: 100%;
+            border-bottom: 1px dashed #b2dfdb;
+            padding-bottom: 8px;
+        }
+        .kp:last-child { border: none; }
+        
+        .kp-h {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #00695c;
+            margin-bottom: 2px;
+        }
+        .kp-p {
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        /* --- 折叠面板系统 (Accordion) --- */
+        .accordion {
+            background: #fff;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            border: 1px solid #eceff1;
+        }
+
+        .acc-item {
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .acc-item:last-child { border-bottom: none; }
+
+        .acc-header {
+            padding: 20px 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            transition: background 0.2s;
+        }
+        .acc-header:hover { background: #f9f9f9; }
+
+        .acc-title-text {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .acc-icon {
+            font-size: 1.2rem;
+            color: var(--text-light);
+            transition: transform 0.3s ease;
+        }
+        
+        /* 激活状态图标旋转 */
+        .acc-item.active .acc-icon {
+            transform: rotate(180deg);
+        }
+
+        .acc-content {
+            max-height: 0; /* 默认关闭 */
+            overflow: hidden;
+            transition: max-height 0.4s ease-out; /* 关键动画 */
+            background-color: #fafafa;
+        }
+
+        .acc-inner {
+            padding: 24px;
+            font-size: 0.95rem;
+        }
+
+        .highlight {
+            background-color: #e0f7fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #006064;
+            font-weight: 500;
+        }
+
+        /* --- 金句框 --- */
+        .quote {
+            position: relative;
+            background: #fff3e0;
+            padding: 30px 40px;
+            border-radius: var(--border-radius);
+            margin: 40px 0;
+            text-align: center;
+            border-left: 5px solid #ffb74d;
+        }
+        .quote p {
+            font-family: Georgia, serif;
+            font-size: 1.1rem;
+            color: #5d4037;
+            font-style: italic;
+            margin: 0;
+        }
+
+        /* --- 移动端优化 --- */
+        @media (max-width: 600px) {
+            .section-idx { font-size: 2rem; }
+            .section-title { font-size: 1.3rem; }
+            .flip-card { height: 350px; } /* 移动端卡片加高，防止内容溢出 */
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <header>
+        <div class="subtitle">INTERACTIVE SUMMARY</div>
+        <h1>The American Indian Parfleche</h1>
+        <div class="subtitle" style="margin-top:10px;">美洲印第安 Parfleche：抽象绘画的传统</div>
+        <div class="meta">Gaylord Torrence (1994) | 知识精炼版</div>
+    </header>
+
+    <!-- 01 起源与材料 -->
+    <div class="section-header">
+        <span class="section-idx">01</span>
+        <span class="section-title">定义、历史与材料</span>
+    </div>
+
+    <div class="grid">
+        <!-- Card 1 -->
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">📖</div>
+                    <div class="card-title">什么是 Parfleche?</div>
+                    <div class="card-sub">点击翻转查看核心定义</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="kp">
+                        <span class="kp-h">词源</span>
+                        <p class="kp-p">源自法语 <em>parer</em> (抵挡) + <em>flèche</em> (箭)。最初指防箭的生皮盾牌。</p>
+                    </div>
+                    <div class="kp">
+                        <span class="kp-h">现代定义</span>
+                        <p class="kp-p">泛指所有由<strong>折叠或缝制的生皮 (Rawhide)</strong> 制成、绘有几何图案的容器。</p>
+                    </div>
+                    <div class="kp">
+                        <span class="kp-h">作者</span>
+                        <p class="kp-p">这是一种完全由<strong>女性</strong>创造的艺术传统。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🐎</div>
+                    <div class="card-title">历史背景</div>
+                    <div class="card-sub">马背上的黄金时代</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="kp">
+                        <span class="kp-h">黄金时代 (1750-1880)</span>
+                        <p class="kp-p">Parfleche 的兴盛与大平原<strong>马背游牧文化</strong>的形成同步。</p>
+                    </div>
+                    <div class="kp">
+                        <span class="kp-h">功能性</span>
+                        <p class="kp-p">它是游牧生活的刚需：轻便、耐摔、防水，是完美的“旅行箱”。</p>
+                    </div>
+                    <div class="kp">
+                        <span class="kp-h">前身</span>
+                        <p class="kp-p">可能演变自东部林地部落的彩绘长袍或桦树皮容器。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🎨</div>
+                    <div class="card-title">生皮与颜料</div>
+                    <div class="card-sub">独特的“湿壁画”工艺</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="kp">
+                        <span class="kp-h">生皮 (Rawhide)</span>
+                        <p class="kp-p">去毛但<strong>未鞣制</strong>的皮。干燥后极硬，具有半透明质感。1880年前多用野牛皮，后用家牛皮。</p>
+                    </div>
+                    <div class="kp">
+                        <span class="kp-h">绘画技术</span>
+                        <p class="kp-p">必须在生皮<strong>潮湿</strong>时作画，颜料渗入皮层。干燥后涂上仙人掌汁（Sizing）定色上光。</p>
+                    </div>
+                    <div class="kp">
+                        <span class="kp-h">颜色演变</span>
+                        <p class="kp-p">早期：红/绿/黑为主；中期：加入黄/蓝；后期：商业颜料，色彩更鲜艳。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 02 形式与功能 -->
+    <div class="section-header">
+        <span class="section-idx">02</span>
+        <span class="section-title">形式分类与功能</span>
+    </div>
+    <p style="color: #666; margin-bottom: 20px;">点击下方列表展开详细说明：</p>
+
+    <div class="accordion">
+        <!-- Item 1 -->
+        <div class="acc-item">
+            <div class="acc-header">
+                <span class="acc-title-text">✉️ 信封式 (Envelope)</span>
+                <span class="acc-icon">▼</span>
+            </div>
+            <div class="acc-content">
+                <div class="acc-inner">
+                    <p><strong>形态：</strong>最经典的形式。一张长方形生皮向中心折叠，侧翼交汇，形成可扩展的包裹。</p>
+                    <p><strong>功能：</strong>通用的旅行箱，储存干肉饼(pemmican)、衣物等。通常<strong>成对制作</strong>，图案对称，挂在马鞍两侧。</p>
+                    <p><strong>冷知识：</strong>东部平原的部落（如 Mesquakie）有时会通过贸易获得旧的信封式 Parfleche，然后将其重新剪裁缝制成方形的<strong>箱子 (Trunks)</strong> 来存放神圣物品。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Item 2 -->
+        <div class="acc-item">
+            <div class="acc-header">
+                <span class="acc-title-text">👜 扁平袋 (Flat Case)</span>
+                <span class="acc-icon">▼</span>
+            </div>
+            <div class="acc-content">
+                <div class="acc-inner">
+                    <p><strong>分类与用途：</strong></p>
+                    <ul>
+                        <li><strong>无流苏：</strong>通常为女性的工具袋，装缝纫用品、浆果等。</li>
+                        <li><strong>带长流苏：</strong>在黑脚族 (Blackfeet) 和克罗族 (Crow) 中，这种袋子常用于盛放<strong>医药包 (Medicine Bundles)</strong> 或神圣物品。</li>
+                    </ul>
+                    <p><strong>视觉效果：</strong>骑马时，长长的侧流苏随风飘动，具有极强的装饰性和动感。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Item 3 -->
+        <div class="acc-item">
+            <div class="acc-header">
+                <span class="acc-title-text">📜 圆筒 (Cylinder)</span>
+                <span class="acc-icon">▼</span>
+            </div>
+            <div class="acc-content">
+                <div class="acc-inner">
+                    <p><strong>形态：</strong>生皮卷成管状，两端加盖。常带有极长的流苏。</p>
+                    <p><strong>功能：</strong>专门用于保护贵重的<strong>鹰羽冠 (War Bonnets)</strong> 或仪式羽毛。在游行中常挂在马的臀部后方。</p>
+                    <p><strong>例外：</strong>普韦布洛人 (Pueblo) 的圆筒制作工艺不同（缝合而非系带），主要用于存放宗教祭祀用品。</p>
+                </div>
+            </div>
+        </div>
+
+         <!-- Item 4 -->
+        <div class="acc-item">
+            <div class="acc-header">
+                <span class="acc-title-text">📦 盒子与箱子 (Box)</span>
+                <span class="acc-icon">▼</span>
+            </div>
+            <div class="acc-content">
+                <div class="acc-inner">
+                    <p>这是<strong>保留地时期 (1880s后)</strong> 的产物，主要由苏族 (Sioux) 模仿欧美商业容器制作。</p>
+                    <p>它们不再用于游牧运输，而是作为<strong>赠礼仪式 (Giveaways)</strong> 的礼物，或出售给游客。这是 Parfleche 从实用工具向纯礼品/商品转型的标志。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 03 地区风格 -->
+    <div class="section-header">
+        <span class="section-idx">03</span>
+        <span class="section-title">地区风格辨析指南</span>
+    </div>
+
+    <div class="accordion">
+        <!-- Style 1 -->
+        <div class="acc-item">
+            <div class="acc-header">
+                <span class="acc-title-text">🔹 中部大平原 (Central Plains)</span>
+                <span class="acc-icon">▼</span>
+            </div>
+            <div class="acc-content">
+                <div class="acc-inner">
+                    <p><strong>部落：</strong> Sioux (苏族), Cheyenne (夏延), Arapaho</p>
+                    <p><strong>核心特征：<span class="highlight">黑色轮廓线 (Black Outlining)</span></strong></p>
+                    <p>先涂色块，再用深棕色/黑色勾勒边缘。这种“勾边”赋予画面强烈的结构感。</p>
+                    <ul>
+                        <li><strong>苏族：</strong>色彩大胆（红蓝黄），构图密集，强烈的视觉冲击。</li>
+                        <li><strong>夏延：</strong>风格优雅、精致，线条细腻，喜欢留白，色彩具有透明感。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Style 2 -->
+        <div class="acc-item">
+            <div class="acc-header">
+                <span class="acc-title-text">🔸 跨山地 (Transmontane) & 克罗</span>
+                <span class="acc-icon">▼</span>
+            </div>
+            <div class="acc-content">
+                <div class="acc-inner">
+                    <p><strong>部落：</strong> Crow (克罗), Nez Perce, Shoshone</p>
+                    <p><strong>核心特征：<span class="highlight">无黑色勾边</span></strong></p>
+                    <p>最大的区别在于<strong>不使用黑色轮廓线</strong>。色块之间直接相邻，或由彩色的（通常是深蓝或深绿）结构线分隔。</p>
+                    <p><strong>构图：</strong>大型菱形或沙漏形被进一步细分为无数小三角形。视觉效果极其繁复、精确，如同万花筒。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Style 3 -->
+        <div class="acc-item">
+            <div class="acc-header">
+                <span class="acc-title-text">🔺 北部大平原 (Northern Plains)</span>
+                <span class="acc-icon">▼</span>
+            </div>
+            <div class="acc-content">
+                <div class="acc-inner">
+                    <p><strong>部落：</strong> Blackfeet (黑脚族)</p>
+                    <p><strong>核心特征：<span class="highlight">梯形翻盖</span></strong></p>
+                    <p>黑脚族信封式 Parfleche 的外翻盖被剪裁成明显的<strong>梯形</strong>，这是最显著的辨识标志。</p>
+                    <p>风格上，早期接近中部平原（有勾线），后期（Piegan部落）受跨山地影响，放弃了勾线。</p>
+                </div>
+            </div>
+        </div>
+
+         <!-- Style 4 -->
+        <div class="acc-item">
+            <div class="acc-header">
+                <span class="acc-title-text">🌊 西部高原 (Western Plateau)</span>
+                <span class="acc-icon">▼</span>
+            </div>
+            <div class="acc-content">
+                <div class="acc-inner">
+                    <p><strong>部落：</strong> Yakima, Warm Springs 等</p>
+                    <p><strong>特征：</strong>地理位置靠西，虽然受跨山地风格影响，但保留了独特的古老风格。</p>
+                    <p><strong>关键点：</strong>常使用极其大胆、厚重的黑色轮廓线，以及独特的<strong>曲线</strong>元素（不同于大平原的纯直线几何）。喜爱使用“五块式 (Five-block)”构图。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 04 象征意义 -->
+    <div class="section-header">
+        <span class="section-idx">04</span>
+        <span class="section-title">象征意义与精神世界</span>
+    </div>
+
+    <div class="grid">
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">💭</div>
+                    <div class="card-title">梦境与解读</div>
+                    <div class="card-sub">“仅仅是为了漂亮吗？”</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="kp">
+                        <span class="kp-h">个人化解读</span>
+                        <p class="kp-p">没有通用的“密码本”。同一个菱形，对一人代表“肚脐（生命）”，对另一人代表“星星”。只有创作者知道确切含义。</p>
+                    </div>
+                    <div class="kp">
+                        <span class="kp-h">梦境设计 (Dreamed Designs)</span>
+                        <p class="kp-p">许多图案源自神圣的梦境或幻象 (Vision Quests)，被视为精神力量的赐予，而非单纯的装饰。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🗺️</div>
+                    <div class="card-title">地图与隐喻</div>
+                    <div class="card-sub">抽象的地理与生物学</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="kp">
+                        <span class="kp-h">抽象地图</span>
+                        <p class="kp-p">许多几何构图实际上描绘了部落生活的景观：山脉、河流、营地位置和星辰轨迹。</p>
+                    </div>
+                    <div class="kp">
+                        <span class="kp-h">野牛的隐喻</span>
+                        <p class="kp-p">Parfleche 由野牛皮制成，装满肉干。其中心条带设计常被视为野牛脊柱的象征，容器即是野牛身体的重构。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="quote">
+        <p>“这些画作与创作者的世界观密不可分，源自她们作为女性的集体经验... 源自充盈她们世界的无形精神力量... 以及那横扫一切的、壮丽的西部风景。”</p>
+    </div>
+
+</div>
+
+<!-- 脚本逻辑 -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // 1. 翻转卡片逻辑
+        const cards = document.querySelectorAll('.flip-card');
+        cards.forEach(card => {
+            card.addEventListener('click', function() {
+                this.classList.toggle('flipped');
+            });
+        });
+
+        // 2. 折叠面板逻辑 (Accordion) - 核心修复部分
+        const accHeaders = document.querySelectorAll('.acc-header');
+        
+        accHeaders.forEach(header => {
+            header.addEventListener('click', function() {
+                // 获取当前点击项的父级 (.acc-item) 和内容区 (.acc-content)
+                const item = this.parentElement;
+                const content = item.querySelector('.acc-content');
+                
+                // 切换激活状态
+                item.classList.toggle('active');
+
+                // 核心高度计算：如果包含active类，设为 scrollHeight，否则设为 null
+                if (item.classList.contains('active')) {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                } else {
+                    content.style.maxHeight = null;
+                }
+            });
+        });
+    });
+</script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_american_indian_parfleche_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
