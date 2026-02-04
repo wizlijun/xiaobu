@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Change 的设计哲学</title>
+    <style>
+        /* 现代化CSS样式 */
+        body {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fff;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+        }
+        h3 {
+            color: #34495e;
+            margin-top: 20px;
+        }
+        .author-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+        }
+        .process-phase {
+            background-color: #f1f8ff;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #0366d6;
+        }
+        .scenario {
+            background-color: #f6f8fa;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 3px solid #6f42c1;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+        pre {
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        ul, ol {
+            margin: 10px 0;
+            padding-left: 30px;
+        }
+        li {
+            margin: 5px 0;
+        }
+        blockquote {
+            background-color: #f9f9f9;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+            font-style: italic;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+    <h1>Change 的设计哲学</h1>
+
+    <h2>核心洞察：AI 编程的契约层</h2>
+
+    <div class="highlight">
+        <p>OpenSpec 的 Change 本质上是<strong>人类与 AI 之间的契约层</strong>——一个结构化的、持久化的、可版本控制的"工作说明书"，解决了 AI 编程中最根本的问题：<strong>如何让 AI 准确理解并执行人类的意图</strong>。</p>
+    </div>
+
+    <pre>
+传统 AI 编程：
+  人类 ──(模糊的聊天)──► AI ──(不可预测的代码)──► 代码库
+                ↑
+           上下文丢失
+           意图漂移
+           无法追溯
+
+OpenSpec 模式：
+  人类 ──► Change(契约) ──► AI ──► 代码库
+              │                    │
+              └────── 对齐 ────────┘
+    </pre>
+
+    <h2>设计原则</h2>
+
+    <h3>1. 流动而非僵化 (Fluid, Not Rigid)</h3>
+
+    <p>传统的软件开发流程强调阶段门控：需求 → 设计 → 开发 → 测试。一旦进入下一阶段，就很难回头。</p>
+
+    <p>Change 采用完全不同的理念：<strong>依赖是启用器，而非门槛</strong>。</p>
+
+    <div class="process-phase">
+        <pre>
+传统瀑布模式：
+  PLANNING ────────► IMPLEMENTING ────────► DONE
+      │                    │
+      │   "不能回头"        │
+      └────────────────────┘
+
+Change 的流动模式：
+  proposal ◄──► specs ◄──► design ◄──► tasks ◄──► implement
+      │           │          │          │           │
+      └───────────┴──────────┴──────────┴───────────┘
+                    随时可以回溯和修改
+        </pre>
+    </div>
+
+    <p>这意味着：</p>
+    <ul>
+        <li>你可以在实现过程中发现设计问题，回去修改 design.md</li>
+        <li>你可以在写 specs 时发现 proposal 的范围不对，回去调整</li>
+        <li>没有"锁定"的阶段，只有"当前的理解"</li>
+    </ul>
+
+    <h3>2. 迭代而非瀑布 (Iterative, Not Waterfall)</h3>
+
+    <p>Change 承认一个现实：<strong>我们对问题的理解会随着工作深入而演进</strong>。</p>
+
+    <div class="scenario">
+        <pre>
+# 初始理解
+proposal.md: "添加深色模式"
+
+# 实现中发现
+design.md: "需要 CSS 变量系统，比预想复杂"
+
+# 继续深入
+tasks.md: "拆分为 3 个子任务，先做基础设施"
+
+# 最终交付
+archive/: 完整的决策记录，包含演进过程
+        </pre>
+    </div>
+
+    <p>每个 artifact 都可以随时更新，Change 记录的是<strong>思考的演进</strong>，而非<strong>一次性的规划</strong>。</p>
+
+    <h3>3. 简单而非复杂 (Easy, Not Complex)</h3>
+
+    <p>Change 的结构极其简单：</p>
+
+    <pre>
+openspec/changes/&lt;name&gt;/
+├── proposal.md      # 为什么做（1页）
+├── specs/           # 做什么（可测试的场景）
+├── design.md        # 怎么做（技术决策）
+└── tasks.md         # 具体步骤（可勾选）
+    </pre>
+
+    <p>没有复杂的元数据、没有强制的格式、没有繁琐的工具链。<strong>Markdown 就是全部</strong>。</p>
+
+    <p>这种简单性带来几个好处：</p>
+    <ul>
+        <li>AI 可以直接读写，无需特殊解析</li>
+        <li>人类可以直接阅读和编辑</li>
+        <li>版本控制系统原生支持</li>
+        <li>任何编辑器都能使用</li>
+    </ul>
+
+    <h3>4. 棕地优先 (Brownfield-First)</h3>
+
+    <p>大多数软件工作不是从零开始，而是修改现有系统。Change 的 <strong>Delta Specs</strong> 设计专门解决这个问题：</p>
+
+    <div class="scenario">
+        <pre>
+## ADDED Requirements
+### Requirement: 双因素认证
+...
+
+## MODIFIED Requirements
+### Requirement: 会话过期
+（原来是 30 分钟，改为 15 分钟）
+...
+
+## REMOVED Requirements
+### Requirement: 记住我
+（已废弃，迁移到新的认证流程）
+        </pre>
+    </div>
+
+    <p>Delta 表达的是<strong>变化</strong>，而非<strong>全量状态</strong>。这让：</p>
+    <ul>
+        <li>多个 Change 可以并行修改同一个 spec，只要不冲突</li>
+        <li>Review 时只看变化，不需要 diff 整个文档</li>
+        <li>归档时智能合并，而非简单覆盖</li>
+    </ul>
+
+    <h2>Change 的生命周期</h2>
+
+    <h3>创建：从意图到结构</h3>
+
+    <pre>
+/opsx:new add-dark-mode
+    </pre>
+
+    <p>一个 Change 从一个<strong>意图</strong>开始。这个意图可能模糊（"改善用户体验"）或具体（"添加深色模式切换"），但它必须存在。</p>
+
+    <p>创建 Change 的行为本身就是一种<strong>承诺</strong>：我们要认真对待这个工作，而不是随便写几行代码。</p>
+
+    <h3>规划：渐进式明确</h3>
+
+    <div class="process-phase">
+        <pre>
+proposal (为什么)
+    ↓
+specs (做什么)
+    ↓
+design (怎么做)
+    ↓
+tasks (具体步骤)
+        </pre>
+    </div>
+
+    <p>每个 artifact 都在回答一个问题，每个问题的答案都为下一个问题提供上下文。</p>
+
+    <p><strong>关键洞察</strong>：这个顺序不是强制的，而是<strong>推荐的思考路径</strong>。你可以：</p>
+    <ul>
+        <li>跳过 design（简单变更不需要）</li>
+        <li>先写 tasks 再补 specs（探索性工作）</li>
+        <li>反复迭代任何 artifact</li>
+    </ul>
+
+    <h3>实现：有指导的执行</h3>
+
+    <pre>
+/opsx:apply
+    </pre>
+
+    <p>当 AI 执行 <code>/opsx:apply</code> 时，它不是在"猜测"用户想要什么，而是在<strong>执行一份明确的契约</strong>：</p>
+
+    <ol>
+        <li>读取 proposal 理解背景</li>
+        <li>读取 specs 理解需求</li>
+        <li>读取 design 理解方案</li>
+        <li>按照 tasks 逐项实现</li>
+        <li>每完成一项，勾选对应的 checkbox</li>
+    </ol>
+
+    <p>这种模式让 AI 的行为<strong>可预测、可追溯、可验证</strong>。</p>
+
+    <h3>归档：知识的沉淀</h3>
+
+    <pre>
+/opsx:archive
+    </pre>
+
+    <p>归档不是简单的"删除"或"移动"，而是<strong>知识的沉淀</strong>：</p>
+
+    <div class="scenario">
+        <pre>
+归档前：
+openspec/
+├── specs/auth/spec.md           # 当前状态
+└── changes/add-2fa/             # 进行中的变更
+    └── specs/auth/spec.md       # Delta
+
+归档后：
+openspec/
+├── specs/auth/spec.md           # 合并后的新状态
+└── changes/archive/
+    └── 2025-01-24-add-2fa/      # 完整的决策记录
+        ├── proposal.md          # 为什么做
+        ├── design.md            # 怎么做
+        ├── tasks.md             # 做了什么
+        └── specs/               # 改了什么
+        </pre>
+    </div>
+
+    <p>归档后，你可以回答这些问题：</p>
+    <ul>
+        <li>为什么系统有双因素认证？→ 看 proposal</li>
+        <li>当时考虑了哪些方案？→ 看 design</li>
+        <li>具体改了哪些代码？→ 看 tasks</li>
+        <li>需求是什么？→ 看 specs</li>
+    </ul>
+
+    <h2>Change 与其他概念的关系</h2>
+
+    <h3>Change vs. Git Commit</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>维度</th>
+                <th>Git Commit</th>
+                <th>Change</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>粒度</td>
+                <td>代码变更</td>
+                <td>逻辑变更单元</td>
+            </tr>
+            <tr>
+                <td>内容</td>
+                <td>diff</td>
+                <td>意图 + 设计 + 需求 + 任务</td>
+            </tr>
+            <tr>
+                <td>时机</td>
+                <td>代码写完后</td>
+                <td>代码写之前</td>
+            </tr>
+            <tr>
+                <td>目的</td>
+                <td>版本控制</td>
+                <td>意图对齐</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>一个 Change 可能对应多个 Git Commit，但它们服务于同一个逻辑目标。</p>
+
+    <h3>Change vs. Jira Issue</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>维度</th>
+                <th>Jira Issue</th>
+                <th>Change</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>存储</td>
+                <td>外部系统</td>
+                <td>代码仓库内</td>
+            </tr>
+            <tr>
+                <td>内容</td>
+                <td>描述 + 状态</td>
+                <td>完整的实现蓝图</td>
+            </tr>
+            <tr>
+                <td>受众</td>
+                <td>人类团队</td>
+                <td>人类 + AI</td>
+            </tr>
+            <tr>
+                <td>版本化</td>
+                <td>独立于代码</td>
+                <td>与代码同源</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>Change 可以看作是 Jira Issue 的"实现规格"——Issue 说"做什么"，Change 说"怎么让 AI 正确地做"。</p>
+
+    <h3>Change vs. PRD/设计文档</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>维度</th>
+                <th>传统文档</th>
+                <th>Change</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>格式</td>
+                <td>自由格式</td>
+                <td>结构化模板</td>
+            </tr>
+            <tr>
+                <td>更新</td>
+                <td>经常过时</td>
+                <td>随代码演进</td>
+            </tr>
+            <tr>
+                <td>粒度</td>
+                <td>通常较大</td>
+                <td>聚焦单一变更</td>
+            </tr>
+            <tr>
+                <td>可执行性</td>
+                <td>人类解读</td>
+                <td>AI 可直接执行</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>Change 是<strong>可执行的文档</strong>——它的结构专门设计为 AI 可以理解和执行。</p>
+
+    <h2>设计哲学的深层含义</h2>
+
+    <h3>1. 人类负责"什么"和"为什么"，AI 负责"怎么做"</h3>
+
+    <p>Change 的 artifact 结构体现了一种分工：</p>
+
+    <div class="process-phase">
+        <pre>
+人类主导：
+├── proposal.md    # 为什么做这个？（战略判断）
+└── specs/         # 要达到什么效果？（需求定义）
+
+AI 可以辅助，人类审核：
+├── design.md      # 技术方案（AI 建议，人类决策）
+└── tasks.md       # 实现步骤（AI 生成，人类确认）
+
+AI 执行：
+└── /opsx:apply    # 按照 tasks 写代码
+        </pre>
+    </div>
+
+    <p>这种分工让人类保持对<strong>意图</strong>的控制，同时将<strong>执行</strong>委托给 AI。</p>
+
+    <h3>2. 显式优于隐式</h3>
+
+    <p>传统 AI 编程中，很多假设是隐式的：</p>
+    <ul>
+        <li>"用户应该知道我用的是 React"</li>
+        <li>"这个函数的边界情况应该很明显"</li>
+        <li>"错误处理按照项目惯例来"</li>
+    </ul>
+
+    <p>Change 强制将这些假设<strong>显式化</strong>：</p>
+
+    <div class="scenario">
+        <pre>
+## Context (config.yaml)
+Tech stack: TypeScript, React, Node.js
+Testing: Jest + React Testing Library
+
+## Specs
+#### Scenario: 无效输入
+- WHEN 用户输入空字符串
+- THEN 显示错误提示"请输入有效内容"
+        </pre>
+    </div>
+
+    <p>显式化带来的好处：</p>
+    <ul>
+        <li>AI 不需要猜测</li>
+        <li>人类可以 review</li>
+        <li>未来可以追溯</li>
+    </ul>
+
+    <h3>3. 小而聚焦优于大而全</h3>
+
+    <p>Change 鼓励<strong>小的、聚焦的变更</strong>：</p>
+
+    <div class="scenario">
+        <pre>
+不好的做法：
+changes/
+└── big-refactor-and-new-features/  # 范围太大，难以管理
+
+好的做法：
+changes/
+├── refactor-auth-module/           # 聚焦：重构认证
+├── add-2fa/                        # 聚焦：添加双因素
+└── improve-login-ux/               # 聚焦：改善登录体验
+        </pre>
+    </div>
+
+    <p>小的 Change 更容易：</p>
+    <ul>
+        <li>理解和 review</li>
+        <li>独立测试和部署</li>
+        <li>出问题时回滚</li>
+        <li>并行开发</li>
+    </ul>
+
+    <h3>4. 过程即产品</h3>
+
+    <p>Change 不仅仅是达到目标的手段，<strong>Change 本身就是有价值的产出</strong>：</p>
+
+    <ul>
+        <li><strong>proposal.md</strong> 是决策的记录</li>
+        <li><strong>design.md</strong> 是架构知识的沉淀</li>
+        <li><strong>specs/</strong> 是系统行为的文档</li>
+        <li><strong>tasks.md</strong> 是实现路径的记录</li>
+    </ul>
+
+    <p>当 Change 归档后，这些 artifact 成为项目的<strong>知识资产</strong>，帮助未来的开发者（人类或 AI）理解系统是如何演进到当前状态的。</p>
+
+    <h2>实践指南</h2>
+
+    <h3>何时创建 Change</h3>
+
+    <p><strong>应该创建：</strong></p>
+    <ul>
+        <li>✅ 添加新功能</li>
+        <li>✅ 修复复杂 bug（需要理解上下文）</li>
+        <li>✅ 重构代码</li>
+        <li>✅ 任何需要 AI 帮助实现的工作</li>
+    </ul>
+
+    <p><strong>不需要创建：</strong></p>
+    <ul>
+        <li>❌ 简单的 typo 修复</li>
+        <li>❌ 一行代码的改动</li>
+        <li>❌ 纯粹的格式调整</li>
+    </ul>
+
+    <h3>如何保持 Change 聚焦</h3>
+
+    <p>问自己这些问题：</p>
+    <ol>
+        <li>这个 Change 能用一句话描述吗？</li>
+        <li>它能在一天内完成吗？</li>
+        <li>它可以独立部署吗？</li>
+    </ol>
+
+    <p>如果答案是"否"，考虑拆分。</p>
+
+    <h3>何时更新 vs. 新建</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>情况</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>同样的意图，细化执行</td>
+                <td>更新现有 Change</td>
+            </tr>
+            <tr>
+                <td>范围缩小（先做 MVP）</td>
+                <td>更新，完成后归档，再新建</td>
+            </tr>
+            <tr>
+                <td>意图根本改变</td>
+                <td>新建 Change</td>
+            </tr>
+            <tr>
+                <td>范围爆炸</td>
+                <td>归档已完成部分，新建</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>总结</h2>
+
+    <p>Change 的设计哲学可以归结为一句话：</p>
+
+    <blockquote>
+        <strong>让 AI 编程从"对话"变成"契约"，从"猜测"变成"执行"，从"一次性"变成"可追溯"。</strong>
+    </blockquote>
+
+    <p>它不是要增加流程的负担，而是要<strong>降低 AI 编程的不确定性</strong>。通过一个轻量级的结构化层，让人类和 AI 在"做什么"上达成一致，然后让 AI 专注于"怎么做"。</p>
+
+    <p>这就是 Change 的本质：<strong>人机协作的契约，知识沉淀的载体，可预测 AI 编程的基础</strong>。</p>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="/write/20260204_openspec_change.md" target="_blank">原文</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
