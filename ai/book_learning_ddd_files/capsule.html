@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深度精读：学习领域驱动设计 (Learning DDD)</title>
+    <style>
+        :root {
+            /* 调色板 - 柔和且专业的浅色调 */
+            --bg-body: #f9fafb;
+            --bg-card: #ffffff;
+            --text-main: #1f2937;
+            --text-secondary: #4b5563;
+            --border-color: #e5e7eb;
+            
+            /* 各部分主题色 */
+            --theme-strategic: #3b82f6; /* 战略 - 蓝 */
+            --theme-tactical: #10b981;  /* 战术 - 绿 */
+            --theme-practice: #f59e0b;  /* 实践 - 橙 */
+            --theme-relation: #8b5cf6;  /* 关系 - 紫 */
+            
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        /* 顶部导航区 */
+        header {
+            background: linear-gradient(to right, #ffffff, #f3f4f6);
+            padding: 4rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: -webkit-linear-gradient(45deg, #2563eb, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* 核心容器 */
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* 标签导航 */
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 99px;
+            border: 1px solid var(--border-color);
+            background: white;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .nav-btn.active {
+            color: white;
+            border-color: transparent;
+        }
+
+        /* 动态主题类 */
+        .nav-btn[data-target="strategic"].active { background-color: var(--theme-strategic); }
+        .nav-btn[data-target="tactical"].active { background-color: var(--theme-tactical); }
+        .nav-btn[data-target="practice"].active { background-color: var(--theme-practice); }
+        .nav-btn[data-target="relation"].active { background-color: var(--theme-relation); }
+
+        /* 内容区域 */
+        .tab-content {
+            display: none;
+            animation: slideUp 0.5s ease-out;
+        }
+        .tab-content.active { display: block; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 章节标题 */
+        .chapter-block {
+            margin-bottom: 4rem;
+        }
+
+        .chapter-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .chapter-num {
+            background: #e5e7eb;
+            color: var(--text-secondary);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-right: 1rem;
+        }
+
+        /* 金句引用 */
+        .golden-quote {
+            position: relative;
+            background: #fffbeb;
+            padding: 1.5rem 2rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+            font-style: italic;
+            color: #92400e;
+            box-shadow: var(--shadow-sm);
+        }
+        .golden-quote::before {
+            content: "❝";
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            font-size: 3rem;
+            color: #fcd34d;
+            opacity: 0.5;
+        }
+        .quote-author {
+            display: block;
+            text-align: right;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            font-style: normal;
+        }
+
+        /* 知识翻转卡片网格 */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            width: 100%;
+            height: 240px; /* 固定高度 */
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: var(--shadow-md);
+            border-radius: 12px;
+        }
+
+        .flip-card:hover .flip-card-inner, .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            box-sizing: border-box;
+        }
+
+        .flip-card-front {
+            background-color: #ffffff;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .flip-card-front h4 {
+            font-size: 1.25rem;
+            margin: 0 0 0.5rem 0;
+            color: var(--text-main);
+        }
+
+        .flip-card-front .icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .flip-card-front .tip {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            margin-top: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .flip-card-back {
+            background: linear-gradient(135deg, #4f46e5, #3b82f6);
+            color: white;
+            transform: rotateY(180deg);
+            text-align: left;
+            align-items: flex-start;
+            overflow-y: auto; /* 内容过多可滚动 */
+        }
+
+        /* 不同部分卡片背面颜色 */
+        #tactical .flip-card-back { background: linear-gradient(135deg, #059669, #10b981); }
+        #practice .flip-card-back { background: linear-gradient(135deg, #d97706, #f59e0b); }
+        #relation .flip-card-back { background: linear-gradient(135deg, #7c3aed, #8b5cf6); }
+
+        .flip-card-back h5 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1rem;
+            opacity: 0.9;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            width: 100%;
+            padding-bottom: 0.25rem;
+        }
+
+        .flip-card-back p {
+            font-size: 0.9rem;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* 折叠详情区 */
+        .details-container {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+
+        .details-summary {
+            padding: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            background-color: #f9fafb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .details-summary:hover {
+            background-color: #f3f4f6;
+        }
+
+        .details-content {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: none;
+            background-color: #fff;
+        }
+        
+        .details-container.open .details-content {
+            display: block;
+        }
+
+        .details-content ul {
+            padding-left: 1.2rem;
+            margin: 0;
+        }
+        
+        .details-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* 标签 */
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-right: 0.5rem;
+            text-transform: uppercase;
+        }
+        .tag-core { background: #fee2e2; color: #b91c1c; }
+        .tag-support { background: #fef3c7; color: #b45309; }
+        .tag-generic { background: #e0e7ff; color: #4338ca; }
+
+        footer {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 4rem;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .nav-tabs {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .nav-btn {
+                width: 100%;
+                text-align: center;
+            }
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>学习领域驱动设计</h1>
+    <div class="subtitle">Learning Domain-Driven Design (Vlad Khononov 著)</div>
+    <div style="margin-top: 1rem; font-size: 0.85rem; color: #6b7280;">
+        互动式全书精华摘要 · 4大模块 · 16章精讲
+    </div>
+</header>
+
+<main>
+    <!-- 导航 -->
+    <div class="nav-tabs">
+        <button class="nav-btn active" data-target="strategic" onclick="switchTab('strategic')">Part 1: 战略设计</button>
+        <button class="nav-btn" data-target="tactical" onclick="switchTab('tactical')">Part 2: 战术设计</button>
+        <button class="nav-btn" data-target="practice" onclick="switchTab('practice')">Part 3: DDD 实践</button>
+        <button class="nav-btn" data-target="relation" onclick="switchTab('relation')">Part 4: 架构关系</button>
+    </div>
+
+    <!-- Part 1: 战略设计 -->
+    <div id="strategic" class="tab-content active">
+        <div class="golden-quote">
+            "在我们就问题达成一致之前谈论解决方案是没有意义的。"
+            <span class="quote-author">— Efrat Goldratt-Ashlag</span>
+        </div>
+
+        <!-- Ch 1 -->
+        <div class="chapter-block">
+            <div class="chapter-title"><span class="chapter-num">第1章</span>分析业务领域</div>
+            <p>DDD 的首要任务是理解<strong>问题空间 (Problem Space)</strong>。并非所有代码都同等重要，需将业务拆解为<strong>子域 (Subdomains)</strong>。</p>
+            
+            <div class="card-grid">
+                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <span class="icon">💎</span>
+                            <h4>核心子域 (Core)</h4>
+                            <span class="tag tag-core">最高优先级</span>
+                            <span class="tip">点击翻转</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>企业的核心竞争力</h5>
+                            <p>• 独特性：区别于竞争对手的关键。<br>• 复杂度高：包含最复杂的业务逻辑。<br>• 策略：必须内部开发，投入最优秀的资源。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <span class="icon">📦</span>
+                            <h4>通用子域 (Generic)</h4>
+                            <span class="tag tag-generic">购买/外购</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>行业标准功能</h5>
+                            <p>• 普遍性：所有公司都在做（如认证、发票）。<br>• 复杂度高：虽然复杂但不带来竞争优势。<br>• 策略：购买SaaS或使用开源，避免自研。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <span class="icon">🏗️</span>
+                            <h4>支撑子域 (Supporting)</h4>
+                            <span class="tag tag-support">外包/初级</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>必要的辅助功能</h5>
+                            <p>• 辅助性：支持核心业务运行。<br>• 复杂度低：通常是CRUD操作。<br>• 策略：外包或由初级工程师开发。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ch 2 -->
+        <div class="chapter-block">
+            <div class="chapter-title"><span class="chapter-num">第2章</span>发现领域知识</div>
+            <div class="details-container">
+                <div class="details-summary" onclick="this.parentElement.classList.toggle('open')">
+                    核心概念：通用语言 (Ubiquitous Language) <span style="float:right">▼</span>
+                </div>
+                <div class="details-content">
+                    <ul>
+                        <li><strong>定义：</strong> 团队成员（领域专家、开发者、测试等）共同使用的、严格的、无歧义的语言。</li>
+                        <li><strong>目的：</strong> 消除沟通中的“翻译”成本。</li>
+                        <li><strong>范围：</strong> 存在于对话、文档、图表，最重要的是——<strong>代码</strong>中。</li>
+                        <li><strong>原则：</strong> 一个术语在同一个上下文中有且仅有一个含义。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ch 3 & 4 -->
+        <div class="chapter-block">
+            <div class="chapter-title"><span class="chapter-num">第3 & 4章</span>限界上下文与集成</div>
+            <p><strong>限界上下文 (Bounded Context)</strong> 是语义和模型的边界，属于<strong>解决方案空间 (Solution Space)</strong>。</p>
+            
+            <div class="card-grid">
+                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <span class="icon">🧩</span>
+                            <h4>合作关系</h4>
+                            <span class="tip">Partnership / Shared Kernel</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>紧密协作</h5>
+                            <p>• <strong>Partnership：</strong> 两个团队荣辱与共，同步部署。<br>• <strong>Shared Kernel：</strong> 共享一部分代码或模型库（需谨慎，易导致耦合）。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <span class="icon">🛡️</span>
+                            <h4>单向关系</h4>
+                            <span class="tip">Customer-Supplier</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h5>上下游关系</h5>
+                            <p>• <strong>Conformist：</strong> 下游无条件遵从上游模型。<br>• <strong>ACL (防腐层)：</strong> 下游建立翻译层，隔离上游模型污染。<br>• <strong>OHS (开放主机服务)：</strong> 上游提供标准公共协议。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Part 2: 战术设计 -->
+    <div id="tactical" class="tab-content">
+        <div class="golden-quote">
+            "业务逻辑是软件的心脏。战术设计提供了实现它的工具。"
+        </div>
+
+        <!-- Ch 5-7 -->
+        <div class="chapter-block">
+            <div class="chapter-title"><span class="chapter-num">第5-7章</span>业务逻辑实现模式</div>
+            <p>根据子域的复杂度选择合适的实现模式，不要过度设计。</p>
+
+            <div class="card-grid">
+                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <h4>简单逻辑模式</h4>
+                            <span class="tip">Transaction Script / Active Record</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <p><strong>适用：</strong> 支撑子域或通用子域。</p>
+                            <ul>
+                                <li><strong>事务脚本：</strong> 过程式代码，直观，适合ETL。</li>
+                                <li><strong>活动记录：</strong> 对象封装数据和数据库访问，适合简单的CRUD。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <h4>领域模型 (Domain Model)</h4>
+                            <span class="tip">应对复杂核心子域</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <p><strong>核心构建块：</strong></p>
+                            <ul>
+                                <li><strong>值对象：</strong> 不可变，由属性定义，无ID。</li>
+                                <li><strong>实体：</strong> 有ID，注重生命周期。</li>
+                                <li><strong>聚合：</strong> 一致性边界，通过聚合根访问。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <h4>事件溯源 (Event Sourcing)</h4>
+                            <span class="tip">时间维度的建模</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <p><strong>核心思想：</strong> 不存储当前状态，而是存储导致状态变化的一系列<strong>事件</strong>。</p>
+                            <p><strong>优势：</strong> 审计日志、时间旅行、深层分析。</p>
+                            <p><strong>适用：</strong> 金融、法律等高价值核心子域。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ch 8-9 -->
+        <div class="chapter-block">
+            <div class="chapter-title"><span class="chapter-num">第8-9章</span>架构与通信</div>
+            <div class="details-container">
+                <div class="details-summary" onclick="this.parentElement.classList.toggle('open')">
+                    三种核心架构模式 <span style="float:right">▼</span>
+                </div>
+                <div class="details-content">
+                    <ol>
+                        <li><strong>分层架构 (Layered)：</strong> 传统的 UI -> BLL -> DAL。容易导致依赖数据库。</li>
+                        <li><strong>端口与适配器 (Ports & Adapters / Hexagonal)：</strong> 业务逻辑位于中心，依赖倒置。适合实现领域模型。</li>
+                        <li><strong>CQRS (命令查询职责分离)：</strong> 读写分离。写模型负责业务一致性，读模型负责高效查询。</li>
+                    </ol>
+                </div>
+            </div>
+            <br>
+            <div class="details-container">
+                <div class="details-summary" onclick="this.parentElement.classList.toggle('open')">
+                    跨组件通信模式 <span style="float:right">▼</span>
+                </div>
+                <div class="details-content">
+                    <ul>
+                        <li><strong>Outbox 模式：</strong> 解决“保存数据”和“发送消息”的原子性问题。</li>
+                        <li><strong>Saga：</strong> 管理跨服务的长事务，通过编排或协同实现最终一致性。</li>
+                        <li><strong>Process Manager：</strong> 具有状态的中心化流程管理器，用于复杂流程编排。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Part 3: 实践 -->
+    <div id="practice" class="tab-content">
+        <div class="chapter-block">
+            <div class="chapter-title"><span class="chapter-num">第10章</span>设计启发式 (Heuristics)</div>
+            <p>如何根据上下文做决策？这里有一个简单的决策逻辑：</p>
+            <div style="background: white; padding: 1.5rem; border-radius: 8px; border-left: 4px solid var(--theme-practice);">
+                <ul style="list-style: none; padding: 0;">
+                    <li>❓ <strong>涉及金钱或需要通过时间回溯进行审计？</strong> 👉 事件溯源领域模型</li>
+                    <li>❓ <strong>核心子域，逻辑复杂？</strong> 👉 领域模型 (Domain Model)</li>
+                    <li>❓ <strong>支撑子域，数据结构复杂？</strong> 👉 活动记录 (Active Record)</li>
+                    <li>❓ <strong>逻辑简单？</strong> 👉 事务脚本 (Transaction Script)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="chapter-block">
+            <div class="chapter-title"><span class="chapter-num">第11章</span>演进设计</div>
+            <p>业务是动态的，子域类型会随时间变化。例如，支撑子域可能随着业务发展变成核心子域（需要重构），核心子域可能因为出现通用解决方案变成通用子域（购买替换自研）。架构必须支持这种演进。</p>
+        </div>
+
+        <div class="chapter-block">
+            <div class="chapter-title"><span class="chapter-num">第12章</span>事件风暴 (EventStorming)</div>
+            <p>一种快速发现领域知识、建立通用语言的协作工作坊。</p>
+            <div class="card-grid">
+                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <span class="icon">🌪️</span>
+                            <h4>核心要素</h4>
+                        </div>
+                        <div class="flip-card-back">
+                            <ul>
+                                <li><strong>领域事件 (橙色)：</strong> 过去发生的事实。</li>
+                                <li><strong>命令 (蓝色)：</strong> 触发事件的动作。</li>
+                                <li><strong>角色 (黄色)：</strong> 执行命令的人。</li>
+                                <li><strong>聚合 (大黄)：</strong> 接受命令并产生事件的逻辑单元。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chapter-block">
+            <div class="chapter-title"><span class="chapter-num">第13章</span>现实世界中的 DDD</div>
+            <p>在遗留系统（Brownfield）中落地 DDD 的策略：</p>
+            <ul>
+                <li><strong>从战略设计切入：</strong> 首先理清子域和上下文。</li>
+                <li><strong>绞杀者模式 (Strangler Fig)：</strong> 不要推倒重来。在旧系统旁构建新功能，逐步拦截流量，直至旧系统消亡。</li>
+                <li><strong>务实至上：</strong> 仅在核心子域投入最大的重构精力。</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Part 4: 架构关系 -->
+    <div id="relation" class="tab-content">
+        <div class="golden-quote">
+            "微服务是限界上下文的一种物理边界表现形式，但两者并不等同。"
+        </div>
+
+        <!-- Ch 14 -->
+        <div class="chapter-block">
+            <div class="chapter-title"><span class="chapter-num">第14章</span>微服务</div>
+            <p><strong>误区：</strong> 微服务 = 限界上下文。</p>
+            <p><strong>正解：</strong> 限界上下文是逻辑边界，微服务是物理边界。</p>
+            <ul>
+                <li>限界上下文 > 微服务：一个上下文可能包含多个服务。</li>
+                <li><strong>最佳实践：</strong> 将微服务边界与<strong>子域</strong>对齐，构建“深度模块”（接口简单，功能强大）。</li>
+            </ul>
+        </div>
+
+        <!-- Ch 15 -->
+        <div class="chapter-block">
+            <div class="chapter-title"><span class="chapter-num">第15章</span>事件驱动架构 (EDA)</div>
+            <p>系统间通信的三种关键事件类型：</p>
+            <div class="card-grid">
+                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <h4>1. 事件通知</h4>
+                            <span class="tip">Notification</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <p><strong>特点：</strong> 极简，仅包含ID或链接。<br><strong>目的：</strong> 告诉外界“有事发生了”。<br><strong>耦合度：</strong> 极低。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <h4>2. 事件携带状态转移</h4>
+                            <span class="tip">ECST</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <p><strong>特点：</strong> 包含变更后的完整数据快照。<br><strong>目的：</strong> 消费者可更新本地缓存，无需反查。<br><strong>耦合度：</strong> 中等（数据模式耦合）。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <h4>3. 领域事件</h4>
+                            <span class="tip">Domain Event</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <p><strong>特点：</strong> 完整描述业务生命周期中的变化。<br><strong>目的：</strong> 建模业务意图。<br><strong>注意：</strong> 尽量不要直接对外暴露内部领域事件，应转换为公有事件。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ch 16 -->
+        <div class="chapter-block">
+            <div class="chapter-title"><span class="chapter-num">第16章</span>数据网格 (Data Mesh)</div>
+            <p>将 DDD 原则应用于分析数据 (OLAP) 领域：</p>
+            <ul>
+                <li><strong>去中心化：</strong> 数据的所有权归属于生成数据的领域团队（限界上下文）。</li>
+                <li><strong>数据即产品：</strong> 将分析数据视为一种对外提供的产品，保证质量、文档和 SLA。</li>
+                <li><strong>结合 CQRS：</strong> 利用 CQRS 的读模型来生成数据产品。</li>
+            </ul>
+        </div>
+    </div>
+
+</main>
+
+<footer>
+    <p>© 2024 Generated Summary based on "Learning Domain-Driven Design" by Vlad Khononov.</p>
+    <p>旨在提供超轻认知负荷的学习体验。</p>
+</footer>
+
+<script>
+    function switchTab(tabId) {
+        // 移除所有 active 状态
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+        // 激活当前选中的 tab
+        document.querySelector(`.nav-btn[data-target="${tabId}"]`).classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+
+        // 平滑滚动到内容区域顶部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>
