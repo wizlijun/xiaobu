@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spec Kit 设计哲学：规范驱动开发的深度解析</title>
+    <style>
+        body {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fff;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+        }
+        h3 {
+            color: #34495e;
+            margin-top: 25px;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+        }
+        .process-phase {
+            background-color: #f1f8ff;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #0366d6;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+        pre {
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        blockquote {
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+            margin: 20px 0;
+            color: #555;
+            font-style: italic;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+    <h1>Spec Kit 设计哲学：规范驱动开发的深度解析</h1>
+
+    <h2>一、核心洞察：权力倒置</h2>
+
+    <h3>传统范式的困境</h3>
+
+    <p>几十年来，软件开发遵循一个隐含假设：<strong>代码是王</strong>。</p>
+
+    <pre>
+传统流程：
+需求文档 → 设计文档 → 代码 → 测试 → 文档腐烂
+    ↓           ↓        ↑
+  (参考)      (指导)   (真相)
+    </pre>
+
+    <p>规范服务于代码——它们是搭建后即丢弃的脚手架。我们写 PRD 来指导开发，画架构图来说明设计，但这些都从属于代码本身。代码是真相，其他一切充其量是"良好意愿"。随着代码演进，规范很少能跟上步伐。</p>
+
+    <h3>Spec Kit 的颠覆</h3>
+
+    <p>Spec Kit 彻底颠覆这一范式：<strong>规范是王，代码服务于规范</strong>。</p>
+
+    <pre>
+SDD 流程：
+规范(Spec) → 计划(Plan) → 任务(Tasks) → 代码
+    ↑__________________________________|
+              生产反馈闭环
+    </pre>
+
+    <p>这不是渐进式改良，而是对"什么驱动开发"的根本性重构。当规范直接生成代码时，意图与实现之间的鸿沟不复存在——只有转换。</p>
+
+    <hr>
+
+    <h2>二、与敏捷开发的概念对比</h2>
+
+    <h3>2.1 核心概念映射</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>敏捷/Scrum 概念</th>
+                <th>Spec Kit 对应</th>
+                <th>本质区别</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Epic</strong></td>
+                <td><code>specs/[feature]/</code> 目录</td>
+                <td>Epic 是管理单元；Spec 目录是可执行的生成源</td>
+            </tr>
+            <tr>
+                <td><strong>User Story</strong></td>
+                <td><code>spec.md</code> 中的用户故事</td>
+                <td>Story 是沟通工具；Spec 中的故事是 AI 的执行指令</td>
+            </tr>
+            <tr>
+                <td><strong>Acceptance Criteria</strong></td>
+                <td>Given/When/Then 场景</td>
+                <td>AC 用于验收；Spec 中的场景直接生成测试代码</td>
+            </tr>
+            <tr>
+                <td><strong>Sprint Backlog</strong></td>
+                <td><code>tasks.md</code></td>
+                <td>Backlog 是承诺；Tasks 是带依赖关系的执行图</td>
+            </tr>
+            <tr>
+                <td><strong>Definition of Done</strong></td>
+                <td><code>checklists/*.md</code></td>
+                <td>DoD 是检查清单；Checklist 是"需求的单元测试"</td>
+            </tr>
+            <tr>
+                <td><strong>Technical Spike</strong></td>
+                <td><code>research.md</code></td>
+                <td>Spike 是时间盒探索；Research 是持久化的技术决策</td>
+            </tr>
+            <tr>
+                <td><strong>Sprint Planning</strong></td>
+                <td><code>/speckit.plan</code> 命令</td>
+                <td>Planning 是会议；Plan 是自动生成的技术方案</td>
+            </tr>
+            <tr>
+                <td><strong>Retrospective</strong></td>
+                <td>Constitution 演进</td>
+                <td>Retro 产出行动项；Constitution 是不可变的架构基因</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>2.2 关键差异</h3>
+
+    <div class="process-phase">
+        <p><strong>敏捷关注"谁在什么时候做什么"</strong></p>
+        <pre>
+Sprint 1:
+  - Story A (5 points) → Alice
+  - Story B (3 points) → Bob
+  - Story C (8 points) → Team
+        </pre>
+    </div>
+
+    <div class="process-phase">
+        <p><strong>Spec Kit 关注"AI 需要什么上下文才能生成正确代码"</strong></p>
+        <pre>
+specs/001-user-auth/
+├── spec.md        # WHAT: 用户需要什么
+├── plan.md        # HOW: 技术如何实现
+├── tasks.md       # SEQUENCE: 执行顺序和依赖
+└── contracts/     # INTERFACE: API 契约定义
+        </pre>
+    </div>
+
+    <hr>
+
+    <h2>三、与 Jira Issue 的深度对比</h2>
+
+    <h3>3.1 本质定位</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>维度</th>
+                <th>Jira Issue</th>
+                <th>Spec Kit 文档</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>本质</strong></td>
+                <td>工作项跟踪 (Who & When)</td>
+                <td>设计文档 (What & How)</td>
+            </tr>
+            <tr>
+                <td><strong>目的</strong></td>
+                <td>管理人员协作</td>
+                <td>指导 AI 生成代码</td>
+            </tr>
+            <tr>
+                <td><strong>粒度</strong></td>
+                <td>任务/Bug/Story 级别</td>
+                <td>功能级别 (Feature)</td>
+            </tr>
+            <tr>
+                <td><strong>内容</strong></td>
+                <td>状态、指派人、截止日期、评论</td>
+                <td>验收标准、技术方案、任务分解</td>
+            </tr>
+            <tr>
+                <td><strong>生命周期</strong></td>
+                <td>完成即关闭</td>
+                <td>随代码版本演进</td>
+            </tr>
+            <tr>
+                <td><strong>消费者</strong></td>
+                <td>项目经理、团队成员</td>
+                <td>AI 编程助手</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>3.2 信息结构对比</h3>
+
+    <p><strong>Jira Issue 结构：</strong></p>
+    <pre>
+Issue: AUTH-123
+Type: Story
+Summary: "用户可以通过邮箱登录"
+Description: "作为用户，我希望..."
+Status: In Progress
+Assignee: Alice
+Sprint: Sprint 5
+Story Points: 5
+Labels: [auth, mvp]
+Comments: [讨论历史...]
+    </pre>
+
+    <p><strong>Spec Kit spec.md 结构：</strong></p>
+    <pre>
+# Feature: User Authentication
+
+## User Story 1 - Email Login (P1)
+**Why this priority**: 核心功能，阻塞其他所有功能
+**Independent Test**: 可通过登录流程独立验证
+
+**Acceptance Scenarios**:
+1. Given 有效邮箱和密码
+   When 用户提交登录表单
+   Then 返回 JWT token 并跳转到首页
+
+2. Given 无效密码
+   When 用户提交登录表单
+   Then 显示错误信息，不泄露用户是否存在
+
+## Functional Requirements
+- FR-001: 系统必须支持邮箱+密码认证
+- FR-002: 密码必须使用 bcrypt 哈希存储
+- FR-003: 登录失败 5 次后锁定账户 15 分钟
+
+## Success Criteria
+- SC-001: 用户可在 3 秒内完成登录流程
+- SC-002: 系统支持 1000 并发登录请求
+    </pre>
+
+    <h3>3.3 为什么不能用 Jira 替代 Spec Kit？</h3>
+
+    <p><strong>Jira 的局限性：</strong></p>
+
+    <ol>
+        <li><strong>信息碎片化</strong> - 需求分散在多个 Issue 中，AI 无法获得完整上下文</li>
+        <li><strong>缺乏技术深度</strong> - 没有数据模型、API 契约、技术决策的标准位置</li>
+        <li><strong>无执行顺序</strong> - Issue 之间的依赖关系是弱链接，不是强约束</li>
+        <li><strong>非版本化</strong> - Issue 状态变化不与代码版本绑定</li>
+    </ol>
+
+    <p><strong>Spec Kit 的优势：</strong></p>
+
+    <ol>
+        <li><strong>信息聚合</strong> - 一个目录包含功能的完整上下文</li>
+        <li><strong>技术完备</strong> - 从需求到 API 契约到任务分解，层层递进</li>
+        <li><strong>强依赖图</strong> - <code>tasks.md</code> 明确定义执行顺序和并行机会</li>
+        <li><strong>Git 原生</strong> - 规范与代码在同一仓库，同步版本化</li>
+    </ol>
+
+    <h3>3.4 互补使用模式</h3>
+
+    <pre>
+Spec Kit (设计时)              Jira (执行时)
+─────────────────              ────────────
+spec.md ──────────────────────→ Epic
+  └── User Story 1 ───────────→ Story
+  └── User Story 2 ───────────→ Story
+tasks.md ─────────────────────→ Sub-tasks
+  └── T001 Setup ─────────────→ Sub-task (Alice)
+  └── T002 Model ─────────────→ Sub-task (Bob)
+
+/speckit.taskstoissues 命令可自动同步到 GitHub Issues
+    </pre>
+
+    <hr>
+
+    <h2>四、Spec Kit 的独特概念</h2>
+
+    <h3>4.1 Constitution（宪法）</h3>
+
+    <p><strong>敏捷/Jira 中没有对应概念。</strong></p>
+
+    <p>Constitution 是项目的"架构 DNA"——一组不可变原则，确保每次生成的代码都遵循相同的架构哲学：</p>
+
+    <pre>
+# Project Constitution
+
+## I. Library-First
+每个功能必须先是独立库，不允许直接在应用代码中实现
+
+## II. CLI Interface
+所有库必须通过 CLI 暴露功能，文本输入/输出
+
+## III. Test-First (NON-NEGOTIABLE)
+没有测试就没有代码，红-绿-重构严格执行
+
+## VII. Simplicity
+最多 3 个项目，复杂度必须被证明而非假设
+    </pre>
+
+    <p><strong>为什么需要 Constitution？</strong></p>
+
+    <ul>
+        <li>确保不同时间、不同 AI 模型生成的代码架构一致</li>
+        <li>防止过度工程化（每个复杂度都需要在 Complexity Tracking 中证明）</li>
+        <li>作为 Plan 阶段的"编译时检查"</li>
+    </ul>
+
+    <h3>4.2 Checklist 作为"需求的单元测试"</h3>
+
+    <p><strong>传统 Checklist：</strong> 验证实现是否正确</p>
+    <pre>
+- [ ] 验证登录按钮可点击
+- [ ] 测试错误提示显示正确
+- [ ] 确认跳转到首页
+    </pre>
+
+    <p><strong>Spec Kit Checklist：</strong> 验证需求是否写得正确</p>
+    <pre>
+- [ ] 登录失败的错误信息是否明确定义？[Completeness, Gap]
+- [ ] "快速登录"是否量化为具体时间指标？[Clarity, Spec §NFR-1]
+- [ ] 移动端和桌面端的登录流程是否一致？[Consistency]
+- [ ] 是否定义了账户锁定后的解锁流程？[Coverage, Edge Case]
+    </pre>
+
+    <p><strong>核心区别：</strong></p>
+    <ul>
+        <li>传统：测试系统是否工作</li>
+        <li>Spec Kit：测试需求是否写清楚</li>
+    </ul>
+
+    <h3>4.3 Tasks 的并行标记 [P]</h3>
+
+    <p><strong>Jira 的依赖：</strong> 弱链接，主要用于甘特图展示</p>
+    <pre>
+AUTH-124 blocks AUTH-125
+AUTH-126 is blocked by AUTH-124
+    </pre>
+
+    <p><strong>Spec Kit 的依赖：</strong> 强约束，直接影响执行顺序</p>
+    <pre>
+## Phase 2: Foundational (BLOCKS all user stories)
+- [ ] T004 Setup database schema
+- [ ] T005 [P] Implement auth framework    # 可与 T006 并行
+- [ ] T006 [P] Setup API routing           # 可与 T005 并行
+- [ ] T007 Create base models (depends on T004)
+
+## Phase 3: User Story 1
+- [ ] T010 [P] [US1] Create User model     # 可与 T011 并行
+- [ ] T011 [P] [US1] Create Session model  # 可与 T010 并行
+- [ ] T012 [US1] Implement AuthService (depends on T010, T011)
+    </pre>
+
+    <p><strong>[P] 标记的含义：</strong></p>
+    <ul>
+        <li>不同文件，无依赖</li>
+        <li>AI 可以同时生成这些任务的代码</li>
+        <li>人类团队可以分配给不同成员并行开发</li>
+    </ul>
+
+    <hr>
+
+    <h2>五、工作流对比</h2>
+
+    <h3>5.1 敏捷 Sprint 流程</h3>
+
+    <pre>
+Sprint Planning → Daily Standup → Development → Review → Retro
+     (会议)         (会议)         (编码)      (会议)   (会议)
+    </pre>
+
+    <p><strong>特点：</strong> 以会议为节点，人工协调，代码是产出物</p>
+
+    <h3>5.2 Spec Kit SDD 流程</h3>
+
+    <pre>
+/speckit.specify → /speckit.plan → /speckit.tasks → /speckit.implement
+    (生成规范)      (生成计划)      (生成任务)       (生成代码)
+        ↓               ↓               ↓               ↓
+    spec.md         plan.md         tasks.md        src/*.py
+                    research.md
+                    data-model.md
+                    contracts/
+    </pre>
+
+    <p><strong>特点：</strong> 以命令为节点，自动生成，规范是产出物（代码是规范的表达）</p>
+
+    <h3>5.3 时间对比</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>活动</th>
+                <th>传统敏捷</th>
+                <th>Spec Kit SDD</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>需求文档</td>
+                <td>2-3 小时</td>
+                <td>5 分钟 (<code>/speckit.specify</code>)</td>
+            </tr>
+            <tr>
+                <td>技术设计</td>
+                <td>3-4 小时</td>
+                <td>5 分钟 (<code>/speckit.plan</code>)</td>
+            </tr>
+            <tr>
+                <td>任务分解</td>
+                <td>1-2 小时</td>
+                <td>5 分钟 (<code>/speckit.tasks</code>)</td>
+            </tr>
+            <tr>
+                <td><strong>总计</strong></td>
+                <td><strong>~10 小时</strong></td>
+                <td><strong>~15 分钟</strong></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <h2>六、Bug 处理的哲学差异</h2>
+
+    <h3>6.1 传统方式</h3>
+
+    <pre>
+Bug 发现 → 创建 Issue → 分配 → 修复 → 关闭
+              ↓
+         (与原需求脱节)
+    </pre>
+
+    <p>Bug 修复往往是"打补丁"，不更新原始需求文档。</p>
+
+    <h3>6.2 Spec Kit 方式</h3>
+
+    <pre>
+Bug 发现 → 更新 Spec → 重新生成 Plan → 重新生成 Tasks → 重新生成代码
+              ↓
+         (规范演进)
+    </pre>
+
+    <blockquote>
+        "Production metrics and incidents don't just trigger hotfixes—they update specifications for the next regeneration."
+    </blockquote>
+
+    <p>Bug 不是独立事件，而是规范不完整的信号。修复 Bug 意味着完善规范。</p>
+
+    <h3>6.3 当前局限</h3>
+
+    <p>Spec Kit 目前<strong>没有</strong>专门的 Bug 处理模板，这是一个设计上的空白：</p>
+    <ul>
+        <li>没有根因分析模板</li>
+        <li>没有轻量级 hotfix 流程</li>
+        <li>没有 Bug 与 Spec 的关联追踪</li>
+    </ul>
+
+    <p>这反映了 SDD 的理想主义：所有问题都应该回归到规范层面解决。实际项目中可能需要补充轻量级的 Bug 处理流程。</p>
+
+    <hr>
+
+    <h2>七、为什么是现在？</h2>
+
+    <p>三股力量的交汇使 Spec Kit 成为可能：</p>
+
+    <h3>7.1 AI 能力跨越阈值</h3>
+
+    <p>自然语言规范可以可靠地生成工作代码。这不是替代开发者，而是放大开发者的效能——自动化从规范到实现的机械翻译。</p>
+
+    <h3>7.2 软件复杂度指数增长</h3>
+
+    <p>现代系统集成数十个服务、框架和依赖。通过手动流程保持所有部分与原始意图对齐越来越困难。SDD 通过规范驱动生成提供系统性对齐。</p>
+
+    <h3>7.3 变化成为常态</h3>
+
+    <p>需求变更不再是例外，而是日常。传统开发将变更视为干扰——每次转向都需要手动传播变更到文档、设计和代码。SDD 将需求变更从障碍转变为正常工作流：改变规范中的核心需求，受影响的实现计划自动更新。</p>
+
+    <hr>
+
+    <h2>八、一句话总结</h2>
+
+    <div class="highlight">
+        <blockquote>
+            <strong>Spec Kit 的哲学是：与其让代码慢慢偏离意图，不如让意图持续生成代码。</strong>
+        </blockquote>
+    </div>
+
+    <p>这套方法论将开发者从"代码的维护者"转变为"规范的策展人"，将创造力聚焦于定义"做什么"和"为什么"，而非"怎么做"的机械劳动。</p>
+
+    <hr>
+
+    <h2>附录：概念速查表</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Spec Kit 概念</th>
+                <th>文件位置</th>
+                <th>敏捷对应</th>
+                <th>Jira 对应</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Feature Spec</td>
+                <td><code>specs/[name]/spec.md</code></td>
+                <td>Epic + Stories</td>
+                <td>Epic</td>
+            </tr>
+            <tr>
+                <td>Plan</td>
+                <td><code>specs/[name]/plan.md</code></td>
+                <td>Technical Design</td>
+                <td>-</td>
+            </tr>
+            <tr>
+                <td>Tasks</td>
+                <td><code>specs/[name]/tasks.md</code></td>
+                <td>Sprint Backlog</td>
+                <td>Sub-tasks</td>
+            </tr>
+            <tr>
+                <td>Checklist</td>
+                <td><code>specs/[name]/checklists/*.md</code></td>
+                <td>Definition of Done</td>
+                <td>-</td>
+            </tr>
+            <tr>
+                <td>Constitution</td>
+                <td><code>memory/constitution.md</code></td>
+                <td>Team Agreements</td>
+                <td>-</td>
+            </tr>
+            <tr>
+                <td>Research</td>
+                <td><code>specs/[name]/research.md</code></td>
+                <td>Technical Spike</td>
+                <td>-</td>
+            </tr>
+            <tr>
+                <td>Contracts</td>
+                <td><code>specs/[name]/contracts/</code></td>
+                <td>API Documentation</td>
+                <td>-</td>
+            </tr>
+            <tr>
+                <td>Data Model</td>
+                <td><code>specs/[name]/data-model.md</code></td>
+                <td>-</td>
+                <td>-</td>
+            </tr>
+            <tr>
+                <td>Quickstart</td>
+                <td><code>specs/[name]/quickstart.md</code></td>
+                <td>-</td>
+                <td>-</td>
+            </tr>
+        </tbody>
+    </table>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="/write/20260205_speckit.md" target="_blank">原文</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
