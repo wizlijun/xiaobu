@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实例化需求 (SBE) - 深度指南与核心摘要</title>
+    <style>
+        /* --- 全局变量与基础设置 --- */
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --primary: #3b82f6; /* 核心蓝 */
+            --primary-dark: #2563eb;
+            --success: #10b981; /* 成功绿 */
+            --danger: #ef4444; /* 警示红 */
+            --accent: #8b5cf6; /* 强调紫 */
+            --text-main: #1e293b;
+            --text-light: #64748b;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* --- 头部区域 --- */
+        header {
+            text-align: center;
+            padding: 4rem 1rem;
+            background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin: 0 0 0.5rem 0;
+            color: var(--text-main);
+            letter-spacing: -0.03em;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-light);
+            font-weight: 400;
+        }
+
+        /* --- 通用标题样式 --- */
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin: 5rem 0 2rem 0;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .section-icon {
+            font-size: 2rem;
+            margin-right: 1rem;
+            background: #eff6ff;
+            color: var(--primary);
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* --- 模块 1: Spec 深度写作指南 --- */
+        .writing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .guide-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-top: 5px solid transparent;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .guide-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .guide-card.rule-1 { border-top-color: var(--danger); }
+        .guide-card.rule-2 { border-top-color: var(--success); }
+        .guide-card.rule-3 { border-top-color: var(--accent); }
+
+        .guide-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tag {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: #f1f5f9;
+            color: var(--text-light);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .comparison-box {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 1.2rem;
+            margin-top: auto; /* Push to bottom */
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 0.85rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .code-block {
+            margin-bottom: 12px;
+            padding-left: 12px;
+            position: relative;
+        }
+
+        .code-block:last-child { margin-bottom: 0; }
+
+        .code-bad { border-left: 3px solid var(--danger); color: var(--text-light); opacity: 0.9; }
+        .code-good { border-left: 3px solid var(--success); color: var(--text-main); font-weight: 600; }
+
+        .code-label {
+            display: block;
+            font-weight: bold;
+            font-family: -apple-system, sans-serif;
+            margin-bottom: 6px;
+            font-size: 0.8rem;
+        }
+        
+        .code-bad .code-label { color: var(--danger); }
+        .code-good .code-label { color: var(--success); }
+
+        .keyword-highlight {
+            background-color: #fef3c7;
+            color: #b45309;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        /* --- 模块 2: 知识翻转卡片 --- */
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            width: 100%;
+            height: 360px; /* 固定高度确保统一 */
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            box-shadow: var(--shadow);
+            border-radius: 16px;
+        }
+
+        /* JS控制翻转类 */
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden; /* Safari */
+            backface-visibility: hidden;
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .flip-card-front {
+            background-color: var(--card-bg);
+            border: 1px solid #e2e8f0;
+        }
+
+        .flip-card-back {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            transform: rotateY(180deg);
+            text-align: left;
+            align-items: flex-start;
+            overflow-y: auto; /* 允许背面内容滚动 */
+            padding-top: 3rem; /* 为滚动条留空 */
+        }
+
+        /* 隐藏滚动条但保留功能 */
+        .flip-card-back::-webkit-scrollbar { width: 4px; }
+        .flip-card-back::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 2px; }
+
+        .card-number {
+            font-size: 5rem;
+            font-weight: 800;
+            color: #f1f5f9;
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            z-index: 0;
+            user-select: none;
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            z-index: 1;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+        }
+
+        .interaction-hint {
+            position: absolute;
+            bottom: 20px;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .back-content { width: 100%; }
+        
+        .back-content h3 {
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .back-content p {
+            font-size: 0.95rem;
+            margin-bottom: 0.8rem;
+            line-height: 1.5;
+            opacity: 0.95;
+        }
+
+        /* --- 模块 3: 生命周期 (垂直时间轴) --- */
+        .timeline-container {
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #e2e8f0;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .timeline-content {
+            width: 42%;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            position: relative;
+            z-index: 1;
+            border-left: 4px solid var(--primary);
+            transition: transform 0.3s;
+        }
+        
+        .timeline-content:hover {
+            transform: scale(1.02);
+        }
+
+        .timeline-item:nth-child(odd) .timeline-content { margin-right: auto; text-align: right; border-left: none; border-right: 4px solid var(--primary); }
+        .timeline-item:nth-child(even) .timeline-content { margin-left: auto; text-align: left; }
+
+        .timeline-dot {
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 50%;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 4px solid white;
+            box-shadow: 0 0 0 2px var(--primary);
+            z-index: 2;
+        }
+
+        .timeline-phase {
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.05em;
+        }
+
+        /* --- 模块 4: 核心原则 (网格) --- */
+        .principles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .principle-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            transition: transform 0.3s;
+        }
+        
+        .principle-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+        }
+
+        .p-icon { font-size: 2.5rem; margin-bottom: 1rem; display: block; }
+        .p-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 0.5rem; display: block; color: var(--text-main); }
+        .p-desc { font-size: 0.9rem; color: var(--text-light); }
+
+        footer {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+            border-top: 1px solid #e2e8f0;
+            margin-top: 4rem;
+            font-size: 0.9rem;
+        }
+
+        /* --- 响应式适配 --- */
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .section-header { flex-direction: column; align-items: flex-start; }
+            .section-icon { margin-bottom: 1rem; }
+            
+            /* 时间轴移动端适配 */
+            .timeline-line { left: 20px; }
+            .timeline-item { justify-content: flex-start; }
+            .timeline-dot { left: 20px; }
+            .timeline-content { width: calc(100% - 60px); margin-left: 50px !important; text-align: left !important; border-right: none !important; border-left: 4px solid var(--primary) !important;}
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>实例化需求 (Specification by Example)</h1>
+    <div class="subtitle">从 Spec 写法到活文档体系：构建正确软件的完整交互指南</div>
+</header>
+
+<div class="container">
+
+    <!-- 模块 1: Spec 深度写作指南 (重点突出) -->
+    <div class="section-header">
+        <div class="section-icon">✍️</div>
+        <span class="section-title">实战指南：Spec 的具体写法与命名规则</span>
+    </div>
+    
+    <p style="margin-bottom: 2rem; color: var(--text-light); font-size: 1.1rem;">
+        好的 Spec 应当像业务文档一样可读，同时像代码一样可执行。请遵循以下三大法则：
+    </p>
+
+    <div class="writing-grid">
+        <!-- 法则 1 -->
+        <div class="guide-card rule-1">
+            <div class="guide-title">
+                法则一：多用名词，少用动词
+                <span class="tag">Declarative</span>
+            </div>
+            <p style="font-size:0.95rem; margin-bottom:1rem; flex-grow:1;">
+                <strong>核心：</strong> Spec 描述的是<strong>业务规则（What）</strong>，而非操作步骤（How）。避免陷入UI细节，如“点击”、“输入”等，这会让测试变得脆弱。
+            </p>
+            <div class="comparison-box">
+                <div class="code-block code-bad">
+                    <span class="code-label">❌ 脚本化 (Script):</span>
+                    Given 我在登录页面<br>
+                    When 我在用户名框输入 "Bob"<br>
+                    And 我点击登录按钮<br>
+                    Then 我应该看到欢迎页面
+                </div>
+                <div class="code-block code-good">
+                    <span class="code-label">✅ 规范化 (Specification):</span>
+                    Given 一个<span class="keyword-highlight">注册用户</span> "Bob"<br>
+                    When "Bob" <span class="keyword-highlight">登录</span>系统<br>
+                    Then 他应该进入<span class="keyword-highlight">已授权状态</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 法则 2 -->
+        <div class="guide-card rule-2">
+            <div class="guide-title">
+                法则二：命名即意图
+                <span class="tag">Intent</span>
+            </div>
+            <p style="font-size:0.95rem; margin-bottom:1rem; flex-grow:1;">
+                <strong>核心：</strong> 标题必须揭示业务价值。不要让读者猜测测试的目的。必须使用开发和业务都能懂的通用语言（Domain Language）。
+            </p>
+            <div class="comparison-box">
+                <div class="code-block code-bad">
+                    <span class="code-label">❌ 技术视角:</span>
+                    Scenario: Test_Shipping_Calc_01<br>
+                    或 "运费计算测试"
+                </div>
+                <div class="code-block code-good">
+                    <span class="code-label">✅ 业务视角:</span>
+                    Scenario: <span class="keyword-highlight">VIP用户</span>享受<span class="keyword-highlight">免运费</span>服务<br>
+                    (背景：鼓励用户升级会员等级)
+                </div>
+            </div>
+        </div>
+
+        <!-- 法则 3 -->
+        <div class="guide-card rule-3">
+            <div class="guide-title">
+                法则三：提炼关键实例
+                <span class="tag">Refining</span>
+            </div>
+            <p style="font-size:0.95rem; margin-bottom:1rem; flex-grow:1;">
+                <strong>核心：</strong> 不要穷举所有数据，那是机器做的事。人写的Spec应该包含最具代表性的关键实例（Key Examples），通常包括基础路径和核心边界。
+            </p>
+            <div class="comparison-box">
+                <div class="code-block code-bad">
+                    <span class="code-label">❌ 罗列数据:</span>
+                    | 99 | 不免邮 |<br>
+                    | 100 | 免邮 |<br>
+                    | 101 | 免邮 |
+                </div>
+                <div class="code-block code-good">
+                    <span class="code-label">✅ 关键实例:</span>
+                    | 消费额 | 结果 | 备注 |<br>
+                    | 99    | 不免 | 边界值 |<br>
+                    | 100   | 免邮 | 达标 |
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模块 2: 全书核心模式 (翻转卡片) -->
+    <div class="section-header">
+        <div class="section-icon">📖</div>
+        <span class="section-title">全书核心流程模式 (点击卡片查看详情)</span>
+    </div>
+
+    <div class="cards-container">
+        <!-- 模式 1: Deriving Scope -->
+        <div class="flip-card" data-card="scope">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-number">01</div>
+                    <div class="card-title">从目标获取范围</div>
+                    <p>不要只听客户说"要什么"<br>要问"为什么"</p>
+                    <span class="tag">Deriving Scope</span>
+                    <div class="interaction-hint">👆 点击翻转</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="back-content">
+                        <h3>Deriving Scope from Goals</h3>
+                        <p><strong>理解目标：</strong> 客户提出的通常是解决方案，而非真正的问题。团队需要挖掘背后的商业目标。</p>
+                        <p><strong>以始为终：</strong> 范围应由目标决定。这是 Spec 的起点。</p>
+                        <p><strong>协作定义：</strong> 只有理解了目标，开发人员才能提出更优的技术解法。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 模式 2: Collaborating -->
+        <div class="flip-card" data-card="collaborating">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-number">02</div>
+                    <div class="card-title">协作制定规格</div>
+                    <p>Three Amigos 会议<br>(BA + 开发 + 测试)</p>
+                    <span class="tag">Collaborating</span>
+                    <div class="interaction-hint">👆 点击翻转</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="back-content">
+                        <h3>Collaborating</h3>
+                        <p><strong>避免筒仓：</strong> 需求不应由BA独自写完扔给开发。必须三方共同参与。</p>
+                        <p><strong>建立共享理解：</strong> 面对面的讨论比文档流转效率高得多。</p>
+                        <p><strong>提前发现Bug：</strong> 测试人员在需求阶段的提问（“如果数据为空怎么办？”）是成本最低的Bug修复方式。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 模式 3: Illustrating -->
+        <div class="flip-card" data-card="illustrating">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-number">03</div>
+                    <div class="card-title">举例说明</div>
+                    <p>抽象是歧义的根源<br>具体的例子才是真理</p>
+                    <span class="tag">Illustrating</span>
+                    <div class="interaction-hint">👆 点击翻转</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="back-content">
+                        <h3>Illustrating</h3>
+                        <p><strong>具体化：</strong> 不要说“系统应计算折扣”，要说“VIP用户购买满100元，折扣为10%”。</p>
+                        <p><strong>人类友好：</strong> 人类大脑更擅长处理具体实例，而非抽象逻辑。</p>
+                        <p><strong>边界探索：</strong> 通过具体的极端例子（如0，负数），快速对齐对业务规则的理解。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 模式 4: Automating -->
+        <div class="flip-card" data-card="automating">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-number">04</div>
+                    <div class="card-title">不修改规范的自动化</div>
+                    <p>胶水代码层<br>(Automation Layer)</p>
+                    <span class="tag">Automating</span>
+                    <div class="interaction-hint">👆 点击翻转</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="back-content">
+                        <h3>Automating without changing specs</h3>
+                        <p><strong>分离关注点：</strong> Spec 保持业务语言（人类可读），自动化代码负责翻译和执行。</p>
+                        <p><strong>避免UI测试：</strong> 尽量在业务逻辑层（API/Service）验证，UI测试脆且慢，维护成本极高。</p>
+                        <p><strong>单一事实：</strong> 自动化确保 Spec 永远不说谎。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模块 3: 生命周期与重要阶段 -->
+    <div class="section-header">
+        <div class="section-icon">⏳</div>
+        <span class="section-title">Spec 的生命周期与重要阶段</span>
+    </div>
+
+    <div class="timeline-container">
+        <div class="timeline-line"></div>
+
+        <!-- 阶段 1 -->
+        <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+                <div class="timeline-phase">阶段 1: 获取范围与讨论 (Discovery)</div>
+                <h3 style="margin:0.5rem 0;">开发开始之前 <span style="color:var(--danger); font-size:0.8em; margin-left:10px;">★ 价值最高点</span></h3>
+                <p>这是 Spec 生命周期的起点。通过“举例说明”讨论需求。此时发现的逻辑漏洞，修复成本几乎为零。<strong>如果你等到代码写完才写Spec，你就错过了SBE 80%的价值。</strong></p>
+            </div>
+        </div>
+
+        <!-- 阶段 2 -->
+        <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+                <div class="timeline-phase">阶段 2: 提炼与定稿 (Refining)</div>
+                <h3 style="margin:0.5rem 0;">迭代计划会 / 开工前</h3>
+                <p>将讨论中杂乱的草稿提炼为清晰、干净的 Spec。去除噪音，保留关键实例。这个文档将直接作为开发的<strong>验收标准</strong>。</p>
+            </div>
+        </div>
+
+        <!-- 阶段 3 -->
+        <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+                <div class="timeline-phase">阶段 3: 自动化执行 (Delivery)</div>
+                <h3 style="margin:0.5rem 0;">开发过程中 (ATDD)</h3>
+                <p>开发人员编写胶水代码，将 Spec 变为可执行的测试。Spec 从红（失败）变绿（通过），标志着功能的完成。<strong>Spec 指导开发，而非仅仅验证开发。</strong></p>
+            </div>
+        </div>
+
+        <!-- 阶段 4 -->
+        <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+                <div class="timeline-phase">阶段 4: 活文档演进 (Living)</div>
+                <h3 style="margin:0.5rem 0;">上线维护期</h3>
+                <p>Spec 进入 CI/CD 流水线，成为回归测试网。它不仅保护系统不被破坏，更是新加入成员了解业务逻辑的最佳<strong>活说明书</strong>。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模块 4: 核心原则 -->
+    <div class="section-header">
+        <div class="section-icon">💎</div>
+        <span class="section-title">Spec 对需求的四大核心意义</span>
+    </div>
+
+    <div class="principles-grid">
+        <div class="principle-card">
+            <span class="p-icon">📚</span>
+            <span class="p-title">活文档 (Living Doc)</span>
+            <span class="p-desc">解决了传统文档“写完即死”的问题。因为与测试绑定，文档过时会导致构建失败，强迫团队更新文档。</span>
+        </div>
+        <div class="principle-card">
+            <span class="p-icon">🗣️</span>
+            <span class="p-title">单一语言 (Ubiquitous)</span>
+            <span class="p-desc">Spec 必须使用<strong>业务领域语言</strong>。开发、测试、业务使用同一套词汇，消除“翻译”带来的误解。</span>
+        </div>
+        <div class="principle-card">
+            <span class="p-icon">🎯</span>
+            <span class="p-title">单一事实来源</span>
+            <span class="p-desc">需求文档、验收标准、回归测试集——这三者合而为一。减少维护成本，保证信息一致。</span>
+        </div>
+        <div class="principle-card">
+            <span class="p-icon">🤝</span>
+            <span class="p-title">协作所有权</span>
+            <span class="p-desc">Spec 不是测试或BA的私有财产，而是团队的共同资产。协作过程建立了信任。</span>
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    <p>生成的 HTML 摘要基于 Gojko Adzic 的著作《Specification by Example》</p>
+    <p>聚焦：名词化写作 | 关键实例提炼 | 活文档演进 | 生命周期管理</p>
+    <p style="margin-top:10px; font-size:0.8rem; color:#94a3b8;">© 2024 - 互动式学习资源</p>
+</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 获取所有翻转卡片
+        const flipCards = document.querySelectorAll('.flip-card');
+
+        flipCards.forEach(card => {
+            // 点击事件：触发翻转
+            card.addEventListener('click', function(e) {
+                // 检查用户是否正在选中文本（复制内容），如果是选中则不翻转
+                const selection = window.getSelection();
+                if (selection.toString().length > 0) {
+                    return;
+                }
+                
+                // 切换 flipped 类
+                this.classList.toggle('flipped');
+            });
+        });
+    });
+</script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_spec_by_example_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
