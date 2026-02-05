@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编写有效用例 - 深度指南</title>
+    <style>
+        :root {
+            --bg-color: #f9fbfd;
+            --primary-color: #3498db;
+            --secondary-color: #e8f4fc;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --text-color: #2c3e50;
+            --light-text: #7f8c8d;
+            --card-bg: #ffffff;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft YaHei", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 20px 40px;
+        }
+
+        h1 {
+            font-weight: 300;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: var(--text-color);
+        }
+
+        .subtitle {
+            color: var(--primary-color);
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+
+        /* 模块标题 */
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin: 50px 0 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+
+        .section-number {
+            background: var(--primary-color);
+            color: #fff;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+
+        /* 翻转卡片 - 核心概念 */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            height: 200px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: var(--box-shadow);
+            border-radius: var(--border-radius);
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: var(--border-radius);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            background: var(--card-bg);
+        }
+
+        .flip-card-front {
+            border-bottom: 4px solid var(--primary-color);
+        }
+
+        .flip-card-back {
+            background-color: var(--secondary-color);
+            transform: rotateY(180deg);
+            text-align: left;
+            align-items: flex-start;
+            border: 1px solid var(--primary-color);
+        }
+
+        .icon { font-size: 2.5em; margin-bottom: 15px; }
+        .card-head { font-weight: bold; font-size: 1.1em; }
+
+        /* 具体写法 - 写作实验室 */
+        .writing-lab {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        .syntax-box {
+            background: #f8f9fa;
+            border-left: 5px solid var(--success-color);
+            padding: 15px;
+            margin-bottom: 20px;
+            font-family: monospace;
+            color: #d35400;
+            font-size: 1.1em;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .comparison-table th {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 2px solid #eee;
+            color: var(--light-text);
+        }
+
+        .comparison-table td {
+            padding: 15px 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .bad-example { color: var(--accent-color); text-decoration: line-through; opacity: 0.7;}
+        .good-example { color: var(--success-color); font-weight: 500; }
+
+        /* 需求意义 - Hub模型 */
+        .hub-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 0;
+        }
+
+        .hub-center {
+            background: var(--primary-color);
+            color: white;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 0 0 10px var(--secondary-color);
+            z-index: 2;
+        }
+
+        .hub-spoke {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 20px;
+            border: 1px solid #eee;
+            box-shadow: var(--box-shadow);
+            font-size: 0.9em;
+            color: var(--light-text);
+            position: relative;
+        }
+
+        /* 生命周期 - 时间轴 */
+        .timeline {
+            position: relative;
+            margin: 20px 0 40px;
+            padding-left: 30px;
+            border-left: 2px solid var(--secondary-color);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -36px;
+            top: 5px;
+            width: 10px;
+            height: 10px;
+            background: white;
+            border: 2px solid var(--primary-color);
+            border-radius: 50%;
+        }
+
+        .timeline-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .timeline-desc {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: var(--box-shadow);
+            font-size: 0.95em;
+        }
+
+        /* 标签 */
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            margin-right: 5px;
+            font-weight: bold;
+        }
+        .tag-low { background: #eef; color: #55a; }
+        .tag-high { background: #e6fffa; color: #009688; }
+
+        footer {
+            text-align: center;
+            margin-top: 80px;
+            color: #b0bec5;
+            font-size: 0.8em;
+        }
+
+        /* 响应式 */
+        @media (max-width: 600px) {
+            .section-header { flex-direction: column; text-align: center; }
+            .section-number { margin: 0 0 10px 0; }
+            .hub-container { flex-direction: column; }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="subtitle">Writing Effective Use Cases</div>
+        <h1>编写有效用例 · 核心精华</h1>
+        <p>Alistair Cockburn 经典著作重构</p>
+    </header>
+
+    <div class="container">
+
+        <!-- 1. 核心定义 -->
+        <div class="section-header">
+            <div class="section-number">1</div>
+            <div class="section-title">用例到底是什么？</div>
+        </div>
+
+        <div class="card-grid">
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">📜</div>
+                        <div class="card-head">行为契约</div>
+                        <div style="font-size:0.8em; margin-top:5px; color:#999;">点击翻转</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p><strong>Use Case = Contract</strong></p>
+                        <p>用例不仅仅是功能描述，它是<strong>利益相关者（Stakeholders）</strong>之间关于系统行为的契约。系统必须保护这些利益。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🎯</div>
+                        <div class="card-head">用户目标</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p><strong>User Goal</strong></p>
+                        <p>用例围绕一个特定的、即时的目标展开。
+                        <br>判断标准：<strong>“咖啡休息测试”</strong> —— 主角完成这件事后，是否可以心满意足地去喝杯咖啡？</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🎬</div>
+                        <div class="card-head">场景集合</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <p><strong>Scenarios</strong></p>
+                        <p>一个用例包含多个场景：
+                        <br>1. <strong>主成功场景 (MSS)</strong>：一切顺利。
+                        <br>2. <strong>扩展 (Extensions)</strong>：发生异常、失败或分支。<strong>这是最有价值的部分！</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 具体写法与原则 -->
+        <div class="section-header">
+            <div class="section-number">2</div>
+            <div class="section-title">写作实验室：怎么写？(How to Write)</div>
+        </div>
+
+        <div class="writing-lab">
+            <p>编写用例步骤的黄金法则：保持简单，使用主动语态。</p>
+            
+            <div class="syntax-box">
+                标准句式： [主语/执行者] + [谓语/动作] + [宾语/对象]
+            </div>
+            
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>原则 (Principle)</th>
+                        <th>❌ 糟糕的写法 (The Bad)</th>
+                        <th>✅ 优秀的写法 (The Good)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>上帝视角</strong><br><small>Bird's Eye View</small></td>
+                        <td class="bad-example">"输入卡号和密码..." <br>(这就不知道是谁在做)</td>
+                        <td class="good-example">"顾客输入卡号和密码。" <br>(明确主语，谁拿着球？)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>显示意图，而非动作</strong><br><small>Intention over UI</small></td>
+                        <td class="bad-example">"用户按下Tab键，点击确定按钮。" <br>(这是UI设计，不是需求)</td>
+                        <td class="good-example">"用户确认提交订单。" <br>(描述意图，保持界面独立性)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>验证而非检查</strong><br><small>Validate vs Check</small></td>
+                        <td class="bad-example">"系统检查密码是否有效。" <br>(暗示了if-else，导致主流程分叉)</td>
+                        <td class="good-example">"系统验证密码有效。" <br>(主场景只写成功；失败去扩展写)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>推进一步</strong><br><small>Move Forward</small></td>
+                        <td class="bad-example">"系统显示欢迎界面。" <br>(原地踏步)</td>
+                        <td class="good-example">"系统向用户展示账户概览。" <br>(信息传递，流程推进)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="margin-top: 20px; background: #fffbe6; padding: 15px; border-radius: 8px; border: 1px solid #ffe58f;">
+                <strong>💡 关键技巧：处理扩展 (Extensions)</strong><br>
+                不要在主流程里写 IF-ELSE。主流程只写最顺畅的那一条路（MSS）。<br>
+                所有“如果...”、“但是...”、“或者...”全部扔进扩展部分。
+                <br><em>格式：</em> <code>3a. 密码错误：系统提示用户重试。</code>
+            </div>
+        </div>
+
+        <!-- 3. 对需求的意义 -->
+        <div class="section-header">
+            <div class="section-number">3</div>
+            <div class="section-title">对需求的意义：Hub & Spoke 模型</div>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 20px; color: #666;">
+            用例不是需求的全部，但它是需求的核心骨架。
+        </div>
+
+        <div class="hub-container">
+            <div class="hub-spoke">数据格式 (Data Formats)</div>
+            <div class="hub-spoke">业务规则 (Business Rules)</div>
+            <div class="hub-center">用例<br>(Use Cases)</div>
+            <div class="hub-spoke">界面设计 (UI Design)</div>
+            <div class="hub-spoke">非功能需求 (Performance)</div>
+        </div>
+
+        <div class="writing-lab" style="margin-top: 20px;">
+            <ul>
+                <li><strong>行为骨架：</strong> 用例串联起了零散的需求点，提供了上下文（Context）。</li>
+                <li><strong>发现遗漏：</strong> 通过编写“扩展”部分，能强迫分析师思考“这里出错了怎么办？”，从而发现深层的业务规则（这是Use Case最大的ROI）。</li>
+                <li><strong>沟通桥梁：</strong> 它既没有技术术语（用户能看懂），又足够严谨（开发能照着做）。</li>
+            </ul>
+        </div>
+
+        <!-- 4. 项目生命周期 -->
+        <div class="section-header">
+            <div class="section-number">4</div>
+            <div class="section-title">项目中的生命周期 (Lifecycle)</div>
+        </div>
+
+        <p style="margin-bottom: 30px;">用例不是一次性写完的文档，它是随项目演进的“不断展开的故事”。</p>
+
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-title">阶段 1: 初始/发现 (Inception/Discovery)</div>
+                <div class="timeline-desc">
+                    <span class="tag tag-low">低精度</span>
+                    <span class="tag tag-low">宽范围</span>
+                    <p><strong>重点：</strong> 识别所有<strong>执行者(Actors)</strong>和他们的<strong>目标(Goals)</strong>。<br>
+                    <strong>产出：</strong> Actor-Goal List (执行者-目标列表)。不需要写步骤，只需要划定系统边界（Scope）。</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-title">阶段 2: 细化/规划 (Elaboration)</div>
+                <div class="timeline-desc">
+                    <span class="tag tag-high">高精度</span>
+                    <span class="tag tag-high">关键路径</span>
+                    <p><strong>重点：</strong> 选取高风险或高价值的用例，编写<strong>主成功场景(MSS)</strong>。<br>
+                    <strong>产出：</strong> 包含主要步骤的用例草稿，开始头脑风暴可能的失败扩展。</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-title">阶段 3: 构建 (Construction)</div>
+                <div class="timeline-desc">
+                    <span class="tag tag-high">全套 (Fully Dressed)</span>
+                    <p><strong>重点：</strong> 补全所有<strong>扩展(Extensions)</strong>和错误处理。这是开发人员编码和测试人员编写测试用例的依据。<br>
+                    <strong>意义：</strong> 此时用例即需求规格说明书。</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-title">阶段 4: 交付与维护 (Delivery)</div>
+                <div class="timeline-desc">
+                    <p><strong>用途：</strong> 用例转变为用户手册的基础，也是验收测试（UAT）的标准。<br>
+                    <strong>状态：</strong> 如果业务逻辑变更，必须先更新用例，再修改代码。</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Generated based on "Writing Effective Use Cases" by Alistair Cockburn</p>
+    </footer>
+
+    <script>
+        // 简单的交互逻辑，无需复杂JS
+        document.querySelectorAll('.flip-card').forEach(card => {
+            // 添加触摸支持提示
+            card.addEventListener('click', function() {
+                // 翻转逻辑已在内联onclick中处理
+            });
+        });
+    </script>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_writing_effective_usecase_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
