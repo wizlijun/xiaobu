@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBE: 技能范畴与演化史</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --primary: #3b82f6; /* 科技蓝 */
+            --secondary: #64748b; /* 历史灰 */
+            --success: #10b981; /* 进化绿 */
+            --accent: #8b5cf6; /* 融合紫 */
+            --text-main: #1e293b;
+            --text-light: #64748b;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 3rem 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: linear-gradient(to bottom, #fff, #f8fafc);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        /* 通用标题 */
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin: 4rem 0 2rem;
+        }
+
+        .section-icon {
+            font-size: 1.8rem;
+            margin-right: 1rem;
+            background: white;
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        /* --- 范畴归属卡片 --- */
+        .domain-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .domain-card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+            border-left: 5px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .domain-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* 不同领域的配色 */
+        .domain-se { border-left-color: #3b82f6; } /* 软件工程 */
+        .domain-re { border-left-color: #ef4444; } /* 需求工程 */
+        .domain-qa { border-left-color: #10b981; } /* 测试 */
+        .domain-ag { border-left-color: #f59e0b; } /* 敏捷 */
+        .domain-km { border-left-color: #8b5cf6; } /* 知识 */
+
+        .domain-icon {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            font-size: 2rem;
+            opacity: 0.2;
+        }
+
+        .domain-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .domain-desc {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+
+        .tag-container {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            font-size: 0.75rem;
+            background: #f1f5f9;
+            color: var(--text-light);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        /* --- 历史演化时间轴 --- */
+        .timeline {
+            position: relative;
+            margin-top: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e2e8f0;
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            margin-bottom: 3rem;
+            position: relative;
+            width: 50%;
+        }
+
+        .timeline-item:nth-child(odd) {
+            left: 0;
+            padding-right: 40px;
+            text-align: right;
+        }
+
+        .timeline-item:nth-child(even) {
+            left: 50%;
+            padding-left: 40px;
+            text-align: left;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            top: 20px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border: 4px solid var(--primary);
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .timeline-item:nth-child(odd) .timeline-dot { right: -10px; }
+        .timeline-item:nth-child(even) .timeline-dot { left: -10px; }
+
+        .timeline-content {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s;
+        }
+
+        .timeline-content:hover {
+            transform: scale(1.02);
+        }
+
+        .year-badge {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .timeline-text {
+            font-size: 0.95rem;
+            color: var(--text-light);
+        }
+
+        /* --- 演化树图 (CSS Flowchart) --- */
+        .evolution-tree {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            margin-top: 2rem;
+            position: relative;
+        }
+
+        .tree-node {
+            background: white;
+            border: 2px solid #e2e8f0;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-weight: bold;
+            color: var(--text-main);
+            position: relative;
+            box-shadow: var(--shadow);
+            text-align: center;
+            min-width: 200px;
+        }
+
+        .tree-node.root { border-color: var(--secondary); color: var(--secondary); }
+        .tree-node.branch { border-color: var(--primary); color: var(--primary); }
+        .tree-node.leaf { border-color: var(--success); color: var(--success); background: #f0fdf4; }
+
+        .arrow-down {
+            font-size: 1.5rem;
+            color: #cbd5e1;
+            margin: -1.5rem 0; /* Tighten the gap */
+            z-index: 0;
+        }
+
+        .branch-container {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .timeline::before { left: 20px; }
+            .timeline-item { width: 100%; left: 0 !important; padding-left: 50px !important; padding-right: 0 !important; text-align: left !important; }
+            .timeline-item:nth-child(odd) .timeline-dot { left: 10px; right: auto; }
+            .timeline-item:nth-child(even) .timeline-dot { left: 10px; }
+            
+            .branch-container { flex-direction: column; align-items: center; gap: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>实例化需求 (SBE)</h1>
+    <div class="subtitle">技能范畴归属 & 历史发展脉络</div>
+</header>
+
+<div class="container">
+
+    <!-- 第一部分：技能范畴 -->
+    <div class="section-header">
+        <span class="section-icon">🧭</span>
+        <span class="section-title">技能归属：多学科交叉的结晶</span>
+    </div>
+    
+    <p style="margin-bottom:2rem; color:var(--text-light);">
+        SBE 是一项跨学科技能，本质上归属于<strong>软件工程</strong>，但它连接了业务与技术，因此涵盖了以下关键子范畴：
+    </p>
+
+    <div class="domain-grid">
+        <!-- 卡片 1 -->
+        <div class="domain-card domain-re">
+            <span class="domain-icon">📋</span>
+            <span class="domain-title">需求工程</span>
+            <div class="domain-desc">这是 SBE 的核心归属。它是一种需求获取与分析技术，将模糊的愿景转化为精确的规范。</div>
+            <div class="tag-container">
+                <span class="tag">需求澄清</span>
+                <span class="tag">消除歧义</span>
+            </div>
+        </div>
+
+        <!-- 卡片 2 -->
+        <div class="domain-card domain-qa">
+            <span class="domain-icon">🧪</span>
+            <span class="domain-title">质量保证 (QA)</span>
+            <div class="domain-desc">SBE 的落地手段。它将"事后检验"转变为"事前预防"，产出的实例直接作为自动化验收测试。</div>
+            <div class="tag-container">
+                <span class="tag">自动化测试</span>
+                <span class="tag">回归测试</span>
+            </div>
+        </div>
+
+        <!-- 卡片 3 -->
+        <div class="domain-card domain-ag">
+            <span class="domain-icon">🏃</span>
+            <span class="domain-title">敏捷与精益</span>
+            <div class="domain-desc">SBE 的生存土壤。它是实现迭代交付的关键实践，体现了"客户协作重于合同谈判"。</div>
+            <div class="tag-container">
+                <span class="tag">Scrum/XP</span>
+                <span class="tag">持续交付</span>
+            </div>
+        </div>
+
+        <!-- 卡片 4 -->
+        <div class="domain-card domain-km">
+            <span class="domain-icon">📚</span>
+            <span class="domain-title">知识管理</span>
+            <div class="domain-desc">SBE 的长期价值。生成的"活文档"解决了传统文档与代码不同步的工程难题。</div>
+            <div class="tag-container">
+                <span class="tag">活文档</span>
+                <span class="tag">系统资产</span>
+            </div>
+        </div>
+
+        <!-- 卡片 5 -->
+        <div class="domain-card domain-se">
+            <span class="domain-icon">🗣️</span>
+            <span class="domain-title">领域驱动设计 (DDD)</span>
+            <div class="domain-desc">SBE 的思想伙伴。两者都致力于消除业务与开发的语言隔阂，建立通用语言。</div>
+            <div class="tag-container">
+                <span class="tag">通用语言</span>
+                <span class="tag">业务建模</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第二部分：历史演化 -->
+    <div class="section-header" style="margin-top:6rem;">
+        <span class="section-icon">⏳</span>
+        <span class="section-title">发展脉络：从代码到业务的回归</span>
+    </div>
+
+    <div class="timeline">
+        <!-- 阶段 1 -->
+        <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+                <span class="year-badge">1970s - 1990s</span>
+                <div class="timeline-title">史前时代：瀑布与形式化</div>
+                <div class="timeline-text">
+                    需求与测试分离。人们尝试用数学语言（形式化方法）写需求，但因太难懂而失败。这是SBE试图解决的<strong>"痛点"</strong>时期。
+                </div>
+            </div>
+        </div>
+
+        <!-- 阶段 2 -->
+        <div class="timeline-item">
+            <div class="timeline-dot" style="border-color: #64748b;"></div>
+            <div class="timeline-content">
+                <span class="year-badge" style="background:#64748b">1990s 末</span>
+                <div class="timeline-title">萌芽期：XP 与 TDD</div>
+                <div class="timeline-text">
+                    <strong>Kent Beck</strong> 提出极限编程(XP)。TDD诞生，同时提出了<strong>"客户测试 (Customer Tests)"</strong>概念——即由客户定义的验收测试，这是SBE的雏形。
+                </div>
+            </div>
+        </div>
+
+        <!-- 阶段 3 -->
+        <div class="timeline-item">
+            <div class="timeline-dot" style="border-color: #f59e0b;"></div>
+            <div class="timeline-content">
+                <span class="year-badge" style="background:#f59e0b">2002 - 2005</span>
+                <div class="timeline-title">工具探索期：FIT / FitNesse</div>
+                <div class="timeline-text">
+                    <strong>Ward Cunningham</strong> 开发了 FIT，<strong>Uncle Bob</strong> 开发了 FitNesse。这是第一次试图让业务人员通过"表格"直接参与测试定义。
+                </div>
+            </div>
+        </div>
+
+        <!-- 阶段 4 -->
+        <div class="timeline-item">
+            <div class="timeline-dot" style="border-color: #8b5cf6;"></div>
+            <div class="timeline-content">
+                <span class="year-badge" style="background:#8b5cf6">2006 - 2009</span>
+                <div class="timeline-title">概念分化期：ATDD 与 BDD</div>
+                <div class="timeline-text">
+                    分裂为两派但殊途同归：<strong>ATDD</strong> 强调验收测试；<strong>Dan North</strong> 提出 <strong>BDD</strong>（行为驱动开发），发明了Given-When-Then语法，强调通用语言。
+                </div>
+            </div>
+        </div>
+
+        <!-- 阶段 5 -->
+        <div class="timeline-item">
+            <div class="timeline-dot" style="border-color: #10b981;"></div>
+            <div class="timeline-content">
+                <span class="year-badge" style="background:#10b981">2011 (关键节点)</span>
+                <div class="timeline-title">集大成期：Specification by Example</div>
+                <div class="timeline-text">
+                    <strong>Gojko Adzic</strong> 调研了全球50多个团队，统一了 ATDD、BDD 等实践，正式定名为"实例化需求 (SBE)"。<strong>从此不再纠结工具，专注于协作模式。</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- 阶段 6 -->
+        <div class="timeline-item">
+            <div class="timeline-dot" style="border-color: #3b82f6;"></div>
+            <div class="timeline-content">
+                <span class="year-badge" style="background:#3b82f6">2012 - 至今</span>
+                <div class="timeline-title">现代融合期：DevOps</div>
+                <div class="timeline-text">
+                    SBE 产出的自动化测试成为 CI/CD 流水线的标准门禁。Cucumber 等工具成为行业标准，用于构建微服务和复杂业务系统。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第三部分：演化树总结 -->
+    <div class="section-header" style="justify-content: center; margin-top: 6rem; border-bottom: none;">
+        <span class="section-title">演化路径总结</span>
+    </div>
+
+    <div class="evolution-tree">
+        <div class="tree-node root">1990s: 极限编程 (XP)</div>
+        <div class="arrow-down">↓</div>
+        
+        <div class="branch-container">
+            <div class="tree-node">TDD (单元测试)</div>
+            <div class="tree-node branch">客户测试 (Customer Tests)</div>
+        </div>
+        
+        <div class="arrow-down">↓</div>
+        <div class="tree-node">工具化: FIT / FitNesse</div>
+        <div class="arrow-down">↓</div>
+        
+        <div class="branch-container">
+            <div class="tree-node">ATDD (验收测试驱动)</div>
+            <div class="tree-node">BDD (行为驱动)</div>
+        </div>
+        
+        <div class="arrow-down">↓</div>
+        <div class="tree-node leaf">Specification by Example (SBE)</div>
+        <div class="arrow-down">↓</div>
+        <div class="tree-node leaf" style="background:#ecfdf5; border-color:#10b981;">Living Documentation (活文档)</div>
+    </div>
+
+</div>
+
+<footer style="text-align: center; padding: 3rem; color: #94a3b8; border-top: 1px solid #e2e8f0; margin-top: 4rem;">
+    <p>SBE 是敏捷软件工程中，需求分析与质量保障相结合的高级进化形态。</p>
+</footer>
+
+</body>
+</html>
