@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 编程方法论深度测评 - The Graycat 访谈全记录</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --card-height: 460px; /* 增加高度以容纳更多细节 */
+            --bg-color: #f8fafc;
+            --primary-blue: #2563eb;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: var(--bg-color);
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        /* 翻转卡片核心样式 */
+        .flip-card {
+            background-color: transparent;
+            perspective: 1000px;
+            height: var(--card-height);
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: left;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-radius: 1.5rem;
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .flip-card-front {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            z-index: 2;
+        }
+
+        .flip-card-back {
+            background-color: #f8fafc;
+            transform: rotateY(180deg);
+            border: 1px solid #cbd5e1;
+            overflow-y: auto; /* 允许背面滚动 */
+            z-index: 1;
+        }
+
+        /* 细节装饰 */
+        .tech-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            background: #f1f5f9;
+            color: #475569;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .code-snippet {
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75em;
+        }
+
+        .highlight-marker {
+            background: linear-gradient(120deg, rgba(253, 224, 71, 0.4) 0%, rgba(253, 224, 71, 0.4) 100%);
+            background-repeat: no-repeat;
+            background-size: 100% 40%;
+            background-position: 0 88%;
+        }
+
+        /* 动画 */
+        .animate-up {
+            animation: slideUp 0.6s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        @keyframes slideUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 滚动条 */
+        .flip-card-back::-webkit-scrollbar { width: 4px; }
+        .flip-card-back::-webkit-scrollbar-track { background: transparent; }
+        .flip-card-back::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body class="p-4 md:p-12 max-w-7xl mx-auto">
+
+    <!-- 顶部 Header -->
+    <header class="text-center mb-16 animate-up">
+        <div class="inline-flex items-center gap-2 bg-red-50 text-red-600 px-4 py-1.5 rounded-full text-sm font-bold mb-6 border border-red-100">
+            <i class="fas fa-ban"></i> 警告：Vibe Coding (氛围编程) 已死
+        </div>
+        <h1 class="text-4xl md:text-6xl font-black text-slate-900 mb-6 tracking-tight">
+            结构化 AI 开发方法论<br><span class="text-blue-600">巅峰对决</span>
+        </h1>
+        <p class="text-lg md:text-xl text-slate-500 max-w-3xl mx-auto leading-relaxed">
+            在一个“随意聊天写代码”导致项目不可维护的时代，我们将同一个 Landing Page 项目
+            <span class="highlight-marker font-bold text-slate-800">使用三种不同框架重建了三次</span>。
+            结果震惊了整个开发圈。
+        </p>
+    </header>
+
+    <!-- 项目背景与控制变量 -->
+    <section class="grid md:grid-cols-12 gap-6 mb-16 animate-up" style="animation-delay: 0.1s;">
+        <div class="md:col-span-8 bg-white rounded-3xl p-8 border border-slate-200 shadow-sm">
+            <h2 class="text-2xl font-bold mb-4 flex items-center">
+                <i class="fas fa-layer-group text-blue-500 mr-3"></i>
+                控制变量测试环境 (The Setup)
+            </h2>
+            <p class="text-slate-600 mb-6">为了确保公平，所有框架使用完全相同的 <span class="code-snippet">input.md</span> 需求文档和同一个 LLM 模型。</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="font-bold text-sm text-slate-400 uppercase tracking-wider mb-3">技术栈 (Tech Stack)</h3>
+                    <div class="flex flex-wrap">
+                        <span class="tech-pill"><i class="fab fa-react mr-1"></i> Next.js</span>
+                        <span class="tech-pill"><i class="fab fa-css3-alt mr-1"></i> Tailwind CSS</span>
+                        <span class="tech-pill"><i class="fas fa-cube mr-1"></i> Shadcn UI</span>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="font-bold text-sm text-slate-400 uppercase tracking-wider mb-3">硬核挑战 (Integrations)</h3>
+                    <ul class="space-y-2 text-sm text-slate-700">
+                        <li class="flex items-center"><i class="fab fa-youtube text-red-500 w-6"></i> YouTube Data API (实时订阅数)</li>
+                        <li class="flex items-center"><i class="fas fa-envelope text-yellow-500 w-6"></i> Mailchimp API (邮件订阅)</li>
+                        <li class="flex items-center"><i class="fas fa-play-circle text-blue-500 w-6"></i> Embed Players (视频播放器)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="md:col-span-4 bg-slate-900 text-white rounded-3xl p-8 flex flex-col justify-center items-center text-center shadow-lg">
+            <div class="text-5xl font-bold mb-2 text-yellow-400">3</div>
+            <div class="text-xl font-medium opacity-90">次完整构建</div>
+            <div class="w-12 h-1 bg-slate-700 my-4 rounded"></div>
+            <div class="text-sm text-slate-400">从 7 分钟到 8 小时的<br>巨大效率差异</div>
+        </div>
+    </section>
+
+    <!-- 核心卡片区域 -->
+    <section class="mb-20">
+        <h2 class="text-3xl font-bold text-center mb-10">深度解析：三种框架实战表现</h2>
+        <div class="grid md:grid-cols-3 gap-8">
+
+            <!-- 1. BMAT -->
+            <div class="flip-card animate-up" style="animation-delay: 0.2s;" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <!-- 正面 -->
+                    <div class="flip-card-front justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-4">
+                                <h3 class="text-2xl font-bold text-purple-700">BMAT</h3>
+                                <span class="bg-purple-100 text-purple-700 text-xs font-bold px-2 py-1 rounded uppercase">The Beast</span>
+                            </div>
+                            <p class="text-sm text-slate-500 mb-6">全流程代理模拟系统</p>
+                            <div class="flex items-baseline mb-6">
+                                <span class="text-5xl font-black text-slate-800">8</span>
+                                <span class="text-xl text-slate-500 ml-2">小时</span>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="flex items-start">
+                                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                    <span class="text-sm text-slate-600">设计系统极其完善 (UX Agent功劳)</span>
+                                </div>
+                                <div class="flex items-start">
+                                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                    <span class="text-sm text-slate-600">API 集成一次通过，零错误</span>
+                                </div>
+                                <div class="flex items-start">
+                                    <i class="fas fa-times-circle text-red-500 mt-1 mr-2"></i>
+                                    <span class="text-sm text-slate-600">极度疲惫：人必须手动编排每一步</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-center">
+                            <span class="text-purple-600 text-sm font-medium animate-pulse">点击翻转查看工作流详情 <i class="fas fa-arrow-right ml-1"></i></span>
+                        </div>
+                    </div>
+                    <!-- 背面 -->
+                    <div class="flip-card-back">
+                        <h4 class="font-bold text-lg text-purple-800 mb-3 border-b border-purple-200 pb-2">工作流深度解剖</h4>
+                        <p class="text-xs text-slate-500 mb-4 font-mono">Input > PM > Architect > Scrum > Dev > QA</p>
+                        
+                        <div class="space-y-4 mb-6">
+                            <div>
+                                <h5 class="font-bold text-slate-700 text-sm">🔄 痛苦的手动循环</h5>
+                                <p class="text-sm text-slate-600 mt-1">
+                                    项目被拆解为 4 个 Epic。每个 Story 都要手动流转：
+                                    <br>1. 呼叫 Scrum Master 起草
+                                    <br>2. 传递给 Developer 编码
+                                    <br>3. 传递给 QA 审查
+                                    <br><strong>痛点：</strong> 每次切换 Agent 需清除上下文，不仅慢（启动需1分钟），还得人一直盯着。
+                                </p>
+                            </div>
+                            <div>
+                                <h5 class="font-bold text-slate-700 text-sm">🛡️ 审计防御蓝图</h5>
+                                <p class="text-sm text-slate-600 mt-1">
+                                    每个决策都在 Git 中有版本控制。适合金融、医疗等需要严格审计的行业。
+                                </p>
+                            </div>
+                             <div class="bg-purple-50 p-3 rounded-lg border border-purple-100">
+                                <h5 class="font-bold text-purple-800 text-xs">👀 内部情报</h5>
+                                <p class="text-xs text-purple-700 mt-1">V6 Alpha 版本正在开发中，可能会改善体验，但目前版本对个人开发者来说是过度工程。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. GitHub Spec Kit -->
+            <div class="flip-card animate-up" style="animation-delay: 0.3s;" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <!-- 正面 -->
+                    <div class="flip-card-front justify-between ring-2 ring-blue-500 ring-offset-4 ring-offset-slate-50">
+                        <div class="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-xl">本期推荐</div>
+                        <div>
+                            <div class="flex justify-between items-start mb-4">
+                                <h3 class="text-2xl font-bold text-slate-800">Spec Kit</h3>
+                                <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded uppercase">GitHub</span>
+                            </div>
+                            <p class="text-sm text-slate-500 mb-6">开发者为中心的工具箱</p>
+                            <div class="flex items-baseline mb-6">
+                                <span class="text-5xl font-black text-slate-800">&lt; 2</span>
+                                <span class="text-xl text-slate-500 ml-2">小时</span>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="flex items-start">
+                                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                    <span class="text-sm text-slate-600">智能实现：自动优化性能 (Lazy Loading)</span>
+                                </div>
+                                <div class="flex items-start">
+                                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                    <span class="text-sm text-slate-600">上下文管理优秀：超限自动总结并继续</span>
+                                </div>
+                                <div class="flex items-start">
+                                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                    <span class="text-sm text-slate-600">生态强大：大厂背书 + 35k Stars</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-center">
+                            <span class="text-blue-600 text-sm font-medium animate-pulse">点击查看 Slash Commands <i class="fas fa-arrow-right ml-1"></i></span>
+                        </div>
+                    </div>
+                    <!-- 背面 -->
+                    <div class="flip-card-back">
+                        <h4 class="font-bold text-lg text-blue-800 mb-3 border-b border-blue-200 pb-2">技术细节深度解剖</h4>
+                        <p class="text-xs text-slate-500 mb-4">Based on: UV (Python Installer) & AI Assistant</p>
+                        
+                        <div class="space-y-4 mb-6">
+                            <div>
+                                <h5 class="font-bold text-slate-700 text-sm">📜 核心文件：Constitution.mmd</h5>
+                                <p class="text-sm text-slate-600 mt-1">
+                                    在此定义项目"宪法"，例如"必须使用 TDD"、"必须符合特定设计原则"。AI 全程强制遵守。
+                                </p>
+                            </div>
+                            <div>
+                                <h5 class="font-bold text-slate-700 text-sm">⚡ 惊人的性能优化案例</h5>
+                                <p class="text-sm text-slate-600 mt-1">
+                                    处理 Embed Video 时，AI <strong>没有</strong>直接加载笨重的播放器，而是自动获取了 YouTube CDN 封面图，仅在点击时加载 JS。这是高级工程师才会做的优化。
+                                </p>
+                            </div>
+                            <div class="bg-slate-100 p-3 rounded-lg">
+                                <h5 class="font-bold text-slate-700 text-xs mb-2">指令集 (Slash Commands)</h5>
+                                <ul class="text-xs font-mono space-y-1 text-slate-600">
+                                    <li><span class="text-blue-600">/specify</span> : Input -> Spec.md</li>
+                                    <li><span class="text-blue-600">/plan</span> : Spec -> Plan.md</li>
+                                    <li><span class="text-blue-600">/tasks</span> : Plan -> Checklist</li>
+                                    <li><span class="text-blue-600">/implement</span>: Execute Code</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Open Spec -->
+            <div class="flip-card animate-up" style="animation-delay: 0.4s;" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <!-- 正面 -->
+                    <div class="flip-card-front justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-4">
+                                <h3 class="text-2xl font-bold text-orange-600">Open Spec</h3>
+                                <span class="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-1 rounded uppercase">Agile</span>
+                            </div>
+                            <p class="text-sm text-slate-500 mb-6">提案驱动的轻量级工具</p>
+                            <div class="flex items-baseline mb-6">
+                                <span class="text-5xl font-black text-slate-800">7</span>
+                                <span class="text-xl text-slate-500 ml-2">分钟</span>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="flex items-start">
+                                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                    <span class="text-sm text-slate-600">速度极快：首版生成仅用时 7 分钟</span>
+                                </div>
+                                <div class="flex items-start">
+                                    <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                    <span class="text-sm text-slate-600">视觉迭代强：截图给 AI 瞬间现代化</span>
+                                </div>
+                                <div class="flex items-start">
+                                    <i class="fas fa-exclamation-triangle text-yellow-500 mt-1 mr-2"></i>
+                                    <span class="text-sm text-slate-600">风险：缺乏大厂背书，社区相对较小</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-center">
+                            <span class="text-orange-600 text-sm font-medium animate-pulse">点击查看 Proposal 机制 <i class="fas fa-arrow-right ml-1"></i></span>
+                        </div>
+                    </div>
+                    <!-- 背面 -->
+                    <div class="flip-card-back">
+                        <h4 class="font-bold text-lg text-orange-700 mb-3 border-b border-orange-200 pb-2">机制深度解剖</h4>
+                        <p class="text-xs text-slate-500 mb-4">Based on: Global NPM CLI</p>
+                        
+                        <div class="space-y-4 mb-6">
+                            <div>
+                                <h5 class="font-bold text-slate-700 text-sm">📂 基于文件的提案系统</h5>
+                                <p class="text-sm text-slate-600 mt-1">
+                                    任何修改都会触发创建一个新文件夹，包含：
+                                    <br>- <span class="code-snippet">proposal.md</span>
+                                    <br>- <span class="code-snippet">tasks.md</span>
+                                    <br>- <span class="code-snippet">spec deltas</span> (仅包含变更部分的微小文件)
+                                </p>
+                            </div>
+                            <div>
+                                <h5 class="font-bold text-slate-700 text-sm">🔄 归档 (Archive) 即合并</h5>
+                                <p class="text-sm text-slate-600 mt-1">
+                                    当你对 AI 的实现满意后，运行 Archive 命令。这会将 Spec Deltas 正式合并到主 Specs 中。
+                                    <br><strong>优势：</strong> 规范(Spec)永远是单一事实来源(Source of Truth)。
+                                </p>
+                            </div>
+                            <div class="bg-orange-50 p-3 rounded-lg border border-orange-100">
+                                <h5 class="font-bold text-orange-800 text-xs">🚀 极速迭代实测</h5>
+                                <p class="text-xs text-orange-700 mt-1">
+                                    作者在首版完成后，仅通过一张截图和一句“现代化设计”，AI 几分钟内就加入了 Logo 动画和平滑滚动效果。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- 哲学对比表 -->
+    <section class="mb-20 bg-white rounded-3xl p-8 shadow-sm border border-slate-200 animate-up" style="animation-delay: 0.5s;">
+        <h2 class="text-2xl font-bold mb-8 text-center">本质差异：宏观管理 vs 微观执行</h2>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="text-sm text-slate-400 border-b border-slate-100">
+                        <th class="p-4 font-normal">维度</th>
+                        <th class="p-4 font-bold text-purple-700 bg-purple-50 rounded-t-lg w-1/3">BMAT (Macro)</th>
+                        <th class="p-4 font-bold text-blue-700 bg-blue-50 rounded-t-lg w-1/3">Spec Kit / Open Spec (Micro)</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm text-slate-600">
+                    <tr class="border-b border-slate-50">
+                        <td class="p-4 font-semibold">人类角色</td>
+                        <td class="p-4 bg-purple-50/30">编排者 (Orchestrator) / 经理</td>
+                        <td class="p-4 bg-blue-50/30">执行者 (Implementer) / 驾驶员</td>
+                    </tr>
+                    <tr class="border-b border-slate-50">
+                        <td class="p-4 font-semibold">AI 角色</td>
+                        <td class="p-4 bg-purple-50/30">专业团队 (拥有 PM/QA 角色)</td>
+                        <td class="p-4 bg-blue-50/30">超级副驾驶 (Copilot)</td>
+                    </tr>
+                    <tr class="border-b border-slate-50">
+                        <td class="p-4 font-semibold">关注点</td>
+                        <td class="p-4 bg-purple-50/30">项目全生命周期、风险控制</td>
+                        <td class="p-4 bg-blue-50/30">单个特性 (Feature) 或任务</td>
+                    </tr>
+                    <tr>
+                        <td class="p-4 font-semibold">迁移成本</td>
+                        <td class="p-4 bg-purple-50/30">高 (需改变整个工作流)</td>
+                        <td class="p-4 bg-blue-50/30">低 (轻量级工具包，即插即用)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- 总结与金句 -->
+    <footer class="grid md:grid-cols-2 gap-12 items-center mb-16 animate-up" style="animation-delay: 0.6s;">
+        <div class="space-y-6">
+            <div class="p-6 bg-white border-l-4 border-blue-500 shadow-sm rounded-r-xl">
+                <i class="fas fa-quote-left text-blue-200 text-2xl mb-2 block"></i>
+                <p class="text-lg font-medium text-slate-800">
+                    "使用结构化方法论，无论是 BMAT 还是 Spec Kit，都会让你的 AI 开发变得<span class="highlight-marker">可预测、可扩展且专业化</span>。"
+                </p>
+            </div>
+            <div class="p-6 bg-white border-l-4 border-red-400 shadow-sm rounded-r-xl">
+                 <i class="fas fa-quote-left text-red-200 text-2xl mb-2 block"></i>
+                <p class="text-lg font-medium text-slate-800">
+                    "BMAT 耗时 8 小时是因为它在构建整个治理结构；而 Spec Kit 耗时 2 小时是因为它激光般聚焦于功能实现。"
+                </p>
+            </div>
+        </div>
+        
+        <div class="text-center md:text-left">
+            <h3 class="text-xl font-bold mb-4 text-slate-900">最终裁决 (The Verdict)</h3>
+            <p class="text-slate-600 mb-6 leading-relaxed">
+                对于<strong>大型企业</strong>，需要风险控制和审计追踪，BMAT 是不可或缺的。<br><br>
+                但对于<strong>绝大多数开发者和独立创作者</strong>，<span class="font-bold text-blue-600">GitHub Spec Kit</span> 是目前的最佳选择。它在控制力与速度之间取得了完美的平衡，且拥有最稳定的未来支持。
+            </p>
+            <button class="bg-slate-900 text-white px-8 py-3 rounded-full font-bold hover:bg-slate-800 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                开始结构化编程之旅
+            </button>
+        </div>
+    </footer>
+
+    <div class="text-center text-slate-400 text-xs pb-8">
+        Summary generated by AI based on The Graycat's Analysis
+    </div>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.bilibili.com/video/BV1iSFzzpEtv/" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
