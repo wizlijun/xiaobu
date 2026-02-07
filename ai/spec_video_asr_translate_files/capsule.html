@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>写给AI时代播客视频转字幕阅读、翻译的spec</title>
+    
+    <!-- 引入 Prism.js 用于代码高亮 (Light Theme) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
+    
+    <!-- 引入 Mermaid.js 用于流程图渲染 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #0066cc;
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --border-color: #eaeaea;
+            --code-bg: #f6f8fa;
+            --table-head-bg: #f8f9fa;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: white;
+        }
+
+        /* 标题样式 */
+        h1 {
+            font-size: 2.5em;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            color: var(--primary-color);
+        }
+
+        h2 {
+            font-size: 1.8em;
+            margin-top: 40px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--primary-color);
+        }
+
+        h3 {
+            font-size: 1.4em;
+            margin-top: 30px;
+            color: var(--primary-color);
+        }
+
+        h4 {
+            font-size: 1.1em;
+            margin-top: 20px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        /* 列表样式 */
+        ul, ol {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.95em;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--table-head-bg);
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* 代码块样式 */
+        code {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            background-color: rgba(27, 31, 35, 0.05);
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-size: 85%;
+        }
+
+        pre {
+            background-color: var(--code-bg) !important;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 0.9em;
+            color: inherit;
+        }
+
+        /* 引用块样式 */
+        blockquote {
+            margin: 20px 0;
+            padding: 0 1em;
+            color: #6a737d;
+            border-left: 0.25em solid #dfe2e5;
+            background-color: #fafafa;
+            padding: 10px 20px;
+        }
+
+        /* Mermaid 图表容器 */
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            background-color: #fff;
+        }
+        
+        /* 目录树样式 */
+        .file-tree {
+            font-family: monospace;
+            white-space: pre;
+            background: var(--code-bg);
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            color: #444;
+        }
+
+        /* 徽章样式 */
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            background-color: #e1ecf4;
+            color: #0066cc;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h1>写给AI时代播客视频转字幕阅读、翻译的spec</h1>
+
+    <h2>1. 系统概述</h2>
+    <p>本系统是一套完整的视频音频处理自动化流水线，用于将外语视频转化为中文配音视频。系统涵盖以下核心能力：</p>
+    <ul>
+        <li><strong>视频获取</strong>：从 YouTube、Bilibili、Instagram 等平台下载视频和字幕</li>
+        <li><strong>语音识别 (ASR)</strong>：使用 faster-whisper (large-v3) + VAD 将音频转为文字</li>
+        <li><strong>字幕处理</strong>：自动优化时间轴、合并短句、过滤幻觉和噪音</li>
+        <li><strong>AI 翻译</strong>：通过 Claude API 将字幕翻译为中文</li>
+        <li><strong>语音合成 (TTS)</strong>：使用 IndexTTS2 将中文字幕合成为语音</li>
+        <li><strong>音视频合成</strong>：背景音分离、配音混合、字幕烧录，输出最终视频</li>
+    </ul>
+    <p>运行平台：macOS (Apple Silicon M4)。</p>
+
+    <h3>1.1 术语表</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>术语</th>
+                <th>全称</th>
+                <th>含义</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>ASR</td>
+                <td>Automatic Speech Recognition</td>
+                <td>自动语音识别，将音频转为文字</td>
+            </tr>
+            <tr>
+                <td>TTS</td>
+                <td>Text-to-Speech</td>
+                <td>文本转语音，将文字合成为音频</td>
+            </tr>
+            <tr>
+                <td>VAD</td>
+                <td>Voice Activity Detection</td>
+                <td>语音活动检测，区分语音和静音段</td>
+            </tr>
+            <tr>
+                <td>BPE</td>
+                <td>Byte Pair Encoding</td>
+                <td>子词分词算法，用于文本 token 化</td>
+            </tr>
+            <tr>
+                <td>Mel</td>
+                <td>Mel Spectrogram</td>
+                <td>梅尔频谱图，音频的频域表示</td>
+            </tr>
+            <tr>
+                <td>CFM</td>
+                <td>Conditional Flow Matching</td>
+                <td>条件流匹配，一种扩散生成方法</td>
+            </tr>
+            <tr>
+                <td>DiT</td>
+                <td>Diffusion Transformer</td>
+                <td>扩散 Transformer，用于频谱生成</td>
+            </tr>
+            <tr>
+                <td>VQ-VAE</td>
+                <td>Vector Quantized VAE</td>
+                <td>向量量化变分自编码器，用于离散化连续特征</td>
+            </tr>
+            <tr>
+                <td>SRT</td>
+                <td>SubRip Text</td>
+                <td>字幕文件格式</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <h2>2. 整体流水线</h2>
+    <p>系统按以下顺序执行，每步产出的文件作为下一步的输入。每步均支持断点续传（检查输出文件是否已存在）。</p>
+
+    <div class="mermaid">
+    graph TD
+        Input[视频输入 URL / 本地文件] --> Step1{Step 1: 字幕下载 yt-dlp}
+        Step1 -- 下载成功 --> Skip[跳过 Step 3-5]
+        Step1 -- 无字幕/失败 --> Step2[Step 2: 视频下载 yt-dlp]
+        
+        Step2 --> Step3[Step 3: 音频提取 ffmpeg]
+        Step3 -->|WAV 16kHz Mono| Step4[Step 4: 语音识别 ASR]
+        Step4 -->|SRT| Step5[Step 5: 字幕优化 SubtitleOptimizer]
+        
+        Skip --> Step6[Step 6: AI 翻译 Claude API]
+        Step5 --> Step6
+        
+        Step6 -->|中文 SRT| Step7[Step 7: TTS 语音合成 IndexTTS2]
+        Step7 -->|语音 WAV| Step8[Step 8: 音频混合 ffmpeg]
+        
+        subgraph AudioMixing [音频处理]
+            Step8a[背景音分离 karaoke算法]
+            Step8b[TTS配音 + 背景音混合]
+        end
+        Step8 --> Step8a --> Step8b
+        
+        Step8b --> Step9[Step 9: 视频合成 ffmpeg]
+        Step9 -->|字幕烧录/饱和度增强| Output((最终输出 MP4))
+
+        style Input fill:#f9f,stroke:#333,stroke-width:2px
+        style Output fill:#9f9,stroke:#333,stroke-width:2px
+    </div>
+
+    <p><strong>关键脚本对应关系：</strong></p>
+    <table>
+        <thead>
+            <tr>
+                <th>步骤</th>
+                <th>脚本</th>
+                <th>说明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>总调度</td>
+                <td><code>download_and_process.sh</code></td>
+                <td>串联所有步骤的主入口</td>
+            </tr>
+            <tr>
+                <td>Step 1-2</td>
+                <td><code>getvideo.sh</code></td>
+                <td>视频和字幕下载</td>
+            </tr>
+            <tr>
+                <td>Step 3-5</td>
+                <td><code>process_video_part1.sh</code></td>
+                <td>音频提取 + ASR + 字幕优化</td>
+            </tr>
+            <tr>
+                <td>Step 4-5</td>
+                <td><code>get_srt_by_wisper.py</code></td>
+                <td>faster-whisper 转录 + 字幕优化</td>
+            </tr>
+            <tr>
+                <td>Step 6</td>
+                <td><code>translate_by_claude.sh</code></td>
+                <td>Claude API 翻译</td>
+            </tr>
+            <tr>
+                <td>Step 7-9</td>
+                <td><code>process_video_part2.sh</code> / <code>_plus.sh</code></td>
+                <td>TTS + 混音 + 视频合成</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <h2>3. 组件详细规格</h2>
+
+    <h3>3.1 视频下载组件 — yt-dlp</h3>
+    <p>使用 yt-dlp 从多个平台下载视频和字幕。优先尝试下载平台自带字幕（可跳过语音识别步骤）。</p>
+    <table>
+        <tr>
+            <td width="20%"><strong>工具</strong></td>
+            <td><code>yt-dlp</code></td>
+        </tr>
+        <tr>
+            <td><strong>认证方式</strong></td>
+            <td><code>--cookies-from-browser edge</code></td>
+        </tr>
+        <tr>
+            <td><strong>SD 下载格式</strong></td>
+            <td><code>18/93/91/worst[ext=mp4]/worst</code> (优先 360p)</td>
+        </tr>
+        <tr>
+            <td><strong>HD 下载格式</strong></td>
+            <td><code>bestvideo[height>=720]+bestaudio</code> (720p+)</td>
+        </tr>
+        <tr>
+            <td><strong>字幕下载</strong></td>
+            <td><code>--write-auto-subs --sub-format srt --skip-download --all-subs</code></td>
+        </tr>
+    </table>
+
+    <h3>3.2 音频提取组件 — ffmpeg</h3>
+    <p>将音频转为 Whisper 所需的标准格式。</p>
+    <table>
+        <tr>
+            <td width="20%"><strong>输出编码</strong></td>
+            <td>PCM 16-bit Little-Endian (<code>pcm_s16le</code>)</td>
+        </tr>
+        <tr>
+            <td><strong>采样率</strong></td>
+            <td><strong>16000 Hz</strong></td>
+        </tr>
+        <tr>
+            <td><strong>声道数</strong></td>
+            <td><strong>1</strong> (Mono)</td>
+        </tr>
+    </table>
+    <pre><code class="language-bash">ffmpeg -i {input} -vn -acodec pcm_s16le -ar 16000 -ac 1 {output}.wav</code></pre>
+
+    <h3>3.3 语音识别组件 — faster-whisper</h3>
+    <p>系统优先使用 faster-whisper（支持 VAD 防幻觉）。</p>
+    <blockquote>
+        <strong>为什么需要 VAD？</strong> Whisper 在静音段容易生成"幻觉"文本（如"请订阅"）。VAD 只对有语音的部分进行转录，从根本上避免此问题。
+    </blockquote>
+
+    <h4>3.3.1 配置与参数</h4>
+    <table>
+        <tr>
+            <td width="20%"><strong>模型</strong></td>
+            <td><code>large-v3</code> (int8 量化)</td>
+        </tr>
+        <tr>
+            <td><strong>设备</strong></td>
+            <td>CPU (适配 Mac M4)</td>
+        </tr>
+        <tr>
+            <td><strong>VAD 开关</strong></td>
+            <td><code>vad_filter=True</code></td>
+        </tr>
+        <tr>
+            <td><strong>VAD 参数</strong></td>
+            <td>静音时长: 500ms, 阈值: 0.5</td>
+        </tr>
+        <tr>
+            <td><strong>防幻觉参数</strong></td>
+            <td><code>condition_on_previous_text=False</code>, <code>temperature=0</code></td>
+        </tr>
+    </table>
+
+    <h3>3.4 字幕优化组件 — SubtitleOptimizer</h3>
+    <p>对 ASR 结果进行四步优化：</p>
+    <ol>
+        <li><strong>时间戳优化</strong>：相邻片段间隔 &lt; 1000ms 时对齐。</li>
+        <li><strong>短句合并</strong>：片段 &lt; 5 词且合并后不超长时合并。</li>
+        <li><strong>噪音过滤</strong>：移除 <code>【</code>, <code>♪</code> 等开头及空片段。</li>
+        <li><strong>幻觉过滤</strong>：基于规则（重复文本、中文"谢谢订阅"、英文"Subscribe"等）。</li>
+    </ol>
+
+    <h3>3.5 AI 翻译组件 — Claude API</h3>
+    <ul>
+        <li><strong>API</strong>: Anthropic Claude</li>
+        <li><strong>功能</strong>: 支持自定义 Prompt 和 术语表 (Glossary)。</li>
+        <li><strong>策略</strong>: 长字幕分批发送，保持 SRT 时间轴不变。</li>
+    </ul>
+
+    <h3>3.6 TTS 语音合成组件 — IndexTTS2</h3>
+    <p>IndexTTS2 是一个零样本（Zero-Shot）文本转语音系统，支持音色克隆和 8 维情感控制。</p>
+
+    <h4>3.6.1 架构概览</h4>
+    <div class="mermaid">
+    graph TD
+        subgraph Input [输入处理]
+            RefAudio((参考音频))
+            Text([文本/情感描述])
+        end
+
+        subgraph Features [特征提取]
+            W2V[W2V-BERT 2.0]
+            CAMP[CAMPPlus 风格编码]
+            MelExt[Mel 频谱提取]
+            Qwen[QwenEmotion 情感模型]
+        end
+
+        subgraph Semantic [语义编码]
+            VQ[Semantic Codec VQ-VAE]
+            Codes[离散 Codes]
+        end
+
+        subgraph Synthesis [生成模型]
+            GPT[GPT UnifiedVoice]
+            Latent[Latent Features]
+            Diff[S2Mel 扩散模型 DiT+CFM]
+        end
+
+        subgraph Output [声码器]
+            BigVGAN[BigVGAN]
+            Wave((输出波形))
+        end
+
+        RefAudio -->|音色/情感| W2V
+        RefAudio -->|风格| CAMP
+        RefAudio -->|Mel参考| MelExt
+        Text --> Qwen
+
+        W2V --> VQ --> Codes
+        CAMP --> GPT
+        Qwen --> GPT
+        MelExt --> GPT
+
+        Codes --> GPT
+        GPT -->|Mel Codes| Latent
+        Latent -->|Prompt Condition| Diff
+        
+        Diff -->|80-band Mel| BigVGAN
+        BigVGAN --> Wave
+
+        style RefAudio fill:#fff3cd,stroke:#d6b656
+        style Wave fill:#d4edda,stroke:#c3e6cb
+        style GPT fill:#e2e3e5,stroke:#333
+        style Diff fill:#e2e3e5,stroke:#333
+    </div>
+
+    <h4>3.6.2 关键模型参数</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>子模型</th>
+                <th>关键参数 / 说明</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>GPT UnifiedVoice</strong></td>
+                <td>24 层, 1280 维, 20 头。文本 Token 上限 600，Mel Token 上限 1815。</td>
+            </tr>
+            <tr>
+                <td><strong>S2Mel 扩散</strong></td>
+                <td>DiT 架构 + CFM 采样。步数：<strong>25</strong>，CFG Rate: <strong>0.7</strong>。</td>
+            </tr>
+            <tr>
+                <td><strong>Semantic Codec</strong></td>
+                <td>码本大小: 8192。提取 W2V-BERT 第 17 层特征。</td>
+            </tr>
+            <tr>
+                <td><strong>BigVGAN</strong></td>
+                <td>22kHz, 80-band Mel 输入。</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>3.6.3 情感控制</h4>
+    <p>支持 8 维情感向量控制（喜、怒、哀、惧、厌恶、低落、惊喜、平静）。情感向量经归一化（总和 0.8）后与音色嵌入混合。</p>
+
+    <h3>3.7 音频混合与视频合成 — ffmpeg</h3>
+
+    <h4>3.7.1 背景音分离 (Karaoke 算法)</h4>
+    <p>默认使用卡拉OK算法配合带通滤波：</p>
+    <pre><code class="language-bash">pan=mono|c0=0.5*c0+-0.5*c1,highpass=f=200,lowpass=f=3400</code></pre>
+
+    <h4>3.7.2 混合参数</h4>
+    <ul>
+        <li><strong>背景音音量</strong>: 0.2 (20%)</li>
+        <li><strong>配音音量</strong>: 1.0 (100%)</li>
+        <li><strong>TTS 语速</strong>: 1.5x (默认)</li>
+        <li><strong>字幕烧录</strong>: 白色字体，黑色描边，垂直边距 50。</li>
+    </ul>
+
+    <hr>
+
+    <h2>4. 文件组织结构</h2>
+    <div class="file-tree">{工作目录}/
+├── {video}.mp4                    <span style="color:#888"># 原始视频 (SD)</span>
+├── {video}_hd.mp4                 <span style="color:#888"># 高清视频 (可选)</span>
+├── {video}_temp/                  <span style="color:#888"># 工作临时目录</span>
+│   ├── *.wav                      <span style="color:#888"># 提取的音频 / TTS 单句 / 混合音频</span>
+│   ├── *.srt                      <span style="color:#888"># ASR 字幕 / 优化字幕 / 翻译字幕</span>
+│   ├── *.mp4                      <span style="color:#888"># 中间视频文件</span>
+│   └── *.md                       <span style="color:#888"># 文案</span>
+├── ttstasks/
+│   └── {video}.json               <span style="color:#888"># TTS 任务配置</span>
+└── checkpoints/                   <span style="color:#888"># IndexTTS2 模型文件</span></div>
+
+    <hr>
+
+    <h2>5. 关键设计决策</h2>
+    <ol>
+        <li><strong>VAD 防幻觉</strong>：三重防护机制（VAD 过滤 + 禁用上下文依赖 + 高置信度阈值），解决 Whisper 静音段幻觉问题。</li>
+        <li><strong>Mac 适配</strong>：ASR 使用 CPU + INT8 量化；IndexTTS2 禁用 MPS FP16（因性能倒退）强制使用 FP32。</li>
+        <li><strong>音质提升</strong>：引入 S2Mel 扩散模型（25步 CFM），相比直接 GPT 生成波形，显著提升了频谱的细节还原度。</li>
+        <li><strong>音色解耦</strong>：使用 W2V-BERT 提取语义 + VQ-VAE 量化，将内容与音色分离，实现更准确的零样本克隆。</li>
+        <li><strong>断点续传</strong>：全流程基于文件存在性检查，支持随时中断和恢复。</li>
+    </ol>
+
+</div>
+
+<!-- 初始化 Mermaid -->
+<script>
+    mermaid.initialize({
+        startOnLoad: true,
+        theme: 'neutral',
+        flowchart: {
+            useMaxWidth: true,
+            htmlLabels: true,
+            curve: 'basis'
+        }
+    });
+</script>
+
+<!-- 引入 Prism.js 核心逻辑 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+
+</body>
+</html>
