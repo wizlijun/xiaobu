@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>传统 SDE 视角：工程拆解与 Spec 管理技巧</title>
+    <style>
+        :root {
+            --tech-blue: #0052cc;
+            --tech-dark: #172b4d;
+            --bg-color: #ffffff;
+            --card-bg: #f9f9fb;
+            --border-color: #ebecf0;
+            --highlight-bg: #e3fcef;
+            --highlight-text: #006644;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--tech-dark);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        h1 { font-size: 2em; font-weight: 800; border-bottom: 3px solid var(--tech-blue); padding-bottom: 15px; margin-bottom: 30px; }
+        h2 { font-size: 1.5em; margin-top: 30px; color: var(--tech-blue); display: flex; align-items: center; gap: 10px; }
+        h3 { font-size: 1.2em; font-weight: 700; margin-top: 20px; margin-bottom: 10px; }
+
+        /* 核心概念卡片 */
+        .concept-card {
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .concept-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding-bottom: 10px;
+        }
+        
+        .tag {
+            background: var(--tech-blue);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* 技巧列表 */
+        .technique-list { list-style: none; padding: 0; }
+        .technique-item {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 15px;
+        }
+        .technique-item::before {
+            content: "⚡";
+            position: absolute;
+            left: -5px;
+            top: 2px;
+        }
+
+        /* 重点突出 */
+        .insight-box {
+            background-color: #fff8e1;
+            border-left: 4px solid #f1c40f;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 0.95em;
+        }
+
+        /* 对比表格 */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9em;
+        }
+        .comparison-table th, .comparison-table td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+        }
+        .comparison-table th { background-color: #f4f5f7; }
+
+        code {
+            background-color: #e6effc;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 0.9em;
+            color: var(--tech-blue);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>传统工程视角：AI 协作中的拆解与 Spec 管理</h1>
+
+    <p>在这个项目中，Anthropic 并没有发明新的软件工程理论，而是将<strong>传统的分布式系统设计</strong>和<strong>测试驱动开发（TDD）</strong>应用到了极致。以下是针对 SDE/SDD 的核心技巧拆解。</p>
+
+    <h2>一、工程拆解：从单体到微任务 (Micro-Tasking)</h2>
+    <p>最大的挑战是如何让 16 个“初级工程师”（Agent）并行工作而不把代码库搞炸。他们采用了<strong>极端颗粒度</strong>的拆解策略。</p>
+
+    <div class="concept-card">
+        <div class="concept-header">
+            <h3>技巧 1：基于文件系统的“互斥锁”机制</h3>
+            <span class="tag">并发控制</span>
+        </div>
+        <p>传统的任务分配往往通过 Jira 或看板，但在高频 AI 开发中，这太慢了。</p>
+        <ul class="technique-list">
+            <li><strong>原子级任务锁定：</strong> 智能体在开始工作前，必须在 <code>current_tasks/</code> 目录下创建锁文件（如 <code>lock_parser_utils.txt</code>）。</li>
+            <li><strong>冲突即失败：</strong> 如果两个 Agent 试图修改同一逻辑，Git 的合并冲突机制不仅是版本控制，更是<strong>分布式锁的最终防线</strong>。</li>
+            <li><strong>SDE 启示：</strong> 在设计 AI 辅助系统时，<strong>文件级隔离</strong>比函数级隔离更有效。让 AI 每次只专注一个文件，能最大程度降低上下文污染和合并冲突。</li>
+        </ul>
+    </div>
+
+    <div class="concept-card">
+        <div class="concept-header">
+            <h3>技巧 2：差分调试与故障域隔离</h3>
+            <span class="tag">调试策略</span>
+        </div>
+        <p>当 Linux 内核编译失败时，问题可能出在数千个文件中的任何一个。16 个 Agent 像无头苍蝇一样乱撞是无效的。</p>
+        <ul class="technique-list">
+            <li><strong>二分法隔离：</strong> 系统将内核源码分为两部分：90% 用 GCC 编译（已知好），10% 用 Claude 编译器编译（待测）。</li>
+            <li><strong>动态收敛：</strong> 如果 Build 成功，说明这 10% 是安全的。如果失败，进一步拆分这 10%，直到定位到<strong>具体的单个 .c 文件</strong>。</li>
+            <li><strong>SDE 启示：</strong> 这是<strong>“故障域（Failure Domain）”</strong>管理的经典案例。在遗留系统重构中，不要试图一次性替换所有模块，建立新旧系统共存的混合编译环境是关键。</li>
+        </ul>
+    </div>
+
+    <h2>二、Spec 唯一事实管理：Oracle Pattern</h2>
+    <p>在传统的 SDD 中，Spec 是一份文档。但在 AI 时代，<strong>文档是不可靠的</strong>（AI 会误读）。在这个项目中，Spec 变成了<strong>可执行的代码行为</strong>。</p>
+
+    <div class="concept-card">
+        <div class="concept-header">
+            <h3>技巧 3：可执行的 Spec（Oracle）</h3>
+            <span class="tag">核心思想</span>
+        </div>
+        <div class="insight-box">
+            <strong>核心思想：</strong> 不要告诉 AI “请符合 C99 标准”，而要告诉它 “请让这个代码的输出和 GCC 一模一样”。
+        </div>
+        <ul class="technique-list">
+            <li><strong>GCC 即上帝：</strong> 项目中，GCC 被用作 Oracle（预言机）。所有 AI 生成的代码，其正确性不由人类判断，而是由<strong>“是否与 GCC 的行为位级一致”</strong>来判断。</li>
+            <li><strong>测试套件即需求：</strong> 需求文档被替换为 GCC Torture Test Suite。通过率就是完成度。</li>
+            <li><strong>SDE 启示：</strong> 在进行<strong>系统迁移（如 Java -> Go）</strong>或<strong>重构</strong>时，旧系统就是 Oracle。不要写文字需求，编写<strong>“影子流量”</strong>或<strong>“比对脚本”</strong>，让 AI 以旧系统的输出为唯一事实标准。</li>
+        </ul>
+    </div>
+
+    <h2>三、传统 vs AI 驱动的工程对比</h2>
+
+    <table class="comparison-table">
+        <thead>
+            <tr>
+                <th>工程维度</th>
+                <th>传统 SDE/SDD 模式</th>
+                <th>AI Agent 团队模式 (本案例)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>需求定义 (Spec)</strong></td>
+                <td>静态文档 (PRD, RFC)</td>
+                <td><strong>动态行为 (Oracle, Test Suite)</strong></td>
+            </tr>
+            <tr>
+                <td><strong>任务分配</strong></td>
+                <td>Tech Lead 分配，Scrum 会议</td>
+                <td><strong>抢占式锁 (Lock Files)</strong>，自我驱动</td>
+            </tr>
+            <tr>
+                <td><strong>代码审查 (Review)</strong></td>
+                <td>人工 Code Review，关注逻辑</td>
+                <td><strong>自动化测试</strong>，关注“能否跑通” (黑盒)</td>
+            </tr>
+            <tr>
+                <td><strong>调试方法</strong></td>
+                <td>打断点，读日志，推理</td>
+                <td><strong>差分对比</strong>，暴力试错，依赖 grep</td>
+            </tr>
+            <tr>
+                <td><strong>开发环境</strong></td>
+                <td>持久化 IDE，本地环境</td>
+                <td><strong>瞬时容器 (Ephemeral Containers)</strong>，用完即毁</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>四、关键行动指南 (Takeaways)</h2>
+
+    <p>如果你想在现有的工程体系中引入这种 Agent 模式，以下是必须建设的基础设施：</p>
+
+    <ol>
+        <li>
+            <strong>"Harness First" 策略：</strong> 
+            <p>在让 AI 写一行代码之前，先构建一个<strong>能自动给出反馈的框架（Harness）</strong>。如果 AI 写错了，Harness 必须能在 10 秒内告诉它“错在哪”，而不是让人去看。</p>
+        </li>
+        <li>
+            <strong>日志精简工程：</strong>
+            <p>文章特别提到，不能把 5000 行报错日志给 AI。需要写脚本（使用 <code>grep</code> 或正则）提取<strong>关键错误行</strong>。这是“降低上下文噪音”的关键工程手段。</p>
+        </li>
+        <li>
+            <strong>CI/CD 的左移：</strong>
+            <p>CI 不再是代码提交后的检查，而是<strong>开发过程本身</strong>。Agent 的每一次尝试都在跑 CI。这意味着你的 CI 速度必须极快（文中提到使用了 --fast 采样模式）。</p>
+        </li>
+        <li>
+            <strong>接受“黑盒”代码：</strong>
+            <p>对于非核心逻辑或迁移任务，只要通过了 Oracle 验证，SDE 需要学会接受“我也许看不懂这几行优化，但它和旧系统输出一致”的现实。</p>
+        </li>
+    </ol>
+
+</body>
+</html>
