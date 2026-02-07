@@ -341,7 +341,7 @@
         </ul>
 
         <div class="card-grid">
-            <div class="flip-container" onclick="this.classList.toggle('hover')">
+            <div class="flip-container">
                 <div class="flip-inner">
                     <div class="flip-front">
                         <div class="icon">🔨</div>
@@ -355,7 +355,7 @@
                     </div>
                 </div>
             </div>
-            <div class="flip-container" onclick="this.classList.toggle('hover')">
+            <div class="flip-container">
                 <div class="flip-inner">
                     <div class="flip-front">
                         <div class="icon">🔍</div>
@@ -431,7 +431,7 @@
         </div>
 
         <div class="card-grid">
-            <div class="flip-container" onclick="this.classList.toggle('hover')">
+            <div class="flip-container">
                 <div class="flip-inner">
                     <div class="flip-front">
                         <div class="icon">💡</div>
@@ -445,7 +445,7 @@
                     </div>
                 </div>
             </div>
-            <div class="flip-container" onclick="this.classList.toggle('hover')">
+            <div class="flip-container">
                 <div class="flip-inner">
                     <div class="flip-front">
                         <div class="icon">🚫</div>
@@ -473,13 +473,34 @@
 </div>
 
 <script>
-    // 增加移动端触摸支持，防止点击不灵敏
+    // 修正翻转bug：只允许一个flip-container展示为翻转状态，其它自动关闭。
     document.querySelectorAll('.flip-container').forEach(item => {
-        item.addEventListener('click', event => {
-            // 移除其他卡片的翻转状态，保持焦点清晰（可选）
-            // document.querySelectorAll('.flip-container').forEach(i => i.classList.remove('hover'));
+        item.addEventListener('click', function (event) {
+            // 阻止事件冒泡，防止父元素重复触发
+            event.stopPropagation();
+            // 关闭其它已翻转的卡片
+            document.querySelectorAll('.flip-container').forEach(i => {
+                if (i !== item) {
+                    i.classList.remove('hover');
+                }
+            });
+            // 自己切换hover
             item.classList.toggle('hover');
         });
+
+        // 同时支持键盘无障碍访问
+        item.setAttribute('tabindex', '0');
+        item.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                item.click();
+            }
+        });
+    });
+
+    // 点击页面空白处，关闭所有翻转卡片
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.flip-container').forEach(i => i.classList.remove('hover'));
     });
 
     // 简单的入场动画
