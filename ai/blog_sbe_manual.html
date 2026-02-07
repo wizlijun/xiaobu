@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>SBE (Specification by Example) 工作规范与完整性校验标准</title>
+    <style>
+        body {
+            font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+            background-color: #ffffff;
+            color: #333333;
+            line-height: 1.6;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            border-bottom: 2px solid #2c3e50;
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+        }
+        h2 {
+            color: #2980b9;
+            border-left: 5px solid #2980b9;
+            padding-left: 15px;
+            margin-top: 40px;
+            background-color: #f9f9f9;
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+        h3 {
+            color: #34495e;
+            margin-top: 25px;
+            font-weight: 700;
+        }
+        .section-box {
+            border: 1px solid #eeeeee;
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        ul, ol {
+            padding-left: 25px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        strong {
+            color: #c0392b;
+        }
+        code {
+            background-color: #f0f0f0;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: Consolas, Monaco, monospace;
+            color: #d35400;
+        }
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            border-bottom: 1px dashed #eee;
+            padding-bottom: 5px;
+        }
+        .checkbox {
+            min-width: 20px;
+            height: 20px;
+            border: 2px solid #7f8c8d;
+            margin-right: 15px;
+            margin-top: 3px;
+            display: inline-block;
+        }
+        .example-block {
+            background-color: #f8f9fa;
+            border-left: 4px solid #27ae60;
+            padding: 15px;
+            font-family: Consolas, monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+            margin: 15px 0;
+        }
+        .role-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            font-size: 12px;
+            border-radius: 4px;
+            color: #fff;
+            margin-right: 5px;
+        }
+        .role-all { background-color: #8e44ad; }
+        .role-dev { background-color: #2980b9; }
+        .role-qa { background-color: #e67e22; }
+        .role-biz { background-color: #27ae60; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <h1>Specification by Example (SBE) 标准化工作手册</h1>
+
+    <p><strong>核心宗旨：</strong> 本规范旨在建立单一事实来源（Single Source of Truth）。规范（Specification）、验收测试（Test）与文档（Documentation）必须三位一体。通过实例协作，确保构建正确的产品。</p>
+
+    <h2>1. 全生命周期处理流程 (Process Patterns)</h2>
+    <div class="section-box">
+        <p>所有需求必须严格遵循以下七个步骤进行流转，严禁跳过。</p>
+        
+        <table>
+            <tr>
+                <th>阶段</th>
+                <th>责任人</th>
+                <th>核心动作与产出</th>
+            </tr>
+            <tr>
+                <td><strong>1. 目标衍生范围</strong><br><span style="font-size:0.8em; color:#666;">Deriving Scope</span></td>
+                <td><span class="role-tag role-biz">PO/BA</span></td>
+                <td>
+                    <ul>
+                        <li>动作：拒绝直接接受“功能列表”。询问“为什么？”和“谁受益？”。</li>
+                        <li>产出：明确了业务价值的用户故事（User Story）。</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>2. 协作制定</strong><br><span style="font-size:0.8em; color:#666;">Collaborating</span></td>
+                <td><span class="role-tag role-all">三剑客</span></td>
+                <td>
+                    <ul>
+                        <li>动作：开发、测试、业务人员共同讨论（Three Amigos Meeting）。</li>
+                        <li><strong>禁令：严禁开发或测试独自闭门造车编写规范。</strong></li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>3. 举例说明</strong><br><span style="font-size:0.8em; color:#666;">Illustrating</span></td>
+                <td><span class="role-tag role-all">三剑客</span></td>
+                <td>
+                    <ul>
+                        <li>动作：使用具体例子而非抽象描述。</li>
+                        <li>要求：覆盖Happy Path及关键Edge Cases。</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>4. 提炼规范</strong><br><span style="font-size:0.8em; color:#666;">Refining</span></td>
+                <td><span class="role-tag role-qa">QA</span> <span class="role-tag role-dev">Dev</span></td>
+                <td>
+                    <ul>
+                        <li>动作：将草图转化为结构化文档（Gherkin/Markdown）。</li>
+                        <li><strong>原则：规范描述“做什么”，不是脚本描述“怎么做”。</strong></li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>5. 自动化验证</strong><br><span style="font-size:0.8em; color:#666;">Automating</span></td>
+                <td><span class="role-tag role-dev">Dev</span></td>
+                <td>
+                    <ul>
+                        <li>动作：编写Fixture代码连接规范与系统。</li>
+                        <li>原则：不改变规范内容，在代码层处理复杂性。</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>6. 频繁验证</strong><br><span style="font-size:0.8em; color:#666;">Validating</span></td>
+                <td><span class="role-tag role-dev">CI系统</span></td>
+                <td>
+                    <ul>
+                        <li>动作：纳入持续集成流水线，确保100%通过率。</li>
+                        <li>处理：失败测试必须立即修复或移入“已知回归”队列，严禁直接禁用。</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>7. 演进活文档</strong><br><span style="font-size:0.8em; color:#666;">Living Doc</span></td>
+                <td><span class="role-tag role-all">全员</span></td>
+                <td>
+                    <ul>
+                        <li>动作：功能上线后，将规范按<strong>功能区域</strong>归档，而非按迭代归档。</li>
+                    </ul>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <h2>2. 规范编写格式要求 (Specification Standards)</h2>
+    <div class="section-box">
+        <h3>2.1 内容三要素</h3>
+        <ol>
+            <li><strong>标题 (Descriptive Title)</strong>：必须像搜索引擎关键词一样清晰。</li>
+            <li><strong>简介 (Context Description)</strong>：一句话解释业务目标。</li>
+            <li><strong>关键实例 (Key Examples)</strong>：使用 Gherkin 语法 (Given-When-Then) 或表格。</li>
+        </ol>
+
+        <h3>2.2 撰写铁律</h3>
+        <ul>
+            <li><strong>使用统一语言 (Ubiquitous Language)</strong>：严禁出现技术术语（如JSON, Database ID, Click Button）。必须使用业务术语（如“提交订单”、“注册用户”）。</li>
+            <li><strong>数据真实性 (Realistic Data)</strong>：使用具体的数值（如 <code>5 books</code>），严禁使用抽象描述（如 <code>count > min</code>）或无意义字符（如 <code>foo/bar</code>）。</li>
+            <li><strong>自解释性 (Self-explanatory)</strong>：业务人员必须能在不需解释的情况下读懂文档。</li>
+        </ul>
+
+        <h3>2.3 标准模板示例</h3>
+        <div class="example-block">
+Feature: VIP客户免运费规则
+  为了提高客户复购率（Goal），系统应自动为满足条件的VIP减免运费。
+
+  Scenario: VIP购买足量书籍可免运费
+    Given 客户等级为 "VIP"
+    And 购物车内包含 5 本 "书籍" 类商品
+    When 系统计算运费
+    Then 运费应当为 0.00
+    # 注意：此处未描述“点击计算按钮”等UI细节，仅描述业务行为
+
+  Scenario Outline: 运费计算规则表
+    Given 客户等级为 &lt;CustomerType&gt;
+    And 购物车包含 &lt;Count&gt; 本书籍
+    When 结算
+    Then 运费类型应为 &lt;Delivery&gt;
+
+    Examples:
+      | CustomerType | Count | Delivery |
+      | VIP          | 5     | Free     |
+      | VIP          | 4     | Standard |
+      | Regular      | 10    | Standard |
+        </div>
+    </div>
+
+    <h2>3. 自动化实施与数据规范</h2>
+    <div class="section-box">
+        <h3>3.1 分层策略</h3>
+        <ul>
+            <li><strong>API优先</strong>：90%的业务逻辑验证必须绕过UI，直接调用Service/API层。</li>
+            <li><strong>UI最后手段</strong>：仅在验证页面交互逻辑时使用UI自动化。</li>
+            <li><strong>逻辑隔离</strong>：自动化代码（Glue Code）只负责翻译，<strong>严禁包含业务逻辑判断</strong>。</li>
+        </ul>
+
+        <h3>3.2 数据管理</h3>
+        <ul>
+            <li><strong>拒绝预置数据</strong>：严禁依赖庞大的数据库快照。</li>
+            <li><strong>动态创建</strong>：在 <code>Given</code> 阶段通过API动态注入测试所需的核心数据。</li>
+            <li><strong>默认值封装</strong>：规范中未提及的必填字段，自动化层必须自动填充默认值，保持文档整洁。</li>
+        </ul>
+    </div>
+
+    <h2>4. 完整性严格校验清单 (Integrity Checklist)</h2>
+    <div class="section-box">
+        <p>在代码评审（Code Review）或合并请求（Merge Request）阶段，必须逐项核对以下指标。<strong>任何一项不合格，严禁合并。</strong></p>
+
+        <h3>物理完整性 (Physical Integrity)</h3>
+        <div class="checklist-item">
+            <span class="checkbox"></span>
+            <span><strong>版本控制</strong>：规范文件是否已提交至与代码相同的Git仓库？（严禁存于Wiki/Word）</span>
+        </div>
+        <div class="checklist-item">
+            <span class="checkbox"></span>
+            <span><strong>可执行性</strong>：规范是否已连接自动化层并在CI中运行通过？</span>
+        </div>
+
+        <h3>内容质量 (Content Quality)</h3>
+        <div class="checklist-item">
+            <span class="checkbox"></span>
+            <span><strong>"Show and Keep Quiet"测试</strong>：在不口头解释的情况下，业务人员能否完全看懂？</span>
+        </div>
+        <div class="checklist-item">
+            <span class="checkbox"></span>
+            <span><strong>去脚本化</strong>：是否已剔除所有UI操作词汇（点击、输入、打开）？</span>
+        </div>
+        <div class="checklist-item">
+            <span class="checkbox"></span>
+            <span><strong>数据具体化</strong>：是否使用了具体的业务场景数据，而非抽象类或变量名？</span>
+        </div>
+
+        <h3>结构与维护 (Maintainability)</h3>
+        <div class="checklist-item">
+            <span class="checkbox"></span>
+            <span><strong>语言一致性</strong>：文档中的术语是否与代码中的领域模型（Domain Model）完全一致？</span>
+        </div>
+        <div class="checklist-item">
+            <span class="checkbox"></span>
+            <span><strong>霰弹枪手术检查</strong>：业务规则的微小变更，是否只需修改当前这一个文件？</span>
+        </div>
+        <div class="checklist-item">
+            <span class="checkbox"></span>
+            <span><strong>组织结构</strong>：文件是否已按“功能模块”归档，而不是按“Sprint/Story”归档？</span>
+        </div>
+    </div>
+
+    <p style="text-align: center; margin-top: 50px; color: #7f8c8d; font-size: 0.9em;">
+        &mdash; End of Specification Standard &mdash;
+    </p>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.laobu.com/ai/book_spec_by_example.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
