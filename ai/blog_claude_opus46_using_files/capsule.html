@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>使用并行 Claude 团队构建 C 编译器</title>
+        <style>
+            body {
+                background-color: #ffffff;
+                color: #111111;
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                    Helvetica, Arial, sans-serif;
+                line-height: 1.6;
+                max-width: 740px;
+                margin: 0 auto;
+                padding: 40px 20px;
+            }
+
+            /* 标题样式 */
+            h1 {
+                font-size: 2.5em;
+                font-weight: 700;
+                margin-bottom: 0.5em;
+                letter-spacing: -0.02em;
+            }
+
+            h2 {
+                font-size: 1.75em;
+                margin-top: 2em;
+                margin-bottom: 0.8em;
+                font-weight: 600;
+            }
+
+            h3 {
+                font-size: 1.4em;
+                margin-top: 1.5em;
+                font-weight: 600;
+            }
+
+            p {
+                margin-bottom: 1.25em;
+                font-size: 1.1em;
+                color: #333;
+            }
+
+            /* 原始图片样式 */
+            .hero-image {
+                width: 100%;
+                height: auto;
+                margin: 20px 0 40px 0;
+                border-radius: 8px;
+            }
+
+            /* 视频容器样式 */
+            .video-container {
+                position: relative;
+                padding-bottom: 56.25%; /* 16:9 比例 */
+                height: 0;
+                overflow: hidden;
+                max-width: 100%;
+                margin: 30px 0;
+                border-radius: 8px;
+                background: #000;
+            }
+
+            .video-container iframe {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+            }
+
+            /* 代码块样式 - 还原 Anthropic 风格 */
+            .code-container {
+                background-color: #f5f5f5;
+                border-radius: 8px;
+                padding: 20px;
+                margin: 20px 0;
+                overflow-x: auto;
+                font-family: "JetBrains Mono", monospace;
+                font-size: 0.9em;
+                border: 1px solid #e0e0e0;
+            }
+
+            pre {
+                margin: 0;
+            }
+
+            code {
+                font-family: "JetBrains Mono", Consolas, monospace;
+            }
+
+            /* 行内代码样式 */
+            p code,
+            li code {
+                background-color: #f0f0f0;
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-size: 0.9em;
+            }
+
+            /* 列表样式 */
+            ul,
+            ol {
+                margin-bottom: 1.25em;
+                padding-left: 20px;
+                font-size: 1.1em;
+                color: #333;
+            }
+
+            li {
+                margin-bottom: 0.5em;
+            }
+
+            /* 元数据样式 */
+            .metadata {
+                color: #666;
+                font-size: 1em;
+                margin-bottom: 2em;
+                border-left: 2px solid #333;
+                padding-left: 15px;
+            }
+
+            /* 链接样式 */
+            a {
+                color: #1a1a1a;
+                text-decoration: underline;
+                text-decoration-thickness: 1px;
+                text-underline-offset: 2px;
+                font-weight: 500;
+            }
+
+            a:hover {
+                color: #555;
+                background-color: #f0f0f0;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>使用并行 Claude 团队构建 C 编译器</h1>
+
+        <div class="metadata">
+            <p><strong>发布于 2026年2月5日</strong></p>
+            <p>
+                我们让 Opus 4.6 使用智能体团队构建了一个 C
+                编译器，然后（很大程度上）就放手不管了。以下是关于自动软件开发的未来，它教给我们的东西。
+            </p>
+            <p><em>作者：Nicholas Carlini，安全（Safeguards）团队研究员</em></p>
+        </div>
+
+        <p>
+            我一直在尝试一种监督语言模型的新方法，我们称之为“智能体团队（agent
+            teams）”。
+        </p>
+
+        <p>
+            通过智能体团队，多个 Claude
+            实例可以在同一个代码库上并行工作，而无需人工的积极干预。这种方法极大地扩展了
+            LLM（大语言模型）智能体所能实现的范围。
+        </p>
+
+        <p>
+            为了对其进行压力测试，我给 16
+            个智能体布置了一项任务：从零开始编写一个基于 Rust 的 C
+            编译器，并且要能够编译 Linux 内核。在经历了近 2,000 次 Claude Code
+            会话和花费了 20,000 美元的 API 成本后，这个智能体团队产出了一个 10
+            万行代码的编译器，它能够在 x86、ARM 和 RISC-V 架构上构建 Linux 6.9。
+        </p>
+
+        <!-- YouTube 视频嵌入 -->
+        <div class="video-container">
+            <iframe
+                width="560"
+                height="315"
+                src="https://www.youtube.com/embed/vNeIQS9GsZ8"
+                title="YouTube video player"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen
+            ></iframe>
+        </div>
+
+        <p>
+            <a href="https://github.com/anthropics/claudes-c-compiler"
+                >这个编译器本身就是一个有趣的产物</a
+            >，但我在这里主要关注我在设计长期运行的自主智能体团队的框架（harness）时学到了什么：如何编写无需人工监督也能让智能体保持正轨的测试，如何构建工作流程以便多个智能体可以并行取得进展，以及这种方法的天花板在哪里。
+        </p>
+
+        <h2>启用长期运行的 Claude</h2>
+
+        <p>
+            现有的像 Claude Code
+            这样的智能体支架（scaffolds）需要操作员在线并随时准备协同工作。如果你要求它解决一个漫长而复杂的问题，模型可能会解决其中的一部分，但最终它会停下来等待继续输入——比如一个问题、一个状态更新或是一个澄清请求。
+        </p>
+
+        <p>
+            为了引发出持续的、自主的进展，我构建了一个框架，将 Claude
+            置于一个简单的循环中（如果你见过
+            Ralph-loop，这看起来会很眼熟）。当它完成一项任务时，它会立即开始下一项。（请在容器中运行此代码，不要在你的物理机上运行）。
+        </p>
+
+        <!-- 原始代码片段提取 -->
+        <div class="code-container">
+            <pre><code>#!/bin/bash
+
+while true; do
+    COMMIT=$(git rev-parse --short=6 HEAD)
+    LOGFILE="agent_logs/agent_${COMMIT}.log"
+
+    claude --dangerously-skip-permissions \
+           -p "$(cat AGENT_PROMPT.md)" \
+           --model claude-opus-X-Y &> "$LOGFILE"
+done</code></pre>
+        </div>
+
+        <p>
+            在智能体提示词（prompt）中，我告诉 Claude
+            要解决什么问题，并要求它通过将问题分解成小块、跟踪当前正在处理的内容、弄清楚下一步该做什么，并有效地坚持下去直到完美为止。（关于最后一点，Claude
+            别无选择。这个循环会永远运行——尽管有一次，我确实看到 Claude
+            意外地执行了
+            <code>pkill -9 bash</code>，从而杀死了自己并结束了循环。哎呀！）。
+        </p>
+
+        <h2>并行运行 Claude</h2>
+
+        <p>并行运行多个实例可以解决单智能体框架的两个弱点：</p>
+
+        <ul>
+            <li>
+                <strong>单次 Claude Code 会话一次只能做一件事。</strong
+                >特别是随着项目范围的扩大，并行调试多个问题要高效得多。
+            </li>
+            <li>
+                <strong>运行多个 Claude 智能体允许专业化分工。</strong
+                >当几个智能体负责解决手头的实际问题时，其他专门的智能体可以被调用来（例如）维护文档、关注代码质量或解决专门的子任务。
+            </li>
+        </ul>
+
+        <p>
+            我对并行 Claude 的实现是非常基础的。创建一个新的裸 git
+            仓库，对于每个智能体，启动一个 Docker 容器并将该仓库挂载到
+            <code>/upstream</code>。每个智能体将一个本地副本克隆到
+            <code>/workspace</code>，当它完成后，从其自己的本地容器推送到
+            upstream。
+        </p>
+
+        <p>
+            为了防止两个智能体试图同时解决同一个问题，该框架使用了一种简单的同步算法：
+        </p>
+
+        <ol>
+            <li>
+                Claude 通过向
+                <code>current_tasks/</code>
+                写入一个文本文件来获取任务的“锁”（例如，一个智能体可能锁定
+                <code>current_tasks/parse_if_statement.txt</code>，而另一个锁定
+                <code>current_tasks/codegen_function_definition.txt</code
+                >）。如果两个智能体试图认领同一个任务，git
+                的同步机制会强制第二个智能体选择另一个任务。
+            </li>
+            <li>
+                Claude 处理任务，然后从 upstream
+                拉取，合并其他智能体的更改，推送它的更改，并移除锁。合并冲突很常见，但
+                Claude 足够聪明，能够解决它们。
+            </li>
+            <li>
+                无限的智能体生成循环会在一个新的容器中生成一个新的 Claude Code
+                会话，如此循环往复。
+            </li>
+        </ol>
+
+        <p>
+            这是一个非常早期的研究原型。我还没有实现任何其他智能体之间的通信方法，也没有强制执行任何管理高层目标的流程。我没有使用编排智能体（orchestration
+            agent）。
+        </p>
+
+        <p>
+            相反，我让每个 Claude 智能体自己决定如何行动。在大多数情况下，Claude
+            会选择“下一个最明显”的问题。当被某个 bug 卡住时，Claude
+            通常会维护一个包含失败尝试和剩余任务的运行文档。在项目的
+            <a href="https://github.com/anthropics/claudes-c-compiler"
+                >git 仓库</a
+            >中，你可以通过历史记录看着它对各种任务加锁。
+        </p>
+
+        <h2>与 Claude 智能体团队编程的经验教训</h2>
+
+        <p>
+            该支架在循环中运行 Claude，但只有当 Claude
+            知道如何取得进展时，这个循环才有用。我的大部分精力都花在了设计
+            Claude
+            周围的环境上——测试、环境、反馈——这样它就可以在没有我的情况下自我定位。以下是我在编排多个
+            Claude 实例时发现最有帮助的方法。
+        </p>
+
+        <h3>编写极高质量的测试</h3>
+
+        <p>
+            Claude
+            会自主地解决我给它的任何问题。所以，任务验证器必须近乎完美，这非常重要，否则
+            Claude
+            会解决错误的问题。改进测试框架需要找到高质量的编译器测试套件，为开源软件包编写验证器和构建脚本，并观察
+            Claude 犯的错误，然后在发现这些故障模式时设计新的测试。
+        </p>
+
+        <p>
+            例如，在项目快结束时，Claude
+            开始频繁地在实现新功能时破坏现有功能。为了解决这个问题，我建立了一个持续集成（CI）管道，并实施了更严格的强制措施，允许
+            Claude 更好地测试其工作，以确保新提交不会破坏现有代码。
+        </p>
+
+        <h3>设身处地为 Claude 着想</h3>
+
+        <p>
+            我必须不断提醒自己，我是为 Claude
+            编写这个测试框架，而不是为我自己，这意味着要重新思考我对测试应如何传达结果的许多假设。
+        </p>
+
+        <p>
+            例如，每个智能体都被投放到一个没有上下文的新容器中，并且会花费大量时间来定位自己，尤其是在大型项目上。甚至在我们到达测试阶段之前，为了帮助
+            Claude 自助，我包含了维护大量 README
+            和进度文件的指令，这些文件应随当前状态频繁更新。
+        </p>
+
+        <p>
+            我还牢记语言模型具有固有的局限性，在这种情况下，需要围绕这些局限性进行设计。包括：
+        </p>
+
+        <ul>
+            <li>
+                <strong>上下文窗口污染：</strong
+                >测试框架不应打印数千字节的无用信息。它最多应该打印几行输出，并将所有重要信息记录到文件中，以便
+                Claude
+                在需要时查找。日志文件应该易于自动处理：如果有错误，Claude
+                应该写入 <code>ERROR</code> 并将原因放在同一行，以便
+                <code>grep</code> 可以找到它。预先计算聚合统计摘要很有帮助，这样
+                Claude 就不必重新计算它们。
+            </li>
+            <li>
+                <strong>时间盲区：</strong>Claude
+                无法感知时间，如果任其自然，它会乐意花费数小时运行测试而不是取得进展。框架会低频地打印增量进度（以避免污染上下文），并包含一个默认的
+                <code>--fast</code> 选项，该选项运行 1% 或 10%
+                的随机样本。这个子样本对每个智能体是确定性的，但跨虚拟机是随机的，所以
+                Claude 仍然覆盖了所有文件，但每个智能体可以完美地识别回归错误。
+            </li>
+        </ul>
+
+        <h3>让并行化变得容易</h3>
+
+        <p>
+            当有许多不同的失败测试时，并行化是微不足道的：每个智能体选择一个不同的失败测试来处理。在测试套件达到
+            99% 的通过率后，每个智能体致力于让不同的小型开源项目（例如 SQlite,
+            Redis, libjpeg, MQuickJS, Lua）能够编译通过。
+        </p>
+
+        <p>
+            但是当智能体开始编译 Linux
+            内核时，它们卡住了。与包含数百个独立测试的测试套件不同，编译 Linux
+            内核是一项巨大的任务。每个智能体都会遇到同一个 bug，修复那个
+            bug，然后覆盖彼此的更改。运行 16
+            个智能体并没有帮助，因为每个都在解决同一个任务。
+        </p>
+
+        <p>
+            修复方法是使用
+            <a href="https://gcc.gnu.org/">GCC</a>
+            作为在线的“已知良好编译器预言机（oracle）”进行对比。我编写了一个新的测试框架，随机使用
+            GCC 编译大部分内核，只用 Claude 的 C
+            编译器编译剩余文件。如果内核工作正常，那么问题就不在 Claude
+            的这部分文件中。如果它坏了，那么它可以通过用 GCC
+            重新编译其中一些文件来进一步缩小范围。这让每个智能体可以并行工作，修复不同文件中的不同
+            bug，直到 Claude
+            的编译器最终可以编译所有文件。（在这之后，仍然有必要应用差分调试（delta
+            debugging）技术来找到那些成对失败但独立工作正常的代码文件。）
+        </p>
+
+        <h3>多智能体角色</h3>
+
+        <p>
+            并行化也使得专业化成为可能。LLM
+            编写的代码经常重新实现现有的功能，所以我指派了一个智能体负责合并它发现的任何重复代码。我让另一个智能体负责提高编译器本身的性能，第三个智能体负责输出高效的编译代码。我要求另一个智能体从
+            Rust
+            开发者的角度批评项目的设计，并对项目进行结构性更改以提高整体代码质量，还有一个智能体负责文档工作。
+        </p>
+
+        <h2>压力测试智能体团队的极限</h2>
+
+        <p>
+            该项目被设计为一个能力基准测试。我有兴趣压力测试 LLM
+            今天勉强能达到的极限，以帮助我们为模型在未来能可靠实现的目标做好准备。
+        </p>
+
+        <p>
+            我一直使用 C 编译器项目作为整个 Claude 4
+            模型系列的基准。正如我对之前的项目所做的那样，我首先起草了我想要的东西：一个从零开始的优化编译器，没有依赖项，兼容
+            GCC，能够编译 Linux
+            内核，并设计为支持多个后端。虽然我指定了设计的一些方面（例如，它应该有一个
+            SSA IR 以启用多个优化通道），但我没有详细说明如何做到这一点。
+        </p>
+
+        <p>
+            以前的 Opus 4 模型几乎无法生成一个功能性的编译器。Opus 4.5
+            是第一个跨越门槛的模型，允许它生成一个功能性的编译器，可以通过大型测试套件，但它仍然无法编译任何真正的大型项目。我对
+            Opus 4.6 的目标是再次测试其极限。
+        </p>
+
+        <h2>评估</h2>
+
+        <p>
+            在两周内近 2,000 次 Claude Code 会话中，Opus 4.6 消耗了 20 亿个输入
+            token 并生成了 1.4 亿个输出 token，总成本略低于 20,000
+            美元。即使与最昂贵的 Claude Max
+            计划相比，这也是一个极其昂贵的项目。但这笔总额仅为我自己（更不用说整个团队）生产这个项目所需成本的一小部分。
+        </p>
+
+        <p>
+            这是一个“净室（clean-room）”实现（Claude
+            在开发期间的任何时候都没有互联网访问权限）；它仅依赖于 Rust
+            标准库。这个 10 万行的编译器可以在 x86、ARM 和 RISC-V 上构建可启动的
+            Linux 6.9。它还可以编译
+            QEMU、FFmpeg、SQlite、postgres、redis，并且在大多数编译器测试套件（包括
+            <a href="https://gcc.gnu.org/onlinedocs/gccint/Torture-Tests.html"
+                >GCC torture test suite</a
+            >）上拥有 99%
+            的通过率。它还通过了开发者的终极试金石测试：它可以编译并运行《毁灭战士》（Doom）。
+        </p>
+
+        <p>然而，该编译器并非没有局限性。这些包括：</p>
+
+        <ul>
+            <li>
+                它缺少从实模式（real mode）启动 Linux 所需的 16 位 x86
+                编译器。为此，它调用了 GCC（x86_32 和 x86_64
+                编译器是它自己的）。
+            </li>
+            <li>
+                它没有自己的汇编器和链接器；这些是 Claude
+                最后才开始自动化的部分，仍然有些 bug。演示视频是用 GCC
+                的汇编器和链接器制作的。
+            </li>
+            <li>
+                编译器成功构建了许多项目，但不是全部。它还不能直接作为真实编译器的替代品。
+            </li>
+            <li>
+                生成的代码不是很高效。即使启用了所有优化，它输出的代码效率也低于禁用了所有优化的
+                GCC。
+            </li>
+            <li>
+                Rust 代码质量尚可，但远未达到专家级 Rust 程序员可能生产的质量。
+            </li>
+        </ul>
+
+        <p>
+            由此产生的编译器几乎达到了 Opus
+            能力的极限。我尝试（很努力！）修复上述几个限制，但并未完全成功。新功能和错误修复经常破坏现有功能。
+        </p>
+
+        <p>
+            作为一个特别具有挑战性的例子，Opus 无法实现启动进入 16
+            位实模式所需的 16 位 x86 代码生成器。虽然编译器可以通过 66/67
+            操作码前缀输出正确的 16 位 x86 代码，但生成的编译输出超过
+            60kb，远远超过 Linux 强制执行的 32k 代码限制。相反，Claude
+            在这方面作弊了，在这个阶段调用了 GCC（这仅适用于 x86。对于 ARM 或
+            RISC-V，Claude 的编译器可以完全自行编译。）
+        </p>
+
+        <p>
+            <a href="https://github.com/anthropics/claudes-c-compiler"
+                >编译器的源代码是公开的</a
+            >。下载它，阅读代码，并在你喜欢的 C
+            项目上尝试它。我一直发现，了解语言模型能做什么的最好方法是将它们推向极限，然后研究它们在何处开始崩溃。在接下来的几天里，如果你想跟进
+            Claude 解决这些限制的持续尝试，我会继续让 Claude 推送新的更改。
+        </p>
+
+        <h2>展望未来</h2>
+
+        <p>
+            每一代语言模型都开启了与之合作的新方式。早期的模型对于 IDE 中的 tab
+            补全很有用。不久之后，模型可以根据文档字符串补全函数体。Claude Code
+            的推出将智能体带入了主流，并使开发人员能够与 Claude
+            结对编程。但这些产品中的每一个都在这样一个假设下运行：用户定义一个任务，LLM
+            运行几秒或几分钟并返回答案，然后用户提供后续操作。
+        </p>
+
+        <p>
+            智能体团队展示了自主实现整个复杂项目的可能性。这使我们作为这些工具的用户，在目标上变得更加雄心勃勃。
+        </p>
+
+        <p>
+            我们还处于早期阶段，完全自主的开发伴随着真正的风险。当人类在开发过程中与
+            Claude
+            坐在一起时，他们可以确保一致的质量并实时捕捉错误。对于自主系统，很容易看到测试通过就认为工作完成了，但这往往并非如此。我曾经从事渗透测试工作，利用大公司生产的产品中的漏洞，想到程序员部署他们从未亲自验证过的软件确实令人担忧。
+        </p>
+
+        <p>
+            因此，虽然这个实验让我感到兴奋，但也让我感到不安。构建这个编译器是我最近经历的最有趣的事情之一，但我没想到在
+            2026
+            年初这会成为可能。语言模型以及我们用于与之交互的支架的快速进步，为编写海量新代码打开了大门。我预计积极的应用将超过消极的应用，但我们正在进入一个新世界，需要新的策略来安全导航。
+        </p>
+
+        <h3>致谢</h3>
+        <p>
+            特别感谢 Josef Bacik, Edwin Chen, Bernardo Meurer Costa, Jake Eaton,
+            Dan Kelley, Felix Klock, Jannet Park, Steve Weis，以及 Anthropic
+            的许多其他人提供的帮助和贡献。
+        </p>
+    </body>
+</html>
