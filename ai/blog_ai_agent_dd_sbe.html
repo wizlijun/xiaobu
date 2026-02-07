@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Agent 驱动开发 (AADD) 标准操作手册</title>
+    <style>
+        body {
+            font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+            background-color: #ffffff;
+            color: #333333;
+            line-height: 1.6;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            border-bottom: 3px solid #2c3e50;
+            padding-bottom: 20px;
+            margin-bottom: 50px;
+        }
+        h2 {
+            color: #2c3e50;
+            border-left: 6px solid #3498db;
+            padding-left: 15px;
+            margin-top: 50px;
+            background-color: #f4f8fb;
+            padding-top: 12px;
+            padding-bottom: 12px;
+        }
+        h3 {
+            color: #2c3e50;
+            margin-top: 30px;
+            font-weight: 700;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .role-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        .role-human { background-color: #e74c3c; } /* Human = Red (Control) */
+        .role-ai { background-color: #3498db; }    /* AI = Blue (Execute) */
+        
+        .step-box {
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .step-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .prompt-template {
+            background-color: #f8f9fa;
+            border-left: 4px solid #95a5a6;
+            padding: 15px;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 0.9em;
+            color: #444;
+            white-space: pre-wrap;
+            margin: 15px 0;
+        }
+        ul { padding-left: 20px; }
+        li { margin-bottom: 8px; }
+        
+        .critical-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #ffeeba;
+            margin-top: 10px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th { background-color: #f2f2f2; }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <h1>AI Agent 驱动开发 (AADD) 操作者手册</h1>
+    
+    <p><strong>定义：</strong> 本手册适用于使用 AI Agent（如 Devin, Cursor Agent, AutoGPT 等）进行端到端软件开发的场景。在此模式下，人类操作者是<strong>架构师（Architect）</strong>和<strong>验收官（Gatekeeper）</strong>，AI Agent 是<strong>执行者（Executor）</strong>。</p>
+    
+    <p><strong>核心原则：</strong> <br>
+    1. <strong>Spec 即 Prompt</strong>：SBE 中的规范文档直接作为 AI 的核心指令。<br>
+    2. <strong>上下文隔离</strong>：必须为 AI 提供清晰的边界和上下文，防止幻觉。<br>
+    3. <strong>信任但验证 (Trust but Verify)</strong>：AI 产出的每一行代码必须通过自动化测试验证。</p>
+
+    <h2>1. 准备阶段：构建上下文 (Context Setting)</h2>
+    <div class="step-box">
+        <div class="step-header">
+            <h3>步骤 1.1：定义“真理来源” (Source of Truth)</h3>
+            <span class="role-badge role-human">Human</span>
+        </div>
+        <p>在让 AI 写代码前，必须先准备好结构化的规范文件。AI 不具备“猜测业务意图”的能力，模糊的输入必然导致错误的输出。</p>
+        <ul>
+            <li><strong>输入物</strong>：符合 SBE 标准的 Specification 文件（Markdown/Gherkin）。</li>
+            <li><strong>关键动作</strong>：将 Spec 文件置于项目根目录的 <code>/specs</code> 或 <code>/docs</code> 文件夹中。</li>
+            <li><strong>上下文文件</strong>：准备一个 <code>.cursorrules</code> 或 <code>system_prompt.md</code> 文件，包含技术栈约束（如："使用React 18, Tailwind, Jest"）。</li>
+        </ul>
+        <div class="prompt-template">
+# System Context
+Role: Senior Full-Stack Engineer
+Tech Stack: TypeScript, Node.js, PostgreSQL
+Testing Library: Vitest
+Style Guide: Airbnb Style Guide
+
+# Constraint
+1. 严禁修改 `/specs` 目录下的业务规则。
+2. 所有代码必须优先编写测试 (TDD)。
+3. 任何新增依赖库必须先询问。
+        </div>
+    </div>
+
+    <h2>2. 设计阶段：方案与分解 (Design & Decomposition)</h2>
+    <div class="step-box">
+        <div class="step-header">
+            <h3>步骤 2.1：生成技术设计方案 (RFC Generation)</h3>
+            <span class="role-badge role-ai">AI Agent</span>
+        </div>
+        <p><strong>禁止 AI 直接开始写代码。</strong> 必须要求 AI 先输出设计文档和任务清单。</p>
+        <div class="prompt-template">
+[指令]
+阅读 /specs/payment/vip_free_shipping.md。
+请根据该规范，编写一份简短的技术实现方案 (Tech Design Doc)。
+要求包含：
+1. 需要修改的数据表结构（SQL Schema）。
+2. API 接口定义（OpenAPI/Swagger格式）。
+3. 核心算法的伪代码。
+4. 潜在的风险点。
+
+请不要写任何实现代码，仅输出 Markdown 方案供我评审。
+        </div>
+    </div>
+
+    <div class="step-box">
+        <div class="step-header">
+            <h3>步骤 2.2：方案评审与任务分解 (Review & Breakdown)</h3>
+            <span class="role-badge role-human">Human</span>
+        </div>
+        <ul>
+            <li><strong>人工评审</strong>：检查 AI 生成的 SQL 和 API 是否符合系统现状。</li>
+            <li><strong>任务原子化</strong>：要求 AI 将方案拆解为不超过 50 行代码变更的“原子任务列表”。</li>
+        </ul>
+        <div class="critical-warning">
+            <strong>警告：</strong> 如果 AI 试图一次性完成整个功能，必须打断并强制要求拆分（如：先写 Model，再写 Service，最后写 API）。
+        </div>
+    </div>
+
+    <h2>3. 编码阶段：循环 TDD (Implementation Loop)</h2>
+    
+    <p>在此阶段，操作者进入“监控模式”，AI 进入“执行循环”。必须强制 AI 遵循 <strong>Red-Green-Refactor</strong> 流程。</p>
+
+    <table>
+        <tr>
+            <th width="15%">子步骤</th>
+            <th width="15%">执行者</th>
+            <th>操作标准</th>
+        </tr>
+        <tr>
+            <td><strong>3.1 编写测试</strong><br>(Red)</td>
+            <td><span class="role-badge role-ai">AI</span></td>
+            <td>
+                <ul>
+                    <li>指令：<em>"根据 Spec 中的 Example 表格，编写 failing test。"</em></li>
+                    <li><strong>校验点</strong>：人类检查测试代码是否硬编码了 Spec 中的真实数据（如 <code>5 books</code>），而非随机数据。</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td><strong>3.2 实现代码</strong><br>(Green)</td>
+            <td><span class="role-badge role-ai">AI</span></td>
+            <td>
+                <ul>
+                    <li>指令：<em>"编写最少量的实现代码使测试通过。"</em></li>
+                    <li>Agent 自主运行测试，如果失败则自动修正，直到全部通过。</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td><strong>3.3 重构</strong><br>(Refactor)</td>
+            <td><span class="role-badge role-ai">AI</span></td>
+            <td>
+                <ul>
+                    <li>指令：<em>"检查代码是否有重复逻辑？是否符合 Lint 规范？优化命名。"</em></li>
+                    <li>此时 AI 往往会产生幻觉引入过度设计，人类需严格把关。</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <div class="step-box">
+        <div class="step-header">
+            <h3>步骤 3.4：活文档同步 (Living Doc Sync)</h3>
+            <span class="role-badge role-ai">AI</span>
+        </div>
+        <p>如果 AI 在编码过程中发现 Spec 遗漏了边缘情况（AI 经常能发现这些）：</p>
+        <div class="prompt-template">
+[指令]
+你发现了一个 Spec 中未定义的边缘情况（当库存不足时）。
+请不要擅自处理。
+1. 先更新 /specs/payment/vip_free_shipping.md，添加这个新的 Scenario。
+2. 待我确认文档后，再编写对应的代码。
+        </div>
+    </div>
+
+    <h2>4. 测试与验收阶段 (Testing & Verification)</h2>
+    <div class="step-box">
+        <div class="step-header">
+            <h3>步骤 4.1：完整性回归</h3>
+            <span class="role-badge role-ai">AI</span>
+        </div>
+        <p>AI 完成代码后，必须运行全量测试，防止破坏现有功能（Shotgun Surgery）。</p>
+        <ul>
+            <li><strong>操作</strong>：要求 AI 运行 <code>npm test</code> 或对应指令。</li>
+            <li><strong>策略</strong>：如果 AI 修改了非相关文件，要求其解释原因并回滚无关修改。</li>
+        </ul>
+    </div>
+
+    <div class="step-box">
+        <div class="step-header">
+            <h3>步骤 4.2：人工代码审查 (Human Code Review)</h3>
+            <span class="role-badge role-human">Human</span>
+        </div>
+        <p>此时不需太关注语法（AI通常是对的），重点关注<strong>逻辑与安全</strong>。</p>
+        <ul>
+            <li><strong>逻辑一致性</strong>：代码逻辑是否真的实现了 Spec 的意图？还是只是凑巧通过了测试？</li>
+            <li><strong>安全检查</strong>：是否有硬编码密钥？是否有 SQL 注入风险？</li>
+            <li><strong>可读性</strong>：变量命名是否符合业务领域的通用语言（Ubiquitous Language）？</li>
+        </ul>
+    </div>
+
+    <h2>5. 异常处理与干预机制 (Intervention Protocol)</h2>
+
+    <p>当 AI Agent 陷入死循环或产出垃圾代码时，操作者应遵循以下协议：</p>
+
+    <table>
+        <tr>
+            <th>现象</th>
+            <th>诊断</th>
+            <th>干预措施 (Intervention)</th>
+        </tr>
+        <tr>
+            <td><strong>反复修改同一段代码</strong><br>测试依旧不通过</td>
+            <td>上下文丢失或逻辑陷入局部最优。</td>
+            <td>
+                1. 停止 Agent。<br>
+                2. 手动 git reset 回退到上一个稳定状态。<br>
+                3. 给 AI 提供错误日志，并提示：<em>"不要尝试修复旧代码，请重新思考实现逻辑。"</em>
+            </td>
+        </tr>
+        <tr>
+            <td><strong>修改了大量无关文件</strong></td>
+            <td>Agent 对系统依赖关系理解错误。</td>
+            <td>
+                1. 强制回滚。<br>
+                2. 更新 <code>.cursorrules</code> 或上下文文件，明确禁止修改某些目录。<br>
+                3. 缩小 AI 的文件读取权限。
+            </td>
+        </tr>
+        <tr>
+            <td><strong>代码能跑但很丑陋</strong></td>
+            <td>缺乏重构指令。</td>
+            <td>
+                发送指令：<em>"保持功能不变，提取方法 X，重命名变量 Y 为 Z，使其符合 Clean Code 原则。"</em>
+            </td>
+        </tr>
+    </table>
+
+    <div style="margin-top: 40px; padding: 20px; background-color: #f0f0f0; text-align: center; border-radius: 4px;">
+        <strong>最终检查清单：</strong> Spec 已更新且提交？ -> 自动化测试全绿？ -> 代码无明显安全漏洞？ -> <strong>合并代码</strong>
+    </div>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.laobu.com/ai/book_spec_by_example.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
