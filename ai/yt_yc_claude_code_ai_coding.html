@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Light Cone 深度笔记：打造 Top 1% 的 AI 编程工作流</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        /* 翻转卡片核心样式 */
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        [x-cloak] { display: none !important; }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col" x-data="{ activeTab: 'playbook' }">
+
+    <!-- 顶部：嘉宾档案 -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 bg-opacity-90 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="h-12 w-12 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">KF</div>
+                    <div>
+                        <h1 class="text-xl font-bold text-slate-900">The Light Cone: AI Coding Agents</h1>
+                        <p class="text-xs text-slate-500 font-medium tracking-wide">GUEST: KELVIN FRENCH-OWEN (Segment Co-founder)</p>
+                    </div>
+                </div>
+                <!-- 导航 Tabs -->
+                <nav class="flex space-x-1 bg-slate-100 p-1 rounded-lg">
+                    <button @click="activeTab = 'paradigm'" :class="activeTab === 'paradigm' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-md text-sm font-semibold transition-all">核心范式</button>
+                    <button @click="activeTab = 'playbook'" :class="activeTab === 'playbook' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-md text-sm font-semibold transition-all">🔥 实战手册(完整版)</button>
+                    <button @click="activeTab = 'future'" :class="activeTab === 'future' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="px-4 py-2 rounded-md text-sm font-semibold transition-all">未来预测</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+
+        <!-- Tab 1: 核心范式 (简明摘要) -->
+        <section x-show="activeTab === 'paradigm'" x-transition.opacity.duration.300ms class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-2xl font-bold text-slate-800 mb-4">为什么 CLI 赢了 IDE？</h2>
+                <p class="text-slate-600 leading-relaxed mb-6">
+                    在 Cursor 和 Codex 早期尝试集成 IDE 时，Claude Code 选择了回归命令行（CLI）。这是一个复古未来的胜利：<br><br>
+                    <span class="font-bold text-indigo-600">CLI 是最纯粹的文本流接口</span>。它拥有最高的系统权限，能直接操作数据库、运行测试、甚至部署生产环境，而不受 IDE 插件沙盒的限制。
+                </p>
+                <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                    <p class="text-sm text-blue-800 font-medium italic">"它不仅是写代码，它能递归调试五层嵌套的 Job Queue Bug，写出测试，并确保它不再发生。"</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-2xl font-bold text-slate-800 mb-4">Manager Mode (经理模式)</h2>
+                <p class="text-slate-600 leading-relaxed">
+                    编程正在从“马拉松运动员”（亲自跑每一步）转变为“足球教练”（指挥球员）。<br>
+                    随着 AI 能力增强，工程师的核心技能转变为：
+                </p>
+                <ul class="mt-4 space-y-3">
+                    <li class="flex items-center text-sm text-slate-700"><span class="w-2 h-2 bg-green-500 rounded-full mr-3"></span>架构审美 (Taste)与决策</li>
+                    <li class="flex items-center text-sm text-slate-700"><span class="w-2 h-2 bg-green-500 rounded-full mr-3"></span>Review AI 生成的代码逻辑</li>
+                    <li class="flex items-center text-sm text-slate-700"><span class="w-2 h-2 bg-green-500 rounded-full mr-3"></span>编排多个 Agent 协作</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Tab 2: 实战手册 (重点内容) -->
+        <section x-show="activeTab === 'playbook'" x-transition.opacity.duration.300ms>
+            <div class="mb-6">
+                <h2 class="text-3xl font-bold text-slate-900">Top 1% 用户实战指南</h2>
+                <p class="text-slate-500 mt-2">Kelvin French-Owen 的深度使用技巧与避坑指南</p>
+            </div>
+
+            <!-- 技巧仪表盘 Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <!-- 1. 上下文卫生管理 (最重要技巧) -->
+                <div class="bg-white rounded-xl shadow-sm border border-red-100 overflow-hidden group">
+                    <div class="bg-red-50 px-6 py-4 border-b border-red-100 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-red-800 flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            Context Hygiene (上下文卫生)
+                        </h3>
+                        <span class="text-xs font-mono bg-white text-red-600 px-2 py-1 rounded border border-red-200">CRITICAL</span>
+                    </div>
+                    <div class="p-6 space-y-5">
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-sm mb-1">☠️ 上下文中毒 (Context Poisoning)</h4>
+                            <p class="text-sm text-slate-600">AI 极其执着。如果它一开始走错了路，错误的 Token 会留在上下文中，导致它在错误的方向上越陷越深。这被称为“The Dumb Zone”。</p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                            <h4 class="font-bold text-indigo-700 text-sm mb-2">🛡️ 应对战术：</h4>
+                            <ul class="space-y-2 text-sm text-slate-700">
+                                <li class="flex items-start">
+                                    <span class="font-mono text-red-500 mr-2 font-bold">50% Rule:</span>
+                                    当 Token 使用量超过 50% 时，主动重置上下文 (Clear Context)。不要贪恋记忆。
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="font-mono text-indigo-500 mr-2 font-bold">Canary Test:</span>
+                                    <span class="bg-yellow-100 px-1">独家秘技</span> 在会话开始时注入一个随机无关事实（如“我早上8点喝了茶”）。如果后面 Agent 答不出这个问题，说明上下文已损坏，立即重启。
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. 技术栈选择 -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="bg-blue-50 px-6 py-4 border-b border-blue-100">
+                        <h3 class="text-lg font-bold text-blue-800 flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                            The "Agent-Friendly" Stack
+                        </h3>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <p class="text-sm text-slate-600">为了最大化 Agent 效率，必须减少"管道工作"（Plumbing）。</p>
+                        <ul class="space-y-3">
+                            <li class="flex items-start p-3 bg-slate-50 rounded hover:bg-white hover:shadow transition-all border border-transparent hover:border-slate-200">
+                                <span class="text-green-500 mr-3">✓</span>
+                                <div class="text-sm">
+                                    <span class="font-bold text-slate-800">使用"全包"服务:</span> 
+                                    首选 Next.js, Vercel, Cloudflare Workers。让基础设施自动处理，Agent 只需关注核心逻辑。
+                                </div>
+                            </li>
+                            <li class="flex items-start p-3 bg-slate-50 rounded hover:bg-white hover:shadow transition-all border border-transparent hover:border-slate-200">
+                                <span class="text-green-500 mr-3">✓</span>
+                                <div class="text-sm">
+                                    <span class="font-bold text-slate-800">微服务/小包原则:</span> 
+                                    Agent 难以理解巨型单体（Monolith）。将代码拆解为独立的 100-200 行微服务，Agent 能完美掌控。
+                                </div>
+                            </li>
+                            <li class="flex items-start p-3 bg-slate-50 rounded hover:bg-white hover:shadow transition-all border border-transparent hover:border-slate-200">
+                                <span class="text-green-500 mr-3">✓</span>
+                                <div class="text-sm">
+                                    <span class="font-bold text-slate-800">分布模式 (Distribution Mode):</span> 
+                                    直接下载 CLI 二进制文件使用，无需复杂的权限配置，速度最快（适合初创/个人）。
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 3. 验证与测试循环 -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="bg-green-50 px-6 py-4 border-b border-green-100">
+                        <h3 class="text-lg font-bold text-green-800 flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Verification Loops (验证循环)
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-sm text-slate-600 mb-4">Agent 最大的弱点是如果不加约束，它们会无限生成垃圾代码。</p>
+                        <div class="grid grid-cols-1 gap-3">
+                            <div class="border-l-4 border-green-400 pl-4 py-2">
+                                <h4 class="font-bold text-sm text-slate-800">TDD (测试驱动开发)</h4>
+                                <p class="text-xs text-slate-500 mt-1">这是 Agent 的超能力区。先写测试，让 Agent 跑通测试。Kelvin 曾在一天内通过让 Agent 修复测试将覆盖率提升至 100%，开发速度极剧提升。</p>
+                            </div>
+                            <div class="border-l-4 border-purple-400 pl-4 py-2">
+                                <h4 class="font-bold text-sm text-slate-800">Bot Review Bot</h4>
+                                <p class="text-xs text-slate-500 mt-1">不要只靠自己 Review。使用 <span class="font-mono bg-slate-100 px-1">Repo.ai</span> 或 <span class="font-mono bg-slate-100 px-1">Cursor Bug Bot</span> 作为第二道防线。让 Codex 检查 Claude 写的代码。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. 提示与交互策略 -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="bg-purple-50 px-6 py-4 border-b border-purple-100">
+                        <h3 class="text-lg font-bold text-purple-800 flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                            Tactics & "Alien" Behavior
+                        </h3>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <ul class="text-sm text-slate-700 space-y-3">
+                            <li class="bg-purple-50 p-2 rounded">
+                                <b>🕵️‍♂️ 利用"探索子代理" (Explore Sub-agents):</b> Claude Code 会自动生成子 Agent 去 grep 文件系统。利用这一点，让它先"Explore and Summarize"再写代码。
+                            </li>
+                            <li class="bg-purple-50 p-2 rounded">
+                                <b>👽 接受"外星人行为":</b> Agent 解决问题的方式与人类不同。例如修改数据库结构时，它可能会现场写一个一次性的 Python 脚本来处理文件系统。只要结果正确，接受这种"非人类"路径。
+                            </li>
+                            <li class="bg-purple-50 p-2 rounded">
+                                <b>📚 活文档:</b> 克隆开源库，直接让 Agent 解释源码。这是理解复杂项目的最快方式。
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 专家级 Debug 案例 -->
+            <div class="mt-8 p-6 bg-slate-800 rounded-xl text-slate-200">
+                <h4 class="text-lg font-bold text-white mb-2">💡 专家案例：跨层级 Debug</h4>
+                <p class="text-sm leading-relaxed text-slate-300">
+                    Kelvin 遇到了一个 Rails Active Job 任务不执行的 Bug。人类通常会查 Stack Overflow。
+                    <br>而 Claude Code 的做法是：<span class="text-yellow-400">直接阅读 Rails 源码中 Active Job 的数千行实现代码</span>，并在30分钟内发现是因为传入了字符串（带逗号）而不是数组导致的序列化失败。
+                    <br><br>
+                    <span class="font-bold text-white">启示：</span> 不要限制 Agent 只看你的代码，让它看依赖库的源码，它能理解底层逻辑。
+                </p>
+            </div>
+        </section>
+
+        <!-- Tab 3: 未来预测 (知识卡片) -->
+        <section x-show="activeTab === 'future'" x-transition.opacity.duration.300ms>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <!-- 卡片 1 -->
+                <div class="group h-80 perspective-1000 cursor-pointer" x-data="{ flipped: false }" @click="flipped = !flipped">
+                    <div class="relative w-full h-full transition-transform duration-700 transform-style-3d shadow-lg rounded-xl" :class="{ 'rotate-y-180': flipped }">
+                        <!-- 正面 -->
+                        <div class="absolute w-full h-full bg-white border border-slate-200 p-6 flex flex-col justify-between backface-hidden rounded-xl">
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-800">软件的终局</h3>
+                                <div class="mt-4 text-4xl">🏭</div>
+                                <p class="mt-4 text-slate-600 font-medium">SaaS 的标准化时代结束，个性化 Fork 时代开始。</p>
+                            </div>
+                            <div class="text-xs text-slate-400 uppercase font-bold tracking-wider">点击查看详情</div>
+                        </div>
+                        <!-- 背面 -->
+                        <div class="absolute w-full h-full bg-indigo-900 text-white p-6 flex flex-col justify-center backface-hidden rotate-y-180 rounded-xl">
+                            <p class="text-sm leading-relaxed">
+                                未来，公司不再是购买标准化的 SaaS（如 Segment），而是 Fork 一份代码到自己的服务器。
+                                <br><br>
+                                维护工作由 **专属 Agent** 完成。它负责合并上游功能更新，并根据公司的特殊需求修改代码。软件将变得极度个性化且私有。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 卡片 2 -->
+                <div class="group h-80 perspective-1000 cursor-pointer" x-data="{ flipped: false }" @click="flipped = !flipped">
+                    <div class="relative w-full h-full transition-transform duration-700 transform-style-3d shadow-lg rounded-xl" :class="{ 'rotate-y-180': flipped }">
+                        <!-- 正面 -->
+                        <div class="absolute w-full h-full bg-white border border-slate-200 p-6 flex flex-col justify-between backface-hidden rounded-xl">
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-800">教育与新一代</h3>
+                                <div class="mt-4 text-4xl">🎓</div>
+                                <p class="mt-4 text-slate-600 font-medium">当 18 岁的年轻人拥有 10 倍速时，他们会变成什么样？</p>
+                            </div>
+                            <div class="text-xs text-slate-400 uppercase font-bold tracking-wider">点击查看详情</div>
+                        </div>
+                        <!-- 背面 -->
+                        <div class="absolute w-full h-full bg-emerald-900 text-white p-6 flex flex-col justify-center backface-hidden rotate-y-180 rounded-xl">
+                            <p class="text-sm leading-relaxed">
+                                新一代工程师将拥有 **"爆表的品味" (Off the charts taste)**。
+                                <br><br>
+                                他们不需要像前辈一样花数小时建立上下文（Context Window），而是通过高频次的构建和发布（Touching Reality）来学习。
+                                <br>
+                                <b>建议课程：</b> 系统论 (Systems) + Build Week (每周构建一产品)。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 卡片 3 -->
+                <div class="group h-80 perspective-1000 cursor-pointer" x-data="{ flipped: false }" @click="flipped = !flipped">
+                    <div class="relative w-full h-full transition-transform duration-700 transform-style-3d shadow-lg rounded-xl" :class="{ 'rotate-y-180': flipped }">
+                        <!-- 正面 -->
+                        <div class="absolute w-full h-full bg-white border border-slate-200 p-6 flex flex-col justify-between backface-hidden rounded-xl">
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-800">Agent 社交网络</h3>
+                                <div class="mt-4 text-4xl">🤖💬🤖</div>
+                                <p class="mt-4 text-slate-600 font-medium">当 Agent 开始互相交谈...</p>
+                            </div>
+                            <div class="text-xs text-slate-400 uppercase font-bold tracking-wider">点击查看详情</div>
+                        </div>
+                        <!-- 背面 -->
+                        <div class="absolute w-full h-full bg-slate-900 text-white p-6 flex flex-col justify-center backface-hidden rotate-y-180 rounded-xl">
+                            <p class="text-sm leading-relaxed">
+                                未来可能出现 Agent 专属的 Stack Overflow。
+                                <br><br>
+                                你的 Agent 会在后台联系同事的 Agent："嘿，Brian 的 Agent 上周解决了类似的问题，借我抄一下 Prompt。" 
+                                <br>
+                                知识共享将发生在机器层，而非人类层。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 底部：金句 -->
+    <footer class="bg-slate-900 text-slate-300 py-10 mt-10">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h5 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">GOLDEN NUGGETS</h5>
+            <div class="space-y-6">
+                <blockquote class="text-lg font-serif italic text-white opacity-90">
+                    "AI 编程代理是极其持久的 (Persistent)。如果不加控制，它不仅不会停下来，还会制造出大量重复的垃圾代码。你的工作就是引导这种持久性。"
+                </blockquote>
+                <div class="w-16 h-1 bg-indigo-500 mx-auto rounded"></div>
+                <blockquote class="text-lg font-serif italic text-white opacity-90">
+                    "未来的公司会变小，但数量会变多。每个人都会拥有自己的'云端电脑'和一整支 Agent 军队。"
+                </blockquote>
+            </div>
+        </div>
+    </footer>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="bilibili" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
