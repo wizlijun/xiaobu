@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cisco Live 2026: The Deep Dive</title>
+    <style>
+        :root {
+            --cisco-blue: #00bceb;
+            --nvidia-green: #76b900;
+            --dark-bg: #1a1a1a;
+            --light-bg: #ffffff;
+            --card-bg: #f8f9fa;
+            --text-primary: #2d3436;
+            --text-secondary: #636e72;
+            --border-radius: 12px;
+            --transition: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-primary);
+            line-height: 1.8;
+            margin: 0;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Header */
+        header {
+            margin-bottom: 60px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 30px;
+        }
+
+        .tag-line {
+            font-family: "Monaco", "Courier New", monospace;
+            font-size: 0.85rem;
+            color: var(--nvidia-green);
+            background: #f0f0f0;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin: 15px 0;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        /* Section Styling */
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-top: 60px;
+            margin-bottom: 25px;
+        }
+
+        .section-num {
+            font-size: 3rem;
+            font-weight: 900;
+            color: rgba(0,0,0,0.05);
+            margin-right: 15px;
+            line-height: 1;
+        }
+
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--dark-bg);
+        }
+
+        /* Tech Details Accordion */
+        .details-box {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .details-box:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border-color: var(--cisco-blue);
+        }
+
+        .details-summary {
+            padding: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fcfcfc;
+        }
+
+        .details-summary::after {
+            content: '+';
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        details[open] .details-summary::after {
+            content: '-';
+        }
+
+        details[open] .details-summary {
+            border-bottom: 1px solid #eee;
+            color: var(--cisco-blue);
+        }
+
+        .details-content {
+            padding: 25px;
+            background-color: #fff;
+        }
+
+        .deep-dive-tag {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #fff;
+            background-color: var(--cisco-blue);
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            margin: 15px 0;
+            border-left: 4px solid var(--nvidia-green);
+        }
+
+        .insight-highlight {
+            background-color: #fffbe6;
+            padding: 2px 4px;
+            border-radius: 2px;
+            border-bottom: 1px dashed #ffd591;
+        }
+
+        /* Grid for Broader Topics */
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .simple-card {
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            border: 1px solid #eee;
+        }
+
+        .simple-card h3 {
+            margin-top: 0;
+            color: var(--nvidia-green);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 80px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #888;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        ul { padding-left: 20px; }
+        li { margin-bottom: 10px; }
+
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <span class="tag-line">2026 EDITION · DEEP DIVE</span>
+        <h1>重构计算堆栈与软件范式</h1>
+        <div class="subtitle">Jensen Huang (NVIDIA) x Chuck Robbins (Cisco) · 炉边谈话深度解析</div>
+    </header>
+
+    <!-- SECTION 1: COMPUTING STACK -->
+    <div class="section-header">
+        <span class="section-num">01</span>
+        <span class="section-title">计算范式重构 (Reinventing Computing)</span>
+    </div>
+
+    <details class="details-box" open>
+        <summary class="details-summary">
+            <span><span class="deep-dive-tag">ARCH</span> Vera Rubin 架构与全栈革新</span>
+        </summary>
+        <div class="details-content">
+            <p><strong>上下文：</strong> Jensen 确认了继 Blackwell 之后的新一代架构 <strong>Vera Rubin</strong>。这不仅仅是 GPU 的迭代，而是整个计算堆栈（计算、网络、存储、安全）的重写。</p>
+            <ul>
+                <li><strong>技术栈协同：</strong> 既然计算单元（GPU）已经进化，与之配套的网络（Cisco Nexus）必须进化为 AI-Native 的控制平面，否则会成为瓶颈。</li>
+                <li><strong>显式 vs 隐式编程：</strong>
+                    <ul>
+                        <li><span class="insight-highlight">Explicit (旧时代):</span> 程序员编写指令，通过 API 传递明确的变量。</li>
+                        <li><span class="insight-highlight">Implicit (Rubin 时代):</span> 程序员定义意图 (Intent)，系统自行推导执行路径。</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </details>
+
+    <details class="details-box">
+        <summary class="details-summary">
+            <span><span class="deep-dive-tag">SOFTWARE</span> 生成式 vs 检索式软件</span>
+        </summary>
+        <div class="details-content">
+            <p><strong>核心逻辑：</strong> 为什么这次不仅仅是像 PC 或 Cloud 那样的升级？</p>
+            <ul>
+                <li><strong>检索式 (Retrieval-based):</strong> 过去的软件像 CD-ROM。所有内容都是预录制（Pre-recorded）的。点击按钮 &rarr; 读取数据库 &rarr; 呈现预设好的像素。</li>
+                <li><strong>生成式 (Generative):</strong> 现在的软件是实时的。此时此刻的对话、界面、逻辑，都是 AI 根据上下文 (Context) 实时生成的。这意味着每一次交互在历史上都是唯一的。</li>
+            </ul>
+            <div class="code-block">
+                // 传统思维：预设所有路径<br>
+                if (user_click) load_resource("page_v1.html");<br><br>
+                // 生成式思维：实时合成<br>
+                intent = "explain_stack";<br>
+                context = {user_role: "engineer", time: "2026"};<br>
+                response = AI.generate_experience(intent, context);
+            </div>
+        </div>
+    </details>
+
+    <!-- SECTION 2: AI & REASONING -->
+    <div class="section-header">
+        <span class="section-num">02</span>
+        <span class="section-title">代理智能与推理 (Agentic AI & Reasoning)</span>
+    </div>
+
+    <details class="details-box">
+        <summary class="details-summary">
+            <span><span class="deep-dive-tag">HISTORY</span> 为什么 AlexNet 赢了？(It Depends 问题)</span>
+        </summary>
+        <div class="details-content">
+            <p><strong>深度复盘：</strong> 14年前，两个学生（Ilya Sutskever 等）用 GPU 击败了专家研究 30 年的计算机视觉算法。</p>
+            <ul>
+                <li><strong>物理世界 vs 复杂世界：</strong> 物理世界有 F=ma，有 Maxwell 方程组，有热力学定律。这些问题可以通过数学公式完美求解。</li>
+                <li><strong>"It Depends" 问题：</strong> 大多数高价值问题（识别猫、自动驾驶、企业决策）没有公式。答案永远是“视情况而定”。</li>
+                <li><strong>结论：</strong> 对于没有第一性原理公式的复杂系统，<strong>深度学习 (Deep Learning)</strong> 是唯一解，因为它从数据中学习“It Depends”的分布，而不是试图编码规则。</li>
+            </ul>
+        </div>
+    </details>
+
+    <details class="details-box">
+        <summary class="details-summary">
+            <span><span class="deep-dive-tag">NEXT GEN</span> System 2: 推理与规划</span>
+        </summary>
+        <div class="details-content">
+            <p><strong>Agentic AI 核心特征：</strong></p>
+            <ul>
+                <li><strong>感知 (Perception):</strong> 不仅是文本，而是多模态理解（视觉、PDF、传感器）。</li>
+                <li><strong>推理 (Reasoning):</strong> 遇到未见过的问题时，不直接输出概率最高的词，而是先思考（Reasoning）、拆解问题、制定计划（Planning）。</li>
+                <li><strong>工具链 (Tool Use):</strong> 知道自己不知道什么，懂得去调用外部工具（RAG、搜索、API）来补全能力。</li>
+            </ul>
+        </div>
+    </details>
+
+    <!-- SECTION 3: ENTERPRISE STRATEGY -->
+    <div class="section-header">
+        <span class="section-num">03</span>
+        <span class="section-title">企业 AI 战略 (The Abundance Mindset)</span>
+    </div>
+
+    <details class="details-box">
+        <summary class="details-summary">
+            <span><span class="deep-dive-tag">STRATEGY</span> 混沌工程学与 "Yes, then Why"</span>
+        </summary>
+        <div class="details-content">
+            <p><strong>反直觉的管理建议：</strong></p>
+            <ul>
+                <li><strong>Let a thousand flowers bloom:</strong> 创新初期必须允许混乱。试图在早期控制（Control）会扼杀可能性。控制是创新的反义词。</li>
+                <li><strong>Yes, then Why:</strong> 员工要用 AI 工具，先批准，再问原因。就像允许孩子探索世界一样。</li>
+                <li><strong>Curate Later:</strong> 只有当内部出现数百个实验项目后，再进行策展和修剪。不要在一开始就搞“顶层设计”。</li>
+            </ul>
+        </div>
+    </details>
+
+    <details class="details-box">
+        <summary class="details-summary">
+            <span><span class="deep-dive-tag">MODEL</span> 无限速度与零成本假设</span>
+        </summary>
+        <div class="details-content">
+            <p><strong>思维实验：</strong> 摩尔定律是每10年100倍，AI 是每10年100万倍。这实际上意味着计算成本趋近于零。</p>
+            <ul>
+                <li><strong>重构业务：</strong> 如果完成一项任务（如芯片布线、药物筛选）的时间从1年变为1秒，你会怎么做？</li>
+                <li><strong>全量处理：</strong> 以前做图分析（Graph Analytics）需要切片处理，因为算力不够。现在应该直接处理全量数据图谱。</li>
+                <li><strong>Abundance:</strong> 不要为了省钱而做局部优化，要为了解决所有问题做全局优化。</li>
+            </ul>
+        </div>
+    </details>
+
+    <!-- SECTION 4: SOFTWARE ENGINEERING -->
+    <div class="section-header">
+        <span class="section-num">04</span>
+        <span class="section-title">软件工程的未来 (Coding is a Commodity)</span>
+    </div>
+
+    <details class="details-box">
+        <summary class="details-summary">
+            <span><span class="deep-dive-tag">CAREER</span> 从 Syntax 到 Semantics</span>
+        </summary>
+        <div class="details-content">
+            <p><strong>给技术人员的警示：</strong></p>
+            <ul>
+                <li><strong>Coding (Typing) is Commodity:</strong> 仅仅是将逻辑翻译成 C++/Python 语法的过程（Typing）正在迅速贬值。GitHub Copilot 已经接管了这部分工作。</li>
+                <li><strong>Domain Expertise is Superpower:</strong> 真正的价值在于理解业务、理解客户、定义问题。</li>
+                <li><strong>Human Language as Code:</strong> 未来的编程语言是英语（或希伯来语、中文）。通过自然语言定义意图，AI 负责实现。这使得“领域专家”直接具备了软件构建能力。</li>
+            </ul>
+        </div>
+    </details>
+
+    <hr style="margin: 60px 0; border: 0; border-top: 2px dashed #eee;">
+
+    <!-- BROADER TOPICS (5-7) -->
+    <div class="section-header">
+        <span class="section-num">II</span>
+        <span class="section-title" style="color:var(--text-secondary);">宏观视野 (Broad Overview)</span>
+    </div>
+
+    <div class="grid-cards">
+        <!-- Topic 5 -->
+        <div class="simple-card">
+            <h3>🌍 物理 AI (Physical AI)</h3>
+            <p><strong>理解因果律：</strong> LLM 不懂重力，但物理 AI 懂。它理解推倒第一块<strong>多米诺骨牌</strong>会引发连锁反应。</p>
+            <p><strong>价值倒挂：</strong> 就像 Uber 的价值 > 汽车厂商。未来自动驾驶软件（Digital Chauffeur）的生命周期价值将远超汽车硬件本身。TAM 从 1T (IT) 扩张至 100T (实体经济)。</p>
+            <p><strong>工具复用：</strong> 机器人不应发明新锤子，应使用现有的锤子。</p>
+        </div>
+
+        <!-- Topic 6 -->
+        <div class="simple-card">
+            <h3>🔐 主权 AI (Sovereign AI)</h3>
+            <p><strong>核心隐喻：</strong> "我看心理医生时，绝不希望对话被传到公有云。"</p>
+            <p><strong>IP 定义重写：</strong> 答案是商品，<strong>问题才是 IP</strong>。企业在思考什么、在问什么，这是最高机密，必须 On-Prem 部署。</p>
+            <p><strong>AI in the Loop：</strong> 反转 "Human in the Loop"。让 AI 旁听业务，学习隐性知识，将员工经验转化为公司永久资产。</p>
+        </div>
+
+        <!-- Topic 7 -->
+        <div class="simple-card">
+            <h3>🛠️ 行动建议 (Action)</h3>
+            <p><strong>Build Something：</strong> 即使云服务很方便，也要亲自去组装硬件、搭建本地模型。</p>
+            <p><strong>Tactile Understanding：</strong> 只有“打开引擎盖”(Lift the hood)，你才能对 AI 产生真实的工程触感。不要只做租赁者，要做构建者。</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>Generated based on Cisco Live 2026 Transcript · Chuck Robbins x Jensen Huang</p>
+        <p style="opacity:0.6;">"The question is the IP. The answer is a commodity."</p>
+    </footer>
+</div>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="bilibili" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
