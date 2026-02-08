@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DDIA 深度精读 - 数据密集型应用系统设计</title>
+    <style>
+        :root {
+            --primary-hue: 210; /* Blue */
+            --primary-color: hsl(var(--primary-hue), 80%, 50%);
+            --primary-dark: hsl(var(--primary-hue), 80%, 40%);
+            --accent-color: #ff9f43;
+            --text-main: #2c3e50;
+            --text-light: #636e72;
+            --bg-body: #f8f9fa;
+            --bg-card: #ffffff;
+            
+            --part1-bg: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
+            --part2-bg: linear-gradient(135deg, #e8f5e9 0%, #ffffff 100%);
+            --part3-bg: linear-gradient(135deg, #fff3e0 0%, #ffffff 100%);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft YaHei", sans-serif;
+            line-height: 1.6;
+            color: var(--text-main);
+            background-color: var(--bg-body);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 80px 20px;
+            background: #fff;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin: 0 0 15px 0;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(90deg, var(--primary-dark), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-light);
+            font-weight: 300;
+        }
+
+        /* Part Section */
+        .part-section {
+            margin-bottom: 50px;
+            padding: 10px;
+            border-radius: 16px;
+        }
+        
+        .part-header {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 25px;
+            padding: 0 15px;
+            border-bottom: 2px solid rgba(0,0,0,0.05);
+            padding-bottom: 10px;
+        }
+
+        .part-badge {
+            background: var(--text-main);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-right: 15px;
+            text-transform: uppercase;
+        }
+
+        .part-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* Details & Summary */
+        details {
+            background: var(--bg-card);
+            margin-bottom: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        details[open] {
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            border-color: var(--primary-color);
+        }
+
+        summary {
+            padding: 20px 25px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: 600;
+            position: relative;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::-webkit-details-marker { display: none; }
+        
+        summary:hover { background-color: #fafbfc; }
+
+        summary::after {
+            content: '+';
+            font-size: 1.5rem;
+            color: var(--text-light);
+            transition: transform 0.3s;
+            font-weight: 300;
+        }
+
+        details[open] summary::after {
+            transform: rotate(45deg);
+            color: var(--primary-color);
+        }
+
+        .chapter-content {
+            padding: 0 25px 30px 25px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chapter-intro {
+            font-size: 1.05rem;
+            color: var(--text-light);
+            margin-bottom: 30px;
+            border-left: 4px solid var(--accent-color);
+            padding-left: 15px;
+        }
+
+        /* Flip Cards */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 35px;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            height: 240px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-radius: 12px;
+        }
+
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 25px;
+        }
+
+        .flip-card-front {
+            background-color: #fff;
+            border: 1px solid #eee;
+        }
+
+        .flip-card-front h3 {
+            margin: 0;
+            color: var(--primary-dark);
+            font-size: 1.3rem;
+        }
+
+        .flip-card-front span {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .flip-card-back {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            transform: rotateY(180deg);
+            text-align: left;
+            align-items: flex-start;
+            justify-content: flex-start;
+            overflow-y: auto;
+        }
+
+        /* Color Variations for Parts */
+        .part-2 .flip-card-back { background: linear-gradient(135deg, #66bb6a, #2e7d32); }
+        .part-3 .flip-card-back { background: linear-gradient(135deg, #ffa726, #ef6c00); }
+
+        .flip-card-back strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            width: 100%;
+            padding-bottom: 5px;
+        }
+
+        .flip-card-back p {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin: 10px 0 0 0;
+        }
+
+        /* Deep Dive Section */
+        .deep-dive {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px dashed #ced4da;
+        }
+
+        .deep-dive h4 {
+            margin-top: 0;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+        }
+
+        .deep-dive h4::before {
+            content: '🔍';
+            margin-right: 8px;
+            font-size: 1.2rem;
+        }
+
+        .tech-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 15px;
+        }
+
+        .tech-list li {
+            position: relative;
+            padding-left: 20px;
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        .tech-list li::before {
+            content: '•';
+            color: var(--accent-color);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .tech-term {
+            font-weight: 700;
+            color: #333;
+            background: rgba(0,0,0,0.04);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 40px;
+            color: var(--text-light);
+            border-top: 1px solid #eee;
+        }
+
+        @media (max-width: 768px) {
+            .tech-list { grid-template-columns: 1fr; }
+            h1 { font-size: 2rem; }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Designing Data-Intensive Applications</h1>
+    <div class="subtitle">数据密集型应用系统设计 · 深度精读</div>
+    <p style="margin-top:20px; max-width: 600px; margin-left: auto; margin-right: auto; opacity: 0.8;">
+        深入探索数据系统的本质、权衡与演进。<br>
+        包括：数据模型、分布式一致性、共识算法、批处理与流处理架构。
+    </p>
+</header>
+
+<div class="container">
+
+    <!-- PART I -->
+    <div class="part-section" style="background: var(--part1-bg);">
+        <div class="part-header">
+            <span class="part-badge">Part I</span>
+            <span class="part-title">数据系统基础 (Foundations of Data Systems)</span>
+        </div>
+
+        <!-- Chapter 1 -->
+        <details>
+            <summary>第1章：可靠性、可扩展性与可维护性</summary>
+            <div class="chapter-content">
+                <p class="chapter-intro">这三个词不仅是流行语，更是评估系统优劣的核心维度。本章建立了全书的思维框架，定义了我们在谈论软件质量时到底在谈论什么。</p>
+
+                <div class="cards-grid">
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Reliability</h3>
+                                <span>可靠性</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>Faults vs Failures</strong>
+                                <p><strong>Fault (故障):</strong> 系统的一部分偏离其标准（如硬盘坏了）。<br><strong>Failure (失效):</strong> 系统作为一个整体停止向用户提供服务。<br>可靠性就是容忍故障，防止其演变成失效。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Scalability</h3>
+                                <span>可扩展性</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>负载参数 & 性能</strong>
+                                <p>不是"X是否可扩展"，而是"如果负载增加，性能如何变化？"。<br>关键指标：<strong>P99/P999 尾部延迟</strong> (Tail Latency)，直接影响用户体验的最差情况。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Maintainability</h3>
+                                <span>可维护性</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>降低工程成本</strong>
+                                <p>1. <strong>可操作性:</strong> 方便运维团队监控和修复。<br>2. <strong>简单性:</strong> 消除意外复杂性 (Accidental Complexity)，使用良好抽象。<br>3. <strong>可演化性:</strong> 易于修改以适应新需求。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="deep-dive">
+                    <h4>核心技术与难点解析</h4>
+                    <ul class="tech-list">
+                        <li><span class="tech-term">Chaos Monkey</span>：Netflix 的工具，故意随机杀死进程，以此测试系统的容错能力（Fault Tolerance）。</li>
+                        <li><span class="tech-term">Head-of-line Blocking</span>：队头阻塞，少量慢请求导致后续快请求也被延迟处理的现象，在排队系统中常见。</li>
+                        <li><span class="tech-term">Vertical vs Horizontal Scaling</span>：垂直扩展（升级硬件）简单但昂贵且有上限；水平扩展（加机器）复杂但更具弹性，是本书的重点。</li>
+                        <li><span class="tech-term">Describing Load</span>：Twitter 的例子（发推 vs 看推），根据读写比率 (Read/Write Ratio) 选择不同的架构（Fan-out on write vs Fan-out on read）。</li>
+                    </ul>
+                </div>
+            </div>
+        </details>
+
+        <!-- Chapter 2 -->
+        <details>
+            <summary>第2章：数据模型与查询语言</summary>
+            <div class="chapter-content">
+                <p class="chapter-intro">数据模型不仅仅是软件开发的一个环节，它决定了我们思考问题的方式。关系模型、文档模型和图模型各有优劣，关键在于数据之间的关系如何处理。</p>
+
+                <div class="cards-grid">
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Relational Model</h3>
+                                <span>关系模型</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>严谨与连接</strong>
+                                <p>数据被组织成元组（Rows），集合为关系（Tables）。<br><strong>优势：</strong> 强大的 Join 支持，多对多关系处理得当。<br><strong>特点：</strong> Schema-on-write（写时模式），强制结构化。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Document Model</h3>
+                                <span>文档模型 (NoSQL)</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>灵活与局部性</strong>
+                                <p>数据存储为类 JSON 文档。<br><strong>优势：</strong> 数据局部性好（一次读取整个树），Schema-on-read（读时模式，灵活）。<br><strong>劣势：</strong> Join 支持弱，多对多关系处理复杂。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Graph Model</h3>
+                                <span>图模型</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>复杂关系专家</strong>
+                                <p>顶点 (Vertices) 和 边 (Edges)。<br><strong>优势：</strong> 针对高度互联的数据（如社交网络、推荐引擎）。<br>查询语言：Cypher (Neo4j), SPARQL, Datalog。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="deep-dive">
+                    <h4>核心技术与难点解析</h4>
+                    <ul class="tech-list">
+                        <li><span class="tech-term">Impedance Mismatch</span>：阻抗失配，指应用程序代码（面向对象）与数据库模型（关系型）之间转换的困难。</li>
+                        <li><span class="tech-term">Declarative Query (SQL)</span>：声明式查询，指定“要什么”而非“怎么做”，允许数据库优化器自动优化性能和并行化，优于命令式（IMS/CODASYL）。</li>
+                        <li><span class="tech-term">MapReduce Query</span>：一种介于声明式和命令式之间的查询模型（如 MongoDB），允许使用 JS 函数处理数据片段。</li>
+                        <li><span class="tech-term">Triple-Store</span>：三元组存储（主语，谓语，宾语），语义网的数据模型，与图数据库概念类似。</li>
+                    </ul>
+                </div>
+            </div>
+        </details>
+
+        <!-- Chapter 3 -->
+        <details>
+            <summary>第3章：存储与检索</summary>
+            <div class="chapter-content">
+                <p class="chapter-intro">数据库的核心是两个操作：保存数据和找回数据。本章深入探讨了日志结构与页面结构存储引擎的底层原理，以及 OLTP 与 OLAP 的本质区别。</p>
+
+                <div class="cards-grid">
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>LSM-Tree</h3>
+                                <span>Log-Structured Merge-Tree</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>写优化引擎</strong>
+                                <p>基于 SSTables (排序字符串表)。<br><strong>流程：</strong> 写入内存 MemTable -> 刷入磁盘 SSTable -> 后台合并压缩 (Compaction)。<br><strong>优点：</strong> 顺序写入，高吞吐量。适合：LevelDB, RocksDB, Cassandra。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>B-Tree</h3>
+                                <span>B树</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>读优化/平衡引擎</strong>
+                                <p>将数据分割成固定大小的页 (Pages, 通常 4KB)。<br><strong>原理：</strong> 通过指针树状查找，就地更新 (Update-in-place)。<br><strong>地位：</strong> 关系型数据库事实上的标准。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Column-Oriented</h3>
+                                <span>列式存储 (OLAP)</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>分析型利器</strong>
+                                <p>按列而非按行存储数据。<br><strong>优势：</strong> 极高的压缩率（位图编码、行程编码），CPU 缓存友好，适合聚合查询。<br><strong>场景：</strong> 数据仓库 (Data Warehouse)。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="deep-dive">
+                    <h4>核心技术与难点解析</h4>
+                    <ul class="tech-list">
+                        <li><span class="tech-term">Hash Index (Bitcask)</span>：最简单的 KV 存储，内存中存 Key->Offset 映射，只支持追加写入。缺点是 Key 必须全放内存，不支持范围查询。</li>
+                        <li><span class="tech-term">Bloom Filter</span>：LSM-Tree 的优化手段，用于快速判断一个 Key 是否<strong>不</strong>在 SSTable 中，减少不必要的磁盘读取。</li>
+                        <li><span class="tech-term">Compaction</span>：压缩合并，清理旧数据和被删除数据（Tombstone），防止 LSM-Tree 读性能随时间衰退。</li>
+                        <li><span class="tech-term">Clustered Index</span>：聚簇索引，将行数据直接存储在索引叶子节点中（如 MySQL InnoDB 的主键），避免回表查询。</li>
+                        <li><span class="tech-term">Materialized View</span>：物化视图，预计算的查询结果缓存，是数据立方体 (Data Cube) 的一种形式。</li>
+                    </ul>
+                </div>
+            </div>
+        </details>
+
+        <!-- Chapter 4 -->
+        <details>
+            <summary>第4章：编码与演化</summary>
+            <div class="chapter-content">
+                <p class="chapter-intro">应用不断变化，数据格式也随之变化。本章讨论如何通过编码格式（JSON, Avro, Protobuf）处理向前和向后兼容性，实现系统的平滑演进。</p>
+
+                <div class="cards-grid">
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Binary Encoding</h3>
+                                <span>二进制编码</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>高效紧凑</strong>
+                                <p>Avro, Protocol Buffers, Thrift。<br>相比 JSON/XML，更小且解析更快。关键在于它们依赖 <strong>Schema</strong>，允许省略字段名，强制类型检查。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Compatibility</h3>
+                                <span>双向兼容性</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>滚动升级的基础</strong>
+                                <p><strong>Backward (向后):</strong> 新代码读旧数据。<br><strong>Forward (向前):</strong> 旧代码读新数据（通过忽略未知字段实现）。<br>这对零停机部署至关重要。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Dataflow Modes</h3>
+                                <span>数据流动方式</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>数据如何传递？</strong>
+                                <p>1. <strong>数据库:</strong> 写入者编码，读取者解码。<br>2. <strong>RPC/REST:</strong> 客户端与服务端通信。<br>3. <strong>异步消息:</strong> 节点间通过消息队列解耦。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="deep-dive">
+                    <h4>核心技术与难点解析</h4>
+                    <ul class="tech-list">
+                        <li><span class="tech-term">Field Tags</span>：Protobuf/Thrift 使用数字标签（Tag）而非字段名来标识字段，修改 Tag 会破坏兼容性。</li>
+                        <li><span class="tech-term">Avro Schema Resolution</span>：Avro 独特之处在于读写可以使用不同的 Schema，只要它们兼容，解决了动态 Schema 的问题。</li>
+                        <li><span class="tech-term">RPC vs Local Call</span>：RPC 看起来像函数调用，但其实完全不同（网络延迟、超时、幂等性问题），这是分布式系统设计的常见误区。</li>
+                        <li><span class="tech-term">Schema Registry</span>：在使用 Kafka/Avro 时，通常需要一个中心化的服务来存储和版本化 Schema。</li>
+                    </ul>
+                </div>
+            </div>
+        </details>
+    </div>
+
+    <!-- PART II -->
+    <div class="part-section" style="background: var(--part2-bg);">
+        <div class="part-header">
+            <span class="part-badge">Part II</span>
+            <span class="part-title">分布式数据 (Distributed Data)</span>
+        </div>
+
+        <!-- Chapter 5 -->
+        <details>
+            <summary>第5章：复制 (Replication)</summary>
+            <div class="chapter-content">
+                <p class="chapter-intro">复制是为了高可用、容错和降低延迟。但当数据在多个节点间复制时，"一致性"成为了最大的挑战。</p>
+
+                <div class="cards-grid">
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Leader-Based</h3>
+                                <span>主从复制</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>最常见模式</strong>
+                                <p>所有写操作发给 Leader，Leader 将变动流发送给 Followers。<br><strong>同步复制:</strong> 强一致，但写性能受限于最慢节点。<br><strong>异步复制:</strong> 高吞吐，但主节点挂掉会丢失数据。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Multi-Leader</h3>
+                                <span>多主复制</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>多数据中心</strong>
+                                <p>每个数据中心有一个 Leader。<br><strong>优点：</strong> 容忍数据中心故障，写性能好。<br><strong>缺点：</strong> 必须解决<strong>写冲突 (Write Conflicts)</strong>。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Leaderless</h3>
+                                <span>无主复制 (Dynamo风格)</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>高可用性</strong>
+                                <p>客户端写入多个节点。没有单点故障。<br>依赖 <strong>Quorum (法定人数)</strong> 机制：W + R > N。<br>使用 Read Repair 和 Anti-entropy 修复数据。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="deep-dive">
+                    <h4>核心技术与难点解析</h4>
+                    <ul class="tech-list">
+                        <li><span class="tech-term">Replication Lag</span>：复制延迟带来的问题：<strong>Read-your-writes</strong>（刚写完读不到）、<strong>Monotonic Reads</strong>（时光倒流）、<strong>Consistent Prefix Reads</strong>（因果顺序错乱）。</li>
+                        <li><span class="tech-term">Conflict Resolution</span>：多主/无主复制的核心。常见策略：LWW (Last Write Wins，易丢数据) 或 合并值 (如 CRDTs)。</li>
+                        <li><span class="tech-term">Split Brain</span>：脑裂，两个节点都认为自己是 Leader，导致数据分歧和写入冲突。</li>
+                        <li><span class="tech-term">Sloppy Quorum & Hinted Handoff</span>：Dynamo 中的机制，为了高可用性暂时放宽 Quorum 要求，数据暂存由于故障节点之外的节点。</li>
+                    </ul>
+                </div>
+            </div>
+        </details>
+
+        <!-- Chapter 6 -->
+        <details>
+            <summary>第6章：分区 (Partitioning)</summary>
+            <div class="chapter-content">
+                <p class="chapter-intro">当数据量大到单机无法承载时，我们需要分区（分片）。核心问题是如何均匀分布数据以及如何处理查询路由。</p>
+
+                <div class="cards-grid">
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Partitioning by Key Range</h3>
+                                <span>按键范围分区</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>支持范围查询</strong>
+                                <p>像百科全书一样，A-C卷，D-F卷。<br><strong>优点：</strong> 范围扫描高效。<br><strong>缺点：</strong> 容易产生<strong>热点 (Hot Spots)</strong>，如按时间戳分区会导致写入集中。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Partitioning by Hash</h3>
+                                <span>按键哈希分区</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>负载均衡</strong>
+                                <p>对 Key 计算 Hash 值，根据 Hash 分区。<br><strong>优点：</strong> 数据分布均匀，消除热点。<br><strong>缺点：</strong> 丧失范围查询能力 (Cassandra 结合了两者)。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Secondary Indexes</h3>
+                                <span>二级索引分区</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>两大流派</strong>
+                                <p><strong>基于文档 (Local):</strong> 每个分区维护自己的索引。写快，读需要 Scatter/Gather。<br><strong>基于词条 (Global):</strong> 全局索引也分区。读快，但写复杂（分布式事务）。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="deep-dive">
+                    <h4>核心技术与难点解析</h4>
+                    <ul class="tech-list">
+                        <li><span class="tech-term">Rebalancing</span>：再平衡。不要使用 <code>Hash % N</code>，因为 N 变化时会导致大规模数据迁移。推荐使用<strong>固定数量分区</strong>或<strong>动态分区</strong>。</li>
+                        <li><span class="tech-term">Consistent Hashing</span>：一致性哈希，一种特殊的再平衡技术，常用于缓存系统，但在数据库中使用较少（容易导致负载不均）。</li>
+                        <li><span class="tech-term">Request Routing</span>：客户端如何知道连哪个节点？1. 任意节点转发 2. 路由层 (Routing Tier) 3. 客户端感知。通常依赖 ZooKeeper 维护元数据。</li>
+                    </ul>
+                </div>
+            </div>
+        </details>
+
+        <!-- Chapter 7 -->
+        <details>
+            <summary>第7章：事务 (Transactions)</summary>
+            <div class="chapter-content">
+                <p class="chapter-intro">事务是应用层的首选抽象，用于处理部分失败和并发问题。ACID 中的“隔离性”是最复杂也是最容易被误解的部分。</p>
+
+                <div class="cards-grid">
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Read Committed</h3>
+                                <span>读已提交</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>最基本的隔离</strong>
+                                <p>保证：无脏读 (Dirty Read)，无脏写 (Dirty Write)。<br>实现：行锁防脏写，保存旧值防脏读。<br>缺点：存在不可重复读 (Non-repeatable Read)。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Snapshot Isolation</h3>
+                                <span>快照隔离 (MVCC)</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>主流选择</strong>
+                                <p>每个事务读取一致的数据库快照。<br><strong>MVCC (多版本并发控制):</strong> 写入不阻塞读取。<br>解决不可重复读，但仍有<strong>写偏斜 (Write Skew)</strong>。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Serializability</h3>
+                                <span>可串行化</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>黄金标准</strong>
+                                <p>执行结果与串行执行完全相同。<br>实现方式：<br>1. <strong>实际串行执行</strong> (Redis, VoltDB)<br>2. <strong>2PL</strong> (两阶段锁)<br>3. <strong>SSI</strong> (可串行化快照隔离)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="deep-dive">
+                    <h4>核心技术与难点解析</h4>
+                    <ul class="tech-list">
+                        <li><span class="tech-term">Lost Update</span>：丢失更新。两个并发写操作读取-修改-写入，后一个覆盖前一个。解决：原子写、显式锁、自动检测。</li>
+                        <li><span class="tech-term">Write Skew</span>：写偏斜。两个事务读取相同数据，但基于读取结果修改不同数据，导致逻辑错误（如会议室双重预订）。只能通过串行化或物化冲突解决。</li>
+                        <li><span class="tech-term">Phantom</span>：幻读。一个事务的写入改变了另一个事务的搜索查询结果。</li>
+                        <li><span class="tech-term">2PL (Two-Phase Locking)</span>：强隔离的标准实现，但性能较差，易死锁。</li>
+                        <li><span class="tech-term">SSI (Serializable Snapshot Isolation)</span>：乐观并发控制，检测冲突并中止事务，性能优于 2PL，现代数据库的新宠。</li>
+                    </ul>
+                </div>
+            </div>
+        </details>
+
+        <!-- Chapter 8 -->
+        <details>
+            <summary>第8章：分布式系统的麻烦</summary>
+            <div class="chapter-content">
+                <p class="chapter-intro">这是全书最悲观的一章。在分布式系统中，你无法完全信任网络，甚至无法完全信任时间。我们必须假设一切都会出错。</p>
+
+                <div class="cards-grid">
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Unreliable Networks</h3>
+                                <span>不可靠网络</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>异步网络的现实</strong>
+                                <p>网络可能延迟、丢包、乱序。没有上限的延迟 (Unbounded Delay)。<br><strong>结论：</strong> 你无法区分节点宕机还是网络慢，只能靠<strong>超时 (Timeout)</strong> 来猜测。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Unreliable Clocks</h3>
+                                <span>不可靠时钟</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>时间是不可信的</strong>
+                                <p>NTP 可能导致时钟回拨。<br><strong>Wall clock:</strong> 适合看时间。<br><strong>Monotonic clock:</strong> 适合算时长。<br>依赖时间戳排序会导致数据丢失 (LWW 的隐患)。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Truth & Lies</h3>
+                                <span>真理与谎言</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>由多数派定义真理</strong>
+                                <p>节点可能处于 "Stop-the-world" GC 暂停中，以为自己是 Leader，实际上已过期。<br>需要 <strong>Fencing Token</strong> 来防止旧 Leader 破坏数据。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="deep-dive">
+                    <h4>核心技术与难点解析</h4>
+                    <ul class="tech-list">
+                        <li><span class="tech-term">Fencing Token</span>：当锁服务器授予锁时，返回一个递增 ID。存储层若发现写入请求的 ID 小于当前记录的 ID，则拒绝写入。防止僵尸节点写入。</li>
+                        <li><span class="tech-term">Byzantine Faults</span>：拜占庭故障，即节点不仅宕机，还撒谎。一般企业系统假设不存在（除非是区块链）。</li>
+                        <li><span class="tech-term">System Models</span>：同步模型（不现实）、部分同步模型（现实，有时延迟）、异步模型（最难，FLP 定理）。</li>
+                        <li><span class="tech-term">Process Pauses</span>：进程暂停（GC、虚拟机挂起）是分布式系统判断节点存活的主要干扰源。</li>
+                    </ul>
+                </div>
+            </div>
+        </details>
+
+        <!-- Chapter 9 -->
+        <details>
+            <summary>第9章：一致性与共识</summary>
+            <div class="chapter-content">
+                <p class="chapter-intro">这是最难也是最核心的一章。探讨了最强的一致性模型，以及如何通过共识算法实现它。</p>
+
+                <div class="cards-grid">
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Linearizability</h3>
+                                <span>线性一致性</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>原子一致性</strong>
+                                <p>让系统看起来像只有一个数据副本，且操作是原子的。<br>一旦写入成功，任何后续读操作都必须看到新值。<br>代价：网络分区时不可用 (CAP 的 C)。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Total Order Broadcast</h3>
+                                <span>全序广播</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>共识的应用</strong>
+                                <p>相当于状态机复制 (State Machine Replication)。<br>如果所有节点按相同顺序执行相同命令，状态就是一致的。<br>这是 ZooKeeper/Etcd 的核心。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Consensus Algorithms</h3>
+                                <span>共识算法</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>Paxos, Raft, Zab</strong>
+                                <p>解决分布式系统中节点达成一致的问题。<br>核心机制：<strong>Epoch/Term</strong> (代/任期) + <strong>Quorum</strong> (法定人数投票)。<br>保证安全性 (Safety)，不保证活性 (Liveness)。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="deep-dive">
+                    <h4>核心技术与难点解析</h4>
+                    <ul class="tech-list">
+                        <li><span class="tech-term">CAP Theorem</span>：在网络分区 (P) 发生时，只能在 线性一致性 (C) 和 可用性 (A) 之间二选一。</li>
+                        <li><span class="tech-term">Two-Phase Commit (2PC)</span>：两阶段提交，用于分布式事务的原子提交。缺点是协调者单点故障会导致阻塞 (Blocking)。</li>
+                        <li><span class="tech-term">Lamport Timestamps</span>：一种逻辑时钟，可以产生全序关系，但无法判断因果关系（无法区分并发）。</li>
+                        <li><span class="tech-term">Causal Consistency</span>：因果一致性，比线性一致性弱，但比最终一致性强。不要求全序，只要求有因果关系的操作有序。不会受 CAP 限制。</li>
+                    </ul>
+                </div>
+            </div>
+        </details>
+    </div>
+
+    <!-- PART III -->
+    <div class="part-section" style="background: var(--part3-bg);">
+        <div class="part-header">
+            <span class="part-badge">Part III</span>
+            <span class="part-title">衍生数据 (Derived Data)</span>
+        </div>
+
+        <!-- Chapter 10 -->
+        <details>
+            <summary>第10章：批处理 (Batch Processing)</summary>
+            <div class="chapter-content">
+                <p class="chapter-intro">离线处理大数据的基石。MapReduce 继承了 Unix 管道的哲学，虽然现在逐渐被 Spark/Flink 取代，但思想永存。</p>
+
+                <div class="cards-grid">
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Unix Philosophy</h3>
+                                <span>Unix 哲学</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>组合的力量</strong>
+                                <p>1. 输入不可变 (Immutable Input)。<br>2. 无副作用。<br>3. 简单的文本接口。<br>MapReduce 是分布式的 Unix 管道。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>MapReduce Joins</h3>
+                                <span>分布式连接</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>Join 的实现</strong>
+                                <p><strong>Sort-Merge Join:</strong> Mapper 排序，Reducer 合并。<br><strong>Broadcast Hash Join:</strong> 小表广播到所有 Mapper 内存。<br><strong>Partitioned Hash Join:</strong> 按 Key 哈希分发。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Dataflow Engines</h3>
+                                <span>数据流引擎 (Spark/Flink)</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>超越 MapReduce</strong>
+                                <p>将中间状态保存在内存而非写磁盘。<br>将整个工作流视为一个图 (DAG) 而非独立的 Map/Reduce 步骤。<br>性能远超 MapReduce。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="deep-dive">
+                    <h4>核心技术与难点解析</h4>
+                    <ul class="tech-list">
+                        <li><span class="tech-term">Skew (Hot Keys)</span>：数据倾斜是并行处理的杀手。处理方案：将热键记录随机分发给多个 Reducer 处理（两阶段聚合）。</li>
+                        <li><span class="tech-term">Materialization vs Pipelining</span>：MapReduce 完全物化中间结果（容错好但慢）；Unix 管道和 Spark 使用流式/内存处理（快）。</li>
+                        <li><span class="tech-term">Pregel</span>：用于图处理的 BSP (Bulk Synchronous Parallel) 模型，像“顶点互相发送消息”。</li>
+                    </ul>
+                </div>
+            </div>
+        </details>
+
+        <!-- Chapter 11 -->
+        <details>
+            <summary>第11章：流处理 (Stream Processing)</summary>
+            <div class="chapter-content">
+                <p class="chapter-intro">处理无界数据流。这不仅是关于实时性，更是关于如何解耦系统和处理变化。</p>
+
+                <div class="cards-grid">
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Message Brokers</h3>
+                                <span>消息代理</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>两种流派</strong>
+                                <p><strong>JMS/AMQP:</strong> 消费者处理后删除消息，无序。<br><strong>Log-based (Kafka):</strong> 持久化日志，消费者维护 Offset，支持重放 (Replay)，有序性强。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Time Reasoning</h3>
+                                <span>时间推理</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>哪个时间？</strong>
+                                <p><strong>Event Time:</strong> 事件实际发生时间。<br><strong>Processing Time:</strong> 服务器处理时间。<br>处理乱序和滞后事件 (Straggler) 需要 Watermark 机制。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Stream Joins</h3>
+                                <span>流连接</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>动态数据的 Join</strong>
+                                <p><strong>Stream-Stream:</strong> 时间窗口内的 Join。<br><strong>Stream-Table:</strong> 流扩充 (Enrichment)，如根据 ID 查用户信息（CDC 维护 Table）。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="deep-dive">
+                    <h4>核心技术与难点解析</h4>
+                    <ul class="tech-list">
+                        <li><span class="tech-term">Change Data Capture (CDC)</span>：捕获数据库变更并转为流。是连接数据库和流处理/缓存/索引的关键桥梁。</li>
+                        <li><span class="tech-term">Event Sourcing</span>：事件溯源。将状态存储为不可变事件序列，而非当前状态。不仅记录结果，还记录了意图。</li>
+                        <li><span class="tech-term">Exactly-once Semantics</span>：精确一次。实际上是“有效一次 (Effectively-once)”。通过幂等性 (Idempotence) 和原子提交实现。</li>
+                        <li><span class="tech-term">Window Types</span>：Tumbling (滚动), Hopping (滑动), Session (会话)。</li>
+                    </ul>
+                </div>
+            </div>
+        </details>
+
+        <!-- Chapter 12 -->
+        <details>
+            <summary>第12章：数据系统的未来</summary>
+            <div class="chapter-content">
+                <p class="chapter-intro">总结全书，提出“拆分数据库”的愿景。通过组合专门的工具来构建可靠、可维护的系统。</p>
+
+                <div class="cards-grid">
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Unbundling Databases</h3>
+                                <span>数据库拆分</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>组合优于单体</strong>
+                                <p>不存在“万能”数据库。<br>使用<strong>数据流 (Dataflow)</strong> 将 OLTP、索引、缓存、分析系统连接起来，就像 Unix 管道连接工具一样。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Derived Data</h3>
+                                <span>衍生数据</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>单一真实源</strong>
+                                <p>区分<strong>记录系统 (System of Record)</strong> 和<strong>衍生数据 (Derived Data)</strong>。<br>利用 Log-based 系统实现数据的异步传播和视图构建。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flip-card">
+                        <div class="flip-card-inner">
+                            <div class="flip-card-front">
+                                <h3>Aiming for Correctness</h3>
+                                <span>追求正确性</span>
+                            </div>
+                            <div class="flip-card-back">
+                                <strong>端到端原则</strong>
+                                <p>仅仅依靠数据库事务是不够的。<br>需要应用层的端到端校验（如 Request ID 去重）。<br>从“信任”转向“验证” (Auditability)。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="deep-dive">
+                    <h4>核心技术与难点解析</h4>
+                    <ul class="tech-list">
+                        <li><span class="tech-term">Lambda Architecture</span>：同时运行 Batch 和 Stream 层。Batch 保证准确性，Stream 保证低延迟。未来趋势是流批一体 (Kappa Architecture)。</li>
+                        <li><span class="tech-term">End-to-End Argument</span>：低层级的可靠性（如 TCP 校验）不足以保证高层级的正确性（如防止用户重复提交），需要端到端的解决方案。</li>
+                        <li><span class="tech-term">Migration</span>：通过衍生数据的思路，可以更轻松地进行不停机数据迁移和系统演进。</li>
+                    </ul>
+                </div>
+            </div>
+        </details>
+    </div>
+
+</div>
+
+<footer>
+    <p>Design principles extracted from "Designing Data-Intensive Applications" by Martin Kleppmann.</p>
+    <p>Generated by AI Assistant. Focus on Principles, not just Tools.</p>
+</footer>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_designing_data_intensive_applications_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
