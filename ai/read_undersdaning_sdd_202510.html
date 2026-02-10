@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>理解规范驱动开发 (SDD) - 文章大纲</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f8;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-sec: #546e7a;
+            --accent-kiro: #27ae60;
+            --accent-speckit: #2980b9;
+            --accent-tessl: #8e44ad;
+            --accent-warn: #e67e22;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-main);
+            background-color: var(--bg-color);
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2, h3 { color: #1a252f; margin-top: 0; }
+        .header-meta {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            border-left: 5px solid #34495e;
+        }
+        .meta-tag {
+            display: inline-block;
+            background: #eceff1;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            color: var(--text-sec);
+            margin-right: 10px;
+        }
+        .section-title {
+            border-bottom: 2px solid #dfe6e9;
+            padding-bottom: 10px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-top: 4px solid transparent;
+        }
+        .level-1 { border-top-color: #bdc3c7; }
+        .level-2 { border-top-color: #f1c40f; }
+        .level-3 { border-top-color: #e74c3c; }
+        
+        .tool-box {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #fff;
+        }
+        .tool-kiro { border-left: 4px solid var(--accent-kiro); }
+        .tool-speckit { border-left: 4px solid var(--accent-speckit); }
+        .tool-tessl { border-left: 4px solid var(--accent-tessl); }
+
+        .workflow-arrow { color: #95a5a6; font-weight: bold; margin: 0 5px; }
+        
+        .critique-item {
+            background: #fff8e1;
+            border-left: 4px solid var(--accent-warn);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 0 4px 4px 0;
+        }
+        ul { padding-left: 20px; margin: 10px 0; }
+        li { margin-bottom: 6px; }
+        strong { color: #2c3e50; font-weight: 600; }
+        
+        .final-thought {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 40px;
+        }
+        .final-thought h3 { color: #ecf0f1; }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <!-- Header Meta -->
+    <div class="header-meta">
+        <h1>📑 理解规范驱动开发 (SDD)</h1>
+        <p><strong>副标题：</strong>Kiro, spec-kit 与 Tessl 的探索</p>
+        <div style="margin-top: 10px;">
+            <span class="meta-tag">👤 作者: Birgitta Böckeler (Thoughtworks)</span>
+            <span class="meta-tag">📅 日期: 2025年10月15日</span>
+            <span class="meta-tag">🏷️ 系列: Exploring Gen AI</span>
+        </div>
+    </div>
+
+    <!-- Section 1: Definition -->
+    <h2 class="section-title">🧩 SDD 的定义与层级</h2>
+    <p><strong>核心定义：</strong>"文档优先"。在 AI 写代码前先写规范 (Spec)，规范是人类与 AI 的共同真理源。</p>
+    
+    <div class="concept-grid">
+        <div class="card level-1">
+            <h3>🥈 Level 1: Spec-first</h3>
+            <p><strong>规范优先</strong></p>
+            <ul>
+                <li>先写好规范辅助 AI 开发。</li>
+                <li>任务完成后，规范可能被丢弃。</li>
+                <li>目前大多数工具属于此类。</li>
+            </ul>
+        </div>
+        <div class="card level-2">
+            <h3>🥇 Level 2: Spec-anchored</h3>
+            <p><strong>规范锚定</strong></p>
+            <ul>
+                <li>规范是“活”的。</li>
+                <li>任务完成后保留规范，用于后续维护。</li>
+                <li>规范随功能演进而更新。</li>
+            </ul>
+        </div>
+        <div class="card level-3">
+            <h3>💎 Level 3: Spec-as-source</h3>
+            <p><strong>规范即源码</strong></p>
+            <ul>
+                <li>规范是唯一的真理源。</li>
+                <li>人类只编辑规范，<strong>绝不触碰代码</strong>。</li>
+                <li>代码完全由 AI 生成。</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top: 20px; background-color: #eaf2f8;">
+        <h4>📝 什么是 "Spec" vs "Memory Bank"?</h4>
+        <ul>
+            <li><strong>Memory Bank (记忆库/上下文):</strong> 全局性文档。如 <code>project.md</code>, <code>rules</code>，适用于所有会话。</li>
+            <li><strong>Spec (规范):</strong> 针对特定任务的文档。如 <code>story-123.md</code>, <code>data-model.md</code>。</li>
+        </ul>
+    </div>
+
+    <!-- Section 2: Tools -->
+    <h2 class="section-title">🛠️ 三款工具深度评测</h2>
+    <p><em>注：评估 SDD 工具非常耗时，且在旧代码库(Brownfield)中难以应用。</em></p>
+
+    <!-- Kiro -->
+    <div class="tool-box tool-kiro">
+        <h3 style="color: var(--accent-kiro);">🟢 Kiro (轻量级)</h3>
+        <p><strong>定位：</strong> Spec-first，基于 VS Code。</p>
+        <p><strong>工作流：</strong> 需求 (Requirements) <span class="workflow-arrow">→</span> 设计 (Design) <span class="workflow-arrow">→</span> 任务 (Tasks)</p>
+        <ul>
+            <li><strong>Input:</strong> 用户故事 + GIVEN/WHEN/THEN 验收标准。</li>
+            <li><strong>Output:</strong> 包含待办事项的 Task 列表，可逐个运行。</li>
+            <li><strong>记忆库:</strong> 称为 "Steering" (产品/技术/结构文档)。</li>
+        </ul>
+    </div>
+
+    <!-- Spec-kit -->
+    <div class="tool-box tool-speckit">
+        <h3 style="color: var(--accent-speckit);">🔵 spec-kit (GitHub 出品)</h3>
+        <p><strong>定位：</strong> Spec-first (虽然看似锚定，但为每个 Spec 建分支)。</p>
+        <p><strong>工作流：</strong> 宪法 (Constitution) <span class="workflow-arrow">→</span> 定义 (Specify) <span class="workflow-arrow">→</span> 计划 (Plan) <span class="workflow-arrow">→</span> 任务 (Tasks)</p>
+        <ul>
+            <li><strong>核心:</strong> "Constitution" (宪法) 是不可变的原则文件。</li>
+            <li><strong>特点:</strong> 高度依赖 Checklist (检查清单) 和 CLI 命令。</li>
+            <li><strong>体验:</strong> 生成大量 Markdown 文件，过程繁琐。</li>
+        </ul>
+    </div>
+
+    <!-- Tessl -->
+    <div class="tool-box tool-tessl">
+        <h3 style="color: var(--accent-tessl);">🟣 Tessl (Beta 阶段)</h3>
+        <p><strong>定位：</strong> Spec-anchored / Spec-as-source。</p>
+        <p><strong>工作流：</strong> Spec <span class="workflow-arrow">↔</span> Code (双向同步/生成)</p>
+        <ul>
+            <li><strong>机制:</strong> 代码文件标记 <code>// GENERATED - DO NOT EDIT</code>。</li>
+            <li><strong>逆向:</strong> 可通过 CLI 将现有代码反推为 Spec。</li>
+            <li><strong>现状:</strong> 目前是 1:1 映射 (1 Spec = 1 Code File)。</li>
+        </ul>
+    </div>
+
+    <!-- Section 3: Critique -->
+    <h2 class="section-title">🧐 深度反思与质疑</h2>
+    
+    <div class="critique-item">
+        <strong>1. 流程适配性 (One size fits all?)</strong><br>
+        工具流程过于僵化。修复一个小 Bug，Kiro 却要求写 4 个用户故事；spec-kit 的文档量对于中小型功能来说是“杀鸡用牛刀”。
+    </div>
+    
+    <div class="critique-item">
+        <strong>2. 审查疲劳 (Markdown vs. Code)</strong><br>
+        比起审查几十个冗长的 Markdown 文件，开发者可能更愿意直接审查代码。SDD 必须提供极佳的审查体验才能落地。
+    </div>
+    
+    <div class="critique-item">
+        <strong>3. 虚假的控制感 (False sense of control)</strong><br>
+        即使有详细的“宪法”和检查清单，AI 仍会忽略指令或过度执行 (Hallucinations)。“小步迭代”可能比“大而全的 Spec”更可控。
+    </div>
+    
+    <div class="critique-item">
+        <strong>4. 历史的教训 (SDD vs MDD)</strong><br>
+        Spec-as-source 让人联想到失败的 MDD (模型驱动开发)。SDD 可能会同时继承 MDD 的不灵活和 LLM 的不可靠 (非确定性)。
+    </div>
+
+    <div class="critique-item">
+        <strong>5. 目标用户错位</strong><br>
+        要求开发者写详细的产品需求和用户故事，是否意味着开发者要兼职产品经理？
+    </div>
+
+    <!-- Final Thought -->
+    <div class="final-thought">
+        <h3>🏁 结论：Verschlimmbesserung?</h3>
+        <p>虽然 "Spec-first" 的原则很有价值，但目前的工具似乎在生硬地套用工作流。</p>
+        <p>作者用德语词 <strong>"Verschlimmbesserung"</strong> (越改越糟/弄巧成拙) 来表达担忧：我们是否为了改进开发体验，反而创造了更繁琐、更难维护的东西？</p>
+        <hr style="border-color: #7f8c8d; opacity: 0.3;">
+        <p style="font-size: 0.9em; opacity: 0.9;">* 术语 "Spec-driven development" 目前定义模糊，有时甚至仅指 "详细的 Prompt"。</p>
+    </div>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.laobu.com/ai/blog_sdd_kiro_speckit_tessl.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
