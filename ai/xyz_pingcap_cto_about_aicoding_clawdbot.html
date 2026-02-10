@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深度访谈：AI Coding的奇点与Agent OS的未来</title>
+    <style>
+        :root {
+            --primary: #4f46e5; /* Indigo 600 */
+            --primary-light: #e0e7ff;
+            --secondary: #0ea5e9; /* Sky 500 */
+            --accent: #f43f5e; /* Rose 500 */
+            --bg-body: #f8fafc; /* Slate 50 */
+            --bg-card: #ffffff;
+            --text-main: #1e293b; /* Slate 800 */
+            --text-muted: #64748b; /* Slate 500 */
+            --border: #e2e8f0;
+            --tag-fact-bg: #dcfce7;
+            --tag-fact-text: #166534;
+            --tag-opinion-bg: #fff1f2;
+            --tag-opinion-text: #9f1239;
+            --tag-tech-bg: #f3e8ff;
+            --tag-tech-text: #6b21a8;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.75;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* 头部设计 */
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+        }
+        
+        header::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            margin: 20px auto;
+            border-radius: 2px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            letter-spacing: -0.025em;
+            background: linear-gradient(135deg, #1e293b 0%, #4f46e5 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .meta-info {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            background: white;
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+
+        /* 嘉宾名片 */
+        .bio-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 50px;
+        }
+
+        .bio-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bio-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        
+        .bio-role {
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .bio-name { font-size: 1.5rem; font-weight: 700; margin: 0 0 10px 0; }
+        .bio-desc { font-size: 0.95rem; color: var(--text-muted); }
+        
+        .status-badge {
+            margin-top: 15px;
+            display: inline-block;
+            padding: 4px 10px;
+            background: #fef3c7;
+            color: #92400e;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* 核心知识翻转卡片 - 增强版 */
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            margin-top: 50px;
+        }
+        
+        .section-title { font-size: 1.5rem; font-weight: 700; margin-right: 15px; }
+        .hint-badge { 
+            font-size: 0.75rem; 
+            background: var(--primary); 
+            color: white; 
+            padding: 3px 8px; 
+            border-radius: 4px; 
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .flip-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            height: 260px; /* 增加高度以容纳更多细节 */
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            border-radius: 16px;
+        }
+
+        .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+
+        .flip-front, .flip-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .flip-front {
+            background-color: white;
+            border: 1px solid var(--border);
+        }
+
+        .flip-back {
+            background: linear-gradient(135deg, var(--primary), #4338ca);
+            color: white;
+            transform: rotateY(180deg);
+            align-items: flex-start;
+            text-align: left;
+            overflow-y: auto; /* 允许背面内容滚动 */
+        }
+
+        .card-icon { font-size: 3rem; margin-bottom: 10px; }
+        .card-title { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
+        .card-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-top: 5px; }
+        
+        .back-title { font-size: 1rem; font-weight: 700; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.3); width: 100%; padding-bottom: 5px; }
+        .back-text { font-size: 0.85rem; line-height: 1.5; }
+
+        /* 详情折叠区 */
+        .detail-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .detail-header {
+            padding: 20px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: background 0.2s;
+        }
+
+        .detail-header:hover { background: #f8fafc; }
+        
+        .detail-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            border-top: 1px solid transparent;
+        }
+
+        .detail-card.active .detail-content {
+            border-top-color: var(--border);
+            padding: 20px 25px 30px;
+            max-height: 1000px; /* 足以容纳内容 */
+        }
+
+        .detail-icon { transition: transform 0.3s; color: var(--primary); }
+        .detail-card.active .detail-icon { transform: rotate(180deg); }
+
+        /* 标签系统 */
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        .tag-fact { background: var(--tag-fact-bg); color: var(--tag-fact-text); }
+        .tag-opinion { background: var(--tag-opinion-bg); color: var(--tag-opinion-text); }
+        .tag-tech { background: var(--tag-tech-bg); color: var(--tag-tech-text); }
+
+        /* 内容排版 */
+        .content-block p { margin-bottom: 12px; }
+        .content-block ul { padding-left: 20px; color: var(--text-muted); }
+        .content-block li { margin-bottom: 8px; }
+        
+        .key-point {
+            background: #f1f5f9;
+            padding: 15px;
+            border-left: 4px solid var(--secondary);
+            border-radius: 0 8px 8px 0;
+            margin: 15px 0;
+            font-size: 0.95rem;
+        }
+
+        /* 金句引言 */
+        .quote-container {
+            position: relative;
+            background: white;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+            margin: 40px 0;
+            border: 1px solid var(--border);
+        }
+
+        .quote-icon {
+            position: absolute;
+            top: -15px;
+            left: 30px;
+            background: var(--accent);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-family: serif;
+        }
+
+        .quote-text {
+            font-style: italic;
+            font-size: 1.1rem;
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        /* 底部 */
+        footer {
+            margin-top: 60px;
+            text-align: center;
+            padding: 20px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border);
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+            .bio-section { grid-template-columns: 1fr; }
+            .quote-container { padding: 20px; }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>AI Coding 的奇点时刻</h1>
+        <div style="font-size: 1.1rem; color: #475569; margin-bottom: 15px;">从 Clawdbot 到 Agent OS：AI 软件工程的终极平权</div>
+        <div class="meta-info">
+            <span>📅 时间：2026年2月</span> &nbsp;|&nbsp; 
+            <span>⏱️ 整理自：东旭 & Spk_01 对谈</span> &nbsp;|&nbsp;
+            <span>🔥 状态：技术爆发期</span>
+        </div>
+    </header>
+
+    <!-- 嘉宾介绍 -->
+    <div class="bio-section">
+        <div class="bio-card">
+            <div class="bio-role">主持人 (Host)</div>
+            <h3 class="bio-name">Spk_01</h3>
+            <div class="bio-desc">科技播客主理人，敏锐的市场观察者。关注AI时代的组织变革、全球化趋势以及技术对普通人的影响。</div>
+        </div>
+        <div class="bio-card">
+            <div class="bio-role">嘉宾 (Guest)</div>
+            <h3 class="bio-name">东旭 (Dongxu)</h3>
+            <div class="bio-desc">资深工程师、独立音乐人、AI Coding 极客。从9岁开始编程，致力于追求代码与艺术的极致美学。</div>
+            <div class="status-badge">⚡️ 状态：日耗 Token 十亿级 / 极度亢奋</div>
+        </div>
+    </div>
+
+    <!-- 核心概念翻转卡片 (点击交互) -->
+    <div class="section-header">
+        <div class="section-title">核心概念 · 知识翻转</div>
+        <div class="hint-badge">点击卡片查看深度解析</div>
+    </div>
+    
+    <div class="flip-grid">
+        <!-- Card 1: 奇点时刻 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-front">
+                    <div class="card-icon">🚀</div>
+                    <div class="card-title">Singularity Moment</div>
+                    <div class="card-subtitle">2024年12月的技术突破</div>
+                </div>
+                <div class="flip-back">
+                    <div class="back-title">临界点突破 (12/2024)</div>
+                    <div class="back-text">
+                        Coding Agent能力跨过临界点：
+                        <br>1. <strong>代码准确率：</strong>从不及格提升至90%+。
+                        <br>2. <strong>人类介入率：</strong>人类在Loop中的阻塞从90%降至0.1%。
+                        <br>3. <strong>结果：</strong>系统开始自动运转，人类只需提需求和验收。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: Clawdbot / OpenClaw -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-front">
+                    <div class="card-icon">⚓️</div>
+                    <div class="card-title">Clawdbot</div>
+                    <div class="card-subtitle">后更名为 OpenClaw</div>
+                </div>
+                <div class="flip-back">
+                    <div class="back-title">OpenClaw (原Clawdbot)</div>
+                    <div class="back-text">
+                        运行在本地电脑（如Mac/树莓派）的全能助手。
+                        <br>• <strong>权限：</strong>拥有完整OS控制权（浏览器、文件）。
+                        <br>• <strong>特性：</strong>不眠不休，具有"长期记忆"系统。
+                        <br>• <strong>进化：</strong>能自己编写新Skill来扩展能力。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3: Box Theory -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-front">
+                    <div class="card-icon">📦</div>
+                    <div class="card-title">The "Box" Theory</div>
+                    <div class="card-subtitle">东旭提出的架构理念</div>
+                </div>
+                <div class="flip-back">
+                    <div class="back-title">Skill + Environment</div>
+                    <div class="back-text">
+                        解决Agent操作副作用（Side Effects）的方案。
+                        <br>• <strong>比喻：</strong>菜谱(Skill)必须搭配干净的厨房(Env)。
+                        <br>• <strong>实现：</strong>为每个原子操作（如登录、支付）提供独立的虚拟机环境，用完即焚，确保无污染。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4: Maobook -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-front">
+                    <div class="card-icon">🧠</div>
+                    <div class="card-title">Maobook Experiment</div>
+                    <div class="card-subtitle">AI 的社交网络</div>
+                </div>
+                <div class="flip-back">
+                    <div class="back-title">自我涌现与进化</div>
+                    <div class="back-text">
+                        一个属于AI Bot的社交实验。
+                        <br>• <strong>现象：</strong>Bot在"TIL"板块互相分享技巧。
+                        <br>• <strong>案例：</strong>东旭的Bot自动学习了"调用Whisper听懂语音"的技能，完全无需人类编写该功能代码。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 深度访谈内容折叠区 -->
+    <div class="section-header">
+        <div class="section-title">深度内容摘要</div>
+    </div>
+
+    <!-- Section 1: 技术演进 -->
+    <div class="detail-card">
+        <div class="detail-header" onclick="this.parentElement.classList.toggle('active')">
+            <span>1. AI Coding 的技术演进路线 (Infra & Model)</span>
+            <span class="detail-icon">▼</span>
+        </div>
+        <div class="detail-content content-block">
+            <p><span class="tag tag-fact">Fact</span> <strong>进化时间线：</strong> Cloud Code (Tool Use框架确立) → Open Code (开源套壳优化) → <strong>Clawdbot / OpenClaw</strong> (Computer Use + Local Env)。</p>
+            <p><strong>关键技术突破的两条主线：</strong></p>
+            <ul>
+                <li><strong>模型召回率 (Model Recall)：</strong> GPT-5.2级别模型在超长Context（如整个代码库）中的信息召回率从30%提升至90%。这解决了Agent在多轮对话中"忘事"和"幻觉"的问题。</li>
+                <li><strong>上下文工程 (Context Engineering)：</strong> 并非简单的Prompt，而是对System Prompt和Tool Use的最佳实践封装。Open Code等工具通过复杂的上下文编排，极大释放了模型潜力。</li>
+            </ul>
+            <div class="key-point">
+                <strong><span class="tag tag-opinion">观点</span> 软件工程的终局：</strong> "General Agent本质上就是Coding Agent的套壳。" 只要AI编程能力足够强，它就能现场编写任何工具（Skill）来解决通用问题。
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: 架构之争 -->
+    <div class="detail-card">
+        <div class="detail-header" onclick="this.parentElement.classList.toggle('active')">
+            <span>2. 架构哲学：Skill (自然语言) vs. MCP (协议)</span>
+            <span class="detail-icon">▼</span>
+        </div>
+        <div class="detail-content content-block">
+            <p><span class="tag tag-tech">Tech</span> 东旭强烈倾向于 <strong>Skill</strong> 模式。</p>
+            <ul>
+                <li><strong>MCP (Model Context Protocol) 的问题：</strong> 过于"程序员思维"，原子能力难以修改和叠加。给模型挂载过多MCP会导致灾难性遗忘，模型不知道选哪个。</li>
+                <li><strong>Skill 的优势：</strong> 接口是<strong>自然语言</strong>。对LLM最友好，且具有极强的<strong>组合性 (Composability)</strong>。</li>
+            </ul>
+            <p><strong>Box 理论详解：</strong> 针对Skill执行产生的环境污染（如Cookie残留、文件修改），提出"Box"概念。将 Skill（逻辑）与 Environment（执行环境）打包，实现原子化、无副作用的执行。</p>
+        </div>
+    </div>
+
+    <!-- Section 3: 组织与人 -->
+    <div class="detail-card">
+        <div class="detail-header" onclick="this.parentElement.classList.toggle('active')">
+            <span>3. 未来组织形态与"人"的价值</span>
+            <span class="detail-icon">▼</span>
+        </div>
+        <div class="detail-content content-block">
+            <p><span class="tag tag-opinion">Opinion</span> <strong>未来软件开发模式：</strong></p>
+            <ul>
+                <li><strong>组织架构：</strong> 1个 Senior Architect + 100个 Agents。</li>
+                <li><strong>协作模式：</strong> Agent之间不应直接协作（边界模糊会导致灾难）。应保持模块隔离，Agent效率太高，沟通成本不如重写。</li>
+                <li><strong>禁止人类写代码：</strong> 人类介入只会成为瓶颈（0.1%的阻塞）。</li>
+            </ul>
+            <div class="key-point">
+                <strong>人的新定位：</strong>
+                1. <strong>定义Vision：</strong> 决定做什么。
+                2. <strong>审美与判断：</strong> 提供"Taste"和验收标准。
+                3. <strong>最后的一公里：</strong> 提供人与人的连接（如为山村图书馆做系统），这是AI无法替代的情感价值。
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 4: 经济学 -->
+    <div class="detail-card">
+        <div class="detail-header" onclick="this.parentElement.classList.toggle('active')">
+            <span>4. 算力经济学与平权假象</span>
+            <span class="detail-icon">▼</span>
+        </div>
+        <div class="detail-content content-block">
+            <p><span class="tag tag-fact">Fact</span> <strong>算力短缺：</strong> 全球算力依然紧缺，Token消耗量巨大（东旭个人日耗Billion级别）。</p>
+            <p><span class="tag tag-opinion">Opinion</span> <strong>平权的阻碍：</strong> 虽然技术上实现了"一人成军"，但经济上仍未平权。高昂的Token成本（如$200/月或更高）意味着目前只有高ROI（投资回报率）的场景才划算。真正的平权需要等到推理成本大幅下降。</p>
+        </div>
+    </div>
+
+    <!-- 金句展示 -->
+    <h2 class="section-header"><span class="section-title">访谈金句</span></h2>
+
+    <div class="quote-container">
+        <div class="quote-icon">“</div>
+        <div class="quote-text">
+            现在我觉得开发软件只有两种：要不然就100%人类手写，把它当个艺术品来做；要不然你就100%交给AI，人类完全不要碰，因为你碰你相当于是给AI添堵。
+        </div>
+        <div style="margin-top: 10px; font-weight: 600; font-size: 0.9rem; text-align: right;">— 东旭</div>
+    </div>
+
+    <div class="quote-container">
+        <div class="quote-icon">“</div>
+        <div class="quote-text">
+            Clawdbot 其实很像未来的操作系统，这个操作系统的内核其实是一个很聪明的编程Agent，上面是一系列的Skill，再外面的一层是跟人类的交互层。
+        </div>
+        <div style="margin-top: 10px; font-weight: 600; font-size: 0.9rem; text-align: right;">— 东旭</div>
+    </div>
+
+    <div class="quote-container">
+        <div class="quote-icon">“</div>
+        <div class="quote-text">
+            一个写的很好的程序的程序员，他必然是个艺术家。未来编程会分化为两个赛道：一个是追求效率的工业品（AI做），一个是追求逻辑之美的手工艺品（人做）。
+        </div>
+        <div style="margin-top: 10px; font-weight: 600; font-size: 0.9rem; text-align: right;">— 东旭</div>
+    </div>
+
+    <footer>
+        <p>🎵 推荐BGM: Pink Floyd - "Welcome to the Machine"</p>
+        <p>© 2026 AI访谈实录摘要生成系统</p>
+    </footer>
+
+</div>
+
+<script>
+    // 简单的交互逻辑：保持同时只有一个详情卡片展开（可选）
+    // 当前逻辑允许同时展开多个，符合用户自由探索习惯
+</script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.xiaoyuzhoufm.com/episode/698563a188663289fe80769a" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
