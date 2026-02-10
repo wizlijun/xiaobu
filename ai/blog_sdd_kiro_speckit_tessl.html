@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>理解规格驱动开发（SDD）：Kiro, spec-kit 和 Tessl</title>
+<style>
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 20px auto;
+        border: 1px solid #ddd;
+    }
+    h1, h2, h3 {
+        color: #2c3e50;
+    }
+    a {
+        color: #0366d6;
+        text-decoration: none;
+    }
+    a:hover {
+        text-decoration: underline;
+    }
+    blockquote {
+        border-left: 4px solid #ddd;
+        padding-left: 15px;
+        color: #666;
+        margin-left: 0;
+    }
+    code {
+        background-color: #f6f8fa;
+        padding: 0.2em 0.4em;
+        border-radius: 3px;
+        font-family: monospace;
+    }
+    .author-info {
+        display: flex;
+        align-items: center;
+        margin-bottom: 30px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 20px;
+    }
+    .author-photo {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        margin-right: 15px;
+    }
+    .date {
+        color: #666;
+        font-size: 0.9em;
+    }
+/* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<main>
+    <h1>理解规格驱动开发（SDD）：Kiro, spec-kit 和 Tessl</h1>
+
+    <div class="author-info">
+        <img src="blog_sdd_kiro_speckit_tessl_files/bb.jpg" alt="Birgitta Böckeler 照片" class="author-photo">
+        <div>
+            <p><strong>Birgitta Böckeler</strong></p>
+            <p>Thoughtworks 杰出工程师及 AI 辅助交付专家。</p>
+            <p class="date">2025年10月15日</p>
+        </div>
+    </div>
+
+    <p>我一直在努力理解目前最新的 AI 编程热词之一：规格驱动开发（Spec-driven development，SDD）。我研究了三个标榜为 SDD 工具的产品，试图理清截至目前这一概念的含义。</p>
+
+    <h2 id="definition">定义</h2>
+
+    <p>就像这个快速发展领域中的许多新兴术语一样，“规格驱动开发”（SDD）的定义仍在不断变化。根据我目前的观察，其大致含义如下：规格驱动开发意味着在使用 AI 编写代码之前先编写“规格”（即“文档优先”）。这个规格成为了人类和 AI 共同遵循的事实来源（source of truth）。</p>
+
+    <p><a href="https://github.com/github/spec-kit/blob/main/spec-driven.md">GitHub</a>：“在这个新世界里，<em>维护软件意味着演进规格说明</em>。[...] 开发的通用语言提升到了更高层次，而代码只是最后的一公里。”</p>
+
+    <p><a href="https://docs.tessl.io/introduction-to-tessl/concepts">Tessl</a>：“一种<em>以规格——而非代码——为主要制品</em>的开发方法。规格用结构化的、可测试的语言描述意图，智能体（Agents）生成代码以匹配这些规格。”</p>
+
+    <p>在审视了这个术语的使用情况以及一些声称实施 SDD 的工具后，我认为实际上存在多个实现层级：</p>
+
+    <ol>
+      <li><strong>规格优先（Spec-first）</strong>：首先编写经过深思熟虑的规格，然后在当前任务的 AI 辅助开发工作流中使用它。</li>
+      <li><strong>规格锚定（Spec-anchored）</strong>：即使任务完成后也保留规格，以便在后续的功能演进和维护中继续使用。</li>
+      <li><strong>规格即源码（Spec-as-source）</strong>：规格随着时间的推移成为主要的源文件，人类只编辑规格，从不触碰代码。</li>
+    </ol>
+
+    <p>我发现的所有 SDD 方法和定义都是“规格优先”的，但并非所有都致力于做到“规格锚定”或“规格即源码”。而且，关于规格随时间推移的维护策略，往往定义模糊或完全开放。</p>
+
+    <p><img src="blog_sdd_kiro_speckit_tessl_files/sdd-levels.png" alt="展示 SDD 三个层级的插图，分为“功能创建”和“功能演进与维护”两列，每行显示一个层级。规格优先：规格文档引导代码生成，规格和代码上都有机器人和人类图标，表示 AI 和人类都在编辑规格和代码。功能创建后规格被删除，演进时创建描述变更的新规格。下一行是规格锚定，与规格优先类似，但创建后不删除规格，演进时直接编辑规格。最后一行是规格即源码，与规格锚定类似，但代码文件上的人类图标被划掉，因为人类不编辑代码。这三个概念用继承箭头连接，表示层层递进。" /></p>
+
+    <h2 id="what-is-a-spec">什么是规格（Spec）？</h2>
+
+    <p>在定义方面，关键问题当然是：什么是规格？目前似乎还没有通用的定义，我见过的最接近一致的定义是将规格类比为“产品需求文档（PRD）”。</p>
+
+    <p>目前这个术语承载的含义相当多，以下是我对“规格”定义的尝试：</p>
+
+    <p>规格是一个结构化的、面向行为的制品（或一组相关制品），用自然语言编写，表达软件功能，并作为 AI 编码智能体的指引。每种规格驱动开发的变体都定义了其规格的结构、详细程度以及这些制品在项目中如何组织的方法。</p>
+
+    <p>我认为在规格和代码库的更通用上下文文档之间做一个区分是很有用的。通用上下文指的是像规则文件、产品和代码库的高层描述等内容。有些工具将这种上下文称为 <a href="https://docs.cline.bot/prompting/cline-memory-bank"><strong>记忆库（memory bank）</strong></a>，所以我在这里也使用这个术语。这些文件与代码库中的所有 AI 编码会话都相关，而规格仅与实际创建或更改特定功能的任务相关。</p>
+
+    <p><img src="blog_sdd_kiro_speckit_tessl_files/sdd-overview.png" alt="概览图显示智能体上下文文件分为两类：记忆库（Memory Bank，例如 AGENTS.md, project.md, architecture.md）和规格（Specs，例如 Story-324.md, product-search.md, 或包含 data-model.md, plan.md 等文件的 feature-x 文件夹）。" /></p>
+
+    <h2 id="the-challenge-with-evaluating-sdd-tools">评估 SDD 工具的挑战</h2>
+
+    <p>事实证明，以接近真实使用的方式评估 SDD 工具和方法非常耗时。你需要针对不同规模的问题（包括新项目“绿地”和遗留项目“棕地”）进行试用，并且真正花时间去审查和修改中间产物，而不仅仅是粗略一瞥。正如 <a href="https://github.blog/ai-and-ml/generative-ai/spec-driven-development-with-ai-get-started-with-a-new-open-source-toolkit/">GitHub 关于 spec-kit 的博客文章</a>中所说：“至关重要的是，你的角色不仅仅是掌舵，而是验证。在每个阶段，你都要反思和精炼。”</p>
+
+    <p>在我尝试的三个工具中，有两个似乎需要相当多的工作量才能引入到现有代码库中，这使得评估它们在遗留代码库中的实用性变得更加困难。除非我听到有人在“真实”代码库中长期使用的报告，否则我对它们在现实生活中的运作方式仍有许多未解之谜。</p>
+
+    <p>话虽如此——让我们深入了解这三个工具。我将首先分享它们是如何工作的（或者更确切地说，我认为它们是如何工作的），并在最后保留我的观察和疑问。请注意，这些工具发展非常迅速，自九月份我使用以来可能已经发生了变化。</p>
+
+    <h2 id="kiro">Kiro</h2>
+
+    <p><a href="https://kiro.dev/">Kiro</a> 是我尝试的三个工具中最简单（或者说最轻量级）的一个。它似乎主要是“规格优先”的，我找到的所有示例都是将其用于单个任务或用户故事，并未提及如何随时间推移、跨多个任务以“规格锚定”的方式使用需求文档。</p>
+
+    <p><strong>工作流：</strong> 需求（Requirements） → 设计（Design） → 任务（Tasks）</p>
+
+    <p>每个工作流步骤由一个 Markdown 文档表示，Kiro 在其基于 VS Code 的发行版中引导你完成这 3 个工作流步骤。</p>
+
+    <p><strong>需求：</strong> 结构化为需求列表，每个需求代表一个“用户故事”（格式为“作为……”），带有验收标准（格式为“给定……当……那么……”）。</p>
+
+    <p><img src="blog_sdd_kiro_speckit_tessl_files/sdd-kiro-requirements-example.png" alt="Kiro 需求文档的截图" /></p>
+
+    <p><strong>设计：</strong> 在我的尝试中，设计文档包含下图中所示的部分。我只保留了一次尝试的结果，所以我不确定这是一个固定的结构，还是会根据任务而变化。</p>
+
+    <p><img src="blog_sdd_kiro_speckit_tessl_files/sdd-kiro-design-example.png" alt="Kiro 设计文档的截图，显示了一个组件架构图，以及折叠的部分，标题为数据流、数据模型、错误处理、测试策略、实现方法、迁移策略。" /></p>
+
+    <p><strong>任务：</strong> 这是一个回溯到需求编号的任务列表，并带有一些额外的 UI 元素，用于逐个运行任务并审查每个任务的更改。</p>
+
+    <p><img src="blog_sdd_kiro_speckit_tessl_files/sdd-kiro-tasks-example.png" alt="Kiro 任务文档的截图，显示带有“任务进行中”、“查看更改”UI 元素的任务。每个任务是一个待办事项列表，并以需求编号列表（1.1, 1.2, 1.3）结尾。" /></p>
+
+    <p>Kiro 也有记忆库的概念，他们称之为“指引（steering）”。其内容很灵活，他们的工作流似乎并不依赖于那里的任何特定文件（我在发现指引部分之前就进行了尝试）。当你要求 Kiro 生成指引文档时，它创建的默认拓扑结构是 product.md, structure.md, tech.md。</p>
+
+    <p><img src="blog_sdd_kiro_speckit_tessl_files/sdd-overview-kiro.png" alt="之前的概览图针对 Kiro 的版本：记忆库在名为 steering 的文件夹中有 3 个文件 product.md, tech.md, structure.md，规格框显示一个名为 category-label-enhancement（我的测试功能名称）的文件夹，包含 requirements.md, design.md, tasks.md。" /></p>
+
+    <h2 id="spec-kit">Spec-kit</h2>
+
+    <p><a href="https://github.com/github/spec-kit">Spec-kit</a> 是 GitHub 版本的 SDD。它作为一个命令行工具（CLI）分发，可以为各种常见的编码助手创建工作区设置。一旦结构设置好，你就可以通过编码助手中的斜杠命令与 spec-kit 交互。因为它的所有制品都直接放在你的工作区中，所以这是这里讨论的三个工具中可定制性最强的一个。</p>
+
+    <p><img src="blog_sdd_kiro_speckit_tessl_files/sdd-spec-kit-file-setup-example.png" alt="VS Code 截图，左侧显示 spec-kit 设置的文件夹结构（.github/prompts 中的命令文件，.specify 文件夹及其子文件夹 memory, scripts, templates）；右侧打开 GitHub Copilot，用户正在输入 /specify 命令。" /></p>
+
+    <p><strong>工作流：</strong> 章程（Constitution） → 𝄆 明确规格（Specify） → 计划（Plan） → 任务（Tasks） 𝄇</p>
+
+    <p>Spec-kit 的记忆库概念是规格驱动方法的先决条件。他们称之为 <a href="https://github.com/github/spec-kit/blob/main/spec-driven.md#the-constitutional-foundation-enforcing-architectural-discipline"><strong>章程（constitution）</strong></a>。章程应该包含“不可变”且应始终应用于每次更改的高层原则。它基本上是一个非常强大的规则文件，被工作流大量使用。</p>
+
+    <p>在每个工作流步骤（明确规格、计划、任务）中，spec-kit 借助 bash 脚本和一些模板实例化一组文件和提示词。然后，工作流在文件内部大量使用检查清单，以跟踪必要的用户澄清、章程违规、研究任务等。它们就像每个工作流步骤的“完成定义（DoD）”（尽管由 AI 解释，所以不能 100% 保证会被遵守）。</p>
+
+    <p><img src="blog_sdd_kiro_speckit_tessl_files/sdd-spec-kit-spec-example.png" alt="spec.md 文件末尾的部分截图，显示了一堆关于内容质量、需求完整性、执行状态的检查清单。" /></p>
+
+    <p>下面是一个概览，用以说明我在 spec-kit 中看到的文件拓扑结构。请注意，一个规格是由许多文件组成的。</p>
+
+    <p><img src="blog_sdd_kiro_speckit_tessl_files/sdd-overview-spec-kit.png" alt="之前的概览图针对 spec-kit 的版本：记忆库有一个 constitution.md 文件。有一个额外的框标记为“模板”，这是 spec-kit 中的一个额外概念，包含 plan, spec, tasks 的模板文件。规格框显示一个名为“specs/001-when-a-user”（是的，这是 spec-kit 在我的测试中的命名）的文件夹，包含 8 个文件：data-model, plan, tasks, spec, research, api, component。" /></p>
+
+    <p>乍一看，GitHub 似乎 <a href="https://github.blog/ai-and-ml/generative-ai/spec-driven-development-with-ai-get-started-with-a-new-open-source-toolkit/">立志于实现“规格锚定”的方法</a>（“这就是为什么我们正在重新思考规格——不再是静态文档，而是随项目演进的、鲜活的、可执行的制品。规格成为共享的事实来源。当某些事情讲不通时，你回到规格；当项目变得复杂时，你完善它；当任务感觉太大时，你将其分解。”）。然而，spec-kit 为每个创建的规格创建一个分支，这似乎表明他们将规格视为仅在变更请求生命周期内存在的活制品，而不是在功能生命周期内存在。<a href="https://github.com/github/spec-kit/discussions/152">这个社区讨论</a>正在谈论这种混淆。这让我认为 spec-kit 仍然只是我所说的“规格优先”，而不是随时间推移的“规格锚定”。</p>
+
+    <h2 id="tessl-framework">Tessl Framework</h2>
+
+    <p><em>（仍处于内测阶段）</em></p>
+
+    <p>像 spec-kit 一样，<a href="https://docs.tessl.io/introduction-to-tessl/quick-start-guide-tessl-framework">Tessl Framework</a> 作为一个命令行工具（CLI）分发，可以为各种编码助手创建工作区和配置结构。该 CLI 命令还可以兼作 MCP 服务器。</p>
+
+    <p><img src="blog_sdd_kiro_speckit_tessl_files/sdd-tessl-file-setup-example.png" alt="Cursor 截图，显示 Tessl 在文件树中创建的文件（.tessl/framework 文件夹），以及右侧打开的 MCP 配置，其启动了 MCP 模式下的 tessl 命令。" /></p>
+
+    <p>Tessl 是这三个工具中唯一一个明确立志于“规格锚定”方法的，甚至正在探索 SDD 的“规格即源码”层级。Tessl 规格可以作为被维护和编辑的主要制品，代码甚至在其顶部标记有注释 <code>// GENERATED FROM SPEC - DO NOT EDIT</code>（由规格生成 - 请勿编辑）。目前这是规格和代码文件之间 1:1 的映射，即一个规格转换为代码库中的一个文件。但 Tessl 仍处于测试阶段，他们正在尝试不同的版本，所以我可以想象这种方法也可以应用于一个规格映射到包含多个文件的代码组件的层级。Alpha 产品将支持什么还有待观察。（Tessl 团队本身将他们的框架视为比他们当前的公开产品 Tessl Registry 更面向未来的东西。）</p>
+
+    <p>以下是一个规格的示例，我让 Tessl CLI 从现有代码库中的一个 JavaScript 文件逆向工程生成它（<code>tessl document --code ...js</code>）：</p>
+
+    <p><img src="blog_sdd_kiro_speckit_tessl_files/sdd-tessl-spec-example.png" alt="Tessl 规格文件的截图" /></p>
+
+    <p>像 <code>@generate</code> 或 <code>@test</code> 这样的标签似乎告诉 Tessl 要生成什么。API 部分展示了在规格中定义至少暴露给代码库其他部分的接口的想法，大概是为了确保生成的组件的这些更关键部分完全在维护者的控制之下。为此规格运行 <code>tessl build</code> 会生成相应的 JavaScript 代码文件。</p>
+
+    <p>将“规格即源码”放在非常低的抽象级别（每个代码文件），可能会减少 LLM 需要执行的步骤和解释的数量，从而减少出错的机会。但即使在这个低抽象级别，当我从同一个规格多次生成代码时，我也看到了不确定性的发生。迭代规格并使其越来越具体以增加代码生成的可重复性，这是一个有趣的练习。这个过程让我想起了编写无歧义且完整的规格说明书的一些陷阱和挑战。</p>
+
+    <p><img src="blog_sdd_kiro_speckit_tessl_files/sdd-overview-tessl.png" alt="我们之前的概览图针对 Tessl 的版本：记忆库框有一个文件夹 .tessl/framework 包含 4 个文件，加上 KNOWLEDGE.md 和 AGENTS.md。规格框显示一个名为 dynamic-data-renderer.spec.md 的文件。此图还有一个代码框，包含 dynamic-data-renderer.js 文件。规格框和代码框之间有一个双向箭头，因为在 Tessl 的案例中，这两者是相互同步的。" /></p>
+
+    <h2 id="observations-and-questions">观察与疑问</h2>
+
+    <p>这三个工具都给自己贴上了规格驱动开发实现的标签，但它们彼此之间存在很大差异。所以在谈论 SDD 时首先要记住的是，它不是只有一种形态。</p>
+
+    <h3 id="one-workflow-to-fit-all-sizes">一套工作流适应所有规模？</h3>
+
+    <p>Kiro 和 spec-kit 各提供了一套有主见的工作流，但我很确定它们都不适合大多数现实生活中的编码问题。特别是，我不太清楚它们如何迎合足够多的不同问题规模以具备通用性。</p>
+
+    <p>当我让 Kiro 修复一个小 Bug（<a href="https://martinfowler.com/articles/exploring-gen-ai/autonomous-agents-codex-example.html">这是我过去用来测试 Codex 的同一个 Bug</a>）时，很快就发现这个工作流就像杀鸡用牛刀。需求文档把这个小 Bug 变成了 4 个“用户故事”，总共有 16 个验收标准，甚至包括像这样的名言：“用户故事：作为一名开发人员，我希望转换函数能够优雅地处理边缘情况，以便在引入新的类别格式时系统保持稳健。”</p>
+
+    <p>我在使用 spec-kit 时遇到了类似的挑战，我不确定该用它解决什么规模的问题。现有的教程通常基于从头开始创建一个应用程序，因为这对于教程来说是最简单的。我最终尝试的一个用例是一个在我们过去团队中大概是 3-5 个点数（Story Points）的功能。该功能依赖于许多已经存在的代码，它是要在现有仪表板上构建一个汇总一堆数据的概览模态框。考虑到 spec-kit 采取的步骤数量，以及它创建供我审查的 Markdown 文件的数量，这对于问题的规模来说再次感觉像是过度杀伤。它比我在 Kiro 上使用的问题要大，但工作流也要复杂得多。我甚至没有完成完整的实现，但我认为在运行和审查 spec-kit 结果所花费的时间里，我可以用“普通”的 AI 辅助编码来实现该功能，而且我会感觉更有掌控感。</p>
+
+    <p>一个有效的 SDD 工具至少必须为几种不同的核心工作流、不同规模和类型的变更提供灵活性。</p>
+
+    <h3 id="reviewing-markdown-over-reviewing-code">审查 Markdown 胜过审查代码？</h3>
+
+    <p>正如刚才提到的，以及你在上面的工具描述中看到的，spec-kit 创建了大量的 Markdown 文件供我审查。它们不仅彼此重复，而且与已经存在的代码重复。有些已经包含了代码。总的来说，审查它们非常冗长和乏味。在 Kiro 中稍微容易一些，因为你只得到 3 个文件，而且“需求 > 设计 > 任务”的心智模型更直观。然而，如前所述，Kiro 对于我要求它修复的小 Bug 来说也过于啰嗦。</p>
+
+    <p>老实说，我宁愿审查代码也不愿审查所有这些 Markdown 文件。一个有效的 SDD 工具必须提供非常好的规格审查体验。</p>
+
+    <h3 id="false-sense-of-control">虚假的掌控感？</h3>
+
+    <p>即使有了所有这些文件、模板、提示词、工作流和检查清单，我也经常看到智能体最终没有遵循所有指令。是的，上下文窗口现在更大了，这通常被认为是规格驱动开发的推动因素之一。但仅仅因为窗口变大了，并不意味着 AI 会正确地提取其中的所有内容。</p>
+
+    <p>例如：spec-kit 在计划阶段的某个地方有一个研究步骤，它对现有代码和已有的内容做了很多研究，这很棒，因为我要求它添加一个建立在现有代码之上的功能。但最终智能体忽略了关于这些是现有类描述的说明，它只是将它们作为新规格并重新生成了一遍，造成了重复。但我不仅看到了忽略指令的例子，我还看到智能体因为过于急切地遵循指令（例如其中一条章程条款）而做得过火。</p>
+
+    <p>过去表明，我们掌控构建内容的最佳方式是小步迭代，所以我非常怀疑大量的前期规格设计是否是个好主意，尤其是当它过于冗长的时候。一个有效的 SDD 工具必须迎合迭代方法，但小工作包似乎与 SDD 的理念背道而驰。</p>
+
+    <h3 id="how-to-effectively-separate-functional-from-technical-spec">如何有效地分离功能规格与技术规格？</h3>
+
+    <p>SDD 中一个常见的想法是有意将功能规格与技术实现分离开来。我想其潜在的愿景是，最终我们可以让 AI 填充所有的解决方案和细节，并在相同的规格下切换到不同的技术栈。</p>
+
+    <p>实际上，当我尝试 spec-kit 时，我经常对何时保持在功能层面、何时添加技术细节感到困惑。教程和文档对此也不太一致，关于“纯功能性”的真正含义似乎有不同的解释。当我回想起职业生涯中读过的许多没有正确分离需求和实现的“用户故事”时，我认为作为一种职业，我们在做好这件事上并没有良好的记录。</p>
+
+    <h3 id="who-is-the-target-user">谁是目标用户？</h3>
+
+    <p>许多规格驱动开发工具的演示和教程包括定义产品和功能目标，它们甚至包含像“用户故事”这样的术语。这里的想法可能是利用 AI 作为跨技能培养的推动者，让开发人员更多地参与需求分析？或者让开发人员在进行此工作流时与产品人员结对？但这并没有被明确说明，它似乎默认开发人员会做所有的分析工作。</p>
+
+    <p>在这种情况下，我会再次问自己，SDD 究竟针对什么规模和类型的问题？可能不是针对那些尚不明确的大型功能，因为那肯定需要更专业的产品和需求技能，以及像研究和利益相关者参与等许多其他步骤？</p>
+
+    <p><img src="blog_sdd_kiro_speckit_tessl_files/sdd-where-matrix.png" alt="一个 2x2 矩阵，X 轴为“问题的清晰度”，Y 轴为“问题的规模”。每个象限都有一个带问号的方框，中间有一个标签写着“SDD 位于何处？”" /></p>
+
+    <h3 id="spec-anchored-and-spec-as-source-are-we-learning-from-the-past">规格锚定和规格即源码：我们在从过去中吸取教训吗？</h3>
+
+    <p>虽然许多人将 SDD 与 TDD 或 BDD 进行类比，但我认为对于“规格即源码”来说，另一个值得关注的重要平行事物是 MDD（模型驱动开发）。我在职业生涯早期参与过几个大量使用 MDD 的项目，当我尝试 Tessl Framework 时，我不禁想起了那段经历。MDD 中的模型基本上就是规格，虽然不是用自然语言，而是用自定义 UML 或文本 DSL（领域特定语言）表达的。我们构建了自定义代码生成器将这些规格转换为代码。</p>
+
+    <p><img src="blog_sdd_kiro_speckit_tessl_files/sdd-gui-dsl-example.png" alt="我过去经历中结构化、可解析的规格 DSL 示例，主要凭记忆重建。Screen “Write Message” 实例化 InputScreen { … } 展示了诸如对领域模型字段的引用、从其他屏幕继承以复用模式、导航逻辑等内容。" /></p>
+
+    <p>最终，MDD 从未在业务应用程序中流行起来，它处于一个尴尬的抽象层级，只会产生太多的开销和约束。但是 LLM 消除了 MDD 的一些开销和约束，所以出现了一种新的希望，即我们现在终于可以专注于编写规格并从中生成代码了。有了 LLM，我们不再受预定义和可解析的规格语言的限制，我们也不必构建复杂的代码生成器。当然，其代价是 LLM 的不确定性。而且可解析的结构也有我们正在失去的优点：我们可以为规格作者提供大量工具支持，以编写有效、完整和一致的规格。我想知道“规格即源码”，甚至“规格锚定”，是否最终会兼具 MDD 和 LLM 的缺点：既不灵活<em>又</em>不确定。</p>
+
+    <p>明确一点，我并不是在怀念过去的 MDD 经历并说“我们不妨把它带回来”。但是，当我们今天探索规格驱动时，我们应该回顾过去“从规格生成代码”的尝试，并从中吸取教训。</p>
+
+    <h2 id="conclusions">结论</h2>
+
+    <p>在我个人使用 AI 辅助编码的过程中，我也经常花时间仔细打磨某种形式的规格，先交给编码智能体。所以“规格优先”的一般原则在许多情况下绝对是有价值的，关于如何构建该规格的不同方法也非常受追捧。这目前是我从从业者那里听到的最常见的问题之一：“我该如何构建我的记忆库？”，“我如何为 AI 编写好的规格说明书和设计文档？”。</p>
+
+    <p>但是“规格驱动开发”这个术语还没有很好的定义，而且它已经发生了<a href="https://martinfowler.com/bliki/SemanticDiffusion.html">语义扩散（Semantic Diffusion）</a>。我最近甚至听到人们基本上把“规格”用作“详细提示词（Prompt）”的同义词。</p>
+
+    <p>关于我尝试过的工具，我在这里列出了许多关于它们在现实世界中实用性的疑问。我想知道其中一些是否试图过于刻板地将我们现有的工作流喂给 AI 智能体，最终放大了现有的挑战，如审查过载和幻觉。特别是对于那些创建大量文件的更复杂的方法，我不禁想起了德语复合词“Verschlimmbesserung”（越改越糟）：我们是否在试图让事情变好的过程中反而让它变糟了？</p>
+
+</main>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://martinfowler.com/articles/exploring-gen-ai/sdd-3-tools.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
