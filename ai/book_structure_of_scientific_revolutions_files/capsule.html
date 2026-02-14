@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深度精读：科学革命的结构 (第4版)</title>
+    <style>
+        :root {
+            --primary: #2c3e50;       /* 深蓝：主视觉 */
+            --accent: #3498db;        /* 亮蓝：交互点 */
+            --highlight: #e67e22;     /* 橙色：反常与危机 */
+            --success: #27ae60;       /* 绿色：解决与进步 */
+            --bg-body: #f0f2f5;       /* 浅灰背景，更护眼 */
+            --bg-card: #ffffff;
+            --text-main: #2c3e50;
+            --text-light: #7f8c8d;
+            --radius: 12px;
+            --shadow: 0 4px 6px rgba(0,0,0,0.06);
+            --shadow-hover: 0 10px 20px rgba(0,0,0,0.12);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- Header --- */
+        header {
+            background: linear-gradient(135deg, #fff 0%, #eef2f3 100%);
+            padding: 60px 20px;
+            text-align: center;
+            border-bottom: 1px solid #e1e4e8;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin: 0 0 10px 0;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+        }
+
+        .meta {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+        }
+
+        .summary-card {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(52, 152, 219, 0.08);
+            border-left: 5px solid var(--accent);
+            padding: 20px;
+            border-radius: 4px;
+            text-align: left;
+            font-size: 1.05rem;
+        }
+
+        /* --- Container --- */
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        /* --- Section Titles --- */
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e6e6e6;
+            padding-bottom: 10px;
+        }
+
+        .tag-pill {
+            background: var(--primary);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-right: 15px;
+            letter-spacing: 1px;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        /* --- Flip Cards (Grid) --- */
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 60px;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            height: 260px; /* 固定高度确保整齐 */
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .flip-card:hover .flip-inner, 
+        .flip-card.mobile-active .flip-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-front, .flip-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: var(--radius);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .flip-front {
+            background: var(--bg-card);
+            border-top: 4px solid var(--accent);
+        }
+
+        .flip-front h3 { margin: 15px 0 5px; font-size: 1.25rem; color: var(--primary); }
+        .flip-front .icon { font-size: 3rem; }
+        .flip-front .tip { font-size: 0.8rem; color: #999; margin-top: auto; }
+
+        .flip-back {
+            background: var(--primary);
+            color: #fff;
+            transform: rotateY(180deg);
+            text-align: left;
+            align-items: flex-start;
+            justify-content: flex-start;
+            overflow-y: auto; /* 内容过多时滚动 */
+        }
+
+        /* 自定义滚动条 */
+        .flip-back::-webkit-scrollbar { width: 4px; }
+        .flip-back::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 4px; }
+
+        .flip-back strong {
+            color: var(--accent); /* 内部强调色 */
+            display: block;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            margin-top: 10px;
+        }
+        .flip-back strong:first-child { margin-top: 0; }
+        .flip-back p { font-size: 0.9rem; margin: 0; line-height: 1.5; }
+
+        /* --- Accordion (Details) --- */
+        .controls {
+            text-align: right;
+            margin-bottom: 15px;
+        }
+        .btn-ctrl {
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: var(--transition);
+        }
+        .btn-ctrl:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+        .accordion-item {
+            background: #fff;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 15px;
+            overflow: hidden;
+            border-left: 6px solid transparent;
+            transition: var(--transition);
+        }
+
+        /* 阶段颜色编码 */
+        .stage-meta { border-left-color: #9b59b6; }
+        .stage-normal { border-left-color: var(--accent); }
+        .stage-crisis { border-left-color: var(--highlight); }
+        .stage-revolution { border-left-color: #e74c3c; }
+        .stage-resolution { border-left-color: var(--success); }
+
+        .acc-header {
+            padding: 20px 25px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+        }
+        .acc-header:hover { background-color: #fcfcfc; }
+        
+        .acc-title { font-weight: 700; font-size: 1.1rem; color: var(--primary); }
+        .acc-meta { font-size: 0.85rem; color: #999; margin-right: 15px; }
+        .acc-icon { transition: transform 0.3s; color: var(--accent); font-weight: bold; }
+        
+        .accordion-item.active .acc-icon { transform: rotate(180deg); }
+
+        .acc-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, opacity 0.5s;
+            opacity: 0;
+            background-color: #fafafa;
+            /* 修复边框问题：默认无边框，展开后才显示 */
+            border-top: 0 solid #eee;
+        }
+
+        .accordion-item.active .acc-content {
+            max-height: 1500px; /* 足够大 */
+            opacity: 1;
+            border-top: 1px solid #eee;
+        }
+
+        .inner-padding { padding: 30px; }
+
+        /* 内容排版 */
+        .point { margin-bottom: 25px; }
+        .point-head { 
+            font-weight: 700; 
+            color: var(--primary); 
+            margin-bottom: 8px; 
+            display: flex; 
+            align-items: center; 
+        }
+        .point-head::before {
+            content: ''; width: 6px; height: 6px; 
+            background: var(--accent); 
+            border-radius: 50%; 
+            margin-right: 10px; 
+        }
+        
+        .box-example {
+            background: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 12px 15px;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            color: #5d4037;
+            margin-top: 10px;
+        }
+        
+        .box-quote {
+            font-family: Georgia, serif;
+            font-style: italic;
+            color: #666;
+            background: #f0f4f8;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid var(--primary);
+        }
+
+        footer {
+            text-align: center;
+            padding: 50px 20px;
+            color: #bdc3c7;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8rem; }
+            .grid-cards { grid-template-columns: 1fr; }
+            .acc-header { flex-direction: column; align-items: flex-start; }
+            .acc-meta { margin-top: 5px; }
+            .acc-icon { position: absolute; right: 20px; top: 25px; }
+            .accordion-item { position: relative; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>科学革命的结构</h1>
+    <div class="meta">The Structure of Scientific Revolutions (4th Ed.)</div>
+    <div class="summary-card">
+        <strong>📚 一分钟速读：</strong> 
+        托马斯·库恩颠覆了“科学是累积性进步”的传统观点。他提出科学发展是<strong>「常规科学」</strong>（解谜）与<strong>「科学革命」</strong>（范式转换）交替进行的循环。这种转换类似于政治革命，涉及世界观的根本改变，且新旧范式之间具有<strong>不可通约性</strong>。
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- 核心概念 -->
+    <div class="section-header">
+        <span class="tag-pill">Concepts</span>
+        <h2>基石概念卡片</h2>
+    </div>
+    <p style="color:#999; font-size:0.9rem; margin-bottom:20px;">点击卡片翻转查看详情</p>
+
+    <div class="grid-cards">
+        <!-- Card 1 -->
+        <div class="flip-card" onclick="this.classList.toggle('mobile-active')">
+            <div class="flip-inner">
+                <div class="flip-front">
+                    <div class="icon">🧩</div>
+                    <h3>范式 (Paradigm)</h3>
+                    <div class="tip">1962年原始定义</div>
+                </div>
+                <div class="flip-back">
+                    <strong>定义</strong>
+                    <p>科学共同体在特定时期内公认的科学成就，为实践者提供典型的问题和解答。</p>
+                    <strong>特征</strong>
+                    <p>1. 能够空前地吸引一批坚定的拥护者。<br>2. 具有开放性，留下许多问题供人解决。</p>
+                    <strong>作用</strong>
+                    <p>划定“科学”的边界，提供解题的规则和标准。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="flip-card" onclick="this.classList.toggle('mobile-active')">
+            <div class="flip-inner">
+                <div class="flip-front">
+                    <div class="icon">🔬</div>
+                    <h3>常规科学 (Normal Science)</h3>
+                    <div class="tip">科学家的日常工作</div>
+                </div>
+                <div class="flip-back">
+                    <strong>本质：解谜</strong>
+                    <p>就像下棋或拼图，有预期的答案和既定的规则。目标不是创新，而是为了增加范式的精确性和适用范围。</p>
+                    <strong>心态</strong>
+                    <p>如果解谜失败，科学家通常认为是自己的水平问题（操作失误、仪器不行），而不会认为是理论（范式）错了。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="flip-card" onclick="this.classList.toggle('mobile-active')">
+            <div class="flip-inner">
+                <div class="flip-front">
+                    <div class="icon">⚡</div>
+                    <h3>反常 (Anomaly)</h3>
+                    <div class="tip">麻烦的开始</div>
+                </div>
+                <div class="flip-back">
+                    <strong>含义</strong>
+                    <p>自然界违反了范式诱导的预期现象。</p>
+                    <strong>心理过程</strong>
+                    <p>起初人们往往视而不见（如扑克牌实验中人们看不到红色的黑桃），强行将其归类。随着反常增多且无法解释，才会引发关注。</p>
+                    <strong>后果</strong>
+                    <p>只有长期顽固、触及核心的反常才会导致危机。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="flip-card" onclick="this.classList.toggle('mobile-active')">
+            <div class="flip-inner">
+                <div class="flip-front">
+                    <div class="icon">🚫</div>
+                    <h3>不可通约性 (Incommensurability)</h3>
+                    <div class="tip">跨范式沟通障碍</div>
+                </div>
+                <div class="flip-back">
+                    <strong>核心困境</strong>
+                    <p>新旧范式之间没有共同的度量标准。不仅仅是标准不同，看世界的方式也不同。</p>
+                    <strong>表现</strong>
+                    <p>1. <b>语言</b>：同样的词（如“质量”、“空间”）在牛顿和爱因斯坦体系中意义完全不同。<br>2. <b>感知</b>：革命后科学家仿佛生活在不同的世界里。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 5 -->
+        <div class="flip-card" onclick="this.classList.toggle('mobile-active')">
+            <div class="flip-inner">
+                <div class="flip-front">
+                    <div class="icon">🏗️</div>
+                    <h3>学科基质 (Disciplinary Matrix)</h3>
+                    <div class="tip">1969年后记修正</div>
+                </div>
+                <div class="flip-back">
+                    <strong>背景</strong>
+                    <p>库恩为解决“范式”一词多义性提出的更精确概念，指代共同体共享的整体。</p>
+                    <strong>包含要素</strong>
+                    <p>1. <b>符号概括</b>：公式 (f=ma)。<br>2. <b>模型</b>：形而上学或启发式比喻。<br>3. <b>价值</b>：准确性、简单性等。<br>4. <b>范例 (Exemplars)</b>：具体的解题案例。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 6 -->
+        <div class="flip-card" onclick="this.classList.toggle('mobile-active')">
+            <div class="flip-inner">
+                <div class="flip-front">
+                    <div class="icon">🧠</div>
+                    <h3>默会知识 (Tacit Knowledge)</h3>
+                    <div class="tip">只可意会</div>
+                </div>
+                <div class="flip-back">
+                    <strong>来源</strong>
+                    <p>受波兰尼启发。科学家通过做题（范例）学到的知识，无法完全用显性的规则表述。</p>
+                    <strong>重要性</strong>
+                    <p>这解释了为什么科学家可以不学规则就能做研究——只要他们能识别出新问题与旧范例之间的<b>相似性关系</b>。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 章节详情 -->
+    <div class="section-header">
+        <span class="tag-pill">Details</span>
+        <h2>全书脉络深度解析</h2>
+    </div>
+
+    <div class="controls">
+        <button class="btn-ctrl" onclick="expandAll(true)">全部展开</button>
+        <button class="btn-ctrl" onclick="expandAll(false)">全部折叠</button>
+    </div>
+
+    <!-- 1. 导读与序言 -->
+    <div class="accordion-item stage-meta">
+        <div class="acc-header" onclick="toggleAcc(this)">
+            <div class="acc-title">导读 & 序言：历史的角色</div>
+            <div class="acc-meta">伊恩·哈金导读 + 第1章</div>
+            <div class="acc-icon">▼</div>
+        </div>
+        <div class="acc-content">
+            <div class="inner-padding">
+                <div class="point">
+                    <div class="point-head">历史不仅是轶事</div>
+                    <p>如果不把历史仅看作年表或轶事，它将产生一种全新的科学形象。传统的科学观（通常来自教科书）认为科学是<strong>累积性</strong>的（像砌墙一样一块块加砖），库恩认为这是对科学史的误读。</p>
+                </div>
+                <div class="point">
+                    <div class="point-head">哈金的现代视角 (2012)</div>
+                    <p>虽然物理学在1962年是科学之王，现在生物技术占主导，但库恩的结构论述依然有效。库恩试图说明，科学并不向着唯一的“真理”进发，而是像生物进化一样，是从原始状态向更适应环境的状态演化。</p>
+                </div>
+                <div class="box-quote">“如果我们把科学看作是当时公认的信念群... 那么以前的科学（如亚里士多德物理学）并不因为被抛弃了就不科学。”</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 常规科学 -->
+    <div class="accordion-item stage-normal">
+        <div class="acc-header" onclick="toggleAcc(this)">
+            <div class="acc-title">阶段一：常规科学 (Normal Science)</div>
+            <div class="acc-meta">第2-5章</div>
+            <div class="acc-icon">▼</div>
+        </div>
+        <div class="acc-content">
+            <div class="inner-padding">
+                <div class="point">
+                    <div class="point-head">从“前范式”到“成熟科学”</div>
+                    <p><strong>前范式时期：</strong> 各家学派林立，每个人都从头构建基础（如光学在牛顿之前，有人认为光是粒子，有人认为是波，有人认为是眼睛发出的东西）。<br>
+                    <strong>成熟标志：</strong> 当某个成就（范式）出现，终结了学派之争，领域才真正成熟。科学家开始为彼此写论文，而不是为大众写书。</p>
+                </div>
+                <div class="point">
+                    <div class="point-head">常规科学的本质：解谜 (Puzzle-solving)</div>
+                    <p>拥有范式后的科学家致力于解谜：
+                    <br>1. 测定重要事实（如引力常数、原子量）；
+                    <br>2. 理论与事实的匹配；
+                    <br>3. 阐明范式理论。</p>
+                    <div class="box-example"><strong>案例：</strong> 寻找希格斯玻色子（上帝粒子）是典型的常规科学——这是理论预言必然存在的，科学家花费巨资只是为了证实它并测定其参数，这是一种清理扫尾工作。</div>
+                </div>
+                <div class="point">
+                    <div class="point-head">范式优先于规则</div>
+                    <p>科学家通常说不清规则是什么，但他们能通过共享的<strong>范例（Exemplars）</strong>识别问题。这种默会知识比显性规则更稳固。只有当范式不稳固时（如危机期），人们才热衷于讨论方法论。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 反常与危机 -->
+    <div class="accordion-item stage-crisis">
+        <div class="acc-header" onclick="toggleAcc(this)">
+            <div class="acc-title">阶段二：反常与危机 (Anomaly & Crisis)</div>
+            <div class="acc-meta">第6-8章</div>
+            <div class="acc-icon">▼</div>
+        </div>
+        <div class="acc-content">
+            <div class="inner-padding">
+                <div class="point">
+                    <div class="point-head">发现的心理学</div>
+                    <p>发现始于意识到反常。就像布鲁纳的扑克牌实验（给人看红色的黑桃牌），人们起初会因思维定势而无视反常，强行将其归入已知类别，直到反常多到无法忽视，产生认知失调。</p>
+                </div>
+                <div class="point">
+                    <div class="point-head">危机是如何出现的？</div>
+                    <p>并不是所有反常都导致危机。只有当反常：
+                    <br>1. 触及范式的核心基础；
+                    <br>2. 长期顽固存在，抗拒解决；
+                    <br>3. 妨碍了实际应用（如托勒密天文学妨碍了历法改革）。
+                    <br>这时，职业的不安全感出现，<strong>危机</strong>降临。</p>
+                </div>
+                <div class="point">
+                    <div class="point-head">科学家对危机的反应</div>
+                    <p>科学家<strong>绝不会</strong>仅仅因为反常就放弃范式（否定了波普尔的证伪主义）。他们会发明特设性假说来修补。只有当有了<strong>替补范式</strong>时，旧范式才会被抛弃。</p>
+                    <div class="box-quote">“拒绝一个范式而不接受另一个，就是拒绝科学本身。”</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. 科学革命 -->
+    <div class="accordion-item stage-revolution">
+        <div class="acc-header" onclick="toggleAcc(this)">
+            <div class="acc-title">阶段三：科学革命 (Scientific Revolution)</div>
+            <div class="acc-meta">第9-10章</div>
+            <div class="acc-icon">▼</div>
+        </div>
+        <div class="acc-content">
+            <div class="inner-padding">
+                <div class="point">
+                    <div class="point-head">为什么叫“革命”？（政治隐喻）</div>
+                    <p>就像政治革命发生在制度无法解决社会问题时，科学革命发生在范式无法解决自然之谜时。关键在于：<strong>无法通过现有的规则来解决新旧范式之间的争端。</strong> 最终的选择往往不完全靠逻辑，而靠说服。</p>
+                </div>
+                <div class="point">
+                    <div class="point-head">世界观的改变 (World View Change)</div>
+                    <p>革命不仅仅是重新解释数据，而是数据的来源本身变了。科学家仿佛被送到了另一个星球。这是<strong>格式塔转换</strong>。</p>
+                    <div class="box-example"><strong>经典案例：</strong> 
+                    <br>• 亚里士多德看单摆：这是受阻的落体运动（石头试图回到地心的静止本性）。
+                    <br>• 伽利略看单摆：这是一个能以此复往返的摆（能量守恒）。
+                    <br><strong>结论：</strong> 并不是伽利略观察得更仔细，而是他戴着不同的“眼镜”，看到了不同的数据。</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. 解决与进步 -->
+    <div class="accordion-item stage-resolution">
+        <div class="acc-header" onclick="toggleAcc(this)">
+            <div class="acc-title">阶段四：解决与进步 (Resolution & Progress)</div>
+            <div class="acc-meta">第11-13章</div>
+            <div class="acc-icon">▼</div>
+        </div>
+        <div class="acc-content">
+            <div class="inner-padding">
+                <div class="point">
+                    <div class="point-head">革命的不可见性</div>
+                    <p>一旦革命结束，教科书就会重写。教科书会把历史伪装成通向当下真理的线性过程（像是从古代到现在大家都在为同一个目标添砖加瓦）。这掩盖了革命的断裂性，让科学看起来总是累积的。</p>
+                </div>
+                <div class="point">
+                    <div class="point-head">如何解决范式之争？</div>
+                    <p>由于<strong>不可通约性</strong>，竞争无法完全靠逻辑证明解决。新范式的胜利往往依靠：
+                    <br>1. 解决危机的能力；
+                    <br>2. 许诺未来的潜力；
+                    <br>3. 审美（如更简单、对称）；
+                    <br>4. <strong>普朗克原理：</strong> 老一代科学家逐渐死去，新一代成长起来。</p>
+                </div>
+                <div class="point">
+                    <div class="point-head">什么是科学进步？</div>
+                    <p>库恩提出了一个达尔文式的进化观：科学进步是<strong>从</strong>原始状态向更复杂、更专业状态的演化，而<strong>不是向</strong>着一个预设的、客观的“真理”目标的迈进。我们越来越适应解谜，但这不代表我们越来越接近本体论上的上帝视角。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. 后记 -->
+    <div class="accordion-item stage-meta">
+        <div class="acc-header" onclick="toggleAcc(this)">
+            <div class="acc-title">1969年后记：澄清与修正</div>
+            <div class="acc-meta">针对批评的回应</div>
+            <div class="acc-icon">▼</div>
+        </div>
+        <div class="acc-content">
+            <div class="inner-padding">
+                <div class="point">
+                    <div class="point-head">重新定义“范式”</div>
+                    <p>库恩承认之前对“范式”使用混乱，提出了两个层级：
+                    <br>1. <strong>社会学层面：</strong> 学科基质（Disciplinary Matrix），即群体共享的所有东西（符号、信仰、价值）。
+                    <br>2. <strong>哲学深层：</strong> 范例（Exemplars），具体的解题成就。这才是库恩最具原创性的观点——学生通过模仿范例来学习如何看世界，而不是通过学习规则。</p>
+                </div>
+                <div class="point">
+                    <div class="point-head">关于相对主义</div>
+                    <p>库恩否认自己是彻底的相对主义者。他承认科学在解决问题的能力上是单向进步的（不可逆的）。但他坚持认为，这种进步不等于向着“实在”本身的逼近。</p>
+                </div>
+                <div class="point">
+                    <div class="point-head">翻译 vs. 转换</div>
+                    <p>不同范式的人虽然不可通约，但可以充当“翻译者”来理解对方。然而，理解不等于接受。接受新范式仍然需要一种信念上的<strong>转换（Conversion）</strong>。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    <p>© Generated Summary based on Thomas Kuhn's <em>The Structure of Scientific Revolutions (4th Ed.)</em></p>
+    <p>Designed for Low Cognitive Load Learning</p>
+</footer>
+
+<script>
+    function toggleAcc(header) {
+        const item = header.parentElement;
+        const isActive = item.classList.contains('active');
+        
+        // 简单切换当前项
+        if (isActive) {
+            item.classList.remove('active');
+        } else {
+            item.classList.add('active');
+        }
+    }
+
+    function expandAll(shouldExpand) {
+        const items = document.querySelectorAll('.accordion-item');
+        items.forEach(item => {
+            if (shouldExpand) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
