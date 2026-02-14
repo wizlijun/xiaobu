@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《勇敢去爱》Daring Greatly - 全书深度交互摘要</title>
+    <style>
+        :root {
+            --primary: #5D9CEC;   /* 柔和蓝 */
+            --accent: #AC92EC;    /* 柔和紫 */
+            --highlight: #FFCE54; /* 柔和黄 */
+            --text-main: #434A54;
+            --text-light: #656D78;
+            --bg-body: #F5F7FA;
+            --bg-card: #FFFFFF;
+            --shadow-soft: 0 10px 20px rgba(0,0,0,0.05);
+            --shadow-hover: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 顶部导航风格 */
+        header {
+            background: #fff;
+            padding: 60px 20px;
+            text-align: center;
+            border-bottom: 1px solid #E6E9ED;
+            margin-bottom: 40px;
+        }
+
+        h1 { margin: 0; font-size: 2.2rem; color: #3BAFDA; letter-spacing: -0.5px; }
+        h2 { font-weight: 300; font-size: 1.2rem; color: var(--text-light); margin-top: 10px; }
+        
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 20px 60px;
+        }
+
+        /* 核心金句框 */
+        .core-concept-box {
+            background: linear-gradient(135deg, #fff 0%, #f9f9f9 100%);
+            border-left: 6px solid var(--primary);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 50px;
+            position: relative;
+        }
+        .core-concept-box::before {
+            content: "“";
+            font-size: 80px;
+            color: rgba(93, 156, 236, 0.1);
+            position: absolute;
+            top: -20px;
+            left: 10px;
+            font-family: serif;
+        }
+
+        /* 章节标题 */
+        .chapter-title {
+            display: flex;
+            align-items: center;
+            margin: 60px 0 30px;
+            color: #37BC9B;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #E6E9ED;
+            padding-bottom: 10px;
+        }
+        .chapter-num {
+            background: #37BC9B;
+            color: white;
+            font-size: 0.9rem;
+            padding: 4px 10px;
+            border-radius: 4px;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+
+        /* 知识翻转卡片网格 */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        /* 翻转卡片容器 */
+        .flip-card {
+            background-color: transparent;
+            height: 280px; /* 固定高度确保统一 */
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: var(--shadow-soft);
+        }
+
+        /* 正面样式 */
+        .flip-card-front {
+            background-color: var(--bg-card);
+            border: 1px solid #E6E9ED;
+        }
+        .icon-large { font-size: 3rem; margin-bottom: 15px; }
+        .card-title { font-size: 1.25rem; font-weight: 600; color: var(--text-main); margin-bottom: 10px; }
+        .card-subtitle { font-size: 0.9rem; color: var(--text-light); }
+        .hint { margin-top: auto; font-size: 0.8rem; color: #AAB2BD; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* 背面样式 */
+        .flip-card-back {
+            background: linear-gradient(135deg, #5D9CEC 0%, #4A89DC 100%);
+            color: white;
+            transform: rotateY(180deg);
+            text-align: left;
+            align-items: flex-start;
+            justify-content: flex-start;
+            overflow-y: auto; /* 内容过多可滚动 */
+        }
+        .flip-card-back h4 { margin: 0 0 10px 0; font-size: 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 5px; width: 100%; }
+        .flip-card-back p { font-size: 0.95rem; margin-bottom: 10px; line-height: 1.5; }
+        .flip-card-back ul { padding-left: 20px; margin: 0; font-size: 0.9rem; }
+        .flip-card-back li { margin-bottom: 5px; }
+
+        /* 折叠详情区 */
+        .accordion {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            border: 1px solid #E6E9ED;
+        }
+        .accordion-header {
+            padding: 18px 25px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            transition: background 0.3s;
+        }
+        .accordion-header:hover { background: #fcfcfc; }
+        .accordion-title { font-weight: 600; color: #434A54; }
+        .accordion-icon { transition: transform 0.3s; color: #AAB2BD; }
+        
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+            background: #FAFAFA;
+            color: #656D78;
+        }
+        .accordion-content-inner { padding: 25px; border-top: 1px solid #E6E9ED; }
+
+        .accordion.active .accordion-icon { transform: rotate(180deg); }
+        .accordion.active .accordion-content { max-height: 1000px; /* 近似值，足够大即可 */ transition: max-height 0.5s ease-in; }
+
+        /* 强调高亮 */
+        .hl { background-color: rgba(255, 206, 84, 0.3); padding: 0 4px; border-radius: 3px; font-weight: 600; color: #333; }
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; }
+        .tag-red { background: #FFCE54; color: #8a6d3b; }
+        .tag-green { background: #A0D468; color: #3c763d; }
+
+        /* 响应式调整 */
+        @media (max-width: 600px) {
+            header { padding: 40px 15px; }
+            h1 { font-size: 1.8rem; }
+            .core-concept-box { padding: 20px; }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Daring Greatly</h1>
+    <h2>《勇敢去爱》全书深度交互摘要</h2>
+    <p>作者：Brené Brown | 领域：心理学、领导力、人际关系</p>
+</header>
+
+<div class="container">
+
+    <!-- 核心概念引言 -->
+    <div class="core-concept-box">
+        <p style="font-size: 1.1rem; font-weight: 500;">全书核心定义：</p>
+        <p><strong>脆弱 (Vulnerability)</strong> 不是输赢，不是软弱。它是面对<strong>不确定性 (Uncertainty)、风险 (Risk) 和情感暴露 (Emotional Exposure)</strong> 时的状态。它是所有情绪（包括爱、归属感、喜悦、勇气、同理心）的核心发源地。</p>
+        <p>想要<strong>全心全意 (Wholehearted)</strong> 地生活，我们就必须有勇气脱下盔甲，走进竞技场。</p>
+    </div>
+
+    <!-- 第一章 -->
+    <div class="chapter-title">
+        <span class="chapter-num">Chapter 1</span>
+        匮乏文化：向内审视“永远不够”
+    </div>
+
+    <div class="card-grid">
+        <!-- 卡片1: 匮乏文化 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="icon-large">🕳️</div>
+                    <div class="card-title">匮乏文化 (Scarcity)</div>
+                    <div class="card-subtitle">现代社会的焦虑根源</div>
+                    <div class="hint">点击翻转：核心三要素</div>
+                </div>
+                <div class="flip-card-back">
+                    <h4>匮乏的三大构成要素</h4>
+                    <p>我们总觉得“不够好、不够完美、不够安全”。这种文化由以下三点驱动：</p>
+                    <ul>
+                        <li><strong>羞耻感 (Shame)：</strong> 害怕被嘲笑，以此控制行为。</li>
+                        <li><strong>比较 (Comparison)：</strong> 与他人狭隘的标准对比，而非庆祝个性。</li>
+                        <li><strong>脱节 (Disengagement)：</strong> 人们因害怕而选择冷漠和退缩。</li>
+                    </ul>
+                    <p><strong>解药：</strong> “这就够了 (Enough)”的心态。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 卡片2: 自恋的真相 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="icon-large">🪞</div>
+                    <div class="card-title">自恋的新定义</div>
+                    <div class="card-subtitle">并非仅仅是“爱自己”</div>
+                    <div class="hint">点击翻转：深度解析</div>
+                </div>
+                <div class="flip-card-back">
+                    <h4>透过脆弱看自恋</h4>
+                    <p>作者认为，自恋并非极度爱自己，而是源于<strong>对“平凡”的极度恐惧</strong>。</p>
+                    <p>因为害怕自己毫无特色、不被注意、不被爱，所以用宏大的自我形象来掩饰内心的匮乏感。</p>
+                    <p><strong>关键点：</strong> 不要批判自恋者，要看到他们背后的羞耻和恐惧。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第二章 -->
+    <div class="chapter-title">
+        <span class="chapter-num">Chapter 2</span>
+        揭穿脆弱的迷思
+    </div>
+
+    <div class="accordion">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span class="accordion-title">迷思一：脆弱即软弱 (Weakness)</span>
+            <span class="accordion-icon">▼</span>
+        </div>
+        <div class="accordion-content">
+            <div class="accordion-content-inner">
+                <p><span class="tag tag-red">错误认知</span> 脆弱是需要避免的负面情绪。</p>
+                <p><span class="tag tag-green">事实真相</span> 脆弱是勇气的最准确衡量标准。去爱一个人（可能不被爱）、创业（可能失败）、创作艺术（可能被批评），这些都是极度脆弱的时刻，但也是极度勇敢的时刻。<strong>如果你想在生活中看到勇气，你就必须看到脆弱。</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span class="accordion-title">迷思二：我可以选择不脆弱</span>
+            <span class="accordion-icon">▼</span>
+        </div>
+        <div class="accordion-content">
+            <div class="accordion-content-inner">
+                <p><span class="tag tag-red">错误认知</span> 我可以穿上盔甲，拒绝感受脆弱。</p>
+                <p><span class="tag tag-green">事实真相</span> 脆弱是生活的一部分。你无法选择“不脆弱”，你只能选择“如何应对”。如果你拒绝有意识地面对脆弱，它就会在无意识中控制你（表现为焦虑、控制欲、麻木）。</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span class="accordion-title">迷思三：脆弱就是毫无保留 (Oversharing)</span>
+            <span class="accordion-icon">▼</span>
+        </div>
+        <div class="accordion-content">
+            <div class="accordion-content-inner">
+                <p><span class="tag tag-red">错误认知</span> 脆弱就是在社交媒体上曝光一切，或者对陌生人倾诉。</p>
+                <p><span class="tag tag-green">事实真相</span> 脆弱需要<strong>边界 (Boundaries)</strong> 和<strong>信任</strong>。这叫“大理石罐朋友”——信任是靠微小的瞬间一点点积累起来的（像往罐子里放大理石）。我们只跟那些赢得这种权利的人分享脆弱。</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span class="accordion-title">迷思四：我们可以独自前行</span>
+            <span class="accordion-icon">▼</span>
+        </div>
+        <div class="accordion-content">
+            <div class="accordion-content-inner">
+                <p><span class="tag tag-red">错误认知</span> 寻求帮助是无能的表现。</p>
+                <p><span class="tag tag-green">事实真相</span> 人类神经生物学决定了我们需要连接。独自面对脆弱不仅困难，而且往往不可能。我们需要支持系统来处理羞耻感和恐惧。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第三章 -->
+    <div class="chapter-title">
+        <span class="chapter-num">Chapter 3</span>
+        理解与对抗羞耻感
+    </div>
+
+    <div class="card-grid">
+        <!-- 卡片：羞耻vs内疚 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="icon-large">🆚</div>
+                    <div class="card-title">羞耻 (Shame) vs 内疚 (Guilt)</div>
+                    <div class="card-subtitle">本质的区别</div>
+                    <div class="hint">点击翻转：决定性的差异</div>
+                </div>
+                <div class="flip-card-back">
+                    <h4>关注点完全不同</h4>
+                    <p><strong>羞耻：</strong> <span class="hl">“我很坏。”</span> (I am bad) <br>关注的是<strong>自我</strong>。结果是：退缩、隐藏、攻击。</p>
+                    <p><strong>内疚：</strong> <span class="hl">“我做了一件坏事。”</span> (I did something bad) <br>关注的是<strong>行为</strong>。结果是：道歉、弥补、改变。</p>
+                    <p><strong>结论：</strong> 羞耻感极具破坏性且无益；内疚感是有益的道德罗盘。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 卡片：性别差异 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="icon-large">👫</div>
+                    <div class="card-title">羞耻的性别差异</div>
+                    <div class="card-subtitle">蛛网 vs 盒子</div>
+                    <div class="hint">点击翻转：男女的不同困境</div>
+                </div>
+                <div class="flip-card-back">
+                    <h4>社会对不同性别的要求</h4>
+                    <p><strong>女性（蛛网）：</strong> 要完美地做一切，但不能让人看出你在努力。不能让任何人失望。要求相互矛盾，无法逃脱。</p>
+                    <p><strong>男性（盒子）：</strong> 只有一条核心规则——<span class="hl">不能软弱</span>。不能表现出恐惧、不能失败。如果稍微表现出脆弱，就会被“踢出盒子”。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 卡片：羞耻抗性 -->
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="icon-large">🛡️</div>
+                    <div class="card-title">羞耻抗性 (Resilience)</div>
+                    <div class="card-subtitle">如何从羞耻中恢复</div>
+                    <div class="hint">点击翻转：四个步骤</div>
+                </div>
+                <div class="flip-card-back">
+                    <h4>从羞耻走向同理心</h4>
+                    <ol>
+                        <li><strong>识别羞耻：</strong> 了解导致羞耻的身体反应和触发点。</li>
+                        <li><strong>练习批判性意识：</strong> 质问那些不切实际的社会期望（如“必须完美”）。</li>
+                        <li><strong>接触他人：</strong> 与信任的人分享故事。</li>
+                        <li><strong>谈论羞耻：</strong> 羞耻在语言和光照下无法存活。</li>
+                    </ol>
+                    <p><strong>核心：</strong> <span class="hl">同理心 (Empathy) 是羞耻的解药。</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第四章 -->
+    <div class="chapter-title">
+        <span class="chapter-num">Chapter 4</span>
+        脆弱的铠甲 (The Armory)
+    </div>
+    <p style="margin-bottom: 20px;">为了保护自己免受脆弱的伤害，我们习惯性地穿戴这三层“通用铠甲”。</p>
+
+    <div class="accordion">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span class="accordion-title">铠甲一：预演灾难 (Foreboding Joy)</span>
+            <span class="accordion-icon">▼</span>
+        </div>
+        <div class="accordion-content">
+            <div class="accordion-content-inner">
+                <p><strong>现象：</strong> 当感到极度快乐（如看着熟睡的孩子）时，不仅不享受，反而开始想象灾难（如车祸）。因为我们害怕毫无防备地受到伤害，试图通过“预演痛苦”来减轻打击。</p>
+                <p><strong>解药：<span class="hl">感激 (Gratitude)</span></strong>。当那种“好得不真实”的恐惧袭来时，停下来，大声说“我很感激”。感激让我们安住在当下的喜悦中。</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span class="accordion-title">铠甲二：完美主义 (Perfectionism)</span>
+            <span class="accordion-icon">▼</span>
+        </div>
+        <div class="accordion-content">
+            <div class="accordion-content-inner">
+                <p><strong>现象：</strong> 相信“如果我看起来完美、做事完美，我就能避免羞耻、评判和指责”。这不是追求卓越（那是为了自我成长），完美主义是为了获得他人的认可，是一种防御机制。</p>
+                <p><strong>解药：<span class="hl">自我同情 (Self-Compassion)</span></strong>。对自己宽容，承认“我已经做得够好了”，欣赏不完美的美。</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span class="accordion-title">铠甲三：麻木 (Numbing)</span>
+            <span class="accordion-icon">▼</span>
+        </div>
+        <div class="accordion-content">
+            <div class="accordion-content-inner">
+                <p><strong>现象：</strong> 为了逃避脆弱带来的不适感，我们通过疯狂忙碌、酒精、药物、食物或购物来麻木自己。</p>
+                <p><strong>代价：</strong> 你无法选择性地麻木情绪。当你麻木痛苦时，你也麻木了快乐、感激和爱。</p>
+                <p><strong>解药：</strong> 设定边界，减少焦虑，寻找真正的灵魂慰藉而非“阴影慰藉”。</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span class="accordion-title">次级铠甲：维京人与受害者 (Viking or Victim)</span>
+            <span class="accordion-icon">▼</span>
+        </div>
+        <div class="accordion-content">
+            <div class="accordion-content-inner">
+                <p><strong>现象：</strong> 一种二元对立的世界观。认为世界上只有两种人：不想被践踏的“维京人”（杀戮者）和被践踏的“受害者”。这种思维让人为了避免成为受害者而先发制人，拒绝任何脆弱。</p>
+                <p><strong>解药：</strong> 重新定义成功。在非生死存亡的情境中，这种二元论是错误的。通过建立信任和连接来打破这种对立。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第五章 -->
+    <div class="chapter-title">
+        <span class="chapter-num">Chapter 5</span>
+        缩短差距：培养变革
+    </div>
+
+    <div class="card-grid">
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="icon-large">🌉</div>
+                    <div class="card-title">脱节的鸿沟 (The Gap)</div>
+                    <div class="card-subtitle">价值观的言行不一</div>
+                    <div class="hint">点击翻转：如何弥合</div>
+                </div>
+                <div class="flip-card-back">
+                    <h4>我们说的 vs 我们做的</h4>
+                    <p><strong>渴望的价值观 (Aspirational Values)：</strong> 那些我们挂在墙上、嘴上说的价值观（如：诚实、尊重、创新）。</p>
+                    <p><strong>实践的价值观 (Practiced Values)：</strong> 我们实际表现出来的行为（如：八卦、指责、为了短期利益牺牲长期利益）。</p>
+                    <p><strong>Mind the Gap：</strong> 领导者和父母的任务是识别这个差距，并努力通过行为来弥合它。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第六章 -->
+    <div class="chapter-title">
+        <span class="chapter-num">Chapter 6</span>
+        颠覆性参与：工作与教育
+    </div>
+    <p>要在组织中重燃创造力和创新，必须<strong>重新人性化 (Rehumanize)</strong> 工作和教育，这意味着通过“颠覆性参与”来对抗羞耻感。</p>
+
+    <div class="accordion">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span class="accordion-title">不仅是策略，更是文化</span>
+            <span class="accordion-icon">▼</span>
+        </div>
+        <div class="accordion-content">
+            <div class="accordion-content-inner">
+                <p>“文化把策略当早餐吃了”。无论你的策略多完美，如果你的文化充满了羞耻感（指责、八卦、偏袒），创新就无法生存。</p>
+                <p>如果你在组织中利用羞耻感作为管理工具（如公开羞辱），你就是在扼杀员工的投入度。</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span class="accordion-title">反馈的艺术：坐在同一侧</span>
+            <span class="accordion-icon">▼</span>
+        </div>
+        <div class="accordion-content">
+            <div class="accordion-content-inner">
+                <p>大多数人不知道如何给予和接受反馈，因为这极其脆弱。</p>
+                <p><strong>有效反馈的关键：</strong> 即使我是老板，你是员工，我们不是坐在桌子两端对峙，而是<span class="hl">坐在桌子的同一侧</span>，共同面对放在桌子上的问题。</p>
+                <p>要正常化“不适感”。这种对话本身就是不舒服的，但这正是成长的必经之路。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第七章 -->
+    <div class="chapter-title">
+        <span class="chapter-num">Chapter 7</span>
+        全心全意的教养
+    </div>
+
+    <div class="core-concept-box" style="margin-bottom: 30px; border-left-color: #AC92EC;">
+        <p>“我们无法给孩子我们自己都没有的东西。在教养中，<strong>你是谁 (Who you are)</strong> 比你知道什么育儿技巧更重要。”</p>
+    </div>
+
+    <div class="card-grid">
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="icon-large">🕯️</div>
+                    <div class="card-title">希望是习得的</div>
+                    <div class="card-subtitle">Hope is a function of struggle</div>
+                    <div class="hint">点击翻转：父母最大的挑战</div>
+                </div>
+                <div class="flip-card-back">
+                    <h4>不要剥夺孩子的挣扎权</h4>
+                    <p>希望不是一种情绪，是一种思维方式：<strong>目标 + 路径 + 动因</strong>。</p>
+                    <p>要学会希望，孩子必须经历失败和挑战。</p>
+                    <p>如果我们总是做“扫雪机父母”为孩子清除障碍，我们实际上剥夺了他们学习希望和坚韧的机会。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flip-card" onclick="this.classList.toggle('flipped')">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="icon-large">🧩</div>
+                    <div class="card-title">归属 vs 融入</div>
+                    <div class="card-subtitle">Belonging vs Fitting In</div>
+                    <div class="hint">点击翻转：本质区别</div>
+                </div>
+                <div class="flip-card-back">
+                    <h4>不要教孩子去“融入”</h4>
+                    <p><strong>融入 (Fitting In)：</strong> 评估环境，改变自己来迎合他人。这是归属感的障碍。</p>
+                    <p><strong>归属 (Belonging)：</strong> 做真实的自己而被接纳。</p>
+                    <p>如果不先属于自己（自我接纳），就永远无法真正属于别处。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="background: #fff; padding: 25px; border-radius: 8px; border: 1px solid #E6E9ED; margin-top: 40px;">
+        <h3 style="margin-top: 0; color: #37BC9B;">全心全意生活指南 (Wholehearted Living)</h3>
+        <p>1. 培养真实性，放下“别人怎么想”。</p>
+        <p>2. 培养自我同情，放下完美主义。</p>
+        <p>3. 培养韧性精神，放下麻木和无力感。</p>
+        <p>4. 培养感激和喜悦，放下匮乏感。</p>
+        <p>5. 培养直觉和信任信仰，放下对确定性的需求。</p>
+        <p>6. 培养创造力，放下比较。</p>
+        <p>7. 培养玩耍和休息，放下作为地位象征的疲惫。</p>
+        <p>8. 培养冷静和静止，放下作为生活方式的焦虑。</p>
+        <p>9. 培养有意义的工作，放下自我怀疑和“应该”。</p>
+        <p>10. 培养欢笑、歌唱和舞蹈，放下“耍酷”和“总是掌控一切”。</p>
+    </div>
+
+</div>
+
+<script>
+    function toggleAccordion(header) {
+        const item = header.parentElement;
+        item.classList.toggle('active');
+        
+        // 可选：打开一个时关闭其他
+        /*
+        const allItems = document.querySelectorAll('.accordion');
+        allItems.forEach(i => {
+            if (i !== item) i.classList.remove('active');
+        });
+        */
+    }
+</script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_daring_greatly_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
