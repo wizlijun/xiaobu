@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code 全方位指南（深度篇） - The Longform Guide</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --container-bg: #ffffff;
+            --text-color: #333333;
+            --accent-color: #0066cc;
+            --code-bg: #f4f4f4;
+            --insight-bg: #e8f4fd;
+            --insight-border: #2196f3;
+            --sidebar-bg: #f0f2f5;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--container-bg);
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-radius: 8px;
+        }
+
+        h1 { font-size: 2.2em; color: #111; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        h2 { font-size: 1.6em; margin-top: 40px; color: #222; border-left: 5px solid var(--accent-color); padding-left: 15px; }
+        h3 { font-size: 1.3em; margin-top: 30px; color: #444; }
+        p { margin-bottom: 15px; }
+        
+        a { color: var(--accent-color); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        pre {
+            background: var(--code-bg);
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+        }
+        
+        code {
+            font-family: "Menlo", "Monaco", "Consolas", monospace;
+            font-size: 0.9em;
+        }
+
+        /* AISE Expert Insight Box Styling */
+        .insight-box {
+            background-color: var(--insight-bg);
+            border-left: 4px solid var(--insight-border);
+            padding: 15px 20px;
+            margin: 25px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .insight-title {
+            font-weight: bold;
+            color: var(--insight-border);
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .insight-title::before {
+            content: "🤖";
+            margin-right: 8px;
+            font-size: 1.2em;
+        }
+
+        ul, ol { padding-left: 20px; }
+        li { margin-bottom: 8px; }
+
+        .metadata {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* Social Media Context Styling */
+        .social-context {
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 3px solid #eee;
+            background-color: var(--sidebar-bg);
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        
+        .social-header {
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            color: #888;
+        }
+
+        .tweet-stat { margin-right: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Claude Code 全方位指南（深度篇）</h1>
+        <div class="metadata">
+            <strong>作者:</strong> @affaanmustafa (CogSec) <br>
+            <strong>发布日期:</strong> 2026年1月17日 <br>
+            <strong>原文标题:</strong> The Longform Guide to Everything Claude Code
+        </div>
+    </header>
+
+    <article>
+        <p>在《Claude Code 全方位速查指南》中，我介绍了基础设置：技能 (Skills)、钩子 (Hooks)、子智能体 (Subagents)、MCPs、插件以及构成高效 Claude Code 工作流骨架的配置模式。那是基础架构篇。</p>
+        
+        <p>这篇<strong>深度指南</strong>涵盖了将“高效会话”与“浪费时间的会话”区分开来的技术。如果你还没读过速查指南，请先回去配置好你的环境。接下来的内容假设你已经配置并运行了技能、智能体、钩子和 MCP。</p>
+
+        <p><strong>核心主题：</strong>代币经济学 (Token Economics)、记忆持久化 (Memory Persistence)、验证模式 (Verification Patterns)、并行策略 (Parallelization Strategies) 以及构建可复用工作流的复利效应。这些是我在 10 多个月的日常使用中提炼出的模式，它们决定了你是刚过一小时就被“上下文腐烂 (Context Rot)”困扰，还是能保持数小时的高效产出。</p>
+        
+        <p>所有相关代码均可见 GitHub：<code>everything-claude-code</code></p>
+
+        <!-- Section 1 -->
+        <h2>1. 上下文与记忆管理 (Context & Memory Management)</h2>
+        <p>为了在不同会话间共享记忆，最好的办法是创建一个 Skill 或 Command，用于总结当前进度，检查状态，并将其保存到 <code>.claude</code> 文件夹下的 <code>.tmp</code> 文件中，并持续追加直到会话结束。第二天，你可以利用该文件作为上下文继续工作。为每个会话创建一个新文件，以免将旧的上下文污染到新工作中。</p>
+        
+        <p>Claude 会创建一个总结当前状态的文件。你需要审查它，必要时要求修改，然后重新开始。对于新会话，只需提供该文件路径。当你达到上下文限制并需要继续复杂工作时，这尤其有用。</p>
+        
+        <p><strong>这些文件应包含：</strong></p>
+        <ul>
+            <li>经证据核实有效的方案</li>
+            <li>尝试过但无效的方案</li>
+            <li>尚未尝试的方案及剩余工作</li>
+        </ul>
+
+        <div class="insight-box">
+            <div class="insight-title">高级 AISE 专家洞察</div>
+            这里实际上是在手动实现 <strong>外部状态管理 (Externalized State Management)</strong>。LLM 的上下文窗口虽然很大（如 200k+），但随着对话变长，其“注意力”会衰减（Context Drift）。通过将内存“换页”到文件系统（Swap to disk），我们手动实现了类似操作系统的内存管理，确保核心逻辑的持久化。
+        </div>
+
+        <h3>策略性压缩上下文 (Clearing Context Strategically)</h3>
+        <p>一旦你制定了计划并清理了上下文（现在 Claude Code 的计划模式中有默认选项），就可以按照计划行事。为了进行<strong>策略性压缩</strong>，请禁用自动压缩 (auto compact)。在逻辑间隔处手动压缩，或创建一个 Skill 来根据定义好的标准建议你压缩。</p>
+
+        <pre><code>#!/bin/bash
+# Strategic Compact Suggester
+# Runs on PreToolUse to suggest manual compaction at logical intervals
+
+COUNTER_FILE="/tmp/claude-tool-count-$$"
+THRESHOLD=${COMPACT_THRESHOLD:-50}
+
+# Initialize or increment counter
+if [ -f "$COUNTER_FILE" ]; then
+  count=$(cat "$COUNTER_FILE")
+  count=$((count + 1))
+  echo "$count" > "$COUNTER_FILE"
+else
+  echo "1" > "$COUNTER_FILE"
+  count=1
+fi
+
+# Suggest compact after threshold tool calls
+if [ "$count" -eq "$THRESHOLD" ]; then
+  echo "[StrategicCompact] $THRESHOLD tool calls reached - consider /compact if transitioning phases" >&2
+fi</code></pre>
+
+        <!-- Section 2 -->
+        <h2>2. 高级技巧：动态系统提示词注入 (Dynamic System Prompt Injection)</h2>
+        <p>我正在尝试的一种模式是：不要只把规则放在 <code>CLAUDE.md</code> (用户级) 或 <code>.claude/rules/</code> (项目级) 中——这些会在每次会话都加载。相反，使用 CLI 标志来动态注入上下文。</p>
+
+        <pre><code>claude --system-prompt "$(cat memory.md)"</code></pre>
+
+        <p><strong>为什么这比 @file 引用更重要？</strong><br>
+        当你使用 <code>@memory.md</code> 或放在 <code>.claude/rules/</code> 中时，Claude 是通过 <code>Read</code> 工具读取它们的——这被视为工具输出。而使用 <code>--system-prompt</code> 时，内容会在对话开始前被注入到<strong>实际的系统提示词 (System Prompt)</strong> 中。系统提示词具有比用户消息更高的权威性。</p>
+
+        <div class="insight-box">
+            <div class="insight-title">高级 AISE 专家洞察</div>
+            这是一个极为关键的 <strong>Prompt Engineering</strong> 细节。LLM 对 System Prompt 的遵循度远高于后续的对话历史。在构建高可靠性 Agent 时，必须利用这一层级差异来防止“指令遵循漂移”。
+        </div>
+
+        <!-- Section 3 -->
+        <h2>3. 高级技巧：记忆持久化钩子 (Memory Persistence Hooks)</h2>
+        <p>利用以下钩子自动化记忆管理：</p>
+        <ul>
+            <li><strong>PreCompact Hook:</strong> 在上下文压缩前保存状态。</li>
+            <li><strong>SessionStart Hook:</strong> 自动加载之前的上下文。</li>
+            <li><strong>Stop Hook:</strong> 会话结束时持久化知识。</li>
+        </ul>
+
+        <pre><code>{
+  "hooks": {
+    "PreCompact": [{
+      "matcher": "*",
+      "hooks": [{
+        "type": "command",
+        "command": "~/.claude/hooks/memory-persistence/pre-compact.sh"
+      }]
+    }],
+    "SessionStart": [{
+      "matcher": "*",
+      "hooks": [{
+        "type": "command",
+        "command": "~/.claude/hooks/memory-persistence/session-start.sh"
+      }]
+    }],
+    "Stop": [{
+      "matcher": "*",
+      "hooks": [{
+        "type": "command",
+        "command": "~/.claude/hooks/memory-persistence/session-end.sh"
+      }]
+    }]
+  }
+}</code></pre>
+
+        <!-- Section 4 -->
+        <h2>4. 持续学习 / 记忆 (Continuous Learning)</h2>
+        <p>如果 Claude 总是犯同样的错误，你需要“重新引导”。当 Claude Code 发现了一些非琐碎的东西（调试技巧、变通方案），它应将该知识保存为一项新 Skill。</p>
+
+        <h3>手动提取 (/learn)</h3>
+        <p>你不必等到会话结束。使用仓库中的 <code>/learn</code> 命令，当你刚刚解决了一个难题时中途运行它，提取模式并保存为 Skill。</p>
+
+        <div class="insight-box">
+            <div class="insight-title">高级 AISE 专家洞察</div>
+            这是 <strong>自我进化系统 (Self-Evolving System)</strong> 的雏形。通过将“临时解决方案”转化为“永久工具 (Skill)”，Claude 的能力随着项目开发周期的推进而通过<strong>元学习 (Meta-learning)</strong> 线性增长。
+        </div>
+
+        <!-- Section 5 -->
+        <h2>5. 代币优化 (Token Optimization)</h2>
+        <p><strong>首要策略：子智能体架构</strong></p>
+        <ul>
+            <li><strong>Sonnet (默认):</strong> 90% 的编码任务。</li>
+            <li><strong>Opus (升级):</strong> 涉及架构决策或安全关键代码。</li>
+            <li><strong>Haiku (降级):</strong> 重复性任务或简单的“工人”角色。</li>
+        </ul>
+
+        <p><strong>工具优化：</strong></p>
+        <ul>
+            <li>使用 <code>mgrep</code> 替代 <code>grep</code>（节省约 50% Token）。</li>
+            <li><strong>后台进程：</strong> 使用 tmux 在后台运行构建或日志进程，只将关键输出流式传输给 Claude。</li>
+        </ul>
+
+        <!-- Section 6 -->
+        <h2>6. 验证循环与评估 (Verification Loops and Evals)</h2>
+        <p><strong>评估模式类型：</strong></p>
+        <ol>
+            <li><strong>基于检查点的评估 (Checkpoint-Based):</strong> 适用于具有明确里程碑的线性工作流。在每个点验证标准。</li>
+            <li><strong>持续评估 (Continuous):</strong> 适用于长时间的探索性重构。每 N 分钟运行全套测试。</li>
+        </ol>
+
+        <p><strong>评分指标：</strong></p>
+        <ul>
+            <li><code>pass@k</code>: k 次尝试中至少一次成功（注重结果）。</li>
+            <li><code>pass^k</code>: 所有 k 次尝试必须都成功（注重一致性/确定性）。</li>
+        </ul>
+
+        <div class="insight-box">
+            <div class="insight-title">高级 AISE 专家洞察</div>
+            这是从“辅助编程”向“代理工程 (Agentic Engineering)”的转变。引入 <strong>TDD (测试驱动开发)</strong> 能够让 AI 自我纠错。区分 pass@k 和 pass^k 是高级视角：对于生成创意，我们要的是一次惊喜；对于构建生产级代码，我们要的是绝对的稳定性。
+        </div>
+
+        <!-- Section 7 -->
+        <h2>7. 并行化 (Parallelization)</h2>
+        <p><strong>Git Worktrees 是核心：</strong><br>
+        当扩展实例且多个 Claude 在处理相互重叠的代码时，必须使用 Git Worktree。每个 Worktree 运行独立的 Claude 实例，避免 Git 冲突。</p>
+
+        <p><strong>级联法 (The Cascade Method):</strong><br>
+        向右打开新 Tab，从左到右扫描。同时关注不超过 3-4 个任务。</p>
+
+        <!-- Section 8 -->
+        <h2>8. 基础工作与最佳实践 (Groundwork)</h2>
+        <p><strong>双实例启动模式 (The Two-Instance Kickoff):</strong></p>
+        <ol>
+            <li><strong>实例 1 (脚手架智能体):</strong> 搭建项目结构，配置规则。</li>
+            <li><strong>实例 2 (深度研究智能体):</strong> 搜索文档，创建 PRD，绘制架构图。</li>
+        </ol>
+
+        <p><strong>哲学：构建可复用模式</strong><br>
+        投资于 Subagents, Skills, Commands。这些模式具有<strong>复利效应</strong>，且可跨模型升级复用。</p>
+
+        <!-- Section 9 -->
+        <h2>9. 智能体与子智能体最佳实践</h2>
+        <p><strong>迭代检索模式 (Iterative Retrieval Pattern):</strong><br>
+        协调者 (Orchestrator) 拥有上下文，子智能体没有。不要只发送查询，要发送查询 + <strong>目标 (Objective)</strong>。协调者必须评估子智能体的摘要，如果不满意则进行追问，形成反馈循环。</p>
+
+        <!-- Section 10 -->
+        <h2>10. 技巧与窍门 (Tips and Tricks)</h2>
+        <p><strong>用 CLI 技能替代 MCP：</strong><br>
+        对于 GitHub、Supabase 等拥有强大 CLI 的工具，不要一直加载它们的 MCP。将 CLI 命令封装为 Skill (如 <code>/gh-pr</code>)，这样既保留了功能，又释放了宝贵的上下文窗口。</p>
+
+        <hr>
+
+        <div class="social-context">
+            <div class="social-header">页面上下文与评论 (X/Twitter 元数据)</div>
+            
+            <p><strong>统计数据:</strong> 318.4K 查看 · 2:19 AM · Jan 22, 2026</p>
+            
+            <div style="margin-top: 20px;">
+                <strong>相关引用与评论:</strong>
+                <p>@bcherny (Boris Cherny): "1/ I run 5 Claudes in parallel in my terminal... Your goal really should be: how much can you get done with the minimum viable amount of parallelization."</p>
+                <p>@omarsar0: "Early on, I spent time building reusable workflows/patterns... this had a wild compounding effect."</p>
+            </div>
+
+            <div style="margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px;">
+                <strong>正在发生 (Trending):</strong><br>
+                #TokyoRevengers, #BlueLock, Anthony Kim (#LIVGolfAdelaide), jae Johnson
+            </div>
+            
+            <div style="margin-top: 10px; color: #777;">
+                <strong>相关人物:</strong><br>
+                cogsec @affaanmustafa: democratizing gambling = (Ω , ℱ, ℙ_α); p ≈ ℙ(e=1); y ∈ {0, 1}; ∂p/∂α﹥0 | current side quest - ECC (40k+ GH)
+            </div>
+        </div>
+    </article>
+</div>
+
+</body>
+</html>
