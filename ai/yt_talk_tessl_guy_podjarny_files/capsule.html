@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深度访谈摘要：Guy Podjarny 谈 Spec-Driven Development (Tessl)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FAFAFA;
+            color: #111827;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* 翻转卡片 3D 效果 */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+        
+        .flip-card-container {
+            height: 320px; /* 增加高度以容纳更多细节 */
+            cursor: pointer;
+        }
+        .flip-card-inner {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .flip-card-container.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        /* 滚动条美化 */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        
+        /* 渐变文本 */
+        .text-gradient {
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-image: linear-gradient(to right, #4F46E5, #9333EA);
+        }
+
+        /* 代码字体 */
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        [v-cloak] { display: none; }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <div id="app" v-cloak class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        
+        <!-- 1. 头部 & 嘉宾信息 -->
+        <header class="text-center mb-16 relative">
+            <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-12 w-96 h-96 bg-indigo-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
+            
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 mb-6 border border-indigo-100">
+                <span class="w-2 h-2 bg-indigo-500 rounded-full mr-2"></span>
+                Zuplow AI Gateway Launch Week 特别访谈
+            </span>
+            
+            <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-gray-900 mb-6">
+                从代码到规格：<br>
+                <span class="text-gradient">Spec-Driven Development</span>
+            </h1>
+            
+            <p class="text-xl text-gray-500 max-w-3xl mx-auto mb-12 font-light">
+                代码正在成为编译产物。听 Snyk 创始人 Guy Podjarny 讲述如何通过 Tessl 利用 AI 将软件开发范式从“编写实现”推向“定义规格”。
+            </p>
+
+            <!-- 嘉宾简介卡片 -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 max-w-4xl mx-auto flex flex-col md:flex-row items-center md:items-start gap-6 text-left">
+                <div class="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex-shrink-0 overflow-hidden shadow-inner relative">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=GuyPodjarny&backgroundColor=e5e7eb" alt="Guy Podjarny" class="w-full h-full object-cover">
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-center flex-wrap gap-2 mb-2">
+                        <h2 class="text-2xl font-bold text-gray-900">Guy Podjarny (Guypo)</h2>
+                        <a href="#" class="text-gray-400 hover:text-indigo-600 transition-colors"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-indigo-600 transition-colors"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                    <p class="text-sm font-medium text-indigo-600 mb-3">CEO & Founder @ Tessl | Founder @ Snyk</p>
+                    <p class="text-gray-600 text-sm leading-relaxed mb-4">
+                        Guy 是开发者工具领域的传奇人物。他创立的 Snyk 彻底改变了开发者安全（DevSecOps）。现在，他创立了 <strong>Tessl</strong>，致力于解决 AI 生成代码的信任与维护难题。他还是 <em class="font-medium">AI Native Dev</em> 播客的主理人。
+                    </p>
+                    <div class="flex gap-2">
+                        <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded border border-gray-200">Spec-Driven Development</span>
+                        <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded border border-gray-200">AI Native</span>
+                        <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded border border-gray-200">DevTools</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- 2. 核心概念：软件开发的三阶段演进 -->
+        <section class="mb-20">
+            <div class="flex items-end justify-between mb-8 px-2">
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-900">软件开发的范式转移</h3>
+                    <p class="text-gray-500 text-sm mt-1">类似于自动驾驶的 L1 - L5 分级</p>
+                </div>
+            </div>
+
+            <!-- Interactive Tabs -->
+            <div class="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
+                <div class="flex border-b border-gray-100 bg-gray-50/50">
+                    <button 
+                        v-for="(stage, index) in evolutionStages" 
+                        :key="index"
+                        @click="activeStage = index"
+                        class="flex-1 py-5 px-4 text-center transition-all duration-300 relative group"
+                        :class="activeStage === index ? 'text-indigo-700 bg-white' : 'text-gray-500 hover:bg-gray-50'"
+                    >
+                        <span class="text-sm uppercase tracking-wider font-bold block mb-1 opacity-70">Level {{ index + 1 }}</span>
+                        <span class="text-lg font-bold" :class="activeStage === index ? 'text-indigo-600' : 'text-gray-600'">{{ stage.name }}</span>
+                        <div v-if="activeStage === index" class="absolute bottom-0 left-0 w-full h-1 bg-indigo-600"></div>
+                    </button>
+                </div>
+
+                <div class="p-8 md:p-12 min-h-[400px]">
+                    <transition name="fade" mode="out-in">
+                        <div :key="activeStage" class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                            <!-- Left Content -->
+                            <div>
+                                <h4 class="text-3xl font-bold text-gray-900 mb-6">{{ evolutionStages[activeStage].headline }}</h4>
+                                <p class="text-gray-600 text-lg leading-relaxed mb-6">
+                                    {{ evolutionStages[activeStage].desc }}
+                                </p>
+                                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg mb-6">
+                                    <p class="text-blue-900 font-medium text-sm">
+                                        <i class="fas fa-car-side mr-2"></i>
+                                        <strong>自动驾驶类比：</strong> {{ evolutionStages[activeStage].analogy }}
+                                    </p>
+                                </div>
+                                <div class="bg-yellow-50 border border-yellow-100 rounded-lg p-4">
+                                    <p class="text-yellow-800 text-sm font-medium">
+                                        <i class="fas fa-clock mr-2"></i>
+                                        <strong>预测时间点：</strong> {{ evolutionStages[activeStage].timeline }}
+                                    </p>
+                                </div>
+                            </div>
+                            <!-- Right Content (Visual/Features) -->
+                            <div class="bg-gray-50 rounded-2xl p-8 border border-gray-100 h-full flex flex-col justify-center">
+                                <h5 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">核心特征</h5>
+                                <ul class="space-y-4">
+                                    <li v-for="feat in evolutionStages[activeStage].features" :key="feat" class="flex items-start">
+                                        <div class="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center mt-0.5">
+                                            <i class="fas fa-check text-indigo-600 text-xs"></i>
+                                        </div>
+                                        <span class="ml-3 text-gray-700 font-medium">{{ feat }}</span>
+                                    </li>
+                                </ul>
+                                <div class="mt-8 pt-6 border-t border-gray-200">
+                                    <span class="text-xs font-mono text-gray-400 uppercase">当前状态</span>
+                                    <p class="text-sm font-mono text-gray-600 mt-1">{{ evolutionStages[activeStage].status }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </transition>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. 深度知识卡片 (Flip Cards) -->
+        <section class="mb-20">
+            <h3 class="text-2xl font-bold text-gray-900 mb-2 text-center">核心概念详解</h3>
+            <p class="text-center text-gray-500 mb-10">点击卡片查看深度解析</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div v-for="(card, idx) in deepConcepts" :key="idx" 
+                     class="flip-card-container perspective-1000 group"
+                     :class="{ 'flipped': card.flipped }"
+                     @click="toggleCard(idx)">
+                    <div class="flip-card-inner relative w-full h-full transform-style-3d shadow-md hover:shadow-xl transition-shadow rounded-2xl">
+                        
+                        <!-- Front -->
+                        <div class="absolute w-full h-full backface-hidden bg-white rounded-2xl border border-gray-200 p-8 flex flex-col items-center justify-center text-center z-10">
+                            <div class="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform duration-300">
+                                <i :class="card.icon"></i>
+                            </div>
+                            <h4 class="text-xl font-bold text-gray-900 mb-3">{{ card.title }}</h4>
+                            <p class="text-gray-500 text-sm line-clamp-3">{{ card.summary }}</p>
+                            <div class="mt-auto pt-4 text-indigo-500 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                                点击翻转 <i class="fas fa-arrow-right ml-1"></i>
+                            </div>
+                        </div>
+
+                        <!-- Back -->
+                        <div class="absolute w-full h-full backface-hidden bg-gradient-to-br from-indigo-900 to-indigo-800 rounded-2xl p-6 text-white rotate-y-180 flex flex-col text-left overflow-y-auto custom-scrollbar">
+                            <h5 class="text-lg font-bold text-indigo-100 mb-4 border-b border-indigo-700 pb-2">{{ card.title }}</h5>
+                            <p class="text-sm text-indigo-200 mb-4 leading-relaxed">{{ card.detail }}</p>
+                            <ul class="space-y-2 mb-4">
+                                <li v-for="point in card.points" class="flex items-start text-xs text-indigo-300">
+                                    <span class="mr-2 text-indigo-400">•</span>
+                                    {{ point }}
+                                </li>
+                            </ul>
+                            <div class="mt-auto">
+                                <span class="text-[10px] uppercase tracking-widest text-indigo-500 font-bold">Key Insight</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Tessl 生态系统 (双列布局) -->
+        <section class="mb-20">
+            <h3 class="text-2xl font-bold text-gray-900 mb-8">Tessl 生态系统解构</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                <!-- Spec Registry -->
+                <div class="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm hover:border-indigo-300 transition-colors relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-green-100 rounded-bl-full -mr-4 -mt-4 opacity-50"></div>
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="w-10 h-10 rounded-lg bg-green-100 text-green-700 flex items-center justify-center text-xl">
+                            <i class="fas fa-book"></i>
+                        </span>
+                        <div>
+                            <h4 class="text-xl font-bold text-gray-900">Spec Registry</h4>
+                            <span class="inline-block px-2 py-0.5 bg-green-50 text-green-700 text-xs font-semibold rounded mt-1">Open Beta</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-6 leading-relaxed">
+                        <strong>"AI 的 NPM"。</strong> 这是一个存储知识（Knowledge）而非代码的仓库。它解决了 Agent 的"幻觉"问题，因为 Agent 虽有智能（Intelligence），但缺乏具体的版本知识。
+                    </p>
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                        <h5 class="text-xs font-bold text-gray-500 uppercase mb-3">技术细节</h5>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li class="flex items-center"><i class="fas fa-cube text-green-500 w-5"></i> 包含 10,000+ 个 Spec Packs</li>
+                            <li class="flex items-center"><i class="fas fa-code-branch text-green-500 w-5"></i> 解决版本过时或过新导致的错误</li>
+                            <li class="flex items-center"><i class="fas fa-file-code text-green-500 w-5"></i> 使用 markdown/json 定义库的使用规范</li>
+                            <li class="flex items-center"><i class="fas fa-cloud-download-alt text-green-500 w-5"></i> 类似于 npm install，Agent 安装知识包</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Tessl Framework -->
+                <div class="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm hover:border-indigo-300 transition-colors relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-yellow-100 rounded-bl-full -mr-4 -mt-4 opacity-50"></div>
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="w-10 h-10 rounded-lg bg-yellow-100 text-yellow-700 flex items-center justify-center text-xl">
+                            <i class="fas fa-layer-group"></i>
+                        </span>
+                        <div>
+                            <h4 class="text-xl font-bold text-gray-900">Tessl Framework</h4>
+                            <span class="inline-block px-2 py-0.5 bg-yellow-50 text-yellow-700 text-xs font-semibold rounded mt-1">Closed Beta</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-6 leading-relaxed">
+                        <strong>不是一个新的 Agent，而是 Agent 的工具箱。</strong> 它通过 MCP (Model Context Protocol) 协议，让现有的 Agent (如 Claude Desktop, Cursor) 具备 Spec-Driven 的能力。
+                    </p>
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                        <h5 class="text-xs font-bold text-gray-500 uppercase mb-3">功能特性</h5>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li class="flex items-center"><i class="fas fa-tools text-yellow-500 w-5"></i> 提供生成/更新 Spec 的工具链</li>
+                            <li class="flex items-center"><i class="fas fa-vial text-yellow-500 w-5"></i> 自动运行和验证回归测试</li>
+                            <li class="flex items-center"><i class="fas fa-file-invoice text-yellow-500 w-5"></i> 读取 <code>tessl.json</code> (Manifest)</li>
+                            <li class="flex items-center"><i class="fas fa-random text-yellow-500 w-5"></i> 协调不同 Agent 之间的工作流</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 5. 金句与总结 -->
+        <section class="bg-indigo-900 rounded-3xl p-10 md:p-16 text-white relative overflow-hidden mb-16">
+            <!-- 背景装饰 -->
+            <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-500 rounded-full mix-blend-overlay filter blur-3xl opacity-20 -mr-16 -mt-16"></div>
+            <div class="absolute bottom-0 left-0 w-64 h-64 bg-purple-500 rounded-full mix-blend-overlay filter blur-3xl opacity-20 -ml-16 -mb-16"></div>
+
+            <div class="relative z-10">
+                <h3 class="text-3xl font-bold mb-10 text-center">Guy's Golden Quotes</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:bg-white/15 transition-colors">
+                        <i class="fas fa-quote-left text-indigo-300 text-2xl mb-4 block"></i>
+                        <p class="text-lg font-medium leading-relaxed mb-4">"Spec 现在就是源代码 (Source Code)。生成的代码只是编译后的二进制文件，它是可抛弃的 (Disposable)。"</p>
+                        <p class="text-sm text-indigo-200 font-mono">— 关于代码的未来</p>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:bg-white/15 transition-colors">
+                        <i class="fas fa-quote-left text-indigo-300 text-2xl mb-4 block"></i>
+                        <p class="text-lg font-medium leading-relaxed mb-4">"Agent 拥有智能，但它们没有知识。我们必须通过 Spec Registry 赋予它们关于如何使用特定库的知识。"</p>
+                        <p class="text-sm text-indigo-200 font-mono">— 关于 AI 的局限</p>
+                    </div>
+                </div>
+
+                <!-- Call to Action Footer inside the dark section -->
+                <div class="text-center border-t border-white/10 pt-8">
+                    <div class="inline-flex flex-col items-center">
+                        <span class="text-indigo-200 text-sm mb-4">加入 AI Native Dev 社区</span>
+                        <div class="flex gap-4">
+                            <a href="#" class="bg-white text-indigo-900 px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors shadow-lg">
+                                访问 Tessl.io
+                            </a>
+                            <a href="#" class="bg-indigo-700 text-white px-6 py-3 rounded-lg font-bold hover:bg-indigo-600 transition-colors shadow-lg border border-indigo-500">
+                                浏览 Spec Registry
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. 趣味彩蛋 (Footer) -->
+        <footer class="text-center text-gray-400 text-sm pb-12">
+            <p class="mb-2">
+                <i class="fas fa-car text-gray-300"></i> Fun Fact: Guy 的办公室里有一块来自《回到未来》的 "OUTATIME" 牌照。
+            </p>
+            <p>这提醒我们：Startup 总是疯狂的，而 AI 的发展速度让我们永远处于 "Out of Time" 的状态。</p>
+        </footer>
+
+    </div>
+
+    <script>
+        const { createApp, ref } = Vue;
+
+        createApp({
+            setup() {
+                // 当前激活的演进阶段
+                const activeStage = ref(1); // 默认显示 Spec-Driven (中间阶段)
+
+                // 演进阶段数据
+                const evolutionStages = [
+                    {
+                        name: "Spec-Assisted",
+                        headline: "文档辅助开发 (Level 1)",
+                        desc: "这是当前大多数 AI 编程助手所处的阶段。Spec 仅仅是作为上下文（Context）存在的文档或规则文件（如 .cursorrules）。真理仍然掌握在代码手中，AI 只是阅读文档来辅助生成代码，人类需要仔细审查每一行代码。",
+                        analogy: "驾驶辅助 (L1/L2) - 比如车道保持。手必须握着方向盘，人负责监控。",
+                        features: [
+                            "Docs & Context 只是参考",
+                            "人类必须审查实现细节",
+                            "代码是 Source of Truth",
+                            "AI 阅读文档以减少幻觉"
+                        ],
+                        status: "Current State (2025)",
+                        timeline: "Now - 2026"
+                    },
+                    {
+                        name: "Spec-Driven",
+                        headline: "规格驱动开发 (Level 2/3)",
+                        desc: "Tessl 正在推动的阶段。真理转移到了 Spec 上。在写代码前，先修改 Spec。代码由 Agent 根据 Spec 生成。如果代码错了，我们去修正 Spec 或 Prompt，而不是手动修代码。这引入了确定性的测试作为护栏。",
+                        analogy: "特定场景自动驾驶 (L3 Waymo) - 在特定区域内全自动，但也需要人工接管。",
+                        features: [
+                            "先修改 Spec，再生成代码",
+                            "Agent 是 Spec 的主要消费者",
+                            "引入回归测试作为质量护栏",
+                            "人类开始不再关注实现细节"
+                        ],
+                        status: "Emerging (Tessl Focus)",
+                        timeline: "2026 - 2027"
+                    },
+                    {
+                        name: "Spec-Centric",
+                        headline: "以规格为中心 (Level 4/5)",
+                        desc: "未来的终极形态。代码变得完全“可抛弃”（Disposable）。你可以每天删除所有代码并重新生成。Spec 包含足够的信息（意图+约束），加上测试，可以适应任何技术栈（今天用 Node，明天生成 Rust）。",
+                        analogy: "无方向盘汽车 (L5) - 只要输入目的地，完全不需要知道怎么开。",
+                        features: [
+                            "代码仅是编译产物",
+                            "实现细节对人类不可见",
+                            "极高的抽象层级",
+                            "动态优化（针对不同环境生成不同代码）"
+                        ],
+                        status: "Future Vision",
+                        timeline: "Late 2027+"
+                    }
+                ];
+
+                // 深度概念卡片数据
+                const deepConcepts = ref([
+                    {
+                        title: "Vibe Spec-ing",
+                        icon: "fas fa-magic",
+                        summary: "一种懒人模式。从模糊意图（Vibe）出发，让 AI 先生成 Spec，再生成代码。",
+                        detail: "这是 Spec-Driven 的一种实用入口。用户不需要手动写复杂的 Markdown Spec。只需告诉 Agent '我想要一个类似 Airbnb 的搜索框'，Agent 会先生成 Spec 草稿，用户确认意图是否被误解，然后 Agent 再去写代码。如果出错，用户可以说：'你理解错了我的意图' vs '你理解对了但写错了'。",
+                        points: [
+                            "解决 '空白页恐惧症'",
+                            "AI 帮助捕捉并固化意图",
+                            "保留了长期的记忆 (Spec 即记忆)",
+                            "适合快速原型开发 (Prototyping)"
+                        ],
+                        flipped: false
+                    },
+                    {
+                        title: "Code Disposability",
+                        icon: "fas fa-trash-alt",
+                        summary: "代码可抛弃性。当 Spec 成为真理，实现代码就像二进制文件一样廉价。",
+                        detail: "这是一个思维范式的巨大转变。如果你有完美的 Spec 和 Tests，那么底层的代码是用 for 循环还是 while 循环，是用 Python 还是 Go，都不重要了。你可以每天晚上删掉所有代码，第二天早上根据最新的 Spec 重新生成。这消除了 '技术债务' 和 '面条代码'。",
+                        points: [
+                            "代码只是实现的 '编译产物'",
+                            "消除遗留代码维护负担",
+                            "允许跨技术栈迁移 (Node -> Rust)",
+                            "重点在于定义 'What' 而非 'How'"
+                        ],
+                        flipped: false
+                    },
+                    {
+                        title: "Strict vs Loose Spec",
+                        icon: "fas fa-balance-scale",
+                        summary: "从宽松的“灵感”到严格的“契约”的演变过程。",
+                        detail: "Spec 不是一成不变的。起初，它是 'Inspirational Spec'（宽松），仅作为文档建议，没有测试，方便快速迭代。当你对功能满意时，命令 Agent：'Generate Tests'。此时 Spec 变身 'Strict Spec'，测试成为回归护栏，后续生成必须通过测试，确保稳定性。",
+                        points: [
+                            "Inspirational: 仅提供上下文，无强制",
+                            "Strict: 包含回归测试，强制通过",
+                            "平衡了灵活性与稳定性",
+                            "自动化测试生成是关键"
+                        ],
+                        flipped: false
+                    },
+                    {
+                        title: "Probabilistic vs Deterministic",
+                        icon: "fas fa-dice",
+                        summary: "解决 LLM 概率性输出与软件工程确定性需求之间的矛盾。",
+                        detail: "LLM 是概率性的（每次输出可能不同，会填补空白），而软件需要确定性（每次运行结果一致）。Spec-Driven Development 利用 Spec 来捕获意图，利用 Tests 来强制执行确定性。只要测试通过，我们接受中间实现过程的概率性变化。",
+                        points: [
+                            "Spec 捕获意图 (Intent)",
+                            "LLM 填补空白 (Gaps)",
+                            "Tests 保证确定性 (Determinism)",
+                            "利用 LLM 的创造力，限制其破坏力"
+                        ],
+                        flipped: false
+                    },
+                    {
+                        title: "Knowledge vs Intelligence",
+                        icon: "fas fa-brain",
+                        summary: "Spec Registry 存在的根本原因：补充 Agent 缺失的特定领域知识。",
+                        detail: "Agent 很聪明 (Intelligence)，能推理，但它们缺乏具体库的最新知识 (Knowledge)。比如 'React 19 的新 Hook 怎么用？' Agent 可能会根据旧数据产生幻觉。Spec Registry 就像是给 Agent 的 '教科书'，确保它在调用 API 时是准确的。",
+                        points: [
+                            "Intelligence: 推理能力",
+                            "Knowledge: 事实与规范",
+                            "Registry 连接两者",
+                            "减少 Hallucinations (幻觉)"
+                        ],
+                        flipped: false
+                    },
+                    {
+                        title: "Tessl.json Manifesto",
+                        icon: "fas fa-file-code",
+                        summary: "项目的知识依赖清单，类似于 package.json，但针对的是 AI。",
+                        detail: "Tessl 引入了 `tessl.json` 文件。在这里，你不是定义代码依赖，而是定义 '知识依赖'。比如：'本项目使用 Stripe API v3 规范'、'本项目遵循 Google Java 风格指南'。Agent 启动时会读取这个清单，下载对应的 Spec Packs，从而 '学会' 如何在这个项目中工作。",
+                        points: [
+                            "定义项目的 '知识栈'",
+                            "版本化管理 Spec 依赖",
+                            "团队共享的 AI 上下文",
+                            "支持私有/公共 Spec Packs"
+                        ],
+                        flipped: false
+                    }
+                ]);
+
+                // 翻转卡片逻辑
+                const toggleCard = (index) => {
+                    deepConcepts.value[index].flipped = !deepConcepts.value[index].flipped;
+                };
+
+                return {
+                    activeStage,
+                    evolutionStages,
+                    deepConcepts,
+                    toggleCard
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
