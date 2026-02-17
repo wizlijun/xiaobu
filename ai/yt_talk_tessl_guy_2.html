@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tessl 发布深度解读 - AI Native Dev</title>
+    <style>
+        :root {
+            --bg-color: #fcfcfc;
+            --text-color: #2c3e50;
+            --primary-color: #2563eb; /* 更加专业的深蓝 */
+            --accent-color: #3b82f6;
+            --secondary-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --highlight-fact: #eff6ff; /* 事实背景色 */
+            --highlight-opinion: #fffbeb; /* 观点背景色 */
+            --border-radius: 16px;
+            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.08);
+            --shadow-hover: 0 20px 50px -10px rgba(0,0,0,0.12);
+            --transition: cubic-bezier(0.4, 0, 0.2, 1) 0.4s;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 60px 24px;
+        }
+
+        /* ---------------- Header ---------------- */
+        header {
+            text-align: center;
+            margin-bottom: 80px;
+            position: relative;
+        }
+
+        .pill-badge {
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 6px 16px;
+            border-radius: 99px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin: 0 0 16px 0;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: #64748b;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* ---------------- Profiles ---------------- */
+        .profiles-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            max-width: 600px;
+            margin: 0 auto 80px;
+        }
+
+        .profile-card {
+            background: var(--card-bg);
+            border: 1px solid #e2e8f0;
+            border-radius: var(--border-radius);
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: var(--transition);
+        }
+
+        .profile-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-soft);
+            border-color: var(--accent-color);
+        }
+
+        .avatar-circle {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .profile-info h3 { margin: 0; font-size: 1.1rem; }
+        .profile-info p { margin: 4px 0 0; font-size: 0.85rem; color: #64748b; }
+
+        /* ---------------- Section Styles ---------------- */
+        .chapter-marker {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0 0 32px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .content-block {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ---------------- Interactive Flip Cards ---------------- */
+        .flip-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 32px;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            height: 260px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-front, .flip-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: var(--border-radius);
+            padding: 32px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .flip-front {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            align-items: center;
+            text-align: center;
+        }
+
+        .flip-front h4 {
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            margin: 0 0 12px 0;
+        }
+
+        .flip-hint {
+            margin-top: auto;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .flip-back {
+            background: linear-gradient(145deg, #1e40af, #2563eb);
+            color: white;
+            transform: rotateY(180deg);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .flip-back strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            color: #93c5fd;
+        }
+
+        /* ---------------- Tags & Highlights ---------------- */
+        .highlight-fact {
+            background: var(--highlight-fact);
+            color: #1e40af;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+            border-bottom: 2px solid #bfdbfe;
+        }
+
+        .highlight-pain {
+            background: #fef2f2;
+            color: #991b1b;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+            border-bottom: 2px solid #fecaca;
+        }
+
+        .key-concept {
+            border-left: 4px solid var(--accent-color);
+            padding-left: 16px;
+            margin: 24px 0;
+        }
+
+        /* ---------------- Timeline ---------------- */
+        .timeline {
+            position: relative;
+            padding-left: 24px;
+            border-left: 2px solid #e2e8f0;
+            margin-left: 12px;
+        }
+
+        .timeline-event {
+            position: relative;
+            margin-bottom: 32px;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -31px;
+            top: 6px;
+            width: 12px;
+            height: 12px;
+            background: var(--bg-color);
+            border: 3px solid var(--primary-color);
+            border-radius: 50%;
+        }
+
+        .timeline-title {
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 4px;
+        }
+
+        .timeline-desc {
+            font-size: 0.95rem;
+            color: #64748b;
+        }
+
+        /* ---------------- Quote ---------------- */
+        .quote-container {
+            position: relative;
+            margin: 40px 0;
+            font-family: Georgia, serif;
+            font-style: italic;
+            font-size: 1.2rem;
+            color: #475569;
+            text-align: center;
+            padding: 0 40px;
+        }
+        .quote-container::before { content: "“"; font-size: 4rem; position: absolute; top: -20px; left: 0; color: #cbd5e1; }
+        .quote-container::after { content: "”"; font-size: 4rem; position: absolute; bottom: -40px; right: 0; color: #cbd5e1; }
+
+        /* ---------------- Footer ---------------- */
+        .cta-box {
+            background: #1e293b;
+            color: white;
+            padding: 40px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            margin-top: 60px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        .status-open { background: #22c55e; color: white; }
+        .status-wait { background: #f59e0b; color: white; }
+
+        @media (max-width: 640px) {
+            .profiles-grid { grid-template-columns: 1fr; }
+            h1 { font-size: 2.2rem; }
+            .content-block { padding: 24px; }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <header>
+        <span class="pill-badge">Podcast Summary</span>
+        <h1>Tessl: 规格驱动开发的未来</h1>
+        <div class="subtitle">AI Native Dev 播客 · 2026 特别发布访谈</div>
+    </header>
+
+    <!-- 嘉宾简介 -->
+    <section class="profiles-grid">
+        <div class="profile-card">
+            <div class="avatar-circle">👨‍💼</div>
+            <div class="profile-info">
+                <h3>Guy Podjarny</h3>
+                <p>Tessl 创始人 & CEO (前 Snyk 创始人)</p>
+            </div>
+        </div>
+        <div class="profile-card">
+            <div class="avatar-circle">🎙️</div>
+            <div class="profile-info">
+                <h3>Simon</h3>
+                <p>Tessl 团队成员 & 访谈主持人</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 第一章：问题定义 -->
+    <span class="chapter-marker">Chapter 01</span>
+    <h2 class="section-title">Vibe Coding 的天花板与 Agent 信任危机</h2>
+    
+    <div class="content-block">
+        <p>
+            <span class="highlight-pain">核心痛点</span>
+            Guy 指出，目前 Agent 虽然强大但<strong>极度不可靠</strong>。开发者面临的最大障碍是<strong>“过度自信”</strong>的 Agent，它们往往在没有理解真实意图的情况下急于编写代码（First Solution Bias）。
+        </p>
+        
+        <div class="key-concept">
+            <strong>软件开发的健忘症 (Amnesia)：</strong><br>
+            今天的软件是“代码中心”的。当代码写完，我们就失去了“为什么这么写”的意图（Intent）。随着时间推移，Agent（甚至人类）面对庞大的代码库，就像得了健忘症，修改一个功能往往破坏其他功能。
+        </div>
+
+        <div class="quote-container">
+            "对于一些人来说，仅仅因为这个阻碍（不可靠性），他们完全无法进入 Agentic 开发时代。"
+        </div>
+
+        <div class="flip-container">
+            <!-- 翻转卡片 1 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div style="font-size: 2rem; margin-bottom: 10px;">📉</div>
+                        <h4>Vibe Coding 的局限</h4>
+                        <div class="flip-hint">为什么感觉流编程不可持续？</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>无止境的 Review</strong>
+                        <p>Simon 提到，当应用达到一定规模，修改一个小功能会引发全盘混乱。Vibe Coding（凭感觉编程）初期很快，但后期为了修复 Agent 的错误，开发者陷入了比自己写代码更累的审查循环。</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 翻转卡片 2 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div style="font-size: 2rem; margin-bottom: 10px;">🤥</div>
+                        <h4>Agent 幻觉新解</h4>
+                        <div class="flip-hint">不仅仅是胡编乱造</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>版本感知错位</strong>
+                        <p>Agent 往往假设你使用最流行的库版本。如果你使用旧栈或最新版（Agent 训练数据之外），它会编造不存在的 API。它不知道它不知道（Unknown Unknowns）。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第二章：Tessl Framework -->
+    <span class="chapter-marker">Chapter 02</span>
+    <h2 class="section-title">Tessl Framework：为代码注入长期记忆</h2>
+
+    <div class="content-block">
+        <p>这是 Tessl 发布的第一款产品，一个<strong>Spec-Driven Development (SDD)</strong> 框架，通过 <span class="highlight-fact">MCP 协议</span> 连接各类 Agent。</p>
+        
+        <h3 style="margin-top: 30px; color: var(--primary-color);">两种工作模式</h3>
+        <ul style="list-style: none; padding: 0;">
+            <li style="margin-bottom: 15px;">
+                <span style="font-weight: bold; color: #0f172a;">🔵 严谨模式 (Spec-First)：</span><br>
+                先写 Spec，审查意图，确保测试用例覆盖，再让 Agent 编码。适合核心逻辑或复杂规则。
+            </li>
+            <li style="margin-bottom: 15px;">
+                <span style="font-weight: bold; color: #0f172a;">🟣 感觉模式 (Vibe Specing)：</span><br>
+                <span class="highlight-fact">高亮新概念</span> 允许开发者像现在一样直接让 Agent 写代码（Vibe Coding），但在满意后，Tessl 会<strong>反向生成 Spec 和回归测试</strong>。这样即使是随意的开发，也能留下“长期记忆”作为未来的护栏。
+            </li>
+        </ul>
+
+        <div class="key-concept">
+            <strong>Tessl Edit 机制：</strong><br>
+            当需要修改代码时，Tessl 会强制<strong>先修改 Spec</strong>，再更新代码。这确保了 Spec 永远是单一事实来源（Source of Truth），不会像 PRD 文档那样腐烂在地下室。
+        </div>
+    </div>
+
+    <!-- 第三章：Tessl Spec Registry -->
+    <span class="chapter-marker">Chapter 03</span>
+    <h2 class="section-title">Tessl Spec Registry：Agent 的知识依赖管理</h2>
+
+    <div class="content-block">
+        <p>
+            旨在解决“上下文缺失”问题。Guy 提出了一个核心类比：
+            <br><br>
+            <em style="color: #64748b;">“如果你只有 Haynes 维修手册（库的源码/技术文档），你知道每个零件怎么拆，但这不代表你知道怎么开车（如何正确使用库）。”</em>
+        </p>
+
+        <div class="flip-container">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h4>🧩 Usage Spec</h4>
+                        <p>Registry 里到底存的是什么？</p>
+                        <div class="flip-hint">不仅仅是文档</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>用法规格书 (Markdown)</strong>
+                        <p>Tessl 预先生成了 <span class="highlight-fact">10,000+</span> 个开源库版本的 Usage Spec。包含最佳实践、特定版本的 API 用法示例，专门格式化给 Agent 阅读。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h4>📦 知识依赖系统</h4>
+                        <p>如何集成到项目？</p>
+                        <div class="flip-hint">类似 npm 但针对知识</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <strong>Manifest File</strong>
+                        <p>项目中引入一个新的清单文件。声明所需的“知识包”。Agent 自动下载这些上下文，消除了因版本不匹配导致的幻觉。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <p style="margin-top: 24px;">
+            <span class="highlight-fact">未来愿景</span> 除了开源库，未来还将支持<strong>私有上下文</strong>：例如“在这个公司我们如何做安全扫描”、“我们使用哪个日志库”等组织特定知识。
+        </p>
+    </div>
+
+    <!-- 第四章：创业故事 -->
+    <span class="chapter-marker">Chapter 04</span>
+    <h2 class="section-title">从 Web 平台到 CLI 的彻底转型</h2>
+
+    <div class="content-block" style="background: #f1f5f9;">
+        <p>Tessl 成立约 1.5 年，团队展现了极强的<strong>适应性 (Adaptability)</strong>，经历了三次重大迭代：</p>
+        
+        <div class="timeline">
+            <div class="timeline-event">
+                <div class="timeline-dot"></div>
+                <div class="timeline-title">阶段 1：Naive Web Platform</div>
+                <div class="timeline-desc">试图构建一个完全基于 Web 的端到端开发平台。发现当时 LLM 能力不足以支撑如此宏大的愿景。</div>
+            </div>
+            <div class="timeline-event">
+                <div class="timeline-dot"></div>
+                <div class="timeline-title">阶段 2：Controlled Environment</div>
+                <div class="timeline-desc">缩小范围，做受控的组件生成器。但这过于狭窄且“Opinionated”，改变用户习惯太难，且价值不够大。</div>
+            </div>
+            <div class="timeline-event">
+                <div class="timeline-dot" style="border-color: #10b981;"></div>
+                <div class="timeline-title">阶段 3 (当前)：Local, CLI & Agentic Native</div>
+                <div class="timeline-desc">回归开发者熟悉的本地环境（CLI/文件系统）。利用 Agent 的崛起，定位为 Agent 的“护栏”和“导航”。为此团队<strong>删除了大量之前的代码</strong>。</div>
+            </div>
+        </div>
+        <p style="font-size: 0.9rem; color: #64748b;">
+            Guy 特别提到，这种“无 ego”的文化是团队最值得骄傲的地方：为了正确的路径，愿意抛弃过往的沉没成本。
+        </p>
+    </div>
+
+    <!-- 底部 CTA -->
+    <div class="cta-box">
+        <h2 style="margin-top: 0;">开始体验 Spec-Driven Development</h2>
+        <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 30px;">
+            <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; width: 280px;">
+                <h3 style="margin: 0 0 10px 0;">Tessl Spec Registry</h3>
+                <span class="status-badge status-open">Open Beta</span>
+                <p style="font-size: 0.9rem; color: #cbd5e1;">即刻可用，让 Agent 更懂开源库。</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; width: 280px;">
+                <h3 style="margin: 0 0 10px 0;">Tessl Framework</h3>
+                <span class="status-badge status-wait">Throttled Beta</span>
+                <p style="font-size: 0.9rem; color: #cbd5e1;">需申请排队，从 Spec 生成代码与测试。</p>
+            </div>
+        </div>
+        <div style="margin-top: 40px;">
+            <a href="https://tessl.io" style="background: #3b82f6; color: white; text-decoration: none; padding: 12px 32px; border-radius: 99px; font-weight: bold; transition: 0.3s;">访问 Tessl.io</a>
+            <p style="margin-top: 15px; font-size: 0.85rem; color: #94a3b8;">加入 Discord 社区反馈意见，可能会加速 Beta 访问权限哦 😉</p>
+        </div>
+    </div>
+
+    <footer style="text-align: center; margin-top: 60px; color: #cbd5e1; font-size: 0.8rem;">
+        Generated based on the podcast transcript "It's a big day for us"
+    </footer>
+
+</div>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.bilibili.com/video/BV1j8ZNBnEpN/" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
