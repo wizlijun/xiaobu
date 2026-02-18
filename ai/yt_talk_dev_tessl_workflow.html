@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>规范驱动开发 (Spec-Driven Development) - 深度会议纪要</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', sans-serif;
+            background-color: #fcfcfc;
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        /* 翻转卡片核心样式 - 优化版 */
+        .flip-container {
+            perspective: 1000px;
+            height: 280px; /* 固定高度确保整齐 */
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            border-radius: 1rem;
+        }
+
+        .flip-container:hover .flip-card-inner, .flip-container.hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-front, .flip-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #f1f5f9;
+        }
+
+        .flip-front {
+            background: #ffffff;
+        }
+
+        .flip-back {
+            background: #f8fafc;
+            transform: rotateY(180deg);
+            text-align: left;
+            align-items: flex-start;
+            overflow-y: auto; /* 防止内容溢出 */
+        }
+
+        /* 细节高亮 */
+        .highlight-text {
+            background: linear-gradient(180deg, rgba(255,255,255,0) 60%, #dbeafe 60%);
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .code-pill {
+            font-family: monospace;
+            background-color: #f1f5f9;
+            padding: 0.1rem 0.4rem;
+            border-radius: 0.25rem;
+            color: #e11d48;
+            font-size: 0.9em;
+        }
+
+        /* 章节标题修饰 */
+        .chapter-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background-color: #eff6ff;
+            color: #3b82f6;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        /* 演示终端风格 */
+        .terminal-box {
+            background-color: #1e293b;
+            color: #e2e8f0;
+            font-family: monospace;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            border-left: 4px solid #3b82f6;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- 顶部 -->
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 text-white p-2 rounded-lg">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-slate-800 leading-tight">Spec-Driven Development</h1>
+                    <p class="text-xs text-slate-500">为什么你的 Prompt 无法扩展？</p>
+                </div>
+            </div>
+            <div class="hidden md:block text-xs font-mono text-slate-400">
+                AI Native Dev Conference
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-6 py-12 space-y-20">
+
+        <!-- 演讲者与背景 -->
+        <section class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div class="col-span-1 text-center md:text-left">
+                <div class="w-24 h-24 mx-auto md:mx-0 bg-gradient-to-br from-blue-100 to-slate-100 rounded-full flex items-center justify-center text-4xl mb-4 shadow-inner">
+                    👨‍💻
+                </div>
+                <h2 class="font-bold text-slate-900">演讲嘉宾</h2>
+                <p class="text-sm text-slate-500 mb-2">Tessl 开发者关系专家</p>
+                <div class="flex flex-wrap gap-2 justify-center md:justify-start">
+                    <span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded">DevOps</span>
+                    <span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded">AI Agents</span>
+                </div>
+            </div>
+            <div class="col-span-1 md:col-span-3 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                <div class="chapter-badge">开场背景</div>
+                <p class="mb-4">
+                    演讲者首先做了一个简单的现场调研：大约 <strong>50%</strong> 的听众已经在工作中使用 AI 编码工具。
+                </p>
+                <p class="text-slate-600 text-sm">
+                    <strong>趣闻：</strong> 提到了比利时的 DevOps 现状，并调侃了会议组织者 Stefan 使用 "Vibe Coding"（氛围编码）构建了一个评分应用。演讲者提到了三个核心工具的演进：<br>
+                    <span class="inline-flex items-center gap-2 mt-2">
+                        <span class="bg-gray-100 px-2 py-1 rounded text-xs"><i class="fas fa-mouse-pointer text-blue-400"></i> Cursor (IDE 分支)</span>
+                        <span class="bg-gray-100 px-2 py-1 rounded text-xs"><i class="fas fa-bolt text-yellow-400"></i> Bolt.new (Web 生成)</span>
+                        <span class="bg-gray-100 px-2 py-1 rounded text-xs"><i class="fas fa-terminal text-green-400"></i> Claude Code (终端 Agent)</span>
+                    </span>
+                </p>
+            </div>
+        </section>
+
+        <!-- 核心痛点：Vibe Coding 的局限性 -->
+        <section>
+            <div class="text-center mb-10">
+                <div class="chapter-badge">现状分析</div>
+                <h2 class="text-3xl font-bold text-slate-800">Prompt 驱动开发的“三大陷阱”</h2>
+                <p class="text-slate-500 mt-2">虽然 Vibe Coding（凭感觉/氛围编码）很爽，但它无法扩展。</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- 陷阱 1 -->
+                <div class="flip-container">
+                    <div class="flip-card-inner">
+                        <div class="flip-front">
+                            <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center text-red-500 text-2xl mb-4">
+                                <i class="fas fa-biohazard"></i>
+                            </div>
+                            <h3 class="font-bold text-lg">附带损害</h3>
+                            <p class="text-sm text-slate-400 mt-1">Collateral Damage</p>
+                        </div>
+                        <div class="flip-back">
+                            <h4 class="font-bold text-red-600 mb-2 text-sm uppercase">现象</h4>
+                            <p class="text-sm text-slate-600 mb-2">"修复了一个 Bug，结果弄坏了其他五个功能。"</p>
+                            <h4 class="font-bold text-slate-700 mb-1 text-sm">原因</h4>
+                            <p class="text-xs text-slate-500">Agent 过于聚焦于当前的 Prompt 指令，缺乏全局视野，导致在循环修复中产生破坏性的代码变更。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 陷阱 2 -->
+                <div class="flip-container">
+                    <div class="flip-card-inner">
+                        <div class="flip-front">
+                            <div class="w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center text-purple-500 text-2xl mb-4">
+                                <i class="fas fa-eye-slash"></i>
+                            </div>
+                            <h3 class="font-bold text-lg">版本模糊与幻觉</h3>
+                            <p class="text-sm text-slate-400 mt-1">Version Blurring</p>
+                        </div>
+                        <div class="flip-back">
+                            <h4 class="font-bold text-purple-600 mb-2 text-sm uppercase">Spring 7 案例</h4>
+                            <p class="text-sm text-slate-600 mb-2">演讲者举例：Spring 7 将于 11 月发布，但 AI 的训练数据截止于 1 月。</p>
+                            <h4 class="font-bold text-slate-700 mb-1 text-sm">后果</h4>
+                            <p class="text-xs text-slate-500">AI 会基于旧版本的知识去推测新版本的 API，或者混用 v1.1 和 v1.2 的语法，导致代码根本跑不通。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 陷阱 3 -->
+                <div class="flip-container">
+                    <div class="flip-card-inner">
+                        <div class="flip-front">
+                            <div class="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center text-orange-500 text-2xl mb-4">
+                                <i class="fas fa-memory"></i>
+                            </div>
+                            <h3 class="font-bold text-lg">健忘的 Agent</h3>
+                            <p class="text-sm text-slate-400 mt-1">Lack of Persistence</p>
+                        </div>
+                        <div class="flip-back">
+                            <h4 class="font-bold text-orange-600 mb-2 text-sm uppercase">现象</h4>
+                            <p class="text-sm text-slate-600 mb-2">"第 30 条指令不仅让 AI 忘记了第 1 条，甚至撤销了第 6 条指令的成果。"</p>
+                            <h4 class="font-bold text-slate-700 mb-1 text-sm">本质</h4>
+                            <p class="text-xs text-slate-500">上下文窗口限制以及缺乏持久化的知识库，导致 Agent 像得了失忆症，每次重启会话都需要重新“调教”。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 知识干货：Prompt Engineering -->
+        <section class="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-4 opacity-10">
+                <i class="fas fa-brain text-9xl"></i>
+            </div>
+            <div class="chapter-badge">Tessl AI 团队的发现</div>
+            <h2 class="text-2xl font-bold text-slate-800 mb-6">关于 Prompt 的三个反直觉事实</h2>
+            
+            <div class="space-y-6 relative z-10">
+                <div class="flex gap-4">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold flex-shrink-0">1</div>
+                    <div>
+                        <h3 class="font-bold text-slate-800">"急切的孩子" (The Eager Child)</h3>
+                        <p class="text-sm text-slate-600 mt-1">
+                            LLM 在读完整个 Prompt 之前就开始生成答案了。
+                            <br><span class="text-xs bg-red-50 text-red-600 px-2 py-0.5 rounded">教训</span> 不要把重要的约束条件放在 Prompt 的最后，AI 可能那时候已经“跑偏”了。
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex gap-4">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold flex-shrink-0">2</div>
+                    <div>
+                        <h3 class="font-bold text-slate-800">结构化提示 (XML-like Tags)</h3>
+                        <p class="text-sm text-slate-600 mt-1">
+                            对于长 Prompt，使用类似 XML 的标签（如 <code>&lt;requirements&gt;</code>, <code>&lt;context&gt;</code>）能显著提升准确率。它帮助模型理解不同段落的边界。
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex gap-4">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold flex-shrink-0">3</div>
+                    <div>
+                        <h3 class="font-bold text-slate-800">任务框架与正向约束 (Task Framing)</h3>
+                        <p class="text-sm text-slate-600 mt-1">
+                            <span class="text-red-500 line-through">"不要使用外部依赖"</span> <i class="fas fa-arrow-right text-xs mx-1"></i> <span class="text-green-600 font-semibold">"请编写一个自包含的 JavaScript 包"</span>。
+                            <br>AI 对否定指令（Don't）的处理不如肯定指令（Do），且容易因为训练数据中常见的解决方案包含第三方库而忽略约束。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 解决方案：Spec-Driven Development -->
+        <section>
+            <div class="chapter-badge">核心范式转换</div>
+            <h2 class="text-3xl font-bold text-slate-800 mb-8">从“代码为中心”到“规范为中心”</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+                <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                    <h3 class="font-bold text-slate-700 mb-4 flex items-center"><i class="fas fa-code text-slate-400 mr-2"></i> 传统代码的问题</h3>
+                    <ul class="space-y-3 text-sm text-slate-600">
+                        <li class="flex items-start"><i class="fas fa-times text-red-400 mt-1 mr-2"></i> 代码混合了“做什么”(Intent) 和“怎么做”(Implementation)。</li>
+                        <li class="flex items-start"><i class="fas fa-times text-red-400 mt-1 mr-2"></i> 代码中的决策往往是隐式的、一次性的。</li>
+                        <li class="flex items-start"><i class="fas fa-times text-red-400 mt-1 mr-2"></i> 很难从现有代码中反推出最初的业务意图。</li>
+                    </ul>
+                </div>
+
+                <div class="bg-blue-50 p-6 rounded-xl border border-blue-100">
+                    <h3 class="font-bold text-blue-800 mb-4 flex items-center"><i class="fas fa-file-contract text-blue-500 mr-2"></i> 规范 (Spec) 的优势</h3>
+                    <ul class="space-y-3 text-sm text-slate-700">
+                        <li class="flex items-start"><i class="fas fa-check text-green-500 mt-1 mr-2"></i> Spec 是纯文本 Markdown 文件，机器可读，人类可读。</li>
+                        <li class="flex items-start"><i class="fas fa-check text-green-500 mt-1 mr-2"></i> Spec 包含：能力列表 (Capabilities)、API 定义、依赖项。</li>
+                        <li class="flex items-start"><i class="fas fa-check text-green-500 mt-1 mr-2"></i> <strong>单一事实来源 (Source of Truth)</strong>：代码可抛弃，Spec 永存。</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 详细演示与技术细节 -->
+        <section>
+            <div class="chapter-badge">实战演示</div>
+            <h2 class="text-3xl font-bold text-slate-800 mb-6">Tessl + Claude Code + MCP 实战</h2>
+            <p class="text-slate-600 mb-8">演讲者通过两个演示展示了如何利用 <strong>MCP (Model Context Protocol)</strong> 将 Claude Code 连接到本地工具。</p>
+
+            <div class="space-y-8">
+                <!-- 演示 1 -->
+                <div class="bg-white border-l-4 border-purple-500 p-6 shadow-sm rounded-r-lg">
+                    <h3 class="font-bold text-lg text-slate-800">Demo 1: 规范辅助开发 (Spec-Assisted)</h3>
+                    <p class="text-sm text-slate-500 mb-4">目标：构建一个掷骰子 CLI 工具 (<code>commander.js</code>)</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="terminal-box">
+                            <span class="text-green-400">user@dev:~$</span> claude<br>
+                            <span class="text-blue-400">Claude:</span> 检测到 Tessl MCP 工具。<br>
+                            <span class="text-blue-400">Claude:</span> 正在搜索 "Usage Spec" for commander.js...<br>
+                            <span class="text-gray-400">Downloading spec to local context...</span>
+                        </div>
+                        <div class="flex flex-col justify-center text-sm text-slate-600">
+                            <p><strong>关键点：Usage Specs (使用规范)</strong></p>
+                            <p class="mt-2">Tessl 维护了一个注册表，存放着第三方库的“正确使用说明书”（Markdown 格式）。AI 读取这个 Spec 作为上下文，而不是依赖过时的训练数据。这解决了“版本模糊”问题。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 演示 2 -->
+                <div class="bg-white border-l-4 border-blue-500 p-6 shadow-sm rounded-r-lg">
+                    <h3 class="font-bold text-lg text-slate-800">Demo 2: 规范驱动开发 (Spec-Driven)</h3>
+                    <p class="text-sm text-slate-500 mb-4">目标：构建一个猜单词游戏 (Hangman)</p>
+                    <ol class="list-decimal list-inside space-y-2 text-sm text-slate-700">
+                        <li><strong>初始化：</strong> AI 询问意图，并在本地创建一个 <code>spec.md</code> 文件。</li>
+                        <li><strong>定义：</strong> Spec 文件中明确列出了 Goal（目标）、Capabilities（能力）、Dependencies（依赖）。</li>
+                        <li><strong>测试生成：</strong> AI 基于 Spec 生成 <code>vitest</code> 测试用例。</li>
+                        <li><strong>代码生成：</strong> AI 编写实现代码并通过测试。</li>
+                        <li><strong>稳定再生 (Stable Regeneration)：</strong> 即使删掉代码，只要 Spec 还在，就能重新生成功能一致的应用。</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <!-- 核心金句 -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 p-6 rounded-xl text-white shadow-lg transform hover:-translate-y-1 transition duration-300">
+                <i class="fas fa-quote-left text-blue-300 text-xl mb-2"></i>
+                <p class="font-medium text-lg">"代码变得可抛弃 (Disposable)。真正重要的是规范 (Spec)。"</p>
+                <p class="text-blue-200 text-sm mt-4 text-right">— 演讲核心思想</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-lg transform hover:-translate-y-1 transition duration-300">
+                <i class="fas fa-quote-left text-slate-300 text-xl mb-2"></i>
+                <p class="font-medium text-slate-700 text-lg">"试图通过不断修改 Prompt 来摆脱困境，就像是被困在纸袋里一样徒劳。"</p>
+                <p class="text-slate-400 text-sm mt-4 text-right">— 关于 Vibe Coding 的循环</p>
+            </div>
+        </section>
+
+        <!-- 结尾彩蛋与行动呼吁 -->
+        <section class="bg-slate-800 text-slate-300 rounded-2xl p-8 text-center relative overflow-hidden">
+            <div class="relative z-10">
+                <h3 class="text-white font-bold text-2xl mb-4">加入未来</h3>
+                <p class="mb-6">
+                    Tessl 正在构建这一未来。你可以通过 MCP 服务器连接你的 AI 代理。
+                    <br>如果你的单体仓库 (Monorepo) 很大，也可以在子模块中应用此模式。
+                </p>
+                <div class="inline-block bg-slate-700 p-4 rounded-lg border border-slate-600 mb-6">
+                    <p class="text-xs text-slate-400 mb-2">会议彩蛋：抽奖奖品</p>
+                    <div class="flex gap-4 text-sm font-bold text-white justify-center">
+                        <span><i class="fas fa-rocket mr-1"></i> 星球大战乐高</span>
+                        <span><i class="fas fa-desktop mr-1"></i> AI 监视器硬件</span>
+                        <span><i class="fas fa-ticket-alt mr-1"></i> 纽约 DevCon 门票</span>
+                    </div>
+                </div>
+                <div>
+                    <button class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded-full transition shadow-lg shadow-blue-500/30">
+                        扫描二维码加入内测 (虚构按钮)
+                    </button>
+                </div>
+            </div>
+            <!-- 装饰背景 -->
+            <div class="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
+        </section>
+
+        <footer class="text-center text-slate-400 text-xs py-10 border-t border-slate-100 mt-10">
+            <p>Generated based on the session transcript "Why your prompt mess won't scale".</p>
+            <p class="mt-2">Tech Stack: Tessl, Claude Code, MCP, Vitest, Node.js</p>
+        </footer>
+
+    </main>
+
+    <script>
+        // 为移动端添加点击翻转功能
+        document.querySelectorAll('.flip-container').forEach(card => {
+            card.addEventListener('click', function() {
+                this.classList.toggle('hover');
+            });
+        });
+    </script>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.bilibili.com" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
