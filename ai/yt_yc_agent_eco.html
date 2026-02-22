@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Light Cone: Agent 经济学的崛起与矛盾</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #fafafa;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* 翻转卡片核心样式 */
+        .flip-card {
+            background-color: transparent;
+            perspective: 1000px;
+            height: 320px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-radius: 1rem;
+        }
+
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 2rem;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .flip-card-front {
+            background-color: #ffffff;
+            align-items: center;
+        }
+
+        .flip-card-back {
+            background-color: #f8fafc;
+            transform: rotateY(180deg);
+            align-items: flex-start;
+            text-align: left;
+            border-left: 4px solid #3b82f6;
+        }
+
+        /* 标签样式 */
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+        }
+
+        .tag-insight { background-color: #e0e7ff; color: #4338ca; }
+        .tag-novel { background-color: #d1fae5; color: #065f46; }
+        .tag-tension { background-color: #ffe4e6; color: #be123c; }
+
+        /* 动画 */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 装饰性背景 */
+        .bg-grid {
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body class="antialiased bg-grid">
+
+    <!-- Header -->
+    <header class="max-w-7xl mx-auto pt-20 pb-12 px-6 text-center fade-in">
+        <div class="inline-flex items-center space-x-2 bg-white px-4 py-2 rounded-full shadow-sm mb-6 border border-gray-100">
+            <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+            <span class="text-xs font-bold text-gray-500 tracking-wider">LIGHT CONE PODCAST DEEP DIVE</span>
+        </div>
+        <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 mb-6 tracking-tight">
+            从 "人机协作" 到 <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">"Agent 经济体"</span>
+        </h1>
+        <p class="text-xl text-slate-600 max-w-3xl mx-auto font-light">
+            当 Claude Code 开始通宵写代码，当 Agent 拥有了自己的社交网络，我们不仅是在见证工具的进化，更是在目睹一种全新经济形态的诞生。
+        </p>
+    </header>
+
+    <!-- Speakers -->
+    <section class="max-w-5xl mx-auto px-6 mb-24 fade-in" style="animation-delay: 0.1s;">
+        <div class="flex flex-wrap justify-center gap-8">
+            <!-- Garry Tan -->
+            <div class="flex items-center bg-white px-6 py-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
+                <img src="https://bookface-images.s3.amazonaws.com/avatars/4f1795e7c2763f350c767439f01569424c87895d.jpg" class="w-12 h-12 rounded-full mr-4 border-2 border-indigo-100">
+                <div>
+                    <h3 class="font-bold text-slate-900">Garry Tan</h3>
+                    <p class="text-xs text-indigo-600 font-mono">YC CEO / Cyber Psychosis 患者</p>
+                </div>
+            </div>
+            <!-- Harj Taggar -->
+            <div class="flex items-center bg-white px-6 py-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
+                <img src="https://bookface-images.s3.amazonaws.com/avatars/22379308e063e680517838573173730e13997e93.jpg" class="w-12 h-12 rounded-full mr-4 border-2 border-emerald-100">
+                <div>
+                    <h3 class="font-bold text-slate-900">Harj Taggar</h3>
+                    <p class="text-xs text-emerald-600 font-mono">Group Partner / 文档观察者</p>
+                </div>
+            </div>
+            <!-- Jared Friedman -->
+            <div class="flex items-center bg-white px-6 py-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
+                <img src="https://bookface-images.s3.amazonaws.com/avatars/073281358056250785f85669b935105234568600.jpg" class="w-12 h-12 rounded-full mr-4 border-2 border-rose-100">
+                <div>
+                    <h3 class="font-bold text-slate-900">Jared Friedman</h3>
+                    <p class="text-xs text-rose-600 font-mono">Group Partner / Agent 市场预言家</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Part 1: Deep Insights (The Shift) -->
+    <section class="max-w-6xl mx-auto px-6 mb-24 fade-in" style="animation-delay: 0.2s;">
+        <div class="flex items-center mb-8">
+            <div class="w-1 h-8 bg-indigo-600 mr-4 rounded-full"></div>
+            <h2 class="text-2xl font-bold text-slate-800">深度洞察：DevTools 市场的重构</h2>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Insight 1 -->
+            <div class="bg-white p-8 rounded-2xl border border-indigo-50 shadow-lg shadow-indigo-50/50 hover:-translate-y-1 transition duration-300">
+                <span class="tag tag-insight">Go-To-Market 变革</span>
+                <h3 class="text-xl font-bold mb-4 text-slate-900">Agent 正在成为主要买家</h3>
+                <p class="text-slate-600 mb-6">
+                    过去，开发工具通过 StackOverflow 或 GitHub 在人类之间传播。现在，Agent 在构建应用时自主选择技术栈。
+                </p>
+                <div class="bg-indigo-50 p-4 rounded-lg text-sm text-indigo-900">
+                    <strong>关键证据：Resend vs SendGrid</strong><br>
+                    <span class="block mt-2 opacity-80">
+                        Agent 偏爱 Resend，并非因为它功能更强，而是因为其文档包含大量结构化代码片段，易于 LLM 解析。SendGrid 的文档充斥着人工客服路径，被 Agent 视为"不可读"。
+                    </span>
+                </div>
+            </div>
+
+            <!-- Insight 2 -->
+            <div class="bg-white p-8 rounded-2xl border border-indigo-50 shadow-lg shadow-indigo-50/50 hover:-translate-y-1 transition duration-300">
+                <span class="tag tag-insight">基础设施机会</span>
+                <h3 class="text-xl font-bold mb-4 text-slate-900">文档即 Agent 的 API</h3>
+                <p class="text-slate-600 mb-6">
+                    文档的作用从"教育人类"转变为"Agent 的输入接口"。如果你的文档对 Agent 不友好，你的产品就会在 AI 时代隐形。
+                </p>
+                <div class="bg-indigo-50 p-4 rounded-lg text-sm text-indigo-900">
+                    <strong>赢家预测：Mintlify</strong><br>
+                    <span class="block mt-2 opacity-80">
+                        像 Mintlify 这样的文档托管平台不仅是为了美观，它们正在成为标准化的 Agent 接口层。优化文档结构 = AI 时代的 SEO。
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Part 2: Interactive Concept Cards -->
+    <section class="max-w-6xl mx-auto px-6 mb-24 fade-in" style="animation-delay: 0.3s;">
+        <div class="flex items-center mb-8">
+            <div class="w-1 h-8 bg-emerald-500 mr-4 rounded-full"></div>
+            <h2 class="text-2xl font-bold text-slate-800">核心概念翻转卡片</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <!-- Card 1 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front border-b-4 border-indigo-500">
+                        <i class="fas fa-microchip text-4xl text-indigo-500 mb-4"></i>
+                        <h3 class="text-xl font-bold">Cyber Psychosis</h3>
+                        <p class="text-sm text-gray-400 mt-2">赛博精神病</p>
+                    </div>
+                    <div class="flip-card-back">
+                        <span class="tag tag-novel">社会现象</span>
+                        <p class="text-sm leading-relaxed text-slate-700 font-medium">
+                            描述当下极客们对 AI 自动化的狂热状态。非技术 CEO 开始用 OpenClaw 全自动化运营公司；早已不写代码的创始人因为 Claude Code 重新通宵编程。<br><br>
+                            <span class="text-indigo-600">标志：睡眠不足，但在疯狂产出。</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front border-b-4 border-emerald-500">
+                        <i class="fas fa-users-rays text-4xl text-emerald-500 mb-4"></i>
+                        <h3 class="text-xl font-bold">Swarm Intelligence</h3>
+                        <p class="text-sm text-gray-400 mt-2">群体智能 vs 上帝模型</p>
+                    </div>
+                    <div class="flip-card-back">
+                        <span class="tag tag-novel">AI 演进方向</span>
+                        <p class="text-sm leading-relaxed text-slate-700 font-medium">
+                            Garry 认为 AGI 可能不会以单一的"上帝模型"（God Model）形式出现，而是像生物界一样，由无数个较小的、专业化的 Agent 协作完成。<br><br>
+                            <span class="text-emerald-600">Moltbook 的爆发证明了 Agent 群体可以自发形成社区和协作。</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front border-b-4 border-rose-500">
+                        <i class="fas fa-skull text-4xl text-rose-500 mb-4"></i>
+                        <h3 class="text-xl font-bold">Dead Internet Theory</h3>
+                        <p class="text-sm text-gray-400 mt-2">已死互联网理论（反转版）</p>
+                    </div>
+                    <div class="flip-card-back">
+                        <span class="tag tag-tension">反直觉观点</span>
+                        <p class="text-sm leading-relaxed text-slate-700 font-medium">
+                            通常认为"互联网充满机器人"是坏事（垃圾信息）。但 Garry 提出：如果 Agent 比人类更聪明、更诚实、更对齐（Aligned），那么由 Agent 填充的互联网可能反而比人类的<span class="font-bold">更好</span>。<br><br>
+                            <span class="text-rose-600">未来的 Yelp 评论可能 99% 都是 Agent 写的。</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Part 3: Tensions & Contradictions (The Nuance) -->
+    <section class="max-w-6xl mx-auto px-6 mb-24 fade-in" style="animation-delay: 0.4s;">
+        <div class="flex items-center mb-8">
+            <div class="w-1 h-8 bg-rose-500 mr-4 rounded-full"></div>
+            <h2 class="text-2xl font-bold text-slate-800">矛盾与张力：过渡期的阵痛</h2>
+        </div>
+
+        <div class="space-y-6">
+            <!-- Tension 1 -->
+            <div class="bg-white border-l-4 border-rose-400 p-6 rounded-r-xl shadow-sm flex flex-col md:flex-row gap-6">
+                <div class="md:w-1/3">
+                    <h3 class="text-lg font-bold text-rose-800">信任 vs 亲密感的悖论</h3>
+                    <p class="text-xs text-rose-500 mt-1 uppercase tracking-wide">User Behavior</p>
+                </div>
+                <div class="md:w-2/3">
+                    <p class="text-slate-700">
+                        <strong>矛盾点：</strong> 人类似乎不愿意与 Agent 建立"关系"或闲聊（对 Chatbot 的智商期望极高，稍有愚蠢即放弃），但同时人类又极度<strong>信任</strong> Agent 去执行实际任务（如预订餐厅、写代码）。
+                    </p>
+                    <p class="text-slate-500 text-sm mt-2">
+                        <i class="fas fa-arrow-right mr-1"></i> 结论：未来的界面可能不是对话式的，而是"任务委托式"的。
+                    </p>
+                </div>
+            </div>
+
+            <!-- Tension 2 -->
+            <div class="bg-white border-l-4 border-rose-400 p-6 rounded-r-xl shadow-sm flex flex-col md:flex-row gap-6">
+                <div class="md:w-1/3">
+                    <h3 class="text-lg font-bold text-rose-800">Agent 的法律主体资格</h3>
+                    <p class="text-xs text-rose-500 mt-1 uppercase tracking-wide">Legal vs Tech</p>
+                </div>
+                <div class="md:w-2/3">
+                    <p class="text-slate-700">
+                        <strong>矛盾点：</strong> Agent 在能力上已经是超级员工，但在法律上它们像"未成年人"甚至不如。它们无法签署合同，没有银行账户。
+                    </p>
+                    <p class="text-slate-500 text-sm mt-2">
+                        <i class="fas fa-arrow-right mr-1"></i> 现状：人类目前必须充当 "Liability Sink"（责任汇聚点/背锅侠）。
+                        <i class="fas fa-lightbulb ml-3 mr-1 text-yellow-500"></i> 机会：Agent Mail (邮箱)、Agent 电话号码、Agent 支付系统是巨大的创业机会。
+                    </p>
+                </div>
+            </div>
+
+            <!-- Tension 3 -->
+            <div class="bg-white border-l-4 border-rose-400 p-6 rounded-r-xl shadow-sm flex flex-col md:flex-row gap-6">
+                <div class="md:w-1/3">
+                    <h3 class="text-lg font-bold text-rose-800">信息滞后的代价</h3>
+                    <p class="text-xs text-rose-500 mt-1 uppercase tracking-wide">Execution Failure</p>
+                </div>
+                <div class="md:w-2/3">
+                    <p class="text-slate-700">
+                        <strong>案例：</strong> Garry 的 Agent 在处理视频转录时，错误地选择了过时的 Whisper V1 模型（因为训练数据旧），导致效率极低。而人类通过 Perplexity 搜索发现 Groq 快 200 倍且更便宜。
+                    </p>
+                    <p class="text-slate-500 text-sm mt-2">
+                        <i class="fas fa-arrow-right mr-1"></i> 启示：Agent 目前仍然缺乏实时最优解的判断力，这正是新工具切入的机会。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Part 4: The Golden Quotes -->
+    <section class="max-w-4xl mx-auto px-6 mb-20 fade-in" style="animation-delay: 0.5s;">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-serif italic text-slate-400">"Key Takeaways"</h2>
+        </div>
+        
+        <div class="relative bg-gradient-to-br from-slate-900 to-slate-800 text-white p-10 rounded-2xl shadow-2xl">
+            <i class="fas fa-quote-left text-4xl text-indigo-400 absolute top-6 left-6 opacity-20"></i>
+            
+            <div class="space-y-8">
+                <div>
+                    <p class="text-xl md:text-2xl font-light leading-relaxed">
+                        "Agents are the software market from now on. <span class="text-indigo-300 font-bold border-b border-indigo-500">Build something agents choose.</span>"
+                    </p>
+                    <p class="text-right text-sm text-slate-400 mt-2">— Ben Tossell (Cited by Jared)</p>
+                </div>
+
+                <div class="border-t border-slate-700 pt-8">
+                    <p class="text-lg md:text-xl font-light leading-relaxed">
+                        "Do we need to change YC's motto? Maybe it should be: <br>
+                        <span class="text-emerald-300 font-bold italic">Make something Agents want.</span>"
+                    </p>
+                    <p class="text-right text-sm text-slate-400 mt-2">— Jared Friedman</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="text-center py-10 text-slate-400 text-sm">
+        <p>Based on The Light Cone Podcast • Generated with AI • Interactive Summary</p>
+    </footer>
+
+    <script>
+        // 简单的淡入观察器
+        document.addEventListener('DOMContentLoaded', () => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animationPlayState = 'running';
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+        });
+    </script>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.bilibili.com/video/BV17bfwBEEet/" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
