@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wild America: Mountain Men - 播客深度摘要</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6; /* 极浅的灰绿色背景，护眼 */
+            --card-bg: #ffffff;
+            --primary-color: #2c5f2d; /* 森林深绿 */
+            --secondary-color: #97bc62; /* 嫩芽绿 */
+            --accent-color: #b85c38; /* 皮革/红土色 */
+            --text-main: #2d3436;
+            --text-light: #636e72;
+            --shadow-card: 0 4px 6px rgba(0,0,0,0.05);
+            --shadow-hover: 0 10px 20px rgba(0,0,0,0.1);
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* 头部设计 */
+        header {
+            background: linear-gradient(135deg, #ffffff 0%, #e8f5e9 100%);
+            padding: 3rem 1.5rem;
+            text-align: center;
+            border-bottom: 4px solid var(--primary-color);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .fact-badge {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            box-shadow: var(--shadow-card);
+        }
+
+        /* 容器 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        /* 章节标题 */
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin: 3rem 0 2rem;
+            color: var(--primary-color);
+        }
+        .section-header h2 {
+            font-size: 1.8rem;
+            margin-right: 1rem;
+        }
+        .section-line {
+            flex-grow: 1;
+            height: 2px;
+            background-color: #dfe6e9;
+        }
+
+        /* 13人物网格 (Masonry-like) */
+        .char-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .char-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-card);
+            border-left: 5px solid var(--secondary-color);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .char-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+            border-left-color: var(--primary-color);
+        }
+
+        .char-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .char-nickname {
+            font-size: 0.9rem;
+            color: var(--accent-color);
+            font-style: italic;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+        }
+
+        .char-summary {
+            font-size: 0.95rem;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            flex-grow: 1;
+        }
+
+        /* 标签系统 */
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: auto;
+        }
+
+        .tag {
+            background-color: #f1f2f6;
+            color: #57606f;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        /* 详情展开交互 */
+        details {
+            margin-top: 1rem;
+            border-top: 1px solid #eee;
+            padding-top: 0.5rem;
+        }
+        
+        summary {
+            cursor: pointer;
+            color: var(--primary-color);
+            font-size: 0.9rem;
+            font-weight: bold;
+            list-style: none; /* 移除默认箭头 */
+            display: flex;
+            align-items: center;
+        }
+        
+        summary::after {
+            content: "+";
+            margin-left: auto;
+            font-size: 1.2rem;
+        }
+        
+        details[open] summary::after {
+            content: "-";
+        }
+
+        .detail-content {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #2d3436;
+            background-color: #f8f9fa;
+            padding: 0.8rem;
+            border-radius: 6px;
+        }
+
+        /* 知识翻转卡片 (Flip Cards) */
+        .flip-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            perspective: 1000px;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            height: 240px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: var(--shadow-card);
+            border-radius: var(--radius);
+        }
+
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-front, .flip-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden; /* Safari Fix */
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            border-radius: var(--radius);
+        }
+
+        .flip-front {
+            background-color: white;
+            color: var(--text-main);
+            border: 1px solid #dfe6e9;
+        }
+
+        .flip-back {
+            background-color: var(--primary-color);
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .instruction-text {
+            font-size: 0.8rem;
+            color: #b2bec3;
+            margin-top: 1rem;
+        }
+
+        /* 金句模块 */
+        .quote-container {
+            display: grid;
+            gap: 1.5rem;
+        }
+        .quote-card {
+            background: white;
+            border-left: 6px solid var(--accent-color);
+            padding: 1.5rem;
+            font-style: italic;
+            font-size: 1.1rem;
+            color: #555;
+            position: relative;
+        }
+        .quote-card::before {
+            content: "“";
+            font-size: 4rem;
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            color: rgba(0,0,0,0.05);
+            font-family: serif;
+        }
+
+        /* 资源列表 */
+        .resource-list li {
+            background: white;
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: flex-start;
+            border: 1px solid #f0f0f0;
+        }
+        .res-icon {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            min-width: 30px;
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            padding: 3rem;
+            background-color: #2d3436;
+            color: #b2bec3;
+            margin-top: 4rem;
+        }
+
+        @media (max-width: 768px) {
+            .char-grid { grid-template-columns: 1fr; }
+            h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Wild America: Mountain Men</h1>
+    <p class="subtitle">探索19世纪初美国边疆13位传奇人物的生存、冒险与遗产</p>
+    <div class="fact-badge">🔥 冷知识：当年落基山脉捕猎者的平均寿命仅为 7 年</div>
+</header>
+
+<div class="container">
+
+    <!-- 1. 核心概念翻转卡片 -->
+    <div class="section-header">
+        <h2>核心概念 & 生存法则</h2>
+        <div class="section-line"></div>
+    </div>
+    
+    <div class="flip-container">
+        <!-- 概念 1 -->
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-front">
+                    <div class="card-icon">🎪</div>
+                    <h3>The Rendezvous</h3>
+                    <p>山地聚会制度</p>
+                    <p class="instruction-text">悬停或点击翻转</p>
+                </div>
+                <div class="flip-back">
+                    <h3>荒野华尔街</h3>
+                    <p>由William Sublette推广。每年夏季，捕猎者、商人和原住民在指定地点集会交易皮毛和物资。这消除了返回圣路易斯的长途跋涉，是当时经济和社交的核心。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 概念 2 -->
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-front">
+                    <div class="card-icon">🥩</div>
+                    <h3>Survival Diet</h3>
+                    <p>极限生存饮食</p>
+                    <p class="instruction-text">悬停或点击翻转</p>
+                </div>
+                <div class="flip-back">
+                    <h3>为了活下去</h3>
+                    <p>当弹尽粮绝时，并没有文明的餐桌。Walker曾杀马充饥；Baker在极度口渴时喝过动物血；Fremont的探险队甚至不得不咀嚼马鞍皮革甚至同类相食。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 概念 3 -->
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-front">
+                    <div class="card-icon">🛤️</div>
+                    <h3>Pathfinding</h3>
+                    <p>路径探索</p>
+                    <p class="instruction-text">悬停或点击翻转</p>
+                </div>
+                <div class="flip-back">
+                    <h3>从兽径到铁路</h3>
+                    <p>山地人（如Smith, Walker, Beckwourth）发现的山口（如South Pass）后来成为了移民大篷车队、淘金者以及横贯大陆铁路的必经之路。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 概念 4 -->
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-front">
+                    <div class="card-icon">🤝</div>
+                    <h3>Cultural Bridge</h3>
+                    <p>文化中介</p>
+                    <p class="instruction-text">悬停或点击翻转</p>
+                </div>
+                <div class="flip-back">
+                    <h3>跨越种族</h3>
+                    <p>许多山地人（如Beckwourth, Baker）娶了原住民妻子，掌握部落语言。他们既是入侵的先锋，也是后来政府与部落谈判时不可或缺的翻译和中介。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 人物图谱 -->
+    <div class="section-header">
+        <h2>13位 荒野传奇人物</h2>
+        <div class="section-line"></div>
+    </div>
+    
+    <div class="char-grid">
+        <!-- 1. Hugh Glass -->
+        <div class="char-card">
+            <div class="char-name">Hugh Glass <span>🐻</span></div>
+            <div class="char-nickname">死里逃生者 (The Revenant)</div>
+            <div class="char-summary">遭遇灰熊袭击，喉咙被撕裂，腿骨折断，被同伴抛弃等死。</div>
+            <div class="tags">
+                <span class="tag">1823年</span>
+                <span class="tag">爬行200英里</span>
+                <span class="tag">蛆虫疗法</span>
+            </div>
+            <details>
+                <summary>查看生存细节</summary>
+                <div class="detail-content">
+                    被同伴遗弃且没有武器，他靠吃浆果、根茎和死去的动物尸体维持生命。为了防止坏疽，他利用蛆虫清理伤口。历经数月爬行回到Fort Kiowa，这不仅是复仇之旅，更是人类意志的奇迹。
+                </div>
+            </details>
+        </div>
+
+        <!-- 2. Jedediah Smith -->
+        <div class="char-card">
+            <div class="char-name">Jedediah Smith <span>🗺️</span></div>
+            <div class="char-nickname">虔诚的探险家</div>
+            <div class="char-summary">第一位通过陆路到达加利福尼亚的美国人，重新发现了对西进运动至关重要的“南山口”。</div>
+            <div class="tags">
+                <span class="tag">南山口</span>
+                <span class="tag">莫哈韦沙漠</span>
+                <span class="tag">制图师</span>
+            </div>
+            <details>
+                <summary>查看生存细节</summary>
+                <div class="detail-content">
+                    他在穿越莫哈韦沙漠时经历了极度干渴（传闻曾喝血求生）。他总是随身携带圣经和步枪。在一次火灾和洪水交织的夜晚，他冷静地指挥队伍在河中沙洲避难。他的地图指引了后世无数移民。
+                </div>
+            </details>
+        </div>
+
+        <!-- 3. Jim Bridger -->
+        <div class="char-card">
+            <div class="char-name">Jim Bridger <span>🗻</span></div>
+            <div class="char-nickname">山脉老人 (Old Man of the Mountains)</div>
+            <div class="char-summary">发现了大盐湖（曾误以为是太平洋），建立了著名的布里杰堡(Fort Bridger)。</div>
+            <div class="tags">
+                <span class="tag">大盐湖</span>
+                <span class="tag">活地图</span>
+                <span class="tag">补给站</span>
+            </div>
+            <details>
+                <summary>查看详情</summary>
+                <div class="detail-content">
+                    他拥有惊人的方向感和记忆力。他建立的Fort Bridger成为俄勒冈小径上的关键补给点，从皮毛猎人成功转型为服务移民的商人。即便在晚年失明后，他依然能凭借记忆为军队做向导。
+                </div>
+            </details>
+        </div>
+
+        <!-- 4. Kit Carson -->
+        <div class="char-card">
+            <div class="char-name">Kit Carson <span>🏹</span></div>
+            <div class="char-nickname">被神话的侦察兵</div>
+            <div class="char-summary">Fremont远征队的传奇向导，虽不识字但精通多种原住民语言。</div>
+            <div class="tags">
+                <span class="tag">一角钱小说主角</span>
+                <span class="tag">纳瓦霍长征</span>
+                <span class="tag">外交官</span>
+            </div>
+            <details>
+                <summary>查看争议</summary>
+                <div class="detail-content">
+                    他的形象被当时的小说极度美化（如单挑印第安战团）。现实中他不仅是向导，也参与了美国政府强迫纳瓦霍人迁徙的“长征”(Long Walk)，这是他历史上黑暗的一页。
+                </div>
+            </details>
+        </div>
+
+        <!-- 5. John Colter -->
+        <div class="char-card">
+            <div class="char-name">John Colter <span>🏃</span></div>
+            <div class="char-nickname">第一位山地人</div>
+            <div class="char-summary">离开了路易斯与克拉克探险队，独自进入黄石地区，发现了喷泉和地热。</div>
+            <div class="tags">
+                <span class="tag">Colter's Hell</span>
+                <span class="tag">裸体逃亡</span>
+                <span class="tag">黄石公园</span>
+            </div>
+            <details>
+                <summary>查看"Colter's Run"</summary>
+                <div class="detail-content">
+                    1808年被黑脚族俘虏，对方剥光他的衣服让他跑，以此作为猎杀游戏。Colter赤脚狂奔，反杀一名追击者，躲在河中浮木下逃过一劫，赤裸穿越荒野回到要塞。他描述的黄石景观曾被嘲笑为虚构的“科尔特地狱”。
+                </div>
+            </details>
+        </div>
+
+        <!-- 6. Joseph Walker -->
+        <div class="char-card">
+            <div class="char-name">Joseph Walker <span>🏞️</span></div>
+            <div class="char-nickname">内华达山脉开拓者</div>
+            <div class="char-summary">第一位见到优胜美地山谷(Yosemite)的欧裔美国人，发现了Walker Pass。</div>
+            <div class="tags">
+                <span class="tag">优胜美地</span>
+                <span class="tag">杀马充饥</span>
+                <span class="tag">外交手腕</span>
+            </div>
+            <details>
+                <summary>查看详情</summary>
+                <div class="detail-content">
+                    在穿越内华达山脉时，因极度饥饿不得不屠杀探险队的马匹。他具有极高的情商，曾通过展示武力和外交手段化解了被原住民包围的危机。他发现的山口后来成为淘金热的主要通道。
+                </div>
+            </details>
+        </div>
+
+        <!-- 7. James Beckwourth -->
+        <div class="char-card">
+            <div class="char-name">James Beckwourth <span>🦅</span></div>
+            <div class="char-nickname">从奴隶到酋长</div>
+            <div class="char-summary">非裔混血，出生于奴隶制下，后成为乌鸦族(Crow)的战争酋长。</div>
+            <div class="tags">
+                <span class="tag">Beckwourth Pass</span>
+                <span class="tag">乌鸦族酋长</span>
+                <span class="tag">打破偏见</span>
+            </div>
+            <details>
+                <summary>查看详情</summary>
+                <div class="detail-content">
+                    他的故事挑战了西部只是白人历史的刻板印象。他完全融入乌鸦族，领导战争并促成和平。他发现了低海拔的Beckwourth Pass，极大便利了前往加州的移民。即使曾被公牛顶成重伤，他仍顽强求生。
+                </div>
+            </details>
+        </div>
+
+        <!-- 8. John "Liver-Eating" Johnson -->
+        <div class="char-card">
+            <div class="char-name">John Johnson <span>💀</span></div>
+            <div class="char-nickname">食肝者 (The Myth)</div>
+            <div class="char-summary">因怀孕的弗拉特黑德族妻子被杀，对乌鸦族展开了长达数年的血腥复仇。</div>
+            <div class="tags">
+                <span class="tag">恐怖传说</span>
+                <span class="tag">复仇</span>
+                <span class="tag">最终和解</span>
+            </div>
+            <details>
+                <summary>查看传说与现实</summary>
+                <div class="detail-content">
+                    传说他会吃掉被杀敌人的肝脏（未证实）。他曾被黑脚族俘虏，并在冬天赤身裸体逃脱，行进数百英里。令人惊讶的是，他晚年与乌鸦族和解，甚至担任了治安官，体现了边疆人性的复杂。
+                </div>
+            </details>
+        </div>
+
+        <!-- 9. Seth Kinman -->
+        <div class="char-card">
+            <div class="char-name">Seth Kinman <span>🎻</span></div>
+            <div class="char-nickname">古怪的猎人表演家</div>
+            <div class="char-summary">加州猎人，声称猎杀800头灰熊。他是西部早期的“自我营销大师”。</div>
+            <div class="tags">
+                <span class="tag">总统座椅</span>
+                <span class="tag">骡骨小提琴</span>
+                <span class="tag">表演型人格</span>
+            </div>
+            <details>
+                <summary>查看详情</summary>
+                <div class="detail-content">
+                    他用灰熊皮和麋鹿角制作夸张的椅子赠送给林肯等多位总统，以此获得名声。他甚至用骡子的头骨制作小提琴进行表演。他敏锐地察觉到公众对西部野性的猎奇心理，并将自己打造为一个活的展品。
+                </div>
+            </details>
+        </div>
+
+        <!-- 10. William Sublette -->
+        <div class="char-card">
+            <div class="char-name">William Sublette <span>💰</span></div>
+            <div class="char-nickname">山地商人</div>
+            <div class="char-summary">不仅是硬汉，更是商业天才。他完善并推广了“Rendezvous”聚会交易系统。</div>
+            <div class="tags">
+                <span class="tag">商业模式</span>
+                <span class="tag">带伤指挥</span>
+                <span class="tag">Rendezvous</span>
+            </div>
+            <details>
+                <summary>查看详情</summary>
+                <div class="detail-content">
+                    他改变了皮毛贸易的物流模式，将市场直接搬到山里。他本人非常强悍，曾在背部中箭的情况下坚持指挥战斗并自行处理伤口。他是将生存技能与经济利益结合得最好的例子。
+                </div>
+            </details>
+        </div>
+
+        <!-- 11. Osborne Russell -->
+        <div class="char-card">
+            <div class="char-name">Osborne Russell <span>📖</span></div>
+            <div class="char-nickname">读过书的捕猎者</div>
+            <div class="char-summary">少数受过良好教育的山地人，留下了珍贵的《捕猎者日记》(Journal of a Trapper)。</div>
+            <div class="tags">
+                <span class="tag">第一手史料</span>
+                <span class="tag">太阳舞</span>
+                <span class="tag">生态观察</span>
+            </div>
+            <details>
+                <summary>查看贡献</summary>
+                <div class="detail-content">
+                    他的日记没有夸张的修饰，真实记录了陷阱技术、与灰熊的遭遇以及乌鸦族的“太阳舞”仪式。他也是最早记录下水牛群消失和西部环境不可逆转变化的人之一，带有一种忧郁的观察者视角。
+                </div>
+            </details>
+        </div>
+
+        <!-- 12. "Old Bill" Williams -->
+        <div class="char-card">
+            <div class="char-name">Old Bill Williams <span>⛪</span></div>
+            <div class="char-nickname">独狼 (The Lone Wolf)</div>
+            <div class="char-summary">前传教士变身为最古怪的独行侠，最终卷入Fremont的灾难性远征。</div>
+            <div class="tags">
+                <span class="tag">传教士</span>
+                <span class="tag">同类相食惨剧</span>
+                <span class="tag">替罪羊</span>
+            </div>
+            <details>
+                <summary>查看悲剧</summary>
+                <div class="detail-content">
+                    早年试图向Osage族传教，失败后遁入荒野。作为向导，他曾警告Fremont不要在冬季穿越落基山脉，但被无视，导致队伍遭遇暴雪、冻死和人吃人惨剧。他被指责为失败负责，最终在寻找丢失装备时被Ute族杀死。
+                </div>
+            </details>
+        </div>
+
+        <!-- 13. Jim Baker -->
+        <div class="char-card">
+            <div class="char-name">Jim Baker <span>🌉</span></div>
+            <div class="char-nickname">最后的山地人</div>
+            <div class="char-summary">师从Jim Bridger，见证了西部从荒野到定居点的完整变迁。</div>
+            <div class="tags">
+                <span class="tag">喝血求生</span>
+                <span class="tag">贸易站</span>
+                <span class="tag">时代的桥梁</span>
+            </div>
+            <details>
+                <summary>查看详情</summary>
+                <div class="detail-content">
+                    年轻时极其狂野（传闻喝动物血解渴），娶过多位原住民妻子。随着皮毛贸易衰退，他成功转型，在Overland Trail建立贸易站服务移民。他是连接旧西部（荒野生存）和新西部（定居发展）的活化石。
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <!-- 3. 金句与反思 -->
+    <div class="section-header">
+        <h2>金句与历史反思</h2>
+        <div class="section-line"></div>
+    </div>
+
+    <div class="quote-container">
+        <div class="quote-card">
+            "篝火已经生好了，今晚的故事即将开始。这些人不仅在无情的环境中生存了下来，还留下了令人难以置信的耐力传说。"
+        </div>
+        <div class="quote-card">
+            "山地人的时代是一个过渡时期，连接了未被驯服的荒野与定居的边疆。他们不仅是地理的探索者，也是文化的中间人。"
+        </div>
+        <div class="quote-card">
+            "Hugh Glass的故事证明，复仇的渴望有时是比任何药物都更强大的生存燃料。"
+        </div>
+    </div>
+
+    <!-- 4. 提及资源列表 -->
+    <div class="section-header">
+        <h2>提及资源与知识点</h2>
+        <div class="section-line"></div>
+    </div>
+
+    <ul class="resource-list">
+        <li>
+            <div class="res-icon">📓</div>
+            <div>
+                <strong>Journal of a Trapper (1834-1843)</strong> - <em>Osborne Russell</em><br>
+                <span style="font-size:0.9rem; color:#666;">文中提到的最重要的第一手文字记录，详细记载了捕猎技术和原住民风俗，是历史学家的宝库。</span>
+            </div>
+        </li>
+        <li>
+            <div class="res-icon">📜</div>
+            <div>
+                <strong>Dime Novels (一角钱小说)</strong><br>
+                <span style="font-size:0.9rem; color:#666;">文中多次提到，这种廉价通俗小说夸大了Kit Carson和Liver-Eating Johnson的事迹，塑造了大众心中虚构的“西部英雄”形象。</span>
+            </div>
+        </li>
+        <li>
+            <div class="res-icon">🎬</div>
+            <div>
+                <strong>The Revenant (荒野猎人)</strong><br>
+                <span style="font-size:0.9rem; color:#666;">虽然文稿未直呼其名，但Hugh Glass被熊袭击、爬行重生的故事正是该奥斯卡获奖电影的原型。</span>
+            </div>
+        </li>
+        <li>
+            <div class="res-icon">🎬</div>
+            <div>
+                <strong>Jeremiah Johnson (猛虎过山)</strong><br>
+                <span style="font-size:0.9rem; color:#666;">基于John "Liver-Eating" Johnson传说的电影，文中提到电影模糊了历史与神话的界限。</span>
+            </div>
+        </li>
+    </ul>
+
+</div>
+
+<footer>
+    <p>© 2024 Wild America Podcast Summary</p>
+    <p>Generated with Low Cognitive Load Design Principles</p>
+</footer>
+
+</body>
+</html>
