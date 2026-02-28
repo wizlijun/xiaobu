@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《捕兽人日记》全书深度交互摘要</title>
+    <style>
+        :root {
+            /* 配色方案：灵感来自落基山脉的自然色调 */
+            --primary-slate: #4A5859; /* 岩石灰 */
+            --accent-gold: #C89F5D;   /* 干草黄 */
+            --forest-green: #5B8C5A;  /* 森林绿 */
+            --alert-red: #D9534F;     /* 警示红 */
+            --bg-paper: #F9F9F7;      /* 纸张白 */
+            --card-surface: #FFFFFF;
+            
+            --shadow-light: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-hover: 0 8px 16px rgba(0,0,0,0.12);
+            --radius: 8px;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-paper);
+            color: #333;
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 顶部导航 */
+        header {
+            background: var(--card-surface);
+            padding: 60px 20px;
+            text-align: center;
+            border-bottom: 3px solid var(--accent-gold);
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-weight: 300;
+            letter-spacing: 2px;
+            color: var(--primary-slate);
+            margin: 0 0 10px 0;
+            font-size: 2.2rem;
+        }
+
+        .meta-info {
+            color: #777;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px 80px;
+        }
+
+        /* 标签系统 */
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        .tag-fact { background: #E3F2FD; color: #1565C0; border: 1px solid #BBDEFB; }
+        .tag-view { background: #F3E5F5; color: #7B1FA2; border: 1px solid #E1BEE7; }
+        .tag-skill { background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; }
+        .tag-danger { background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2; }
+
+        /* 翻转卡片区域 */
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin: 50px 0 25px;
+            color: var(--primary-slate);
+            border-left: 5px solid var(--accent-gold);
+            padding-left: 15px;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            height: 200px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: var(--shadow-light);
+            border-radius: var(--radius);
+        }
+
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            border-radius: var(--radius);
+        }
+
+        .flip-card-front {
+            background-color: var(--card-surface);
+            border: 1px solid #eee;
+        }
+
+        .flip-card-front h3 {
+            color: var(--forest-green);
+            margin: 0;
+            font-size: 1.2rem;
+        }
+        
+        .flip-card-front small {
+            color: #999;
+            margin-top: 10px;
+            display: block;
+        }
+
+        .flip-card-back {
+            background-color: var(--primary-slate);
+            color: white;
+            transform: rotateY(180deg);
+            text-align: left;
+            align-items: flex-start;
+        }
+        
+        .flip-card-back strong {
+            color: var(--accent-gold);
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        /* 折叠时间轴 */
+        .timeline-group {
+            background: var(--card-surface);
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-light);
+            overflow: hidden;
+        }
+
+        summary {
+            padding: 20px 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            list-style: none;
+            background: #fff;
+            transition: background 0.2s;
+        }
+
+        summary:hover {
+            background-color: #f4f4f4;
+        }
+        
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::after {
+            content: '▼';
+            font-size: 0.8rem;
+            color: var(--accent-gold);
+            transition: transform 0.3s;
+        }
+
+        details[open] summary::after {
+            transform: rotate(180deg);
+        }
+
+        .chapter-detail {
+            padding: 0 30px 30px;
+            border-top: 1px solid #eee;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chapter-block {
+            margin-top: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed #eee;
+        }
+        
+        .chapter-block:last-child {
+            border-bottom: none;
+        }
+
+        .chapter-title {
+            font-size: 0.95rem;
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: bold;
+            display: block;
+        }
+
+        /* 选项卡百科 */
+        .encyclopedia {
+            background: var(--card-surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-light);
+            overflow: hidden;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f0f0f0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .tab-btn.active {
+            background: var(--card-surface);
+            color: var(--forest-green);
+            font-weight: bold;
+            border-top: 3px solid var(--forest-green);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .info-item {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .info-item h4 {
+            margin: 0 0 5px 0;
+            color: var(--primary-slate);
+            border-bottom: 2px solid var(--accent-gold);
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+        
+        .info-item p {
+            font-size: 0.9rem;
+            color: #555;
+            margin-top: 5px;
+        }
+
+        footer {
+            margin-top: 60px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #888;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>捕兽人日记</h1>
+    <div class="meta-info">
+        <span>作者: Osborne Russell</span>
+        <span>时间跨度: 1834 - 1843</span>
+        <span>地点: 落基山脉 / 俄勒冈地区</span>
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- 第一部分：核心术语翻转卡片 -->
+    <h2 class="section-header">捕兽人行话与核心概念 (知识卡片)</h2>
+    <div class="card-grid">
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <h3>Epishemore</h3>
+                    <small>(装备)</small>
+                </div>
+                <div class="flip-card-back">
+                    <p><strong>定义：</strong>一种用于马背或睡觉的皮垫子。</p>
+                    <p><strong>用途：</strong>通常由水牛皮制成，有时是多块拼接。在威廉堡(Fort William)受冷遇时，作者只能买到用九块碎皮拼成的劣质epishemore。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <h3>Cache (地窖/藏匿点)</h3>
+                    <p>(生存技能)</p>
+                </div>
+                <div class="flip-card-back">
+                    <p><strong>定义：</strong>在地下挖洞藏匿毛皮、物资或肉类的地方。</p>
+                    <p><strong>操作：</strong>挖好后需精心掩盖痕迹（如在上面烧火或撒水），以防熊、狼或印第安人发现。作者多次使用此法储存海狸皮。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <h3>Greenhorn (生瓜蛋子)</h3>
+                    <p>(身份)</p>
+                </div>
+                <div class="flip-card-back">
+                    <p><strong>含义：</strong>指刚进入山区、缺乏经验的新手。</p>
+                    <p><strong>作者经历：</strong>1834年刚到霍尔堡时，作者自嘲为Greenhorn，连开25枪才打死一头公牛。通过几年的历练，他终于摆脱了这个称呼。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <h3>Rendezvous (荒野集会)</h3>
+                    <p>(经济/社交)</p>
+                </div>
+                <div class="flip-card-back">
+                    <p><strong>定义：</strong>每年夏季（通常在7月）捕兽人、商人和印第安人的大聚会。</p>
+                    <p><strong>功能：</strong>在绿河(Green River)等地举行。交换来自圣路易斯的补给，传递信件，也是赌博、赛马和狂欢的时刻。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第二部分：编年史摘要 -->
+    <h2 class="section-header">探险编年史 (1834-1843)</h2>
+
+    <!-- 1834-1835 -->
+    <details class="timeline-group">
+        <summary>第一阶段：初入荒野与霍尔堡建立 (1834-1835) <span class="tag tag-fact">Ch 1-8</span></summary>
+        <div class="chapter-detail">
+            <div class="chapter-block">
+                <span class="chapter-title">Ch 1-2: 启程与霍尔堡</span>
+                <p><span class="tag tag-fact">历史</span> 1834年4月，随Nathaniel Wyeth从密苏里出发。8月5日，在蛇河河谷建立<strong>霍尔堡(Fort Hall)</strong>并升起美国国旗。作者成为首批驻扎人员之一。</p>
+                <p><span class="tag tag-danger">惊险</span> 作者与同伴遭遇灰熊。在极度恐慌中，当熊冲到面前几步远并站立时，作者凭本能开枪击中心脏，险象环生。</p>
+            </div>
+            <div class="chapter-block">
+                <span class="chapter-title">Ch 3-5: 饥饿与早期冲突</span>
+                <p><span class="tag tag-skill">生存</span> 冬季食物短缺，捕兽人依靠煮蓟根(thistle roots)维生。通过观察自然，学习印第安人的生存方式。</p>
+                <p><span class="tag tag-danger">战斗</span> 在皮埃尔洞穴(Pierre's Hole)遭遇印第安人袭击。作者利用树木做掩体，甚至故意把帽子放在树枝上引诱敌人射击。</p>
+                <p><span class="tag tag-view">观点</span> 7月4日独立日，作者赤身裸体、失去装备在河边受冻，对比家乡的庆祝活动，感叹荒野生存的残酷与孤独。</p>
+            </div>
+            <div class="chapter-block">
+                <span class="chapter-title">Ch 6-8: 迷失与获救</span>
+                <p><span class="tag tag-danger">危机</span> 作者被错误的向导指引，在Camas Prairie迷路，缺水两天，不得不忍受极度干渴。最终被友好的班诺克(Bannock)部落首领收留，目睹了原住民高效的水牛围猎。</p>
+            </div>
+        </div>
+    </details>
+
+    <!-- 1835-1837 -->
+    <details class="timeline-group">
+        <summary>第二阶段：深入腹地与黄石奇观 (1835-1837) <span class="tag tag-fact">Ch 9-16</span></summary>
+        <div class="chapter-detail">
+            <div class="chapter-block">
+                <span class="chapter-title">Ch 9-11: 饮食与黄石发现</span>
+                <p><span class="tag tag-skill">饮食</span> 描述了名为"Bull Meat Straight"的饮食习惯：只吃贫瘠的公牛肉，没有面包或蔬菜。用"2岁大的棍子"敲打烤肉上的灰。</p>
+                <p><span class="tag tag-fact">地理</span> 详细记录了<strong>黄石地区</strong>的地貌：沸腾的泉水、像蒸汽机一样响的喷气孔、中空的地面声音。作者描述了穿越“地狱般的区域”后进入美丽山谷的反差。</p>
+            </div>
+            <div class="chapter-block">
+                <span class="chapter-title">Ch 12-14: 战斗与极光</span>
+                <p><span class="tag tag-danger">围攻</span> 营地被大量黑脚族包围。当晚出现血红色的<strong>北极光</strong>，持续两小时。迷信的印第安人认为这是不祥之兆（己方天空血红），未发动总攻便撤退。</p>
+                <p><span class="tag tag-fact">历史</span> 威廉·斯图尔特上尉(Captain Stewart)和惠特曼传教士夫妇(Whitmans)经过，这是白人女性首次进入该地区。</p>
+            </div>
+            <div class="chapter-block">
+                <span class="chapter-title">Ch 15-16: 孤独的思考</span>
+                <p><span class="tag tag-view">哲学</span> 作者独自攀登雪峰，俯瞰山谷，思考自然与造物主。记录了捕兽人之间的辩论：英国人赞美贵族庄园，而美国猎人则辩护为何离开“文明”来到荒野。</p>
+            </div>
+        </div>
+    </details>
+
+    <!-- 1837-1839 -->
+    <details class="timeline-group">
+        <summary>第三阶段：苦难、受伤与生存 (1837-1839) <span class="tag tag-fact">Ch 17-26</span></summary>
+        <div class="chapter-detail">
+            <div class="chapter-block">
+                <span class="chapter-title">Ch 17-20: 被劫与长征</span>
+                <p><span class="tag tag-danger">背叛</span> 在大角河(Big Horn River)附近，作者与同伴被克罗族(Crow)以“玩笑”的名义抢劫一空。在严冬中，赤脚步行数百英里前往威廉堡。</p>
+                <p><span class="tag tag-skill">极限生存</span> 途中在暴风雪中迷路，只能靠生吃极少量水牛内脏维生，并在泥水中过夜。到达威廉堡后却遭遇冷遇，只能买到劣质皮草。</p>
+            </div>
+            <div class="chapter-block">
+                <span class="chapter-title">Ch 21-25: 裸体勇士</span>
+                <p><span class="tag tag-fact">战斗</span> 在麦迪逊河(Madison)与黑脚族激战。一名老易洛魁(Iroquois)捕兽人全裸上阵，只带弹药包，跳着战舞冲锋，极大鼓舞了士气。</p>
+                <p><span class="tag tag-fact">观察</span> 再次详细记录黄石公园的间歇泉（Hour Spring），每小时喷发一次，高度达60英尺。</p>
+            </div>
+            <div class="chapter-block">
+                <span class="chapter-title">Ch 26: 致命一击</span>
+                <p><span class="tag tag-danger">重伤</span> 在黄石湖边洗澡时被伏击。作者右腿和臀部身中两箭，同伴White亦受伤。在失去马匹、极度失血的情况下，两人互相扶持，依靠意志力在森林中爬行数日，最终瘸着腿走回霍尔堡。</p>
+            </div>
+        </div>
+    </details>
+
+    <!-- 1840-1843 -->
+    <details class="timeline-group">
+        <summary>第四阶段：最后的岁月与告别 (1840-1843) <span class="tag tag-fact">Ch 27-32</span></summary>
+        <div class="chapter-detail">
+            <div class="chapter-block">
+                <span class="chapter-title">Ch 27-29: 雪盲与冬营</span>
+                <p><span class="tag tag-danger">伤病</span> 春季狩猎时遭遇严重雪盲症，眼睛如进沙般剧痛，失明四天。</p>
+                <p><span class="tag tag-view">文化</span> 1840年圣诞节，在盐湖附近与混血家庭共度。菜单包括：炖麋鹿肉、煮鹿肉、浆果干面粉布丁、蛋糕和咖啡。这是难得的温馨时刻。</p>
+            </div>
+            <div class="chapter-block">
+                <span class="chapter-title">Ch 30-31: 时代的变迁</span>
+                <p><span class="tag tag-view">观察</span> 作者注意到水牛数量急剧减少，曾经的小径长满荒草。海狸也变得稀缺。感叹“白人离开山脉的时候到了”。</p>
+                <p><span class="tag tag-fact">生态</span> 观察到大盐湖(Great Salt Lake)水位的上升变化和岛屿生态。</p>
+            </div>
+            <div class="chapter-block">
+                <span class="chapter-title">Ch 32: 意外与尾声</span>
+                <p><span class="tag tag-fact">移民</span> 1842年，加入White博士的移民队伍前往俄勒冈。</p>
+                <p><span class="tag tag-danger">结局</span> 1843年6月，在威拉米特瀑布协助修建磨坊时，意外发生爆破事故。碎石击中右脸，导致<strong>右眼永久失明</strong>。全书以一首凄美的《猎人的告别》诗歌作结。</p>
+            </div>
+        </div>
+    </details>
+
+    <!-- 第三部分：荒野百科 -->
+    <h2 class="section-header">荒野百科 (附录精华)</h2>
+    <div class="encyclopedia">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="openTab(event, 'Tribes')">原住民部落志</button>
+            <button class="tab-btn" onclick="openTab(event, 'Animals')">野生动物志</button>
+        </div>
+
+        <div id="Tribes" class="tab-content active">
+            <div class="info-grid">
+                <div class="info-item">
+                    <h4>Snake Indians (蛇族/肖肖尼人)</h4>
+                    <p><strong>特征：</strong>友好、好客，相信太阳中的至高神。分为骑马捕猎水牛的群体和山区的“挖根者(Root Diggers)”。</p>
+                    <p><strong>政治：</strong>民主制，首领因英勇而上位，也可能因失职下台。</p>
+                </div>
+                <div class="info-item">
+                    <h4>Crow Indians (克罗族)</h4>
+                    <p><strong>特征：</strong>骄傲、背信弃义、极善偷窃。外貌高大英俊，肤色较浅。</p>
+                    <p><strong>习俗：</strong>法律严格（如严禁私自惊扰水牛群）。独特的母系回避禁忌（女婿不与岳母直接对话）。</p>
+                </div>
+                <div class="info-item">
+                    <h4>Blackfeet (黑脚族)</h4>
+                    <p><strong>特征：</strong>全书唯一的死敌。极其好战，经常伏击捕兽人。曾遭天花重创。</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="Animals" class="tab-content">
+            <div class="info-grid">
+                <div class="info-item">
+                    <h4>Grizzly Bear (灰熊)</h4>
+                    <p>极强壮，除非在浆果季节，否则主要吃根茎。受伤后极具攻击性，甚至会杀死自己的幼崽。肉质优于猪肉。<strong>不会爬树</strong>。</p>
+                </div>
+                <div class="info-item">
+                    <h4>Beaver (海狸)</h4>
+                    <p>拥有极高的本能智慧。通过构建水坝改变地形。利用"海狸香(Castorium)"标记领地，这也是捕兽人诱捕它们的关键。</p>
+                </div>
+                <div class="info-item">
+                    <h4>Mountain Sheep (大角羊)</h4>
+                    <p>生活在险峻的岩石上。肉质被作者评为荒野中最美味的肉。捕猎它们极度危险，常需在冰壁上凿坑立足。</p>
+                </div>
+                <div class="info-item">
+                    <h4>Wolverine (狼獾)</h4>
+                    <p>被称为"贪吃者(Glutton)"。极其狡猾，经常破坏猎人的陷阱并偷走诱饵，难以捕捉。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第四部分：新增模块：荒野生存技能全集 -->
+    <h2 class="section-header">生存指南：荒野技能全集 (1834-1843)</h2>
+    <p style="color: #666; margin-bottom: 20px;">以下技能整理自 Osborne Russell 九年山地生活的实战记录与附录百科，涵盖狩猎、设陷、制造与战斗。</p>
+
+    <!-- 技能分类 1: 狩猎艺术 -->
+    <details class="timeline-group">
+        <summary>狩猎艺术 (Hunting Arts) <span class="tag tag-skill">核心生存</span></summary>
+        <div class="chapter-detail">
+            <div class="info-grid">
+                <div class="info-item">
+                    <h4>骑马围猎水牛 (Running Buffalo)</h4>
+                    <p><strong>前置条件：</strong>需要一匹受过专门训练的马，它能识别地面的洞穴并懂得避让牛角。</p>
+                    <p><strong>战术要点：</strong>
+                        1. <strong>接近：</strong>从下风向潜行接近。
+                        2. <strong>驱赶：</strong>不要从正后方挤压牛群，否则它们会四散；应从侧翼引导方向。
+                        3. <strong>击杀：</strong>全速冲入牛群，选定目标后贴近射击。
+                        4. <strong>闪避：</strong>这是最危险的时刻。如果水牛向右转，马必须瞬间向左闪避（切切不可同向转弯，否则会被牛角挑破肚肠）。
+                    </p>
+                </div>
+                <div class="info-item">
+                    <h4>大角羊狩猎 (Sheep Hunting)</h4>
+                    <p><strong>环境：</strong>最危险的狩猎形式，通常在结冰的悬崖峭壁上进行。</p>
+                    <p><strong>技巧：</strong>
+                        1. <strong>制高点：</strong>必须爬到比羊更高的地方，利用地形死角从上方射击。
+                        2. <strong>冰面移动：</strong>在冰封的岩石上，需用猎刀凿出脚坑（steps）才能立足。
+                        3. <strong>心理素质：</strong>克服对深渊的恐惧，专注于猎物。
+                    </p>
+                </div>
+                <div class="info-item">
+                    <h4>灰熊应对 (Grizzly Encounters)</h4>
+                    <p><strong>弱点：</strong>灰熊下坡速度慢，但上坡速度极快；不会爬树（爪子太直）。</p>
+                    <p><strong>铁律：</strong>
+                        1. 除非有十足把握一击毙命（心脏或脑部），否则不要在灌木丛或沼泽中招惹受伤的灰熊。
+                        2. 遇到灰熊时，如果它没发现你，保持静止；如果冲过来，保持冷静开枪。
+                    </p>
+                </div>
+                <div class="info-item">
+                    <h4>羚羊诱捕 (Antelope Curiosity)</h4>
+                    <p><strong>利用弱点：</strong>羚羊视力极好但好奇心极强。</p>
+                    <p><strong>技巧：</strong>如果羚羊在射程外，猎人可以躺在草丛中，举起系着红布的棍子或手脚晃动。羚羊会因为好奇而主动靠近观察，从而进入射程。</p>
+                </div>
+            </div>
+        </div>
+    </details>
+
+    <!-- 技能分类 2: 设陷与毛皮 (Trapping) -->
+    <details class="timeline-group">
+        <summary>设陷与毛皮处理 (Trapping & Fur) <span class="tag tag-fact">经济命脉</span></summary>
+        <div class="chapter-detail">
+            <div class="info-grid">
+                <div class="info-item">
+                    <h4>海狸香诱捕法 (Castorium Bait)</h4>
+                    <p><strong>原理：</strong>利用海狸强烈的领地意识。从海狸腺体提取黄色胶状物质(Castorium)。</p>
+                    <p><strong>布置步骤：</strong>
+                        1. 将捕兽夹放置在水下约6英寸处。
+                        2. 在岸边距离陷阱1英尺处堆一个小泥堆。
+                        3. 在泥堆上涂抹一点海狸香。
+                        4. 海狸闻到陌生气味会冲上岸试图覆盖它，踩中水下的陷阱。
+                    </p>
+                </div>
+                <div class="info-item">
+                    <h4>溺亡装置 (Drowning Rig)</h4>
+                    <p><strong>目的：</strong>防止海狸咬断腿逃脱或被捕食者吃掉。</p>
+                    <p><strong>设置：</strong>陷阱链条连接到深水区的一根桩子上。当海狸被夹住后，会潜入深水区，链条的单向滑动设计或重量会阻止其浮出水面，导致其溺亡。</p>
+                </div>
+                <div class="info-item">
+                    <h4>皮毛处理 (Processing)</h4>
+                    <p><strong>剥皮：</strong>必须小心保持皮毛完整。</p>
+                    <p><strong>绷皮：</strong>使用柳条环（willow hoop）将皮撑开，在阴凉处风干。不能暴晒或火烤，否则皮会变硬脆。</p>
+                </div>
+            </div>
+        </div>
+    </details>
+
+    <!-- 技能分类 3: 野外生存与制造 (Survival & Crafting) -->
+    <details class="timeline-group">
+        <summary>野外生存与制造 (Survival & Crafting) <span class="tag tag-skill">必备技能</span></summary>
+        <div class="chapter-detail">
+            <div class="info-grid">
+                <div class="info-item">
+                    <h4>公牛皮筏制作 (Bull Boat Construction)</h4>
+                    <p><strong>用途：</strong>横渡深水河流（如蛇河、绿河）运输物资。</p>
+                    <p><strong>制作流程：</strong>
+                        1. 砍伐柳树枝条，编织成篮子状的框架。
+                        2. 将两张或多张生水牛皮缝合。
+                        3. 将湿润的生皮紧紧包裹在框架上。
+                        4. 在慢火上烘干过夜，使皮收缩紧绷，形成防水船体。
+                    </p>
+                </div>
+                <div class="info-item">
+                    <h4>地窖藏匿术 (Caching)</h4>
+                    <p><strong>目的：</strong>长期保存物资或毛皮，防盗防兽。</p>
+                    <p><strong>步骤：</strong>
+                        1. 挖一个壶状坑（口小肚大），内衬干草或木棍防潮。
+                        2. 放入物资，覆盖泥土。
+                        3. <strong>关键：</strong>将多余的土扔进河里（不留痕迹）。
+                        4. 在填好的坑上方生火过夜，用灰烬掩盖挖掘痕迹，并消除人类气味。
+                    </p>
+                </div>
+                <div class="info-item">
+                    <h4>急救与医疗 (Mountain Medicine)</h4>
+                    <p><strong>箭伤处理：</strong>拔箭后，使用温盐水清洗伤口（如果不得不涉水，利用含盐的温泉水），涂抹海狸油(beaver oil)和海狸香(castorium)混合制成的药膏，有助于消肿愈合。</p>
+                    <p><strong>雪盲症：</strong>无药可医。唯一的办法是忍受剧痛，在黑暗中休息数日，等待自然恢复。</p>
+                </div>
+                <div class="info-item">
+                    <h4>应急装备制造</h4>
+                    <p><strong>鹿皮鞋 (Moccasins)：</strong>使用生麋鹿皮(raw elk hide)制作，虽然不如熟皮舒适，但更耐磨且应急。</p>
+                    <p><strong>鞍垫 (Epishemore)：</strong>利用水牛皮制作，既是马鞍垫，也是晚上的睡垫。</p>
+                </div>
+            </div>
+        </div>
+    </details>
+
+    <!-- 技能分类 4: 战术与防卫 (Combat & Tactics) -->
+    <details class="timeline-group">
+        <summary>战术与防卫 (Combat & Tactics) <span class="tag tag-danger">保命法则</span></summary>
+        <div class="chapter-detail">
+            <div class="info-grid">
+                <div class="info-item">
+                    <h4>营地防御 (Fortification)</h4>
+                    <p><strong>标准防御：</strong>在开阔地扎营后，立即用原木和灌木丛堆成6英尺高的圆形胸墙（Breastworks）。</p>
+                    <p><strong>强化防御：</strong>如遇大量敌人，挖掘散兵坑，并在胸墙内侧竖立大原木。</p>
+                </div>
+                <div class="info-item">
+                    <h4>马匹管理 (Horse Management)</h4>
+                    <p><strong>格言：</strong>“数肋骨总比数脚印好” (Better to count ribs than tracks)。</p>
+                    <p><strong>解释：</strong>晚上把马拴在身边饿着（甚至能数清肋骨），也比放出去吃草被印第安人偷走（第二天只能数脚印）要好。</p>
+                </div>
+                <div class="info-item">
+                    <h4>印第安战术应对</h4>
+                    <p><strong>虚张声势：</strong>面对优势敌人，如果表现出恐惧必死无疑。作者曾与同伴两人面对数十名黑脚族，通过占据有利地形（原木堆）并轮流瞄准（不轻易开枪），以此威慑敌人不敢冲锋。</p>
+                    <p><strong>撤退：</strong>在被伏击时，唯一的生存机会是冲破包围圈进入森林，而不是留在原地。</p>
+                </div>
+            </div>
+        </div>
+    </details>
+
+    <!-- 技能分类 5: 荒野烹饪 (Wilderness Cuisine) -->
+    <details class="timeline-group">
+        <summary>荒野烹饪 (Wilderness Cuisine) <span class="tag tag-view">饮食文化</span></summary>
+        <div class="chapter-detail">
+            <div class="info-grid">
+                <div class="info-item">
+                    <h4>纯公牛肉餐 (Bull Meat Straight)</h4>
+                    <p><strong>背景：</strong>在食物匮乏的冬季。</p>
+                    <p><strong>做法：</strong>将贫瘠坚硬的公牛肉扔进火堆余烬中烧烤。用棍子敲打掉灰烬。
+                    <br><strong>评价：</strong>“这肉很硬，但没有肉吃更难受(tougher)。”</p>
+                </div>
+                <div class="info-item">
+                    <h4>大杂烩 (The Mountain Stew)</h4>
+                    <p><strong>食材：</strong>任何能找到的肉类（最好是肥熊肉或大角羊）。</p>
+                    <p><strong>做法：</strong>切成小块，在水壶中煮至极烂。加入盐和胡椒（如果有）。这是饥饿数日后最好的恢复食物。</p>
+                </div>
+                <div class="info-item">
+                    <h4>生吃内脏 (Emergency Rations)</h4>
+                    <p><strong>情境：</strong>在极度寒冷且无法生火的情况下。</p>
+                    <p><strong>做法：</strong>杀死水牛后，生吃肝脏或肾脏。这不仅提供营养，还能提供宝贵的水分和热量。</p>
+                </div>
+            </div>
+        </div>
+    </details>
+
+</div>
+
+<footer>
+    <p>© 2023 交互式读书摘要生成 | 基于 Osborne Russell 原著 "Journal of a Trapper"</p>
+    <p>注：本摘要严格基于1921年Syms-York公司出版版本内容生成</p>
+</footer>
+
+<script>
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        
+        // 隐藏所有内容
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+            tabcontent[i].classList.remove("active");
+        }
+        
+        // 移除所有按钮激活状态
+        tablinks = document.getElementsByClassName("tab-btn");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        
+        // 显示当前标签
+        document.getElementById(tabName).style.display = "block";
+        setTimeout(function(){
+            document.getElementById(tabName).classList.add("active");
+        }, 10);
+        
+        evt.currentTarget.className += " active";
+    }
+</script>
+
+</body>
+</html>
