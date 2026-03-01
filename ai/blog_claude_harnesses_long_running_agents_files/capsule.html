@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>适用于长时间运行 Agent 的有效框架</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #ffffff;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 2.2em;
+            margin-bottom: 0.5em;
+            color: #111;
+        }
+        h2 {
+            font-size: 1.8em;
+            margin-top: 1.5em;
+            margin-bottom: 0.8em;
+            color: #111;
+            border-bottom: 1px solid #eaeaea;
+            padding-bottom: 10px;
+        }
+        h3 {
+            font-size: 1.4em;
+            margin-top: 1.2em;
+            color: #222;
+        }
+        p {
+            margin-bottom: 1.2em;
+            font-size: 1.1em;
+        }
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: "Menlo", "Monaco", "Courier New", monospace;
+            font-size: 0.9em;
+            color: #d63384;
+        }
+        pre {
+            background-color: #f6f8fa;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.9em;
+            border: 1px solid #e1e4e8;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #eee;
+        }
+        .caption {
+            font-size: 0.9em;
+            color: #666;
+            text-align: center;
+            margin-top: -10px;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 1em;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background-color: #f9f9f9;
+            font-weight: bold;
+        }
+        .meta {
+            color: #666;
+            font-size: 0.95em;
+            margin-bottom: 30px;
+        }
+        .summary {
+            font-size: 1.2em;
+            color: #444;
+            font-style: italic;
+            margin-bottom: 40px;
+            border-left: 4px solid #333;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>适用于长时间运行 Agent 的有效框架</h1>
+        <div class="meta">发布于 2025年11月26日 &bull; Anthropic 工程团队</div>
+        <div class="summary">
+            Agent 在跨越多个上下文窗口工作时仍面临挑战。我们从人类工程师的工作方式中汲取灵感，为长时间运行的 Agent 创建了一个更有效的框架。
+        </div>
+    </header>
+
+    <article>
+        <p>随着 AI Agent（智能体）的能力越来越强，开发者正越来越多地要求它们承担需要耗时数小时甚至数天的复杂任务。然而，让 Agent 在多个上下文窗口（Context Windows）之间保持一致的进展仍然是一个未解难题。</p>
+
+        <p>长时间运行 Agent 的核心挑战在于，它们必须在离散的会话中工作，而每一个新会话开始时都没有之前的记忆。想象一下一个由轮班工程师负责的软件项目，每个新工程师接班时都不记得上一班发生了什么。由于上下文窗口是有限的，且大多数复杂项目无法在单个窗口内完成，Agent 需要一种方法来桥接各个编程会话之间的鸿沟。</p>
+
+        <p>我们开发了一套双重解决方案，使 <a href="https://platform.claude.com/docs/en/agent-sdk/overview">Claude Agent SDK</a> 能够有效地跨越多个上下文窗口工作：包含一个在首次运行时设置环境的<strong>初始化 Agent（initializer agent）</strong>，以及一个负责在每次会话中取得增量进展并为下一次会话留下清晰产物的<strong>编程 Agent（coding agent）</strong>。你可以在随附的 <a href="https://github.com/anthropics/claude-quickstarts/tree/main/autonomous-coding">快速入门指南</a> 中找到代码示例。</p>
+
+        <h2 id="the-long-running-agent-problem">长时间运行 Agent 的难题</h2>
+
+        <p>Claude Agent SDK 是一个强大的通用 Agent 框架，擅长编程以及其他需要模型使用工具来收集上下文、规划和执行的任务。它具有上下文管理功能（如压缩），这使得 Agent 能够在不耗尽上下文窗口的情况下处理任务。理论上，在此设置下，Agent 应该可以持续进行任意时长的有效工作。</p>
+
+        <p>然而，仅靠压缩是不够的。在开箱即用的情况下，即使是像 Opus 4.5 这样的前沿编程模型，如果只给它一个高层级的提示词（例如“构建一个 <a href="http://claude.ai">claude.ai</a> 的克隆版”），并在 Claude Agent SDK 上循环跨多个上下文窗口运行，也难以构建出生产级的 Web 应用程序。</p>
+
+        <p>Claude 的失败主要体现在两种模式上。首先，Agent 往往试图一次性做太多事情——本质上是试图“一步到位（one-shot）”完成应用。这通常导致模型在实现过程中耗尽上下文，留给下一个会话的是开发了一半且没有文档的功能。随后的 Agent 不得不猜测发生了什么，并花费大量时间试图让基本应用重新运行。即使有压缩功能，这种情况也会发生，因为压缩并不总能向下一个 Agent 传递完美清晰的指令。</p>
+
+        <p>第二种失败模式通常发生在项目后期。当一些功能已经构建完成后，后来的 Agent 实例在检查环境时，看到已经取得了一些进展，就会宣告工作已完成。</p>
+
+        <p>这将会把问题分解为两个部分。首先，我们需要设置一个初始环境，为给定提示词所需的所有功能奠定基础，这使得 Agent 能够按部就班、逐个功能地工作。其次，我们应该提示每个 Agent 朝着目标取得增量进展，同时在会话结束时将环境保持在“干净状态”。所谓的“干净状态”，是指代码适合合并到主分支的状态：没有重大 Bug，代码有序且文档齐全，总体而言，开发者可以轻松开始开发新功能，而无需先清理无关的烂摊子。</p>
+
+        <p>在内部实验时，我们使用了一个两部分的解决方案来解决这些问题：</p>
+
+        <ol>
+            <li><strong>初始化 Agent：</strong> 第一个 Agent 会话使用专门的提示词，要求模型设置初始环境：一个 <code>init.sh</code> 脚本，一个记录 Agent 操作的 <code>claude-progress.txt</code> 文件，以及一个显示添加了哪些文件的初始 git 提交。</li>
+            <li><strong>编程 Agent：</strong> 随后的每一个会话都要求模型取得增量进展，然后留下结构化的更新。<sup style="font-size: 0.8em;">[1]</sup></li>
+        </ol>
+
+        <p>这里的关键洞察是找到一种方法，让 Agent 在以全新的上下文窗口开始时，能够快速理解工作状态，这通过 <code>claude-progress.txt</code> 文件配合 git 历史记录来实现。这些实践的灵感来自于了解高效软件工程师每天都在做什么。</p>
+
+        <h2 id="environment-management">环境管理</h2>
+
+        <p>在更新后的 <a href="https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/claude-4-best-practices#multi-context-window-workflows">Claude 4 提示工程指南</a>中，我们分享了一些多上下文窗口工作流的最佳实践，其中包括一种“在第一个上下文窗口使用不同提示词”的框架结构。这个“不同的提示词”要求初始化 Agent 设置环境，包含未来编程 Agent 有效工作所需的所有上下文。在这里，我们将深入探讨这种环境的一些关键组件。</p>
+
+        <h3>功能列表 (Feature list)</h3>
+
+        <p>为了解决 Agent 试图一次性完成应用或过早认为项目完成的问题，我们提示初始化 Agent 编写一个包含所有功能需求的综合文件，以此扩展用户的初始提示词。在 claude.ai 克隆版的例子中，这意味着超过 200 个功能点，例如“用户可以打开新聊天，输入查询，按回车键，并看到 AI 的回复”。所有这些功能最初都被标记为“失败（failing）”，以便后续的编程 Agent 能够清楚地了解完整的功能是什么样子的。</p>
+
+<pre><code>{
+    "category": "functional",
+    "description": "New chat button creates a fresh conversation",
+    "steps": [
+      "Navigate to main interface",
+      "Click the 'New Chat' button",
+      "Verify a new conversation is created",
+      "Check that chat area shows welcome state",
+      "Verify conversation appears in sidebar"
+    ],
+    "passes": false
+}</code></pre>
+
+        <p>我们提示编程 Agent 只能通过更改 <code>passes</code> 字段的状态来编辑此文件，并且我们使用了措辞强硬的指令，如“删除或编辑测试是不可接受的，因为这可能导致功能缺失或 Bug”。经过一些实验，我们最终决定使用 JSON 格式，因为与 Markdown 文件相比，模型不恰当修改或覆盖 JSON 文件的可能性更小。</p>
+
+        <h3>增量进展 (Incremental progress)</h3>
+
+        <p>有了这个初始环境脚手架，下一轮的编程 Agent 就被要求一次只处理一个功能。这种增量方法对于解决 Agent 倾向于一次做太多事情的问题至关重要。</p>
+
+        <p>一旦开始增量工作，模型在进行代码更改后将环境保持在干净状态依然至关重要。在我们的实验中，我们发现引发这种行为的最佳方式是要求模型将进度提交到 git，并附上描述性的提交信息，并在进度文件中编写其进展摘要。这使得模型可以使用 git 撤销糟糕的代码更改，并恢复代码库的工作状态。</p>
+
+        <p>这些方法也提高了效率，因为它们消除了 Agent 猜测发生了什么以及花费时间试图让基本应用重新运行的需要。</p>
+
+        <h3>测试 (Testing)</h3>
+
+        <p>我们观察到的最后一个主要失败模式是，Claude 倾向于在没有适当测试的情况下将功能标记为完成。如果没有明确的提示，Claude 往往会进行代码更改，甚至使用单元测试或针对开发服务器运行 <code>curl</code> 命令进行测试，但却无法识别出该功能在端到端层面不起作用。</p>
+
+        <p>在构建 Web 应用的案例中，一旦明确提示 Claude 使用浏览器自动化工具并像人类用户一样进行所有测试，它在验证端到端功能方面表现得非常好。</p>
+
+        <figure>
+            <img src="https://www-cdn.anthropic.com/images/4zrzovbb/website/f94c2257964fb2d623f1e81f874977ebfc0986bc-1920x1080.gif" alt="Claude 通过 Puppeteer MCP 服务器测试 claude.ai 克隆版时的截图">
+            <figcaption class="caption">Claude 通过 Puppeteer MCP 服务器测试 claude.ai 克隆版时的截图。</figcaption>
+        </figure>
+
+        <p>为 Claude 提供这类测试工具显著提高了性能，因为 Agent 能够识别并修复那些仅从代码中无法看出的 Bug。</p>
+
+        <p>仍有一些问题存在，例如 Claude 的视觉限制以及浏览器自动化工具的局限性，使得难以识别每一种类型的 Bug。例如，Claude 无法通过 Puppeteer MCP 看到浏览器原生的警告弹窗（alert modals），依赖这些弹窗的功能因此往往会有更多 Bug。</p>
+
+        <h2 id="getting-up-to-speed">快速进入状态</h2>
+
+        <p>在上述所有机制就位后，每个编程 Agent 都会被提示运行一系列步骤来确定当前状况，有些步骤虽然基础但非常有帮助：</p>
+
+        <ol>
+            <li><em>运行 <code>pwd</code> 查看你当前的工作目录。你只能编辑此目录中的文件。</em></li>
+            <li><em>阅读 git 日志和进度文件，以此快速了解最近完成了哪些工作。</em></li>
+            <li><em>阅读功能列表文件，并选择一个优先级最高且尚未完成的功能开始工作。</em></li>
+        </ol>
+
+        <p>这种方法在每个会话中为 Claude 节省了一些 Token，因为它不必再去弄清楚如何测试代码。此外，要求初始化 Agent 编写一个可以运行开发服务器的 <code>init.sh</code> 脚本，并在实现新功能之前运行基本的端到端测试，也很有帮助。</p>
+
+        <p>在 claude.ai 克隆版的案例中，这意味着 Agent 总是启动本地开发服务器，并使用 Puppeteer MCP 开始新聊天、发送消息并接收回复。这确保了 Claude 能够快速识别应用是否处于损坏状态，并立即修复任何现有的 Bug。如果 Agent 在这种情况下直接开始实现新功能，很可能会使问题变得更糟。</p>
+
+        <p>综上所述，一个典型的会话通常以以下助手消息开始：</p>
+
+<pre><code>[Assistant] I'll start by getting my bearings and understanding the current state of the project.
+（助手：我将首先确定方位并了解项目的当前状态。）
+[Tool Use] &lt;bash - pwd&gt;
+[Tool Use] &lt;read - claude-progress.txt&gt;
+[Tool Use] &lt;read - feature_list.json&gt;
+[Assistant] Let me check the git log to see recent work.
+（助手：让我检查一下 git 日志看看最近的工作。）
+[Tool Use] &lt;bash - git log --oneline -20&gt;
+[Assistant] Now let me check if there's an init.sh script to restart the servers.
+（助手：现在让我检查是否有 init.sh 脚本来重启服务器。）
+&lt;Starts the development server&gt;
+（启动开发服务器）
+[Assistant] Excellent! Now let me navigate to the application and verify that some fundamental features are still working.
+（助手：太好了！现在让我导航到应用程序并验证一些基础功能是否仍在工作。）
+&lt;Tests basic functionality&gt;
+（测试基本功能）
+[Assistant] Based on my verification testing, I can see that the fundamental functionality is working well. The core chat features, theme switching, conversation loading, and error handling are all functioning correctly. Now let me review the tests.json file more comprehensively to understand what needs to be implemented next.
+（助手：基于我的验证测试，我可以看到基础功能运行良好。核心聊天功能、主题切换、对话加载和错误处理都功能正常。现在让我更全面地查看 tests.json 文件，以了解接下来需要实现什么。）
+&lt;Starts work on a new feature&gt;
+（开始开发新功能）</code></pre>
+
+        <h3>Agent 常见失败模式与解决方案</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>问题</th>
+                    <th>初始化 Agent 行为</th>
+                    <th>编程 Agent 行为</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Claude 过早宣布整个项目胜利。</td>
+                    <td>设置功能列表文件：基于输入规范，建立一个包含端到端功能描述列表的结构化 JSON 文件。</td>
+                    <td>在会话开始时阅读功能列表文件。选择单个功能开始工作。</td>
+                </tr>
+                <tr>
+                    <td>Claude 将环境留在有 Bug 或进度未记录的状态。</td>
+                    <td>编写初始 git 仓库和进度说明文件。</td>
+                    <td>会话开始时阅读进度说明文件和 git 提交日志，并在开发服务器上运行基本测试以捕获任何未记录的 Bug。通过编写 git 提交和进度更新来结束会话。</td>
+                </tr>
+                <tr>
+                    <td>Claude 过早将功能标记为完成。</td>
+                    <td>设置功能列表文件。</td>
+                    <td>自我验证所有功能。只有在仔细测试后才将功能标记为“通过（passing）”。</td>
+                </tr>
+                <tr>
+                    <td>Claude 必须花费时间弄清楚如何运行应用。</td>
+                    <td>编写一个可以运行开发服务器的 <code>init.sh</code> 脚本。</td>
+                    <td>会话开始时阅读 <code>init.sh</code>。</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2 id="future-work">未来工作</h2>
+
+        <p>这项研究展示了在长时间运行 Agent 框架中，为了使模型能够跨多个上下文窗口取得增量进展的一套可能的解决方案。然而，仍存在一些开放性问题。</p>
+
+        <p>最值得注意的是，目前尚不清楚是单个通用的编程 Agent 在跨上下文中表现最佳，还是通过多 Agent 架构能实现更好的性能。看起来合理的假设是，像测试 Agent、质量保证 Agent 或代码清理 Agent 这样的专用 Agent，可能在软件开发生命周期的子任务中做得更好。</p>
+
+        <p>此外，此演示针对全栈 Web 应用开发进行了优化。未来的方向是将这些发现推广到其他领域。这些经验中的部分或全部很可能可以应用于其他需要长时间运行的 Agent 任务，例如科学研究或金融建模。</p>
+
+        <hr style="margin: 40px 0; border: 0; border-top: 1px solid #eee;">
+
+        <h3>致谢</h3>
+        <p>作者：Justin Young。特别感谢 David Hershey, Prithvi Rajasakeran, Jeremy Hadfield, Naia Bouscal, Michael Tingley, Jesse Mu, Jake Eaton, Marius Buleandara, Maggie Vo, Pedram Navid, Nadine Yasser 和 Alex Notov 的贡献。</p>
+
+        <p>这项工作反映了 Anthropic 多个团队的共同努力，是他们让 Claude 能够安全地进行长周期的自主软件工程，特别是 Code RL 和 Claude Code 团队。有兴趣做出贡献的候选人欢迎访问 <a href="http://anthropic.com/careers">anthropic.com/careers</a> 申请。</p>
+
+        <h3>脚注</h3>
+        <p style="font-size: 0.9em; color: #555;">[1] 我们在此上下文中将它们称为独立的 Agent，仅仅是因为它们拥有不同的初始用户提示词。系统提示词、工具集和整体 Agent 框架在其他方面是完全相同的。</p>
+
+    </article>
+
+</body>
+</html>
