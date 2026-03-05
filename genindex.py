@@ -260,7 +260,7 @@ def main(path_str, preurl):
     # 收集HTML文件：主目录和blog目录
     html_files = [
         f for f in path.glob('*.htm*')
-        if f.name not in {'index.html', 'template.html', 'tags.html'}
+        if f.is_file() and f.name not in {'index.html', 'template.html', 'tags.html'}
     ]
     
     # 添加blog目录下的HTML文件
@@ -268,7 +268,7 @@ def main(path_str, preurl):
     if blog_path.is_dir():
         blog_files = [
             f for f in blog_path.glob('*.htm*')
-            if f.name not in {'index.html', 'template.html', 'tags.html'}
+            if f.is_file() and f.name not in {'index.html', 'template.html', 'tags.html'}
         ]
         html_files.extend(blog_files)
         print(f"在blog目录中找到 {len(blog_files)} 个HTML文件")
