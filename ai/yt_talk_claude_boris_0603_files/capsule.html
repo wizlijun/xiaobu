@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深度访谈：Claude Code 的构建哲学与 AI 编程的未来</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans SC', sans-serif;
+            background-color: #F8FAFC; /* Slate 50 */
+            color: #334155; /* Slate 700 */
+            line-height: 1.6;
+        }
+
+        /* 翻转卡片容器 */
+        .card-container {
+            perspective: 1000px;
+            height: 420px; /* 增加高度以容纳更多细节 */
+        }
+
+        /* 卡片核心 */
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+        }
+
+        /* 翻转状态 */
+        .card-container.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        /* 正反面通用样式 */
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 1rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 正面样式 */
+        .flip-card-front {
+            background-color: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            z-index: 2;
+        }
+
+        /* 背面样式 */
+        .flip-card-back {
+            background: linear-gradient(145deg, #F1F5F9 0%, #E2E8F0 100%);
+            color: #1E293B;
+            transform: rotateY(180deg);
+            border: 1px solid #CBD5E1;
+            text-align: left;
+            padding: 1.5rem;
+            align-items: flex-start;
+            overflow-y: auto; /* 允许内容滚动 */
+        }
+
+        /* 滚动条美化 */
+        .flip-card-back::-webkit-scrollbar {
+            width: 6px;
+        }
+        .flip-card-back::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .flip-card-back::-webkit-scrollbar-thumb {
+            background-color: #94A3B8;
+            border-radius: 20px;
+        }
+
+        /* 高亮标记 */
+        .highlight {
+            background-color: #FEF9C3; /* Yellow 100 */
+            color: #854D0E;
+            padding: 0 4px;
+            border-radius: 2px;
+            font-weight: 600;
+        }
+
+        .section-title {
+            position: relative;
+            display: inline-block;
+        }
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background-color: #6366F1; /* Indigo 500 */
+            border-radius: 2px;
+        }
+
+        /* 标签样式 */
+        .tag {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .icon-box {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+            transition: transform 0.3s ease;
+        }
+        .card-container:hover .icon-box {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        /* 点击提示动画 */
+        .click-hint {
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8,0,1,1); }
+            50% { transform: translateY(0); animation-timing-function: cubic-bezier(0,0,0.2,1); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <!-- 顶部 Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 bg-opacity-90 backdrop-blur-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-podcast text-indigo-600 text-xl"></i>
+                <span class="font-bold text-slate-800 tracking-tight">The Pragmatic Engineer</span>
+            </div>
+            <div class="text-xs text-slate-500 font-medium bg-slate-100 px-3 py-1 rounded-full">
+                Episode Recap: Boris Cherny (Anthropic)
+            </div>
+        </div>
+    </header>
+
+    <!-- 标题区域 -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="text-center mb-16">
+            <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 mb-6 tracking-tight">
+                AI 如何重塑编程：<br><span class="text-indigo-600">Claude Code</span> 的构建之路
+            </h1>
+            <p class="text-lg md:text-xl text-slate-500 max-w-3xl mx-auto leading-relaxed">
+                深入 Anthropic 工程内部，揭秘 Boris Cherny 团队如何使用 Claude 构建 Claude。
+                <br>
+                关于 Agent 架构、RAG 的消亡、蜂群智能与工程师的未来。
+            </p>
+        </div>
+
+        <!-- 对话双方简介 (Context) -->
+        <section class="grid md:grid-cols-2 gap-8 mb-20">
+            <!-- 访谈人 -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex gap-5 items-start">
+                <div class="flex-shrink-0">
+                    <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-2xl text-slate-400">
+                        <i class="fa-solid fa-microphone-lines"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="text-xs font-bold text-indigo-500 uppercase tracking-wide mb-1">Host</div>
+                    <h3 class="text-xl font-bold text-slate-900">Gergely Orosz</h3>
+                    <p class="text-slate-500 text-sm mt-1">
+                        《The Pragmatic Engineer》作者，前 Uber/Skyscanner 工程经理。
+                        专注于大科技公司的工程文化与实践，拥有全球最大的技术类 Newsletter 读者群。
+                    </p>
+                </div>
+            </div>
+
+            <!-- 嘉宾 -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex gap-5 items-start">
+                <div class="flex-shrink-0">
+                    <img src="https://m.media-amazon.com/images/I/81L9C+aJ+pL._AC_UF1000,1000_QL80_.jpg" alt="Programming TypeScript Book Cover" class="w-16 h-16 rounded-full object-cover border border-slate-200 shadow-sm">
+                </div>
+                <div>
+                    <div class="text-xs font-bold text-purple-500 uppercase tracking-wide mb-1">Guest</div>
+                    <h3 class="text-xl font-bold text-slate-900">Boris Cherny</h3>
+                    <p class="text-slate-500 text-sm mt-1">
+                        <strong>Anthropic 工程负责人 (Claude Code)</strong>。
+                        <br>
+                        前 Meta 资深工程师（负责 Instagram/FB 代码质量），O'Reilly畅销书《Programming TypeScript》作者。
+                        早期黑客（初中就用汇编给计算器写作弊程序）。
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 金句引用 -->
+        <section class="mb-20">
+            <div class="bg-indigo-50 rounded-3xl p-8 md:p-12 relative overflow-hidden">
+                <div class="absolute top-0 left-0 text-indigo-100 text-9xl font-serif transform -translate-y-8 -translate-x-4 select-none">“</div>
+                <blockquote class="relative z-10 text-center">
+                    <p class="text-2xl md:text-3xl font-medium text-indigo-900 leading-relaxed">
+                        “Opus 4.5 和 Claude Code 写了我 <span class="bg-indigo-200 px-1">100%</span> 的代码。我没有手动编辑哪怕一行... 这就像 1400 年代的印刷术革命。抄写员并没有消失，他们变成了作家。”
+                    </p>
+                    <footer class="mt-6 text-indigo-600 font-semibold">— Boris Cherny</footer>
+                </blockquote>
+            </div>
+        </section>
+
+        <!-- 核心知识卡片区域 (交互重点) -->
+        <section>
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-2xl font-bold text-slate-800 section-title">深度知识拆解 (8个要点)</h2>
+                <div class="flex items-center gap-2 text-sm text-slate-500">
+                    <i class="fa-solid fa-arrow-pointer click-hint text-indigo-500"></i>
+                    点击卡片翻转查看细节
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+                <!-- Card 1: 早期故事 -->
+                <div class="card-container" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon-box bg-blue-50 text-blue-500">
+                                <i class="fa-solid fa-code-branch"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800 mb-2">第一个 PR 被拒</h3>
+                            <p class="text-slate-500 text-sm px-4">Boris 加入 Anthropic 的第一天发生了什么？</p>
+                            <span class="tag bg-slate-100 text-slate-500 mt-6">文化冲击</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4 class="font-bold text-indigo-600 mb-3 border-b pb-2">从手写到 AI 生成</h4>
+                            <p class="text-sm mb-3">Boris 按照传统方式手写了他的第一个 Pull Request。</p>
+                            <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-sm mb-3">
+                                <p class="text-xs text-slate-600 italic">"Adam Woolf (我的 Mentor) 拒绝了我的 PR，说：'你应该用 Clyde (Claude Code 前身) 来写这个'。"</p>
+                            </div>
+                            <ul class="text-sm list-disc pl-4 space-y-1 text-slate-700">
+                                <li><strong>顿悟时刻：</strong> 虽然学习工具用了半天，但 Claude 直接 <strong>One-shot (一次通过)</strong> 生成了可工作的代码。</li>
+                                <li><strong>起源：</strong> Claude Code 最初只是为了研究"AI 安全性"而开发的内部 CLI 工具，结果内部采用率垂直飙升至 100%。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: 极致生产力 -->
+                <div class="card-container" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon-box bg-green-50 text-green-500">
+                                <i class="fa-solid fa-rocket"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800 mb-2">每天 30 个 PR</h3>
+                            <p class="text-slate-500 text-sm px-4">无需手写一行代码的现代工作流。</p>
+                            <span class="tag bg-slate-100 text-slate-500 mt-6">Workflow</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4 class="font-bold text-indigo-600 mb-3 border-b pb-2">并行化工作流</h4>
+                            <p class="text-sm text-slate-700 mb-2">Boris 不再使用 IDE，而是使用终端和 iOS App。</p>
+                            <ul class="text-sm list-disc pl-4 space-y-2 text-slate-700">
+                                <li><strong>5 个并行终端：</strong> 使用 `git worktree` 或多个文件夹，同时运行 5 个 Agent。</li>
+                                <li><strong>模式切换：</strong>
+                                    <ul class="list-circle pl-4 mt-1 text-slate-500 text-xs">
+                                        <li><strong>Plan Mode:</strong> 制定计划，人类确认。</li>
+                                        <li><strong>Act Mode:</strong> Claude 执行，通常一次成功。</li>
+                                    </ul>
+                                </li>
+                                <li><strong>移动端编程：</strong> 每天早上在床上通过 Claude iOS App 的 Code Tab 启动任务，远程跑在云端。</li>
+                                <li><strong>结果：</strong> 使用 Opus 4.5/4.6 期间，连续数周 <span class="highlight">0 手写代码</span>。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: 架构反转 (No RAG) -->
+                <div class="card-container" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon-box bg-red-50 text-red-500">
+                                <i class="fa-solid fa-magnifying-glass-chart"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800 mb-2">RAG 的消亡</h3>
+                            <p class="text-slate-500 text-sm px-4">为什么 Claude Code 移除了向量数据库？</p>
+                            <span class="tag bg-slate-100 text-slate-500 mt-6">Tech Stack</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4 class="font-bold text-indigo-600 mb-3 border-b pb-2">从 RAG 到 Agentic Search</h4>
+                            <p class="text-sm text-slate-700 mb-2">早期版本使用本地向量数据库，但效果不佳。</p>
+                            <ul class="text-sm list-disc pl-4 space-y-2 text-slate-700">
+                                <li><strong>问题 1 (Staleness):</strong> 代码变动太快，向量索引总是过时，导致幻觉。</li>
+                                <li><strong>问题 2 (Permissions):</strong> 难以控制哪些文件被索引，存在安全隐患。</li>
+                                <li><strong>解决方案：<span class="highlight">Agentic Search</span></strong>
+                                    <p class="text-xs text-slate-500 mt-1">即赋予 Claude 使用 grep, glob, find 命令的能力。让模型像人类工程师一样去"搜索"代码，这种动态检索比静态向量更准确。</p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Code Review 2.0 -->
+                <div class="card-container" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon-box bg-purple-50 text-purple-500">
+                                <i class="fa-solid fa-list-check"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800 mb-2">AI 审查 AI</h3>
+                            <p class="text-slate-500 text-sm px-4">当代码生成速度超过人类审查速度时。</p>
+                            <span class="tag bg-slate-100 text-slate-500 mt-6">Quality</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4 class="font-bold text-indigo-600 mb-3 border-b pb-2">多层防御网</h4>
+                            <ul class="text-sm list-disc pl-4 space-y-2 text-slate-700">
+                                <li><strong>Claude Reviewer：</strong> 专门的 CI Agent，能捕获 <span class="highlight">80% 的 Bug</span>。</li>
+                                <li><strong>自动化 Lint 生成：</strong> Boris 发现重复错误时，不再写评论，而是让 Claude "为这个错误写一个 Lint 规则"，不仅修复当前 PR，还永久杜绝该类问题。</li>
+                                <li><strong>自我测试：</strong> Claude Code 会启动子进程，运行测试套件验证自身功能（Self-hosting）。</li>
+                                <li><strong>人类审批：</strong> 生产环境部署必须有人类 Approval（特别是涉及安全/隐私）。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 5: 蜂群智能 (Swarms) -->
+                <div class="card-container" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon-box bg-amber-50 text-amber-500">
+                                <i class="fa-solid fa-users-viewfinder"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800 mb-2">Agent Teams</h3>
+                            <p class="text-slate-500 text-sm px-4">最新特性：主从 Agent 协作模式。</p>
+                            <span class="tag bg-slate-100 text-slate-500 mt-6">Architecture</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4 class="font-bold text-indigo-600 mb-3 border-b pb-2">不相关上下文窗口</h4>
+                            <p class="text-sm text-slate-700 mb-2">这是一个突破性的架构设计。</p>
+                            <ul class="text-sm list-disc pl-4 space-y-2 text-slate-700">
+                                <li><strong>原理：</strong> 主 Agent 派发任务给子 Agent。子 Agent 拥有全新的、空白的上下文窗口（Uncorrelated Context）。</li>
+                                <li><strong>优势：</strong> 避免上下文污染，变相实现无限 Token。</li>
+                                <li><strong>案例：</strong> 团队成员 Daisy 让 Swarm 运行整个周末，自动生成了几百个 Agent，自建 Jira 看板，完成了插件系统的开发。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 6: 安全与权限 -->
+                <div class="card-container" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon-box bg-teal-50 text-teal-500">
+                                <i class="fa-solid fa-lock"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800 mb-2">瑞士奶酪模型</h3>
+                            <p class="text-slate-500 text-sm px-4">如何防止 AI 被攻击或误操作？</p>
+                            <span class="tag bg-slate-100 text-slate-500 mt-6">Security</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4 class="font-bold text-indigo-600 mb-3 border-b pb-2">层层防御</h4>
+                            <ul class="text-sm list-disc pl-4 space-y-2 text-slate-700">
+                                <li><strong>底层对齐：</strong> Opus 4.6 针对 Prompt Injection（提示注入）做了深度强化。</li>
+                                <li><strong>运行时检测：</strong> 分类器实时拦截危险指令。</li>
+                                <li><strong>子 Agent 隔离：</strong> 网页抓取通过子 Agent 进行，只返回摘要，防止恶意 HTML 注入主上下文。</li>
+                                <li><strong>人类许可：</strong> 敏感操作（如 `rm -rf`）必须人类点击 Allow（支持一次性或永久白名单）。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 7: 全民开发者 -->
+                <div class="card-container" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon-box bg-pink-50 text-pink-500">
+                                <i class="fa-solid fa-people-group"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800 mb-2">没有 PRD 的文化</h3>
+                            <p class="text-slate-500 text-sm px-4">谁在 Anthropic 写代码？</p>
+                            <span class="tag bg-slate-100 text-slate-500 mt-6">Culture</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4 class="font-bold text-indigo-600 mb-3 border-b pb-2">Prototype > Document</h4>
+                            <p class="text-sm text-slate-700 mb-2">因为构建成本极低，所以几乎不写文档。</p>
+                            <ul class="text-sm list-disc pl-4 space-y-2 text-slate-700">
+                                <li><strong>原型狂魔：</strong> 以前需要几周的原型，现在几天内可以做 20 个版本。</li>
+                                <li><strong>全员 Coding：</strong> 财务、销售、设计师都在用 Claude Code 写工具。</li>
+                                <li><strong>西红柿故事：</strong> 有用户用 Claude Code 监控家里的西红柿，AI 看到发芽时"非常激动"。这证明了非工程师市场的潜力。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 8: Claude Co-work -->
+                <div class="card-container" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon-box bg-orange-50 text-orange-500">
+                                <i class="fa-solid fa-laptop-code"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-800 mb-2">Claude Co-work</h3>
+                            <p class="text-slate-500 text-sm px-4">仅用 10 天构建的非技术人员神器。</p>
+                            <span class="tag bg-slate-100 text-slate-500 mt-6">Product</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4 class="font-bold text-indigo-600 mb-3 border-b pb-2">非工程师的 Agent</h4>
+                            <p class="text-sm text-slate-700 mb-2">从 Claude Code CLI 衍生出的桌面应用。</p>
+                            <ul class="text-sm list-disc pl-4 space-y-2 text-slate-700">
+                                <li><strong>10 天奇迹：</strong> 团队仅用 10 天开发完成，Electron + TypeScript，大量由 AI 生成。</li>
+                                <li><strong>安全沙箱：</strong> 内置虚拟机，防止非技术用户误删文件。</li>
+                                <li><strong>浏览器集成：</strong> 配合 Chrome 插件，可以操作 Asana/Jira/Google Sheets，自动发 Slack 催办事项。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 总结段落 -->
+        <section class="mt-20 border-t border-slate-200 pt-12">
+            <h2 class="text-2xl font-bold text-slate-800 mb-6 text-center">印刷机时刻 (The Printing Press Moment)</h2>
+            <div class="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+                <p class="text-slate-700 leading-loose text-lg">
+                    Boris 将当前时刻比作 <span class="font-bold text-indigo-600">1400 年代的印刷术革命</span>。
+                    在那个时代，只有极少数精英（抄写员）能够书写，受雇于可能不识字的国王。
+                    印刷术并没有消灭抄写员，而是创造了全新的职业——<strong>作家</strong>。
+                </p>
+                <div class="mt-6 flex flex-col md:flex-row gap-6 bg-slate-50 p-6 rounded-xl">
+                    <div class="flex-1">
+                        <h4 class="font-bold text-slate-800 mb-2"><i class="fa-solid fa-ban text-red-500 mr-2"></i>正在贬值的技能</h4>
+                        <p class="text-sm text-slate-600">对特定编程语言语法、框架风格的执念。纯粹的代码记忆。</p>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="font-bold text-slate-800 mb-2"><i class="fa-solid fa-arrow-trend-up text-green-500 mr-2"></i>未来的核心技能</h4>
+                        <p class="text-sm text-slate-600">
+                            <strong>1. 适应性 (Adaptability)</strong><br>
+                            <strong>2. 好奇心 (Curiosity)</strong><br>
+                            <strong>3. 跨领域整合力 (Generalist)</strong><br>
+                            <strong>4. 短注意力跨度 (Short Attention Span)</strong> - 指快速在不同 AI 上下文中切换的能力。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 底部版权 -->
+    <footer class="bg-slate-900 text-slate-400 py-12 text-center text-sm">
+        <p class="mb-2">Generated summary based on The Pragmatic Engineer Podcast.</p>
+        <p>© 2026 AI Recap Series • Designed for High Retention & Low Cognitive Load</p>
+    </footer>
+
+    <script>
+        // 简单的统计逻辑，实际部署可移除
+        document.querySelectorAll('.card-container').forEach(card => {
+            card.addEventListener('click', () => {
+                console.log('User interacted with knowledge card');
+            });
+        });
+    </script>
+</body>
+</html>
