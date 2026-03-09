@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《从项目到产品》核心精要 - 现代AI视角</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --surface-color: #f8f9fa;
+            --primary-color: #339af0;
+            --primary-dark: #228be6;
+            --accent-color: #748ffc;
+            --text-main: #212529;
+            --text-muted: #495057;
+            --text-light: #868e96;
+            --danger-color: #ff6b6b;
+            --success-color: #51cf66;
+            --warning-color: #fcc419;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --shadow-sm: 0 4px 6px rgba(0,0,0,0.04);
+            --shadow-md: 0 10px 15px rgba(0,0,0,0.05);
+            --shadow-lg: 0 20px 25px rgba(0,0,0,0.08);
+            --radius-md: 12px;
+            --radius-lg: 20px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Layout */
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+        section { padding: 5rem 0; opacity: 0; transform: translateY(20px); transition: all 0.8s ease-out; }
+        section.visible { opacity: 1; transform: translateY(0); }
+
+        /* Typography */
+        h1 { font-size: 3.5rem; font-weight: 800; letter-spacing: -0.05em; line-height: 1.2; margin-bottom: 1rem; background: linear-gradient(135deg, var(--primary-dark), var(--accent-color)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h2 { font-size: 2.2rem; font-weight: 700; margin-bottom: 2rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem; }
+        h3 { font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; }
+        p { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+        
+        /* Highlighting */
+        .highlight { background: linear-gradient(120deg, rgba(51, 154, 240, 0.1) 0%, rgba(51, 154, 240, 0.2) 100%); padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; color: var(--primary-dark); }
+        .quote-block { background-color: var(--surface-color); border-left: 4px solid var(--primary-color); padding: 2rem; border-radius: 0 var(--radius-md) var(--radius-md) 0; margin: 2rem 0; font-size: 1.25rem; font-style: italic; color: var(--text-muted); box-shadow: var(--shadow-sm); }
+
+        /* Hero Section */
+        .hero { min-height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: radial-gradient(circle at top right, rgba(116, 143, 252, 0.05), transparent 50%); }
+        .hero-subtitle { font-size: 1.5rem; color: var(--text-muted); max-width: 800px; margin: 0 auto; }
+        .badge { display: inline-block; padding: 0.4rem 1rem; border-radius: 50px; background-color: rgba(51, 154, 240, 0.1); color: var(--primary-dark); font-size: 0.9rem; font-weight: 600; margin-bottom: 1.5rem; letter-spacing: 1px; text-transform: uppercase;}
+
+        /* Comparison Table (Project vs Product) */
+        .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; }
+        .comp-card { background: var(--surface-color); padding: 2.5rem; border-radius: var(--radius-lg); border: 1px solid rgba(0,0,0,0.03); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .comp-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
+        .comp-card.old { border-top: 4px solid var(--danger-color); }
+        .comp-card.new { border-top: 4px solid var(--success-color); background: #fdffff; }
+        .comp-list { list-style: none; margin-top: 1.5rem; }
+        .comp-list li { margin-bottom: 1rem; display: flex; align-items: flex-start; gap: 0.5rem; font-size: 1.1rem; }
+        .comp-list li::before { content: "❌"; font-size: 1rem; }
+        .comp-card.new .comp-list li::before { content: "✅"; }
+
+        /* Flip Cards Grid */
+        .flip-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; perspective: 1000px; }
+        .flip-card { background-color: transparent; height: 350px; perspective: 1000px; cursor: pointer; }
+        .flip-card-inner { position: relative; width: 100%; height: 100%; text-align: left; transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; }
+        .flip-card:hover .flip-card-inner { transform: rotateY(180deg); }
+        .flip-card-front, .flip-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: var(--radius-lg); padding: 2.5rem; box-shadow: var(--shadow-md); display: flex; flex-direction: column; justify-content: center; }
+        .flip-card-front { background-color: var(--bg-color); border: 1px solid rgba(0,0,0,0.05); }
+        .flip-card-back { background: linear-gradient(135deg, var(--surface-color), #ffffff); transform: rotateY(180deg); border: 1px solid rgba(51,154,240,0.2); }
+        .card-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+        .flip-card-front h3 { font-size: 1.6rem; color: var(--text-main); }
+        .flip-card-front p { color: var(--text-light); font-size: 1rem; }
+        .flip-card-back ul { padding-left: 1.2rem; color: var(--text-muted); font-size: 1.05rem; }
+        .flip-card-back li { margin-bottom: 0.8rem; }
+        
+        /* Tag pills */
+        .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+        .tag { background: #e7f5ff; color: var(--primary-dark); padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 500; }
+
+        /* Modern AI Reflection Section */
+        .ai-reflection { background: var(--text-main); color: var(--bg-color); border-radius: var(--radius-lg); padding: 4rem; margin-top: 2rem; position: relative; overflow: hidden; box-shadow: var(--shadow-lg); }
+        .ai-reflection::before { content: "✨"; position: absolute; top: -20px; right: -20px; font-size: 10rem; opacity: 0.05; }
+        .ai-reflection h2 { color: var(--bg-color); }
+        .ai-reflection p { color: #adb5bd; }
+        .ai-reflection .highlight { background: rgba(116, 143, 252, 0.2); color: #a5d8ff; }
+        .timeline-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem; }
+        .timeline-item { background: rgba(255,255,255,0.05); padding: 2rem; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.1); }
+        .timeline-item h4 { color: #fff; font-size: 1.3rem; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;}
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            .comparison-grid, .timeline-grid { grid-template-columns: 1fr; }
+            .ai-reflection { padding: 2rem; }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <!-- Hero Section -->
+    <section class="hero container visible">
+        <span class="badge">LLM AI 时代重制版摘要</span>
+        <h1>从项目到产品<br>(Project to Product)</h1>
+        <p class="hero-subtitle">在软件时代幸存的必修课：用 <strong>Flow Framework (流动框架)</strong> 将敏捷开发、DevOps与业务成果无缝对齐。降低认知负荷，直击价值流核心。</p>
+    </section>
+
+    <!-- Epiphanies Section -->
+    <section class="container" id="epiphanies">
+        <h2>💡 作者的三大核心顿悟 (The 3 Epiphanies)</h2>
+        <p>作者 Mik Kersten 在研究了宝马莱比锡工厂的先进制造流程后，发现了软件工程的致命盲点：</p>
+        
+        <div class="quote-block">
+            <strong>顿悟 1：</strong> 随着软件规模扩大，由于<span class="highlight">架构与价值流脱节</span>，生产力下降，浪费增加。开发者大量时间浪费在跨工具的上下文切换上。
+        </div>
+        <div class="quote-block">
+            <strong>顿悟 2：</strong> <span class="highlight">割裂的软件价值流</span>是规模化软件生产力的最大瓶颈。这是误用传统“项目管理”模型造成的。
+        </div>
+        <div class="quote-block">
+            <strong>顿悟 3：</strong> 软件价值流不是线性的制造流水线，而是<span class="highlight">复杂的协作网络</span>，必须围绕“产品”来对齐。
+        </div>
+    </section>
+
+    <!-- Project vs Product -->
+    <section class="container" id="paradigm-shift">
+        <h2>🔄 范式转移：摒弃项目，拥抱产品</h2>
+        <p>在数字经济的“部署期(Deployment Period)”，延用上个时代的“项目制”无异于慢性自杀。</p>
+        
+        <div class="comparison-grid">
+            <div class="comp-card old">
+                <h3>项目导向管理 (Project-Oriented)</h3>
+                <p>工业时代的遗留物，把人当做机器零件（泰勒主义）。</p>
+                <ul class="comp-list">
+                    <li><strong>预算：</strong> 按项目节点拨付，超支即失败。</li>
+                    <li><strong>时间：</strong> 有明确截止日期，不考虑后续生命周期。</li>
+                    <li><strong>成功标准：</strong> 按时、按预算交付（成本中心视角）。</li>
+                    <li><strong>团队：</strong> <span class="highlight">把人分配到工作上</span>，项目结束团队解散，来回切换。</li>
+                    <li><strong>隐患：</strong> 绿皮红瓤的“西瓜项目”（指标全绿，业务全红）。</li>
+                </ul>
+            </div>
+            
+            <div class="comp-card new">
+                <h3>产品导向管理 (Product-Oriented)</h3>
+                <p>科技巨头的核心秘籍，关注端到端的业务价值流。</p>
+                <ul class="comp-list">
+                    <li><strong>预算：</strong> 基于业务成果持续投资产品价值流。</li>
+                    <li><strong>时间：</strong> 关注产品的全生命周期（含维护与退役）。</li>
+                    <li><strong>成功标准：</strong> 利润、收入、用户活跃度（利润中心视角）。</li>
+                    <li><strong>团队：</strong> <span class="highlight">把工作分配给固定团队</span>，降低组建期损耗。</li>
+                    <li><strong>优势：</strong> 透明的业务对齐，快速响应市场假说。</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Core Concepts Flip Cards -->
+    <section class="container" id="flow-framework">
+        <h2>🌊 核心概念：知识翻转卡片</h2>
+        <p>交互式探索 <strong>Flow Framework (流动框架)</strong> 的底层逻辑（鼠标悬停或点击卡片翻转）。</p>
+
+        <div class="flip-grid">
+            <!-- Card 1: Flow Items -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">📦</div>
+                        <h3>4大流动项</h3>
+                        <p>Flow Items: 价值流中流动的实体</p>
+                        <div class="tags">
+                            <span class="tag">MECE原则</span>
+                            <span class="tag">零和博弈</span>
+                        </div>
+                    </div>
+                    <div class="flip-card-back">
+                        <ul>
+                            <li>🚀 <strong>特性 (Features):</strong> 客户拉动的新业务价值。</li>
+                            <li>🐞 <strong>缺陷 (Defects):</strong> 客户拉动的质量修复。</li>
+                            <li>🛡️ <strong>风险 (Risks):</strong> 安全合规官拉动的漏洞修复。</li>
+                            <li>🔧 <strong>债务 (Debts):</strong> 架构师拉动，消除未来交付障碍(重构)。</li>
+                        </ul>
+                        <p style="margin-top:1rem; font-size:0.9rem;"><span class="highlight">核心观点：</span>团队容量固定，增加特性必然挤压去债时间（导致诺基亚衰败的死穴）。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Flow Metrics -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">📊</div>
+                        <h3>5大流动指标</h3>
+                        <p>Flow Metrics: 抛弃虚荣指标，测量真实产出</p>
+                        <div class="tags">
+                            <span class="tag">端到端</span>
+                            <span class="tag">排查瓶颈</span>
+                        </div>
+                    </div>
+                    <div class="flip-card-back">
+                        <ul>
+                            <li><strong>速度 (Velocity):</strong> 单位时间内完成的流动项数量。</li>
+                            <li><strong>时间 (Time):</strong> 从接受任务到向客户发布的总时长。</li>
+                            <li><strong>效率 (Efficiency):</strong> 实际工作时间与总耗时的比例（揪出等待浪费）。</li>
+                            <li><strong>负载 (Load):</strong> 并行在制品(WIP)数量，过高会压垮团队。</li>
+                            <li><strong>分布 (Distribution):</strong> 4种流动项的比例分配。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3: Business Results -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🎯</div>
+                        <h3>4项业务成果</h3>
+                        <p>Business Results: 将技术指标直接映射到财报</p>
+                        <div class="tags">
+                            <span class="tag">对齐高管语言</span>
+                        </div>
+                    </div>
+                    <div class="flip-card-back">
+                        <ul>
+                            <li>💰 <strong>价值 (Value):</strong> 收入、月活用户(MAU)等。</li>
+                            <li>📉 <strong>成本 (Cost):</strong> 支撑该价值流的所有研发与基建成本。</li>
+                            <li>⭐ <strong>质量 (Quality):</strong> 逃逸缺陷、净推荐值(NPS)。</li>
+                            <li>😊 <strong>幸福感 (Happiness):</strong> 员工eNPS。失去目标的团队写不出好代码。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4: Value Stream Networks -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="card-icon">🕸️</div>
+                        <h3>价值流网络</h3>
+                        <p>Value Stream Networks: 创新的新基础设施</p>
+                        <div class="tags">
+                            <span class="tag">集成层</span>
+                            <span class="tag">破除孤岛</span>
+                        </div>
+                    </div>
+                    <div class="flip-card-back">
+                        <ul>
+                            <li><strong>工具网络 (Tool Network):</strong> JIRA, GitHub, ServiceNow 等异构系统集群。</li>
+                            <li><strong>制品网络 (Artifact Network):</strong> 需求、工单、代码提交通过集成模型(Integration Model)互联。</li>
+                            <li><strong>产品模型 (Product Model):</strong> 将底层工具数据清洗并映射到具体的“业务产品线”上。</li>
+                        </ul>
+                        <p style="margin-top:0.5rem; font-size:0.9rem;"><span class="highlight">隐喻：</span>不像制造流水线，更像可以动态重路由的航空网络。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modern LLM/AI Coding Perspective (2026 Context) -->
+    <section class="container" id="ai-reflection">
+        <div class="ai-reflection">
+            <h2>⚡ 2026年时代反思：LLM与AI Coding如何重塑框架？</h2>
+            <p>《从项目到产品》成书于2018年。站在现在（2026年）的视角，得益于大语言模型(LLMs)和AI代码助手（如Cursor, GitHub Copilot X，乃至自主Devin级代理）的普及，软件开发的基本面发生了剧变。框架依然有效，但<strong>权重和瓶颈发生了大转移</strong>。</p>
+            
+            <div class="timeline-grid">
+                <div class="timeline-item">
+                    <h4>🔄 观点变化最大：编码不再是瓶颈</h4>
+                    <p><strong>过去：</strong> 开发者的代码产出速度和工具链切换是核心瓶颈 (Flow Time 的重头戏)。</p>
+                    <p><strong>现在：</strong> AI能在数秒内生成数千行功能代码。价值流的瓶颈已向上游（<span class="highlight">需求定义/业务假设的准确性</span>）和下游（<span class="highlight">安全验证/AI代码审查</span>）转移。</p>
+                </div>
+                
+                <div class="timeline-item">
+                    <h4>⚠️ 流动项变异：技术债务(Debts)的狂飙</h4>
+                    <p><strong>过去：</strong> 为了赶特性(Features)而人为妥协产生技术债务。</p>
+                    <p><strong>现在：</strong> AI如果不受良好架构的引导，会以惊人的速度产生极度庞大的、难以维护的“黑盒”代码。在 Flow Distribution 中，<span class="highlight">安排偿还债务(Debts)和风险(Risks)的时间比以往任何时候都更加关乎生死。</span></p>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>🧠 负载(Load)的重新定义：认知负荷</h4>
+                    <p><strong>过去：</strong> Flow Load 指的是堆积在开发者看板上的任务数。</p>
+                    <p><strong>现在：</strong> 单个开发者可以利用AI并行处理海量工单。现在的 Load 更多体现为<span class="highlight">审查机器生成代码时的“认知负荷” (Cognitive Load)</span>。人类开发者逐渐演变为代码审查员和AI编排者。</p>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>😊 幸福感(Happiness)的新来源</h4>
+                    <p><strong>过去：</strong> 消除在不同工具(Jira/Git)间复制粘贴的枯燥劳动。</p>
+                    <p><strong>现在：</strong> <span class="highlight">保持创造力的掌控感。</span>避免让开发者沦化为“AI代码清理工”。能够熟练驾驭价值流网络并用AI验证产品假说的团队，其幸福感(eNPS)最高。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="text-align: center; padding: 3rem 0; margin-top: 3rem; color: var(--text-light); border-top: 1px solid rgba(0,0,0,0.05);">
+        <p>Created by LLM AI Coding Expert | Timestamp: March 2026</p>
+        <p style="font-size: 0.9rem;">以最小认知负荷展现《Project to Product》的精髓体系</p>
+    </footer>
+
+    <!-- JavaScript for scroll animations -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sections = document.querySelectorAll('section');
+            
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.15
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                // Skip the hero section as it's already visible
+                if (!section.classList.contains('hero')) {
+                    observer.observe(section);
+                }
+            });
+        });
+    </script>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_project2product_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
