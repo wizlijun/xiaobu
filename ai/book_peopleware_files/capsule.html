@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《人件》(Peopleware) 精华交互式摘要</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --accent: #f59e0b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        header {
+            max-width: 1000px;
+            margin: 0 auto 2rem auto;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-weight: 800;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .golden-quote {
+            background: var(--card-bg);
+            border-left: 5px solid var(--accent);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            font-size: 1.25rem;
+            font-style: italic;
+            color: var(--text-main);
+            margin: 0 auto 2rem auto;
+            max-width: 800px;
+        }
+
+        .golden-quote strong {
+            color: var(--primary);
+        }
+
+        /* Tabs Navigation */
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .tab-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 0.75rem 1.5rem;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: var(--transition);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .tab-btn:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: var(--shadow);
+        }
+
+        /* Content Sections */
+        .tab-content {
+            display: none;
+            max-width: 1200px;
+            margin: 0 auto;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-header {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        /* Flip Cards Grid */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Flip Card Logic */
+        .flip-card {
+            background-color: transparent;
+            width: 100%;
+            height: 280px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .flip-card-front {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--primary);
+        }
+
+        .flip-card-front h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .flip-card-front .hint {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            background: var(--bg-color);
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .flip-card-back {
+            background-color: var(--primary);
+            color: white;
+            transform: rotateY(180deg);
+            text-align: left;
+            align-items: flex-start;
+        }
+
+        .flip-card-back p {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+        }
+
+        .flip-card-back mark {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0 0.2rem;
+            border-radius: 2px;
+        }
+
+        /* Highlight box */
+        .highlight-box {
+            background: var(--card-bg);
+            border-left: 4px solid var(--primary);
+            padding: 1.5rem;
+            border-radius: 0 8px 8px 0;
+            margin: 2rem 0;
+            box-shadow: var(--shadow);
+        }
+
+        .highlight-box h4 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .highlight-box ul {
+            padding-left: 1.5rem;
+        }
+
+        .highlight-box li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Modern Perspective Section */
+        .modern-perspective {
+            background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin-top: 1rem;
+            box-shadow: var(--shadow-hover);
+        }
+
+        .modern-perspective h2 {
+            color: var(--primary);
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .modern-perspective .concept {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--accent);
+        }
+
+        .tag {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>《人件》(Peopleware) 核心提炼</h1>
+        <div class="subtitle">Tom DeMarco & Timothy Lister 著 | 现代软件工程视角解读</div>
+        <div class="golden-quote">
+            "我们工作中的主要问题，与其说是<strong>技术问题</strong>，不如说是<strong>社会学问题</strong>。"
+            <br>
+            <span style="font-size: 1rem; color: var(--text-muted);">—— 本书最核心的论点，至今仍是软件工程第一铁律</span>
+        </div>
+    </header>
+
+    <nav class="tabs">
+        <button class="tab-btn active" onclick="openTab(event, 'part1')">I: 人力资源</button>
+        <button class="tab-btn" onclick="openTab(event, 'part2')">II: 办公环境</button>
+        <button class="tab-btn" onclick="openTab(event, 'part3')">III: 正确的人</button>
+        <button class="tab-btn" onclick="openTab(event, 'part4')">IV: 高效团队</button>
+        <button class="tab-btn" onclick="openTab(event, 'part5')">V: 肥沃土壤</button>
+        <button class="tab-btn" onclick="openTab(event, 'part6')">VI: 快乐工作</button>
+        <button class="tab-btn" style="background: var(--accent); color: white;" onclick="openTab(event, 'era')">🚀 AI时代的观点演变</button>
+    </nav>
+
+    <!-- Part 1 -->
+    <div id="part1" class="tab-content active">
+        <h2 class="section-header">第一部分：管理核心资源 (Managing the Human Resource)</h2>
+        <p style="margin-bottom: 1.5rem;">管理者倾向于将人视为可替换的模块，但脑力工作者不是齿轮。试图用“流水线”思维管理软件开发，注定会失败。</p>
+        
+        <div class="grid-container">
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>西班牙理论<br>(Spanish Theory)</h3>
+                        <span class="hint">🔄 点击翻转揭晓</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <p><mark>谬误：</mark> 认为价值是固定的，只能通过压榨（如无偿加班）来获取。</p>
+                        <p><mark>事实：</mark> 加班是一种幻觉。多出来的加班时间最终会被等量的“隐性补休”（摸鱼、精力不济）抵消。持续高压不会让人工作更好，只会让人工作更糙，并最终导致人才流失（Burnout）。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>帕金森定律迷思<br>(Parkinson's Law)</h3>
+                        <span class="hint">🔄 点击翻转揭晓</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <p><mark>谬误：</mark> “工作会自动膨胀，填满所有可用时间。”所以必须设定不切实际的死线。</p>
+                        <p><mark>事实：</mark> 帕金森定律对脑力工作者不适用。糟糕的估算和不可能的DDL只会摧毁团队士气。“完全不施加进度压力”的团队，往往具有最高的实际生产力。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>质量的代价<br>(Quality)</h3>
+                        <span class="hint">🔄 点击翻转揭晓</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <p><mark>观点：</mark> 逃离卓越（牺牲质量换取时间）在长期看成本更高。</p>
+                        <p><mark>事实：</mark> 知识工作者的自尊心与产品质量紧密相连。允许开发者追求超出市场要求的质量，实际上是提高生产力和降低离职率的最佳手段。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="highlight-box">
+            <h4>💡 金句摘录</h4>
+            <ul>
+                <li>"在巨大的时间压力下，人们不会工作得更好，只会工作得更快（且牺牲质量）。"</li>
+                <li>"把人当成机器的零件来管理，结果就是机器罢工。"</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Part 2 -->
+    <div id="part2" class="tab-content">
+        <h2 class="section-header">第二部分：办公环境 (The Office Environment)</h2>
+        <p style="margin-bottom: 1.5rem;">开放式办公环境是生产力的灾难。企业为了节省物理空间的微小成本，牺牲了员工高达几十倍的产出价值。</p>
+        
+        <div class="grid-container">
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>心流时间<br>(Flow / Brain Time)</h3>
+                        <span class="hint">🔄 点击翻转揭晓</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <p><mark>概念：</mark> 心流是一种深度沉浸的工作状态。进入心流通常需要15分钟的“潜入期”。</p>
+                        <p><mark>事实：</mark> 任何一次打断（电话、大声交谈、消息）都会让人退出心流。如果一天被频繁打断，员工虽然身在办公室（Body Time），但大脑有效产出（Brain Time）几乎为零。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>环境系数<br>(E-Factor)</h3>
+                        <span class="hint">🔄 点击翻转揭晓</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <p><mark>公式：</mark> 不被打断的小时数 / 总出勤小时数。</p>
+                        <p><mark>事实：</mark> 优秀的办公环境 E-Factor 能达到 40% 以上。喧闹的开放办公区往往接近于零。为知识工作者提供带门的安静办公室，投资回报率极高。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>家具警察<br>(Furniture Police)</h3>
+                        <span class="hint">🔄 点击翻转揭晓</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <p><mark>现象：</mark> 行政部门强迫所有人保持工位统一，禁止个性化装饰，追求视觉上的“专业”。</p>
+                        <p><mark>洞察：</mark> 这种对一致性的追求，本质是管理者不安全感的体现（需要证明自己掌控一切）。抹杀个性化就是扼杀创造力。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="highlight-box">
+            <h4>💡 金句摘录</h4>
+            <ul>
+                <li>"丢失一个工作日有上百万种方式，但没有任何一种方式能把它找回来。"</li>
+                <li>"员工密度与人均专属空间成反比；省下来的空间租金，都在被破坏的生产力中赔了进去。"</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Part 3 -->
+    <div id="part3" class="tab-content">
+        <h2 class="section-header">第三部分：正确的人 (The Right People)</h2>
+        <p style="margin-bottom: 1.5rem;">最终的成功更多取决于<strong>谁</strong>来做，而不是<strong>怎么</strong>做。选对人，留住他们，然后放权。</p>
+        
+        <div class="grid-container">
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>雇佣杂耍小丑<br>(Hiring a Juggler)</h3>
+                        <span class="hint">🔄 点击翻转揭晓</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <p><mark>观点：</mark> 招杂耍艺人不可能只靠“聊天”，得让他抛几个球看看。招程序员同理。</p>
+                        <p><mark>实践：</mark> 要求求职者提供“作品集”(Portfolio)，并进行“试演”(Audition)。让求职者做15分钟演讲，并让未来的同事参与决策，这能极大加速团队的社会化融合。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>作为服务的领导力<br>(Leadership as a Service)</h3>
+                        <span class="hint">🔄 点击翻转揭晓</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <p><mark>洞察：</mark> 最好的领导力通常由没有职位权力的人行使。他们不是用枪在背后逼迫团队（压榨），而是挺身而出，做好准备工作，为所有人实现价值最大化。</p>
+                        <p><mark>创新：</mark> 真正的创新总是伴随着某种非官方的“叛逆领导力”。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>人力资本的隐性成本<br>(Human Capital)</h3>
+                        <span class="hint">🔄 点击翻转揭晓</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <p><mark>误区：</mark> 会计把员工薪水当做“支出”。其实培训和团队磨合是极高价值的“资本投资”。</p>
+                        <p><mark>事实：</mark> 离职率的隐形成本极其高昂（通常长达数月无产出+拖累他人）。高离职率会导致组织陷入“短视”视角：反正是要走的，不如竭泽而渔。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="highlight-box">
+            <h4>💡 金句摘录</h4>
+            <ul>
+                <li>"把那些没有安全感、需要通过统一着装和打卡来彰显权力的管理者清理出去。"</li>
+                <li>"最好的管理者就像催化剂，他们自己不参与反应，但没有他们，神奇的化学反应就不会发生。"</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Part 4 -->
+    <div id="part4" class="tab-content">
+        <h2 class="section-header">第四部分：培育高效团队 (Growing Productive Teams)</h2>
+        <p style="margin-bottom: 1.5rem;">你无法“强行制造”一个团队，就像你无法强行让植物生长。你能做的只是提供肥沃的土壤，避免使用“团队杀手”。</p>
+
+        <div class="grid-container">
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>凝结的团队<br>(Jelled Team)</h3>
+                        <span class="hint">🔄 点击翻转揭晓</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <p><mark>特征：</mark> 整体大于部分之和。具有不可阻挡的势头。</p>
+                        <p><mark>表象：</mark> 项目期间极低的离职率、强烈的共同认同感（黑客帝国般的内部黑话）、精英感、对产品的共同拥有感，以及显而易见的工作乐趣。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>团队杀手<br>(Teamicide)</h3>
+                        <span class="hint">🔄 点击翻转揭晓</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <p><mark>行为：</mark> 摧毁团队的几种常见做法：</p>
+                        <ul style="padding-left: 1rem; margin-top: 0.5rem; font-size: 0.9rem;">
+                            <li>防御性管理（不信任员工）</li>
+                            <li>物理隔离（分散团队成员）</li>
+                            <li>时间碎片化（一个人同时兼顾多个项目）</li>
+                            <li>虚假的死线（把人当傻子）</li>
+                            <li>内部竞争（绩效排名摧毁同侪辅导）</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>敞开和服<br>(Open Kimono)</h3>
+                        <span class="hint">🔄 点击翻转揭晓</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <p><mark>比喻：</mark> 完全信任团队，不采取防御姿态（源自日本商业俚语）。</p>
+                        <p><mark>实践：</mark> 把目标交给团队，然后彻底放权。让团队在没有监督的环境下（如封闭酒店或离开公司环境）完成设计，你会得到惊人的成果。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="highlight-box">
+            <h4>💡 金句摘录</h4>
+            <ul>
+                <li>"团队的目标不是完成任务，而是对齐愿景。一旦对齐，任务自然会被完成。"</li>
+                <li>"年度绩效考核（MBO）用外部刺激代替了真正的内在动力，是团队合作的剧毒。"</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Part 5 -->
+    <div id="part5" class="tab-content">
+        <h2 class="section-header">第五部分：肥沃的土壤 (Fertile Soil)</h2>
+        <p style="margin-bottom: 1.5rem;">组织的文化背景决定了项目的成败。学习型组织与僵化型组织的区别，在于对待方法论、会议和风险的态度。</p>
+
+        <div class="grid-container">
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>萨提亚变革模型<br>(Satir Change Model)</h3>
+                        <span class="hint">🔄 点击翻转揭晓</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <p><mark>定律：</mark> 任何真正的变革都必然经历四个阶段：引入外部催化剂 -> <strong>混乱 (Chaos)</strong> -> 练习与整合 -> 形成新常态。</p>
+                        <p><mark>警示：</mark> 人们天然厌恶改变。如果在“混乱期”面临强烈的指责，所有人都会立刻退回旧有模式。允许犯错，变革才能存活。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>方法论的疯狂<br>(Methodology Madness)</h3>
+                        <span class="hint">🔄 点击翻转揭晓</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <p><mark>现象：</mark> 大写的"M"方法论（厚厚的规范手册）试图将思考权集中，认为底层员工只要照做就行。</p>
+                        <p><mark>后果：</mark> 引发“恶意顺从”（明明不合理也要填几百页表）。过度的文档是问题的一部分，而不是解决方案。小写的 methodology（头脑中的技能）才是有效的。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>会议与垃圾邮件<br>(Meetings & E-mail)</h3>
+                        <span class="hint">🔄 点击翻转揭晓</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <p><mark>会议陷阱：</mark> 如果一个会议是通过“时间到了”结束，而不是“做出了决定”结束，那就是毫无意义的“仪式”。</p>
+                        <p><mark>企业Spam：</mark> 滥用抄送(CC)和“FYI”。废除“沉默即同意”的潜规则，将极大地释放组织的认知带宽。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Part 6 -->
+    <div id="part6" class="tab-content">
+        <h2 class="section-header">第六部分：工作本该充满乐趣 (It's Supposed to Be Fun to Work Here)</h2>
+        <p style="margin-bottom: 1.5rem;">潜意识里我们认为工作必须是痛苦的，但最高效的团队总是在工作中找到类似游戏的乐趣。</p>
+
+        <div class="grid-container">
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>建设性无序<br>(Constructive Chaos)</h3>
+                        <span class="hint">🔄 点击翻转揭晓</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <p><mark>洞察：</mark> 绝对的秩序令人窒息。聪明的管理者会引入小规模的无序来激发活力。</p>
+                        <p><mark>实践：</mark> 通过试点项目（打破标准尝试新技术）、编程大战（War Games）、无限制的头脑风暴或意外的庆祝活动，重燃员工的热情（霍桑效应）。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>自由电子<br>(Free Electrons)</h3>
+                        <span class="hint">🔄 点击翻转揭晓</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <p><mark>概念：</mark> 给予内部最顶尖人才（Gurus / Intrapreneurs）极度宽松的职责定义，让他们自己决定研究方向。</p>
+                        <p><mark>价值：</mark> 这是对抗“作坊式外包”竞争的最佳手段，能够为企业寻找到下一个颠覆性的技术增长点。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>唤醒霍尔格巨人<br>(Holgar Dansk)</h3>
+                        <span class="hint">🔄 点击翻转揭晓</span>
+                    </div>
+                    <div class="flip-card-back">
+                        <p><mark>隐喻：</mark> 丹麦神话中沉睡的巨人，国家危亡时会苏醒。在企业中，这个巨人就是“广大理性的同事”。</p>
+                        <p><mark>行动：</mark> 面对愚蠢的规定（如过度噪音、官僚主义），只需一个人敢于大声指出“这是不可接受的”，就能唤醒群体的共鸣，推动真正的改变。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Era Changes Section -->
+    <div id="era" class="tab-content">
+        <div class="modern-perspective">
+            <h2><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> 时代变迁与现代视角审视</h2>
+            <p style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 2rem;">
+                《人件》首版于1980年代，但其预言在今天AI与分布式云原生时代不仅没有过时，反而由于<strong>LLM（大语言模型）和 AI Coding</strong>的崛起，显得比任何时候都更加振聋发聩。以下是结合当今视角的观点演变：
+            </p>
+
+            <div class="concept">
+                <span class="tag">观点翻转</span>
+                <h3 style="display:inline;">1. 从“隔音办公室”到“远程工作与异步协作”</h3>
+                <p style="margin-top: 1rem;">
+                    <strong>书中痛点：</strong> 作者苦口婆心地劝导企业给员工提供“带门的办公室”以抵抗物理噪音。<br>
+                    <strong>现代演变：</strong> 疫情和协同工具直接推动了<strong>远程工作 (Remote Work)</strong> 的普及，员工在自己的书房里获得了终极的“物理门”。<br>
+                    <strong>新挑战：</strong> 物理噪音消失了，取而代之的是<strong>数字噪音</strong> (Slack, Teams, 钉钉的消息轰炸)。书中对“连续部分注意力 (Continuous Partial Attention)”的担忧完全成真。现代管理者需要建立的是“异步沟通规范”，给员工在数字世界上“关门”的权利。
+                </p>
+            </div>
+
+            <div class="concept">
+                <span class="tag">深度印证</span>
+                <h3 style="display:inline;">2. 敏捷 (Agile) 的兴起与堕落</h3>
+                <p style="margin-top: 1rem;">
+                    <strong>书中痛点：</strong> 严厉批判僵化、庞大的“方法论 (Methodology)”，主张轻量级的技能库和小团队自主权。<br>
+                    <strong>现代演变：</strong> 2001年的《敏捷宣言》几乎就是《人件》思想的工程化落地（“个体与交互高于流程和工具”）。<br>
+                    <strong>新挑战：</strong> 讽刺的是，如今许多企业将 Agile 异化成了新的“大写M方法论”——没完没了的仪式性 Stand-up 会议、僵化的 Jira 填表，完美落入了书中“用微观管理扼杀团队凝结”的陷阱。
+                </p>
+            </div>
+
+            <div class="concept" style="border-left-color: #ef4444;">
+                <span class="tag" style="background: #fee2e2; color: #ef4444;">核心升华</span>
+                <h3 style="display:inline;">3. AI Coding 时代：彻底的社会学胜利</h3>
+                <p style="margin-top: 1rem;">
+                    <strong>书中痛点：</strong> “我们工作中的主要问题，是社会学问题而非技术问题。”<br>
+                    <strong>现代演变（最大变化）：</strong> 在过去的几十年里，技术问题依然很难，所以管理者还有借口盯着技术。但今天，<strong>Cursor、Copilot 等 LLM AI 编码工具</strong>已经将写代码的门槛和时间大幅压缩。AI 可以帮你解决几乎所有纯技术（语法、算法实现、重构）问题。<br>
+                    <strong>为什么这最重要？</strong> 当编码本身不再是瓶颈时，软件工程的瓶颈将 <strong>100% 转移到社会学领域</strong>：
+                </p>
+                <ul style="margin-top: 0.5rem; padding-left: 1.5rem; color: var(--text-muted);">
+                    <li>我们是否对齐了真正的需求？</li>
+                    <li>团队是否在解决正确的问题？</li>
+                    <li>人类开发者如何与 AI 以及其他人类有效沟通？</li>
+                </ul>
+                <p style="margin-top: 0.5rem; font-weight: bold; color: var(--primary);">
+                    AI 没有让《人件》过时，反而让它成了现代研发管理唯一的制胜法则——当所有人都有强大的 AI 时，能拉开差距的，只有团队的化学反应 (Chemistry)。
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openTab(evt, tabId) {
+            // Hide all tab contents
+            const tabContents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove("active");
+            }
+
+            // Remove 'active' class from all buttons
+            const tabBtns = document.getElementsByClassName("tab-btn");
+            for (let i = 0; i < tabBtns.length; i++) {
+                tabBtns[i].classList.remove("active");
+            }
+
+            // Show the current tab, and add an "active" class to the button that opened the tab
+            document.getElementById(tabId).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+    </script>
+</body>
+</html>
