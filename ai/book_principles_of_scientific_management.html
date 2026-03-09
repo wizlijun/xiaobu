@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科学管理原理 - 现代交互式摘要</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --surface-color: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --accent-primary: #2563eb;
+            --accent-secondary: #0ea5e9;
+            --highlight: #fef08a;
+            --border-radius: 16px;
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+        h1 {
+            font-size: 2.5rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
+        }
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        /* Section Styles */
+        section {
+            background: var(--surface-color);
+            border-radius: var(--border-radius);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            animation: fadeInUp 0.8s ease-out both;
+        }
+        section:hover {
+            box-shadow: var(--shadow-md);
+        }
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent-primary);
+        }
+        h2::before {
+            content: '';
+            display: block;
+            width: 4px;
+            height: 1.2em;
+            background-color: var(--accent-primary);
+            border-radius: 2px;
+        }
+
+        /* Highlighting */
+        mark {
+            background-color: var(--highlight);
+            color: var(--text-main);
+            padding: 0 0.2rem;
+            border-radius: 4px;
+        }
+
+        /* Flip Cards (Chapter 2 Core Principles) */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            perspective: 1000px;
+        }
+        .flip-card {
+            background-color: transparent;
+            height: 280px;
+            cursor: pointer;
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+        }
+        .flip-card-front {
+            background: linear-gradient(135deg, #ffffff, #f1f5f9);
+            border: 1px solid #e2e8f0;
+        }
+        .flip-card-front h3 {
+            font-size: 1.25rem;
+            color: var(--accent-primary);
+        }
+        .flip-card-back {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            transform: rotateY(180deg);
+        }
+        .flip-card-back p {
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        .flip-card-back .modern-lens {
+            margin-top: 1rem;
+            font-size: 0.8rem;
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem;
+            border-radius: 8px;
+        }
+
+        /* Tabs (Case Studies) */
+        .tabs {
+            display: flex;
+            flex-direction: column;
+        }
+        .tab-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+        .tab-btn {
+            background: var(--bg-color);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 999px;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text-muted);
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+        .tab-btn:hover {
+            background: #e2e8f0;
+        }
+        .tab-btn.active {
+            background: var(--accent-primary);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+        .tab-content {
+            display: none;
+            padding: 1.5rem;
+            background: var(--bg-color);
+            border-radius: var(--border-radius);
+            animation: fadeIn 0.4s ease-out;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Quotes section */
+        .quotes-container {
+            column-count: 2;
+            column-gap: 1.5rem;
+        }
+        .quote-card {
+            background: var(--surface-color);
+            border-left: 4px solid var(--accent-primary);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            break-inside: avoid;
+            box-shadow: var(--shadow-sm);
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            font-style: italic;
+        }
+
+        /* Modern Evolution Section */
+        .evolution-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        .evo-card {
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            border: 1px solid #e2e8f0;
+            background: #fafafa;
+        }
+        .evo-card h4 {
+            color: #ef4444; /* red-500 for old */
+            margin-bottom: 0.5rem;
+        }
+        .evo-card:nth-child(even) h4 {
+            color: #10b981; /* green-500 for new */
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .quotes-container, .evolution-grid {
+                column-count: 1;
+                grid-template-columns: 1fr;
+            }
+            body { padding: 1rem; }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>科学管理原理 <span style="font-size: 1.5rem; color: var(--text-muted);">The Principles of Scientific Management</span></h1>
+        <p class="subtitle">Frederick Winslow Taylor (1911) | 工业标准化与系统工程的奠基之作</p>
+        <div class="badge">低认知负荷交互式摘要</div>
+    </header>
+
+    <!-- 核心洞察点 -->
+    <section style="animation-delay: 0.1s;">
+        <h2>背景与核心痛点 (Chapter 1)</h2>
+        <p>泰勒指出，社会极其关注物质资源的浪费，但却忽视了<mark>“人类劳动的浪费”</mark>（如笨拙、低效的动作）。他定义了当时工业界的核心痼疾——<strong>“磨洋工” (Soldiering)</strong>，并归结为三个原因：</p>
+        <ul style="margin-top: 1rem; padding-left: 1.5rem; color: var(--text-muted);">
+            <li><strong>谬误认知：</strong> 工人错误地认为提高单人产量会导致大量工人失业。</li>
+            <li><strong>制度缺陷：</strong> 糟糕的薪酬体系（按日计酬或随意的计件制）逼迫工人必须放慢速度以保护自身利益。</li>
+            <li><strong>经验法则：</strong> 几乎所有行业都在沿用几百年口耳相传的“拍脑袋”做事方法，缺乏科学分析。</li>
+        </ul>
+        <p style="margin-top: 1rem;"><strong>终极目标：</strong> 实现雇主的最大财富与雇员的最大繁荣相统一。即：高工资与低人力成本是可以同时存在的。</p>
+    </section>
+
+    <!-- 科学管理四大原则 (卡片翻转) -->
+    <section style="animation-delay: 0.2s;">
+        <h2>科学管理的四大基石 (Chapter 2)</h2>
+        <p style="margin-bottom: 1.5rem; color: var(--text-muted);">将鼠标悬停在卡片上（移动端点击）以翻转查看具体定义及现代工程视角映射。</p>
+        
+        <div class="card-grid">
+            <!-- Principle 1 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>1. 归纳科学规律</h3>
+                        <p style="margin-top:0.5rem; color:var(--text-muted)">Develop a science</p>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>对工人的每一个动作进行时间与动作研究，用标准化的科学规律替代古老的“经验法则”。</p>
+                        <div class="modern-lens">
+                            <strong>👨‍💻 现代视角：</strong> <br>业务逻辑的抽象与算法化、CI/CD流水线、代码规范(Linters)。
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Principle 2 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>2. 科学选拔与培训</h3>
+                        <p style="margin-top:0.5rem; color:var(--text-muted)">Select and Train</p>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>科学地挑选工人，并对其进行培训、指导和系统化发展，而非让工人自己挑选工作和摸索。</p>
+                        <div class="modern-lens">
+                            <strong>👨‍💻 现代视角：</strong> <br>建立开发者赋能平台(Developer Portal)、能力模型画像、人岗数据匹配。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Principle 3 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>3. 亲密合作共赢</h3>
+                        <p style="margin-top:0.5rem; color:var(--text-muted)">Heartily Cooperate</p>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>管理层与工人热诚合作，建立“任务+高额奖金”的机制，确保所有工作按科学原则进行。</p>
+                        <div class="modern-lens">
+                            <strong>👨‍💻 现代视角：</strong> <br>OKRs目标对齐、利益捆绑、DevOps文化（打破部门部门墙）。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Principle 4 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <h3>4. 计划与执行分离</h3>
+                        <p style="margin-top:0.5rem; color:var(--text-muted)">Equal Division</p>
+                    </div>
+                    <div class="flip-card-back">
+                        <p>管理层与工人几乎平分工作与责任。管理层接管“计划与统筹”，工人专注“执行”。</p>
+                        <div class="modern-lens">
+                            <strong>👨‍💻 现代视角：</strong> <br>微服务编排系统层（控制面 Control Plane）与数据面（Data Plane）的彻底分离。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 经典案例研究 (Tabs) -->
+    <section style="animation-delay: 0.3s;">
+        <h2>实证研究：从体力到脑力的全维度优化</h2>
+        <div class="tabs">
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="switchTab(event, 'tab1')">搬运生铁</button>
+                <button class="tab-btn" onclick="switchTab(event, 'tab2')">铲运工程</button>
+                <button class="tab-btn" onclick="switchTab(event, 'tab3')">砌砖动作</button>
+                <button class="tab-btn" onclick="switchTab(event, 'tab4')">钢珠检验</button>
+                <button class="tab-btn" onclick="switchTab(event, 'tab5')">金属切削</button>
+            </div>
+            
+            <div id="tab1" class="tab-content active">
+                <h3>生铁搬运 (Pig Iron Handling)</h3>
+                <p><strong>痛点：</strong> 工人日均搬运量仅 12.5 吨。<br>
+                <strong>科学介入：</strong> 泰勒推算人类极限为 47.5 吨/日。发现核心规律：重体力劳动中，<mark>工人必须有57%的时间空手休息以恢复肌肉纤维</mark>。他挑选了身体健壮但思维简单的 Schmidt，严格指令其何时搬、何时休。<br>
+                <strong>结果：</strong> 产量提升近4倍，工人日薪从$1.15涨至$1.85 (提升60%)。</p>
+            </div>
+            
+            <div id="tab2" class="tab-content">
+                <h3>铲运工程 (Shoveling)</h3>
+                <p><strong>痛点：</strong> 工人自带同一把铲子处理铁矿石和轻质煤渣，负荷在4磅到30磅之间波动，效率极低。<br>
+                <strong>科学介入：</strong> 实验证明<mark>最优化单次铲载量为21磅</mark>。设立工具室，为不同密度的材料提供特定大小的铲子。引入“计划部门”进行路线调度。<br>
+                <strong>结果：</strong> 庭院劳工从400-600人减至140人，每吨处理成本从7.2美分降至3.3美分。</p>
+            </div>
+
+            <div id="tab3" class="tab-content">
+                <h3>砌砖动作 (Bricklaying - by Gilbreth)</h3>
+                <p><strong>痛点：</strong> 千百年来，砌砖工每次都要弯腰捡砖、翻转检查、敲击找平，极其消耗体力。<br>
+                <strong>科学介入：</strong> 弗兰克·吉尔布雷斯发明了可调脚手架，雇佣廉价小工提前将好的一面朝上排在木架上；调整砂浆浓度无需敲击。<br>
+                <strong>结果：</strong> 动作从18个大幅减少至5个（甚至2个），每小时砌砖量从120块飙升至350块。</p>
+            </div>
+
+            <div id="tab4" class="tab-content">
+                <h3>钢珠检验 (Bicycle Ball Inspection)</h3>
+                <p><strong>痛点：</strong> 视觉检验工作极度消耗脑力，女孩们工作时间长且频繁“摸鱼”。<br>
+                <strong>科学介入：</strong> 缩短工时（10.5h降至8.5h），引入每小时工间休息；引入心理学指标，筛选具有<mark>低“个人反应系数” (Low Personal Coefficient)</mark>（眼手协同快）的女孩；建立抽检防作弊机制和差异化计件工资。<br>
+                <strong>结果：</strong> 35名女孩完成了过去120人的工作量，准确率提升超60%。</p>
+            </div>
+
+            <div id="tab5" class="tab-content">
+                <h3>金属切削 (Metal Cutting)</h3>
+                <p><strong>痛点：</strong> 车床速度和进给量完全由机械师“盲猜”。<br>
+                <strong>科学介入：</strong> 历时26年，消耗80万磅钢铁，测试12个独立变量。最终巴斯(Carl Barth)发明了专用计算滑尺，将<mark>多变量复杂数学方程工程化、可视化</mark>。<br>
+                <strong>结果：</strong> 一个毫无经验但拥有滑尺和科学知识的人，加工速度是具有10年经验的老师傅的2.5到9倍。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 金句卡片 -->
+    <section style="animation-delay: 0.4s;">
+        <h2>全书核心金句提炼</h2>
+        <div class="quotes-container">
+            <div class="quote-card">
+                "In the past the man has been first; in the future the system must be first."<br>
+                <strong>(过去是人第一，未来必须是系统第一。)</strong>
+            </div>
+            <div class="quote-card">
+                "Maximum prosperity can exist only as the result of maximum productivity."<br>
+                <strong>(最大程度的繁荣只能是最大程度生产力的结果。)</strong>
+            </div>
+            <div class="quote-card">
+                "The mechanism of management must not be mistaken for its essence."<br>
+                <strong>(切勿将管理的机制（如秒表、计件）错认作它的本质（科学与合作的哲学）。)</strong>
+            </div>
+            <div class="quote-card">
+                "All of us are grown-up children... the average workman will work with the greatest satisfaction when given each day a definite task."<br>
+                <strong>(我们都是长大的孩子，每天有一个明确、清晰的“任务”，能带来最大的成就感。)</strong>
+            </div>
+        </div>
+    </section>
+
+    <!-- 时代演变分析 -->
+    <section style="animation-delay: 0.5s; background: linear-gradient(to right, #ffffff, #f0fdf4); border: 1px solid #bbf7d0;">
+        <h2>🔄 时代剧变：现代软件工程 / AI时代的扬弃</h2>
+        <p style="margin-bottom: 1rem;">泰勒奠定了现代工业文明的效率基石，但在一百年后的今天，面临 <strong>VUCA（易变、不确定、复杂、模糊）</strong> 环境和知识工作者主导的 AI 时代，他的某些观点发生了极大的反转：</p>
+        
+        <div class="evolution-grid">
+            <div class="evo-card">
+                <h4>❌ 过时的泰勒主张</h4>
+                <p><strong>“脑手分离”（计划与执行彻底分离）</strong></p>
+                <p style="font-size: 0.9em; color: var(--text-muted); margin-top: 0.5rem;">泰勒认为工人缺乏教育，只需服从“计划部门”的详尽指令。他剥夺了执行者的思考权，将其视为机器的延伸。</p>
+            </div>
+            <div class="evo-card">
+                <h4>✅ 现代 Agile/AI 视角</h4>
+                <p><strong>自组织团队与智能自治 (DevOps/Empowerment)</strong></p>
+                <p style="font-size: 0.9em; color: var(--text-muted); margin-top: 0.5rem;">现代知识工作无法预测每一步。我们提倡 DevOps 和敏捷，让构建者负责运行 (You build it, you run it)。创新来源于边缘（执行层），而非中央控制室。</p>
+            </div>
+
+            <div class="evo-card">
+                <h4>❌ 过时的泰勒主张</h4>
+                <p><strong>将人异化为标准化的齿轮</strong></p>
+                <p style="font-size: 0.9em; color: var(--text-muted); margin-top: 0.5rem;">寻找最契合单调劳动的“牛一样迟钝”的人（如搬运工Schmidt），用任务和计件工资驱动行为。</p>
+            </div>
+            <div class="evo-card">
+                <h4>✅ 现代 Agile/AI 视角</h4>
+                <p><strong>AI 代理接管齿轮，人类回归创造</strong></p>
+                <p style="font-size: 0.9em; color: var(--text-muted); margin-top: 0.5rem;">LLMs 和自动化脚本正是泰勒梦寐以求的“完美执行者”。机械劳动被 API 和 AI Agent 替代，人类转向处理边缘异常（Exception handling）、系统架构与同理心创造。</p>
+            </div>
+        </div>
+
+        <div style="margin-top: 1.5rem; padding: 1rem; background: var(--surface-color); border-radius: 8px;">
+            <strong>💡 终极洞察：</strong> 
+            泰勒的伟大在于他<strong>首次将科学实证和数据思维引入了人类协作系统</strong>。今天软件开发中的 APM 监控、链路追踪、CI/CD流水线构建，本质上就是数字空间的“动作与时间研究”。我们在抛弃他“命令与控制”人性设定的同时，全面继承并升级了他的“系统优化工程观”。
+        </div>
+    </section>
+
+</div>
+
+<script>
+    // Tab switching logic
+    function switchTab(event, tabId) {
+        // Remove active class from all buttons
+        const buttons = document.querySelectorAll('.tab-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        
+        // Remove active class from all contents
+        const contents = document.querySelectorAll('.tab-content');
+        contents.forEach(content => content.classList.remove('active'));
+        
+        // Add active class to clicked button and target content
+        event.currentTarget.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+    }
+</script>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_principles_of_scientific_management_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
