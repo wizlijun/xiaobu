@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antinet Zettelkasten 核心精要与系统操作指南</title>
+    <style>
+        :root {
+            --primary-dark: #1a252f;
+            --text-main: #2c3e50;
+            --text-muted: #5d6d7e;
+            --bg-page: #ffffff;
+            --bg-card: #f8f9fa;
+            --accent-green: #8dc63f; /* 作者偏爱的青柠绿 */
+            --accent-green-light: rgba(141, 198, 63, 0.15);
+            --accent-blue: #3498db;
+            --fact-bg: rgba(52, 152, 219, 0.1);
+            --fact-border: #3498db;
+            --opinion-bg: rgba(231, 76, 60, 0.1);
+            --opinion-border: #e74c3c;
+            --border-light: #ecf0f1;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 顶部区块 */
+        header {
+            background: linear-gradient(135deg, #ffffff 0%, #f4fbf0 100%);
+            padding: 4rem 2rem;
+            text-align: center;
+            border-bottom: 4px solid var(--accent-green);
+        }
+        h1 { margin: 0; color: var(--primary-dark); font-size: 2.8rem; letter-spacing: -0.5px; }
+        .subtitle { color: var(--text-muted); font-size: 1.2rem; margin-top: 1rem; max-width: 600px; margin-inline: auto; }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+        h2 { color: var(--primary-dark); font-size: 1.8rem; border-bottom: 2px solid var(--border-light); padding-bottom: 0.5rem; margin-top: 3rem; display: flex; align-items: center; gap: 10px; }
+
+        /* 事实与观点高亮 */
+        .legend-box { display: flex; justify-content: flex-end; gap: 15px; margin-bottom: 1rem; font-size: 0.9rem; }
+        .fact-highlight { background-color: var(--fact-bg); border-bottom: 2px dashed var(--fact-border); padding: 0 4px; border-radius: 3px; }
+        .opinion-highlight { background-color: var(--opinion-bg); border-bottom: 2px dashed var(--opinion-border); padding: 0 4px; border-radius: 3px; }
+        mark { background-color: var(--accent-green-light); color: #27ae60; font-weight: bold; padding: 0 4px; border-radius: 3px; }
+
+        /* 关键金句 */
+        .quotes-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
+        .quote-card { background: var(--bg-card); border-left: 4px solid var(--accent-green); padding: 1.5rem; border-radius: 0 8px 8px 0; font-style: italic; color: #34495e; box-shadow: 0 2px 8px rgba(0,0,0,0.03); transition: transform 0.2s; }
+        .quote-card:hover { transform: translateX(5px); }
+
+        /* 翻转卡片 (深度概念) */
+        .flashcard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
+        .flip-card { background-color: transparent; height: 260px; perspective: 1000px; cursor: pointer; }
+        .flip-card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        .flip-card:hover .flip-card-inner { transform: rotateY(180deg); }
+        .flip-card-front, .flip-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; padding: 1.5rem; box-sizing: border-box; border-radius: 12px; }
+        .flip-card-front { background-color: var(--bg-page); border: 2px solid var(--border-light); }
+        .flip-card-front h3 { color: var(--accent-blue); font-size: 1.3rem; margin-bottom: 0.5rem; }
+        .flip-card-front span.en-term { font-size: 0.9rem; color: var(--text-muted); font-family: monospace; background: #eee; padding: 2px 6px; border-radius: 4px; }
+        .flip-card-back { background-color: var(--primary-dark); color: white; transform: rotateY(180deg); text-align: left; justify-content: flex-start; overflow-y: auto; }
+        .flip-card-back h4 { color: var(--accent-green); margin-top: 0; margin-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 5px;}
+        .flip-card-back p { font-size: 0.9rem; line-height: 1.5; margin: 0; color: #ddd; }
+
+        /* A.N.T.I 原则手风琴 */
+        .accordion { border: 1px solid var(--border-light); border-radius: 8px; overflow: hidden; margin: 2rem 0; }
+        .acc-item { border-bottom: 1px solid var(--border-light); }
+        .acc-item:last-child { border-bottom: none; }
+        .acc-header { background: var(--bg-card); padding: 1.2rem 1.5rem; font-size: 1.2rem; font-weight: bold; color: var(--primary-dark); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
+        .acc-header:hover { background: #eef2f5; }
+        .acc-header::after { content: '+'; font-size: 1.5rem; color: var(--accent-green); }
+        .acc-item.active .acc-header::after { content: '-'; }
+        .acc-content { display: none; padding: 1.5rem; background: var(--bg-page); font-size: 0.95rem; }
+        .acc-item.active .acc-content { display: block; animation: slideDown 0.3s ease-out; }
+
+        /* 标签页 (知识发展流程) */
+        .tabs-container { margin: 3rem 0; border: 1px solid var(--border-light); border-radius: 8px; overflow: hidden; }
+        .tabs-nav { display: flex; background: var(--bg-card); border-bottom: 1px solid var(--border-light); }
+        .tab-btn { flex: 1; padding: 1rem; border: none; background: transparent; font-size: 1rem; font-weight: bold; color: var(--text-muted); cursor: pointer; transition: all 0.2s; border-bottom: 3px solid transparent; }
+        .tab-btn:hover { color: var(--accent-blue); background: rgba(52, 152, 219, 0.05); }
+        .tab-btn.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); background: var(--bg-page); }
+        .tab-panel { display: none; padding: 2rem; background: var(--bg-page); }
+        .tab-panel.active { display: block; animation: fadeIn 0.4s; }
+
+        /* 行动指南 Timeline */
+        .timeline { position: relative; padding-left: 2rem; margin-top: 2rem; }
+        .timeline::before { content: ''; position: absolute; left: 7px; top: 0; bottom: 0; width: 2px; background: var(--accent-green); }
+        .step { position: relative; margin-bottom: 2.5rem; }
+        .step::before { content: ''; position: absolute; left: -2rem; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--bg-page); border: 3px solid var(--accent-green); }
+        .step h4 { margin: 0 0 0.5rem 0; color: var(--accent-blue); font-size: 1.2rem; }
+        .step p { margin: 0; font-size: 0.95rem; color: var(--text-muted); }
+        .checklist { margin-top: 10px; padding-left: 0; list-style: none; }
+        .checklist li { position: relative; padding-left: 1.5rem; margin-bottom: 5px; font-size: 0.9rem; }
+        .checklist li::before { content: '✓'; position: absolute; left: 0; color: #27ae60; font-weight: bold; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideDown { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Antinet Zettelkasten</h1>
+    <p class="subtitle">剥离数字工具的浮华，回归卢曼原教旨主义的“物理思考机器”。<br>这是一个让你成为阅读、研究与写作机器的<b>知识发展系统 (AKD)</b>。</p>
+</header>
+
+<div class="container">
+    <div class="legend-box">
+        <span class="fact-highlight">科学事实/理论依据</span>
+        <span class="opinion-highlight">作者核心锐评</span>
+    </div>
+
+    <!-- 金句区 -->
+    <div class="quotes-container">
+        <div class="quote-card">“<span class="opinion-highlight">数字笔记的搜索是一个 Bug，而不是一个 Feature。</span>它剥夺了我们在卡片堆中游荡时产生的‘结构化意外 (Structured Accidents)’。”</div>
+        <div class="quote-card">“<span class="fact-highlight">人类记忆不是一个个离散的数据点，而是基于上下文和相似性的联想网络。</span>Antinet 的物理位置和手写动作完美复刻了这一生物学原理。”</div>
+        <div class="quote-card">“<span class="opinion-highlight">你不是在建立一个第二大脑 (Second Brain)，而是在培养一个第二心智 (Second Mind)。</span>大脑只是生化器官，心智是能与你产生内部对话的人格实体。”</div>
+    </div>
+
+    <!-- 核心概念翻转卡 -->
+    <h2>🧠 领域核心概念重塑 (鼠标悬停翻转)</h2>
+    <div class="flashcard-grid">
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <h3>阿伦斯异端</h3>
+                    <span class="en-term">Ahrensianity</span>
+                </div>
+                <div class="flip-card-back">
+                    <h4>打破数字神话</h4>
+                    <p><span class="opinion-highlight">作者强烈抨击由 Sönke Ahrens (《卡片笔记工作法》作者) 掀起的数字改良派。</span><br><br>卢曼从未发明过“闪念笔记 (Fleeting Notes)”等词汇。数字工具的动态链接和无限容量，反而稀释了思考的密度，让人陷入“分类者谬误”和过度采集的信息沼泽。</p>
+                </div>
+            </div>
+        </div>
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <h3>神经印记</h3>
+                    <span class="en-term">Neuroimprinting</span>
+                </div>
+                <div class="flip-card-back">
+                    <h4>手写不可替代</h4>
+                    <p><span class="fact-highlight">研究表明，手写需要调用更多的认知资源，能将思想深深烙印在长期记忆中。</span><br><br>打字只是肌肉记忆的转录。手写产生的物理摩擦力，迫使你在落笔前进行<b>提炼和重构</b>，极大增强了“神经关联回忆”能力。</p>
+                </div>
+            </div>
+        </div>
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <h3>双重联想与涌现</h3>
+                    <span class="en-term">Bisociation & Emergence</span>
+                </div>
+                <div class="flip-card-back">
+                    <h4>创造力的引擎</h4>
+                    <p>将两个看似毫不相干领域的概念产生物理连接。Antinet 的字母数字地址让卡片产生<mark>异质关系 (Heterogenous Relations)</mark>。<br><br>当你在物理卡片盒中寻找一个概念时，你会“意外”撞见过去的自己留下的其他想法，从而涌现出颠覆性的顿悟。</p>
+                </div>
+            </div>
+        </div>
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <h3>DIKW 金字塔</h3>
+                    <span class="en-term">Data-Info-Knowledge-Wisdom</span>
+                </div>
+                <div class="flip-card-back">
+                    <h4>系统的终极目标</h4>
+                    <p><span class="fact-highlight">数据是原始刺激；信息是被理解的数据；知识是信息乘以“意义”；智慧是知识乘以“行动”。</span><br><br>Antinet 绝不是为了囤积“信息”，而是为了在“创造阶段”注入你的经验和反思，将信息升维成可输出的“知识”。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- A.N.T.I 原则 -->
+    <h2>🧱 A.N.T.I. 四大基石原则深度解析</h2>
+    <p class="subtitle">如果抛弃了这四个物理维度的原则（比如转向 Obsidian/Roam），它就不再是真正的卢曼卡片盒，而只是一堆孤立的 Markdown 文件。</p>
+    
+    <div class="accordion">
+        <div class="acc-item">
+            <div class="acc-header" onclick="toggleAccordion(this)">A - Analog (模拟介质：纸与笔)</div>
+            <div class="acc-content">
+                <p><span class="fact-highlight">认知科学证实，物理介质带有“外部上下文 (External Context)”（如卡片颜色、字迹、磨损程度），这能极大地唤起情境记忆。</span></p>
+                <ul>
+                    <li><b>限制即自由：</b>4x6 英寸的卡片空间限制，强制你实现真正的“原子化 (Atomicity)”，不废话。</li>
+                    <li><b>保留内部上下文：</b>不擦除错误。旧笔记上划掉的痕迹、补充的墨水颜色，定格了你心智演化的历史。</li>
+                </ul>
+            </div>
+        </div>
+        <div class="acc-item">
+            <div class="acc-header" onclick="toggleAccordion(this)">N - Numeric-Alpha (字母数字地址)</div>
+            <div class="acc-content">
+                <p>为每张卡片分配类似 <code>4214/1a/2</code> 的绝对物理坐标。这不是从属分类，而是<b>位置坐标</b>。</p>
+                <ul>
+                    <li><b>无限内部分支：</b>允许在任何两张卡片之间无限插入新想法（如 <code>/1a</code> 和 <code>/1b</code> 之间插入 <code>/1a1</code>）。</li>
+                    <li><b>硬链接分类：</b>包含 主卡链接 (Cardlinks，分干链接/枝链接/远程链接) 和 外部引用 (ExRefs，使用红笔如 <code>b.Author</code> 或 <code>r.Zotero</code>)。<span class="opinion-highlight">这比数字双向链接更克制、更深刻。</span></li>
+                </ul>
+            </div>
+        </div>
+        <div class="acc-item">
+            <div class="acc-header" onclick="toggleAccordion(this)">T - Tree (树状有机结构)</div>
+            <div class="acc-content">
+                <p>Antinet 既不是僵硬的文件夹 (Rigid)，也不是完全扁平的标签海 (Fluid)，而是一棵<mark>粗糙的树 (Rough Tree)</mark>。</p>
+                <ul>
+                    <li><b>自下而上生长：</b>建议使用维基百科的“学术学科大纲”作为初始主干（如 4000 形式科学），随后让枝叶（卡片）根据你的研究兴趣自由蔓延。</li>
+                    <li><b>枯叶性 (Marcescent)：</b>像某些树木一样，它永远不会掉落（删除）思想的叶子。所有的想法都在树上沉淀发酵。</li>
+                </ul>
+            </div>
+        </div>
+        <div class="acc-item">
+            <div class="acc-header" onclick="toggleAccordion(this)">I - Index (索引盒)</div>
+            <div class="acc-content">
+                <p>因为放弃了检索和目录，索引是你进入思想森林的唯一地图。<span class="opinion-highlight">作者强调：数字全局搜索让人变得懒惰，索引迫使你建立“提取线索”。</span></p>
+                <ul>
+                    <li><b>列表索引卡 (List Indexcards)：</b>按A-Z排列，记录人类可读的关键术语及其对应的卡片地址（如：<code>自指性: '4214/1'</code>）。</li>
+                    <li><b>术语专卡 (Keyterm Indexcards)：</b>当某个术语下的链接太多时，为其单独建立一张卡片。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 知识发展 4 阶段 -->
+    <h2>🔄 知识发展流程：从输入到输出 (A.K.D.)</h2>
+    
+    <div class="tabs-container">
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchTab('phase1')">1. 筛选 (Selection)</button>
+            <button class="tab-btn" onclick="switchTab('phase2')">2. 提取 (Extraction)</button>
+            <button class="tab-btn" onclick="switchTab('phase3')">3. 创造 (Creation)</button>
+            <button class="tab-btn" onclick="switchTab('phase4')">4. 安置 (Installation)</button>
+        </div>
+
+        <div id="phase1" class="tab-panel active">
+            <h3>四象限法则：只取“不可抗拒”的想法</h3>
+            <p>不要在书上随意划线！阅读前需进行<b>预启动 (Priming)</b>：明确阅读目标、扫读目录。</p>
+            <ul>
+                <li><b>糟糕的想法：</b>无视。</li>
+                <li><b>好的想法：</b>相关但价值不大，无视。</li>
+                <li><b>极好的想法：</b>仅记录外部引用 (ExRef)，不为其做主卡片。</li>
+                <li><mark>不可抗拒的想法 (Irresistible Ideas)：</mark>让你灵魂战栗、与你自身经历产生共鸣的想法。<b>把 100% 的精力留给它们。</b></li>
+            </ul>
+        </div>
+
+        <div id="phase2" class="tab-panel">
+            <h3>卢曼 2 步法 (Luhmannian Bibcard Method)</h3>
+            <p><span class="opinion-highlight">摒弃在书页边缘写字 (Marginalia) 的坏习惯，那会让你提取过多垃圾信息。</span></p>
+            <ol>
+                <li><b>步骤一 (阅读中)：</b>拿一张 4x6 垂直放置的<b>文献卡 (Bibcard)</b> 夹在书里。遇到不可抗拒的触动点，写下页码 + 极短的观察关键词（即观察笔记 Observation Notes）。</li>
+                <li><b>步骤二 (阅读后)：</b>延迟处理。读完后，看着文献卡上的索引，进行“反刍”，挑选出真正值得转化为系统知识的条目进入下一阶段。</li>
+            </ol>
+            <p><i>注：对于极难的专业书，可采用“1步法”边读边直接写主卡片。</i></p>
+        </div>
+
+        <div id="phase3" class="tab-panel">
+            <h3>制作主卡 (Maincards)：思想的显影</h3>
+            <p>这阶段分为 Notetaking（记录）和 Notemaking（制卡）。主卡分为以下三种：</p>
+            <ul>
+                <li><b>摘录笔记 (Excerpt Notes)：</b>字斟句酌地抄写金句。用于强行拉伸大脑理解力或备作论据。</li>
+                <li><b>重述笔记 (Reformulation Notes)：</b>用自己的话转译。包含：文本总结、大纲分解、或<b>手绘图表 (Diagrams)</b>。<span class="fact-highlight">图表是极其强大的长效记忆工具。</span></li>
+                <li><b>反思笔记 (Reflection Notes)：</b>最高级的形式。注入你个人的经历、观点、质疑。假装你要把这段内容教给别人（贡献心态）。</li>
+                <li><b>集合卡 (Collectives/Hubs)：</b>当某一分支变庞大时，建立一张包含大量内部卡片链接或外部引用列表的枢纽卡。</li>
+            </ul>
+        </div>
+
+        <div id="phase4" class="tab-panel">
+            <h3>安置入网：位置即意义</h3>
+            <p><b>黄金法则：在写卡片之前，先去浏览卡片盒寻找安装位置。</b></p>
+            <ul>
+                <li><b>寻找最相似的邻居：</b>浏览索引，找到最相关的现有卡片，将新卡片作为其子分支（如插在 <code>/1a</code> 和 <code>/2</code> 之间，命名为 <code>/1b</code>）。</li>
+                <li><b>建立硬连接：</b>用红笔/绿笔在卡片上写下 <code>[见：xxx/xx]</code>，建立远程关联。</li>
+                <li><b>更新索引：</b>如果这是一个全新的概念，去索引盒 (Index Box) 增加一条指向该卡片的记录。</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 系统性行动指南 -->
+    <h2>🚀 终极行动指南：保姆级实操 Checklist</h2>
+    <div class="timeline">
+        <div class="step">
+            <h4>第一步：准备物理军火库</h4>
+            <p>抛弃 Notion 和 Obsidian，你需要回归物理世界：</p>
+            <ul class="checklist">
+                <li>准备三个卡片盒（主卡盒、索引盒、文献盒），初期可用一个大盒代替。</li>
+                <li>购买大量 4x6 英寸（或A6）的<b>空白卡片</b>（用作主卡和文献卡）。</li>
+                <li>购买 4x6 英寸的<b>带横线彩色卡片</b>（用作索引卡）。</li>
+                <li>购买一套 <b>A-Z 字母分隔卡</b>。</li>
+                <li>准备好顺手的笔，建议：黑笔写正文，绿笔写内部卡片链接，红笔写外部引用(ExRefs)。</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h4>第二步：搭建初始骨架 (第一天)</h4>
+            <p>不要害怕出错，完美主义是天敌：</p>
+            <ul class="checklist">
+                <li><b>初始化主干：</b>写5张主卡片放入主卡盒。基于学科分类（1000 人文学科, 2000 社会科学, 3000 自然科学, 4000 形式科学, 5000 应用科学）。</li>
+                <li><b>初始化索引：</b>在彩色卡片左上角写上 A 到 Z，共 26 张，放入索引盒。</li>
+                <li><b>注册数字参考管理器：</b>虽然是模拟系统，但强推使用 <b>Zotero</b> 来管理长篇外部文献的元数据，在卡片上用 <code>r.ZoteroID</code> 引用。</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h4>第三步：日常刻意练习 (每天 2 小时)</h4>
+            <p>让 Antinet 成为你的“度假”，而不是工作：</p>
+            <ul class="checklist">
+                <li><b>预启动与文献卡：</b>拿一张卡写上书名和阅读目标。边读边在上面记页码和关键词。</li>
+                <li><b>安置与创造：</b>读完一个章节，看着文献卡，思考“这能放在卡片盒的哪里？”。找到位置后，写下地址，写下重述/反思笔记。</li>
+                <li><b>索引与链接：</b>更新索引卡。顺便浏览一下周边卡片，写下几个相关的卡片链接。</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h4>第四步：涌现与输出 (数月之后)</h4>
+            <p>迎来质变，与第二心智对话：</p>
+            <ul class="checklist">
+                <li><b>大纲集合卡：</b>当要写文章或出书时，建立一张“大纲集合卡”，把你卡片盒里相关的卡片地址列出来。</li>
+                <li><b>物理重组：</b>把这些卡片从盒子里抽出来，铺在桌面上，调整逻辑顺序。</li>
+                <li><b>行云流水的打字：</b>看着桌上的卡片，开始在电脑上敲字扩写。此时，你的书已经“自己写完了一半”。</li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // A.N.T.I 手风琴交互
+    function toggleAccordion(element) {
+        const item = element.parentElement;
+        const isActive = item.classList.contains('active');
+        
+        // 可选：每次只展开一个
+        document.querySelectorAll('.acc-item').forEach(el => el.classList.remove('active'));
+        
+        if (!isActive) {
+            item.classList.add('active');
+        }
+    }
+
+    // 知识发展标签页交互
+    function switchTab(tabId) {
+        // 移除所有按钮和面板的 active 类
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+
+        // 激活目标
+        event.target.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+    }
+</script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_antinet_zettelkasten_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
