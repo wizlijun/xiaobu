@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《软件的本质》全景交互解析图谱</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+        :root {
+            /* 莫兰迪/低饱和度色系，降低视觉疲劳 */
+            --bg-color: #FAFAFA;
+            --surface-color: #FFFFFF;
+            --primary-color: #6B8E23; /* 莫兰迪绿 */
+            --secondary-color: #4682B4; /* 钢蓝 */
+            --accent-color: #E8ECEB;
+            --text-main: #333333;
+            --text-light: #666666;
+            --highlight: #FFFACD; /* 柔和黄 */
+            --border-radius: 12px;
+            --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.03);
+            --shadow-md: 0 10px 20px rgba(0, 0, 0, 0.06);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.7;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeIn 1s ease-out;
+        }
+
+        h1 { color: var(--primary-color); font-size: 2.6rem; margin-bottom: 0.5rem; font-weight: 700; }
+        .subtitle { color: var(--text-light); font-size: 1.2rem; font-weight: 300; }
+        .expert-badge {
+            display: inline-block;
+            background: var(--accent-color);
+            color: var(--secondary-color);
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        /* 金句样式 */
+        .quote-container {
+            background: var(--surface-color);
+            border-left: 5px solid var(--primary-color);
+            padding: 1.5rem 2.5rem;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            margin-bottom: 3rem;
+            font-size: 1.15rem;
+            color: var(--text-main);
+            box-shadow: var(--shadow-sm);
+        }
+
+        mark {
+            background-color: var(--highlight);
+            padding: 0.1em 0.4em;
+            border-radius: 4px;
+            color: #222;
+            font-weight: 500;
+        }
+
+        /* 翻转卡片 - 核心概念提取 */
+        .section-title {
+            text-align: center;
+            font-size: 1.8rem;
+            margin: 3rem 0 2rem;
+            position: relative;
+            font-weight: 700;
+            color: #2C3E50;
+        }
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 4px;
+            background: var(--primary-color);
+            margin: 0.5rem auto 0;
+            border-radius: 2px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 4rem;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            height: 240px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            box-shadow: var(--shadow-md);
+            border-radius: var(--border-radius);
+        }
+
+        .flip-card:hover .flip-card-inner { transform: rotateY(180deg); }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: var(--border-radius);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+        }
+
+        .flip-card-front {
+            background-color: var(--surface-color);
+            border: 1px solid var(--accent-color);
+        }
+        .flip-card-front h3 { color: var(--secondary-color); font-size: 1.4rem; margin-bottom: 0.5rem;}
+        .flip-card-front .en-term { font-size: 0.95rem; color: var(--text-light); }
+
+        .flip-card-back {
+            background-color: var(--secondary-color);
+            color: white;
+            transform: rotateY(180deg);
+        }
+        .flip-card-back p { font-size: 0.95rem; line-height: 1.6; text-align: left;}
+
+        /* 选项卡交互区 */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: var(--surface-color);
+            border: 1px solid var(--accent-color);
+            padding: 0.8rem 1.8rem;
+            border-radius: 30px;
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-btn.active, .tab-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-md);
+        }
+
+        .tab-content {
+            display: none;
+            background: var(--surface-color);
+            padding: 3rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .tab-content.active { display: block; }
+
+        .concept-list { list-style: none; }
+        .concept-list li {
+            margin-bottom: 2.5rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px dashed var(--accent-color);
+        }
+        .concept-list li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        
+        .concept-list h3 { color: #2C3E50; font-size: 1.4rem; margin-bottom: 1rem; display: flex; align-items: center;}
+        .concept-list h3::before { content: '❖'; color: var(--primary-color); margin-right: 0.5rem; font-size: 1.2rem;}
+
+        .fact-box {
+            background: #F9FBFA;
+            border-left: 3px solid var(--secondary-color);
+            padding: 1.2rem;
+            border-radius: 0 8px 8px 0;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+        }
+        .fact-box strong { color: var(--secondary-color); }
+
+        /* 跨学科对比表格区 */
+        .expert-section {
+            background: #F2F5F8;
+            padding: 3rem;
+            border-radius: var(--border-radius);
+            margin-top: 4rem;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.02);
+        }
+        .compare-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .compare-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+        .compare-card h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 0.5rem;
+        }
+        .compare-card ul {
+            padding-left: 1.2rem;
+            color: var(--text-main);
+            font-size: 0.95rem;
+        }
+        .compare-card li { margin-bottom: 0.8rem; }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            .tab-content, .expert-section { padding: 1.5rem; }
+            .quote-container { padding: 1rem; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>软件的本质：概念何以决定卓越设计</h1>
+        <p class="subtitle">The Essence of Software: Why Concepts Matter for Great Design</p>
+        <div class="expert-badge">👩‍🔬 认知科学家 & 软件工程专家 深度导读版</div>
+    </header>
+
+    <div class="quote-container">
+        “我们总是执迷于消除Bug，却忘了<mark>哪怕没有Bug的软件，如果概念模型是错的，依然是场灾难</mark>。软件的灵魂不在代码，而在那些与用户心智模型完美咬合的‘独立功能单元’——即软件的本质：概念。”<br>
+        <span style="display:block; margin-top:0.8rem; font-size:0.95rem; color:var(--text-light);">—— Daniel Jackson (MIT 计算机科学教授)</span>
+    </div>
+
+    <h2 class="section-title">核心元概念 (悬停翻转卡片)</h2>
+    <div class="cards-grid">
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <h3>概念的五大要素</h3>
+                    <span class="en-term">Concept Anatomy</span>
+                </div>
+                <div class="flip-card-back">
+                    <p>严格定义的软件概念包含：<br>1. <strong>名称(Name)</strong><br>2. <strong>目的(Purpose)</strong>: 解决什么特定需求<br>3. <strong>状态(State)</strong>: 概念必须记住的数据<br>4. <strong>动作(Actions)</strong>: 改变状态的行为<br>5. <strong>操作原理(Operational Principle)</strong>: 解释如何实现目的的典型场景。</p>
+                </div>
+            </div>
+        </div>
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <h3>同步机制</h3>
+                    <span class="en-term">Synchronization</span>
+                </div>
+                <div class="flip-card-back">
+                    <p>摒弃传统的“客户端-服务”调用，概念之间通过“动作同步”组合。比如：执行概念A的某个动作时，强制触发概念B的动作。同步做减法，它排除了概念单独运行时无意义的行为序列。</p>
+                </div>
+            </div>
+        </div>
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <h3>UI 映射</h3>
+                    <span class="en-term">Mapping</span>
+                </div>
+                <div class="flip-card-back">
+                    <p>将底层概念投射到用户界面的过程。糟糕的映射（如：用一个按钮绑定两个不同概念的动作，或故意隐藏状态）会造成“暗黑模式”或可用性灾难，模糊了清晰的概念。</p>
+                </div>
+            </div>
+        </div>
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <h3>概念依赖图</h3>
+                    <span class="en-term">Dependence Diagram</span>
+                </div>
+                <div class="flip-card-back">
+                    <p>不是代码调用依赖，而是“语义逻辑依赖”。例如：没有“帖子”概念，“点赞”概念就没有存在的意义。依赖图指导了MVP（最小可行性产品）的构建和功能裁剪。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="section-title">全书完整知识脉络 (点击Tab切换)</h2>
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab(event, 'part1')">Part I: 动机篇</button>
+        <button class="tab-btn" onclick="openTab(event, 'part2')">Part II: 要素篇</button>
+        <button class="tab-btn" onclick="openTab(event, 'part3')">Part III: 原则篇</button>
+    </div>
+
+    <!-- Part 1 -->
+    <div id="part1" class="tab-content active">
+        <ul class="concept-list">
+            <li>
+                <h3>设计的三个层次 (Levels of Design)</h3>
+                <p>作者指出，软件工程过于关注“内部代码结构（如何写对代码）”与“消除缺陷”，而人机交互（HCI）又太偏向心理学与前端界面，真正的“软件设计”被忽视了。软件UX设计应分为：</p>
+                <div class="fact-box">
+                    <strong>事实/观点：</strong><br>
+                    1. <mark>物理层 (Physical)</mark>：如按钮位置，遵循 Fitts 定律。<br>
+                    2. <mark>语言层 (Linguistic)</mark>：如图标隐喻、文案一致性。<br>
+                    3. <mark>概念层 (Conceptual)</mark>：最高层，决定行为抽象的本质。<br>
+                    <strong>灾难案例：</strong>Dropbox中，如果删除一个共享的顶层文件夹，只会在你本地删除；但如果删除共享文件夹<strong>里面</strong>的子文件夹，就会在所有人那里删除。这个怪异行为并非UI语言问题，而是Dropbox复用了<strong>Unix底层目录概念（包含硬链接机制）</strong>所导致的概念层错位。
+                </div>
+            </li>
+            <li>
+                <h3>概念的战略价值 (How Concepts Help)</h3>
+                <p>概念不仅仅是开发工具，更是商业武器和产品灵魂。</p>
+                <div class="fact-box">
+                    <strong>事实/观点：</strong><br>
+                    - <mark>定义应用家族：</mark>“行(Line)”定义了文本编辑器，“段落(Paragraph)和样式(Style)”定义了文字处理器，“文本流(Text flow)”定义了排版软件。<br>
+                    - <mark>护城河与差异化：</mark>电子表格的伟大在于发明了 <code>公式(Formula)</code> 概念；Photoshop的统治力在于 <code>图层(Layer)</code> 与 <code>蒙版(Mask)</code>。<br>
+                    - <mark>分离关注点：</mark>将庞大的系统拆解为互相独立的概念（如认证、权限、通知），不仅降低开发耦合，也降低用户认知负荷。
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Part 2 -->
+    <div id="part2" class="tab-content">
+        <ul class="concept-list">
+            <li>
+                <h3>剖析概念的解剖学结构 (Concept Structure & Purposes)</h3>
+                <p>一个健壮的概念不是模糊的想法，而是严谨的机器。其核心在于<strong>目的 (Purpose)</strong> 和 <strong>操作原理 (Operational Principle)</strong>。</p>
+                <div class="fact-box">
+                    <strong>深度剖析：</strong><br>
+                    - <strong>目的：</strong>必须聚焦用户需求、具体且可评估。没有目的的概念（如暴露给用户的内部机制“缓冲区 buffer”）是糟糕的设计。<br>
+                    - <strong>操作原理：</strong>解释概念如何运转的微缩剧本。<br>
+                    <strong>案例：</strong>早期的字处理软件没有 <code>样式(Style)</code> 概念，只有 <code>格式(Format)</code>。样式的<strong>目的</strong>是为了“保持文档格式的一致性更新”。其<strong>操作原理</strong>是：如果你将样式S赋予段落A和B，当你修改样式S的格式时，A和B会同时自动变化。这需要概念拥有“记住样式与段落映射关系”的<strong>状态(State)</strong>。
+                </div>
+            </li>
+            <li>
+                <h3>概念的组合魔法 (Concept Composition)</h3>
+                <p>软件不是大杂烩，而是概念的编排。组合通过“动作同步”完成：</p>
+                <div class="fact-box">
+                    <strong>组合的三种境界：</strong><br>
+                    1. <strong>自由组合 (Free)</strong>：互不干扰，仅做存在性耦合（如“任务”被删除，其绑定的“标签”自动剥离）。<br>
+                    2. <strong>协同组合 (Collaborative)</strong>：提供自动化新功能（如把“邮件收到”动作与“待办添加”动作同步，实现发邮件建Todo）。<br>
+                    3. <mark>共生组合 (Synergistic)</mark>：最高级！例如Mac废纸篓完美融合了 <code>Trash</code> 和 <code>Folder</code>。你不需要学习新UI去管理废纸篓，因为它就是一个文件夹，具备排序、搜索等所有文件夹的通用能力。又比如 Photoshop 中，<code>通道</code>、<code>蒙版</code>、<code>选区</code> 在底层共生为同一个概念：<strong>灰度图像</strong>，这赋予了它无穷的威力。
+                </div>
+            </li>
+            <li>
+                <h3>映射与暗黑模式 (Concept Mapping)</h3>
+                <p>底层概念再好，如果UI映射（Mapping）糟糕也会毁掉体验。</p>
+                <div class="fact-box">
+                    <strong>事实/观点：</strong><br>
+                    - <strong>模棱两可：</strong>Java安装程序弹出“Install”和“Remove”两个按钮，Remove是卸载旧版还是卸载全部？<br>
+                    - <strong>暗黑模式：</strong>Change.org 签名后的“捐款(Donation)”概念，用户误以为是捐给发起人，实际同步的却是“购买该平台的广告”，通过UI的误导掩盖了真实的概念动作。
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Part 3 -->
+    <div id="part3" class="tab-content">
+        <ul class="concept-list">
+            <li>
+                <h3>专一性原则 (Concept Specificity)</h3>
+                <p><strong>黄金法则：一个概念对应一个目的，一个目的对应一个概念。</strong>破坏它会导致冗余或过载。</p>
+                <div class="fact-box">
+                    <strong>概念过载 (Overloading) 的灾难：</strong><br>
+                    - <mark>虚假收敛：</mark>把不同的目的强塞进一个概念。例如，Twitter早期的 <code>收藏(Favorite, ⭐)</code> 概念，用户既用它来“表示赞赏”，又用它来“私下稍后阅读”。这导致极大的心理冲突（我只是想稍后看，并不代表我赞同这条暴论）。后来Twitter被迫拆分出独立的 <code>书签(Bookmark)</code> 概念。<br>
+                    - <mark>搭便车(Piggybacking)：</mark>爱普生打印机为了省事，把 <code>进纸方式</code> 概念塞进了 <code>纸张尺寸</code> 概念里（如“A4-后部进纸”）。导致用户无法自定义尺寸，引发逻辑混乱。
+                </div>
+            </li>
+            <li>
+                <h3>熟悉度原则 (Concept Familiarity)</h3>
+                <p>优秀的工程师懂得复用代码，优秀的设计师懂得复用概念。</p>
+                <div class="fact-box">
+                    <strong>事实/观点：</strong><br>
+                    如果一个问题已被现有概念解决，<mark>不要轻易发明新概念 (避免激进设计 Radical Design)</mark>。苹果 Keynote 复用了大家极度熟悉的 <code>大纲树(Outline Tree)</code> 概念来给幻灯片分组，支持无限嵌套、拖拽降级；而微软 PowerPoint 发明了一个全新的 <code>节(Section)</code> 概念，不支持嵌套，且新建行为难以预测。
+                </div>
+            </li>
+            <li>
+                <h3>完整性原则 (Concept Integrity)</h3>
+                <p>当概念被组合时，绝对不能破坏其自身定义的“操作原理”或核心契约。</p>
+                <div class="fact-box">
+                    <strong>破坏完整性的惨痛案例：</strong><br>
+                    - <mark>文本样式的粗体切换 (Format Toggle)：</mark>早期的粗体(Bold)是算法加粗，点一下变粗，再点恢复。但现代排版引入了 <code>字体家族(Typeface)</code>（如Light, Regular, Bold）。当你把 Light 字体加粗，它跳到了 Bold；你再点取消加粗，它却回到了 Regular 而不是 Light！<code>字体</code> 概念的介入破坏了 <code>格式切换</code> 概念的完整性。<br>
+                    - <mark>Google Drive的伪同步：</mark>同步概念的契约是“两端文件一模一样”。但Google Drive把云文档同步到本地时，只给了一个网页链接。用户把本地文件夹移走当备份，并清空了云端。结果本地只剩一堆打不开的死链。<strong>云应用概念 破坏了 同步概念 的完整性。</strong>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- 专家视角：跨学科辨析 -->
+    <div class="expert-section">
+        <h2 class="section-title" style="margin-top: 0;">专家视角：三重“概念”的跨学科辨析</h2>
+        <p style="text-align: center; color: var(--text-light); margin-bottom: 2rem;">作为认知科学家与软件工程专家，我们必须厘清本书中的“Concept”与知识图谱、心理学中“Concept”的本质异同。</p>
+        
+        <div class="compare-grid">
+            <div class="compare-card">
+                <h4>1. 软件设计中的 Concept</h4>
+                <p style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 1rem;">(By Daniel Jackson / 本书主旨)</p>
+                <ul>
+                    <li><mark>本质：</mark>一种<strong>被发明</strong>的、自包含的<strong>行为机器</strong>（状态机）。</li>
+                    <li><mark>核心驱动：</mark>为了实现某个具体的系统<strong>目的 (Purpose)</strong>。</li>
+                    <li><mark>动态性：</mark>包含动作 (Actions) 和操作原理，是代码执行的逻辑抽象。</li>
+                    <li><mark>关系法则：</mark>概念间通过动作的“同步 (Synchronization)”发生联系，而非静态从属。</li>
+                </ul>
+            </div>
+            
+            <div class="compare-card">
+                <h4>2. 概念图理论中的 Concept</h4>
+                <p style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 1rem;">(Concept Map, By Joseph Novak)</p>
+                <ul>
+                    <li><mark>本质：</mark>对事件或物体中感知到的<strong>规律性描述</strong>，用标签指定。</li>
+                    <li><mark>核心驱动：</mark>用于构建<strong>命题网络 (Propositional Network)</strong>，展示知识结构。</li>
+                    <li><mark>静态性：</mark>是知识网络中的“节点 (Nodes)”。</li>
+                    <li><mark>关系法则：</mark>通过连接词（如 is-a, causes, part-of）形成树状或网状的语义层级依赖。</li>
+                </ul>
+            </div>
+
+            <div class="compare-card">
+                <h4>3. 认知心理学中的 Concept</h4>
+                <p style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 1rem;">(Cognitive Psychology)</p>
+                <ul>
+                    <li><mark>本质：</mark>人类大脑中用于<strong>分类 (Categorization)</strong> 和推理的<strong>心理表征 (Mental Representation)</strong>。</li>
+                    <li><mark>核心驱动：</mark>帮助人类降低认知负荷，快速识别世界（如原型理论 Prototype Theory、样例理论）。</li>
+                    <li><mark>主观性：</mark>并非精确的机器，而是模糊的、基于经验的心理模型。</li>
+                    <li><mark>共鸣点：</mark>Jackson的软件概念设计，最终目标就是<strong>使软件的底层状态机，完美契合用户心理学意义上的 Concept（即心理模型）</strong>，消除“执行与评估的鸿沟”。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openTab(evt, tabId) {
+            // 获取所有按钮和内容
+            var i, tabContent, tabBtns;
+            tabContent = document.getElementsByClassName("tab-content");
+            tabBtns = document.getElementsByClassName("tab-btn");
+
+            // 隐藏所有内容并移除活动状态
+            for (i = 0; i < tabContent.length; i++) {
+                tabContent[i].style.display = "none";
+                tabContent[i].classList.remove("active");
+            }
+            for (i = 0; i < tabBtns.length; i++) {
+                tabBtns[i].classList.remove("active");
+            }
+
+            // 显示当前点击的内容并添加活动状态
+            var activeTab = document.getElementById(tabId);
+            activeTab.style.display = "block";
+            // 触发一次重绘以重新开始动画
+            void activeTab.offsetWidth; 
+            activeTab.classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+    </script>
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="book_se_why_concepts_matter_for_great_files/book.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
