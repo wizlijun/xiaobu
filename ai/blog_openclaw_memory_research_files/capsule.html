@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenClaw 核心架构系统研究报告</title>
+    <style>
+        :root {
+            --primary-color: #1e293b;
+            --secondary-color: #3b82f6;
+            --accent-color: #10b981;
+            --text-main: #334155;
+            --bg-light: #f8fafc;
+            --border-color: #e2e8f0;
+            --code-bg: #f1f5f9;
+        }
+        body {
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.75;
+            color: var(--text-main);
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background-color: #ffffff;
+        }
+        .meta-header {
+            background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%);
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .meta-header h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .meta-header .prompt-text {
+            background-color: rgba(255,255,255,0.7);
+            padding: 12px;
+            border-radius: 6px;
+            font-style: italic;
+            border-left: 4px solid var(--secondary-color);
+            margin-bottom: 16px;
+        }
+        .meta-header .ai-credit {
+            font-weight: 600;
+            color: #475569;
+            font-size: 0.95em;
+        }
+        .ai-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            color: white;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .gemini-badge { background-color: #8b5cf6; }
+        .gpt-badge { background-color: #10a37f; }
+        h1 { 
+            color: var(--primary-color); 
+            border-bottom: 3px solid var(--secondary-color); 
+            padding-bottom: 12px; 
+            margin-bottom: 30px; 
+            font-size: 2.2em;
+        }
+        h2 { 
+            color: var(--secondary-color); 
+            margin-top: 45px; 
+            border-bottom: 1px solid var(--border-color); 
+            padding-bottom: 8px; 
+            font-size: 1.6em;
+        }
+        h3 { 
+            color: var(--primary-color); 
+            margin-top: 30px; 
+            font-size: 1.25em;
+        }
+        p { margin-bottom: 16px; text-align: justify; }
+        ul, ol { margin-bottom: 24px; padding-left: 28px; }
+        li { margin-bottom: 10px; }
+        .highlight {
+            background-color: var(--bg-light);
+            border-left: 4px solid var(--accent-color);
+            padding: 16px 20px;
+            margin: 25px 0;
+            border-radius: 0 8px 8px 0;
+            color: #475569;
+        }
+        code {
+            background-color: var(--code-bg);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.85em;
+            color: #be123c;
+        }
+        .citation {
+            font-size: 0.75em;
+            background-color: #e0f2fe;
+            color: #0369a1;
+            padding: 2px 6px;
+            border-radius: 10px;
+            text-decoration: none;
+            margin-left: 4px;
+            vertical-align: super;
+            transition: all 0.2s;
+        }
+        .citation:hover {
+            background-color: #bae6fd;
+            color: #0c4a6e;
+        }
+        .footer { 
+            margin-top: 60px; 
+            padding-top: 20px; 
+            border-top: 1px solid var(--border-color); 
+            font-size: 0.9em; 
+            color: #94a3b8; 
+            text-align: center; 
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 头部 Meta 信息区 -->
+    <div class="meta-header">
+        <h3>🔍 研究任务溯源</h3>
+        <div class="prompt-text">
+            <strong>Prompt 1:</strong> "请到英文互联网，以及AI圈，搜索 openclaw的架构研究，重点关注结构化记忆机制、检索机制有关的内容，生成一份完整的报告。以html的形式输出"<br><br>
+            <strong>Prompt 2:</strong> "请结合chatgpt的deepresearch结果，合并完整，系统性的输出。并在文章顶部写上我的prompt，并说明使用了gemini3.1pro和chatgpt5.4 pro 研究生成。"
+        </div>
+        <div class="ai-credit">
+            <span class="ai-badge gemini-badge">Gemini 3.1 Pro</span>
+            <span class="ai-badge gpt-badge">ChatGPT 5.4 Pro</span>
+            本报告由双主模型联合驱动生成：基于 Gemini 3.1 Pro 的宏观系统化分析框架，深度融合了 ChatGPT 5.4 Pro (DeepResearch) 抓取的英文文档源码级细节与社区前沿数据。
+        </div>
+    </div>
+
+    <h1>OpenClaw 核心架构系统研究报告：结构化记忆与检索机制深度解析</h1>
+
+    <div class="highlight">
+        <strong>摘要：</strong> OpenClaw 的核心本质不是一个简单的带有向量数据库的聊天机器人，而是一个<strong>“文件优先（File-first）、治理优先（Governance-first）”的 AI 代理记忆操作系统</strong>。它极其工程化地将“当前上下文”、“压缩机制”、“长期记忆”与“检索引擎”解耦为独立的组件。本报告系统性解码其最核心的结构化记忆与多后端检索机制。
+    </div>
+
+    <h2>一、 核心理念：结论先行与三层记忆模型</h2>
+    <p>关于 OpenClaw 架构最大的认知误区，是将其等同于“挂载了 Chroma/Milvus 的大模型”。实际上，OpenClaw 的记忆不是模型内部的隐式状态，也不是黑盒向量库，而是<strong>工作区里的 Markdown 文件</strong> <a href="https://docs.openclaw.ai/concepts/memory" class="citation" target="_blank">[Docs: Memory]</a>。</p>
+    <p>官方文档直接写明：<code>memory/YYYY-MM-DD.md</code> 与 <code>MEMORY.md</code> 是默认记忆层，<strong>“Files are the source of truth”</strong>（文件就是唯一的真相来源）。模型真正“记住”的只有被写回磁盘的内容。所有的检索、向量索引、BM25 融合、QMD 引擎等，仅仅是围绕这些文件建立的<strong>加速召回层</strong>。</p>
+    <p>基于技术白皮书和开发者社区讨论，OpenClaw 的基础架构被抽象为相互独立但可组合的 <strong>三层记忆模型</strong> <a href="https://jishuzhan.net/article/2026115349788295170" class="citation" target="_blank">[Tech Article]</a>：</p>
+    <ul>
+        <li><strong>Context（当前上下文）</strong>：每次 LLM 调用时实际能看到的 prompt 上下文，由 Context Engine 负责装配。</li>
+        <li><strong>Compaction（压缩层）</strong>：当上下文窗口逼近上限时，触发的旧历史摘要压缩机制。</li>
+        <li><strong>Memory Files（持久记忆层）</strong>：跨会话保留的本地 Markdown 文件。</li>
+    </ul>
+
+    <h2>二、 深度解码：五层结构化记忆机制 (Structured Memory)</h2>
+    <p>OpenClaw 的“结构化”并非预先定义强 schema 的知识图谱，而是<strong>先用固定文件布局建立记忆容器，再用检索工具和上下文规则赋予文件结构</strong> <a href="https://docs.openclaw.ai/concepts/agent-workspace" class="citation" target="_blank">[Docs: Workspace]</a>。</p>
+
+    <h3>1. Workspace 文件系统约定</h3>
+    <p>官方将 Workspace 定义为 Agent 的 Home 目录。标准文件矩阵包括：<code>AGENTS.md</code>, <code>SOUL.md</code>, <code>USER.md</code>, <code>IDENTITY.md</code>, <code>TOOLS.md</code> 等核心设定文件。而真正的“动态记忆”被严格划分：</p>
+    <ul>
+        <li><code>memory/YYYY-MM-DD.md</code>：每日追加的日志笔记（Append-only）。</li>
+        <li><code>MEMORY.md</code>：经过 Agent 自主整理的持久偏好与核心事实。</li>
+    </ul>
+
+    <h3>2. 作用域与会话隔离边界</h3>
+    <p>记忆并非“所有会话共享的一锅粥”。<code>MEMORY.md</code> 只在主私聊 session 中注入，绝不污染 group/shared context <a href="https://docs.openclaw.ai/concepts/memory" class="citation" target="_blank">[Docs: Memory]</a>。Direct chat 状态可汇聚到主 session，而群组拥有独立的隔离状态，保障了多任务处理的安全边界。</p>
+
+    <h3>3. Context Injection 截断与防污染策略</h3>
+    <p>OpenClaw 不鼓励将全部记忆粗暴塞进 prompt。单文件默认有 <strong>20,000 字符注入上限</strong>，大文件会被强制截断 <a href="https://docs.openclaw.ai/concepts/context" class="citation" target="_blank">[Docs: Context]</a>。这一限制从根本上解释了“为什么必须使用检索机制”：它降低了 Token 成本，并防止了长期记忆直接灌入导致的“大海捞针”噪声风险。</p>
+
+    <h3>4. 记忆写回机制 (Write-back & Pre-compaction)</h3>
+    <p>系统明确区分“Durable facts”和“日常上下文”。当当前会话逼近 auto-compaction（自动压缩）阈值前，OpenClaw 会触发一次<strong>静默的 pre-compaction memory flush（预压缩记忆落盘）</strong>。系统甚至默认使用 <code>NO_REPLY</code> 指令，让模型在用户无感知的情况下，先把值得长期保留的内容写入磁盘，完美衔接了“短期上下文丢失”与“长期记忆落盘”的缝隙 <a href="https://docs.openclaw.ai/concepts/memory" class="citation" target="_blank">[Docs: Memory]</a>。</p>
+
+    <h3>5. Prompt 级检索规约 (Behavioral Guardrails)</h3>
+    <p>在 <code>memory-core</code> 的源码中，系统硬性注入了 “Memory Recall” 指令。要求 Agent 在回答“过去做过什么、决策、偏好”时，<strong>必须</strong>先对文件运行 <code>memory_search</code>，再用 <code>memory_get</code> 拉取具体行 <a href="https://github.com/openclaw/openclaw/blob/main/extensions/memory-core/index.ts" class="citation" target="_blank">[GitHub: memory-core/index.ts]</a>。这标志着检索机制被上升为 AI 代理不可违背的行为规范。</p>
+
+    <h2>三、 双轨检索机制：内置引擎与高级 QMD 后端</h2>
+    <p>为了支持海量 Markdown 文件的召回，OpenClaw 提供了两套不同复杂度的检索引擎：</p>
+
+    <h3>轨一：内置轻量级混合检索 (Built-in SQLite)</h3>
+    <p>默认启用，自动监听 <code>MEMORY.md</code> 与 <code>memory/</code> 变更。索引以 per-agent 形式存放在 <code>~/.openclaw/memory/&lt;agentId&gt;.sqlite</code> 中。</p>
+    <ul>
+        <li><strong>两阶段 Recall：</strong><code>memory_search</code> 先在约 <strong>400 token / 80 token overlap</strong> 的块上做语义与关键词召回（返回 snippet、路径、行号），随后 LLM 再调用 <code>memory_get</code> 精确读取行。这种“粗召回+精读取”大幅提升了上下文利用率。</li>
+        <li><strong>混合排序公式：</strong>结合向量与 BM25 分数，使用 <code>vectorWeight * vectorScore + textWeight * textScore</code> 融合。默认支持本地 <code>sqlite-vec</code> 向量检索 <a href="https://docs.openclaw.ai/reference/memory-config" class="citation" target="_blank">[Docs: Config]</a>。</li>
+        <li><strong>后处理旋钮：</strong>提供 <strong>Temporal Decay（时间衰减）</strong>（如 <code>lambda=0.7</code>, <code>halfLifeDays=30</code>）使新记忆权重更高，以及 <strong>MMR（最大边界相关性）</strong>利用 Jaccard 相似度减少重复片段。</li>
+        <li><strong>实验性 Transcript 检索：</strong>支持对历史 Session JSONL 进行异步最佳尽力（best-effort）检索。</li>
+    </ul>
+
+    <h3>轨二：QMD 高级检索后挂载 (Research-Grade Sidecar)</h3>
+    <p>在配置中开启 <code>memory.backend = "qmd"</code> 后，系统将切换到更强大的 QMD sidecar 进程 <a href="https://github.com/tobi/qmd/blob/main/README.md" class="citation" target="_blank">[GitHub: QMD]</a>。</p>
+    <ul>
+        <li><strong>底层特性：</strong>它仍保持 Local-first，运行于独立环境 <code>~/.openclaw/agents/&lt;agentId&gt;/qmd/</code>，并在失败时可自动降级至 SQLite <a href="https://docs.openclaw.ai/reference/memory-config" class="citation" target="_blank">[Docs: Config]</a>。</li>
+        <li><strong>Markdown 感知智能分块：</strong>Chunking 极为激进（约 <strong>900 token, 15% overlap</strong>），且具备 Markdown-aware 特性，能寻找自然断点以保留标题、代码块等完整语义单元。</li>
+        <li><strong>Context Tree：</strong>支持 <code>qmd context add</code>，在搜索结果中返回树状上下文描述，帮助 LLM 更精准地过滤信息。</li>
+        <li><strong>完整的 RAG Pipeline：</strong>包含查询扩展 → 并行 FTS/Vector 检索 → <strong>RRF Fusion (倒数排序融合)</strong> → LLM Reranking (重排) → 返回融合片段。</li>
+    </ul>
+
+    <h2>四、 社区生态演进与已知风险 (Limitations & Risks)</h2>
+
+    <h3>1. 生态向结构化图谱演进</h3>
+    <p>尽管基础盘是“File-first”，但官方技能库中已出现名为 <code>Structured Memory</code> 的插件。该技能在保持 Markdown 事实源的同时，在其之上构建按日期、模块、实体的重建索引与 Critical fact cards（关键事实卡片）<a href="https://github.com/openclaw/skills/tree/main/skills/chauncyzbc/structured-memory" class="citation" target="_blank">[GitHub: Skills]</a>。这标志着生态正向<strong>结构化检索（Structured Retrieval）</strong>深度演进。</p>
+
+    <h3>2. 工程局限与配置陷阱</h3>
+    <ul>
+        <li><strong>参数过滤陷阱：</strong>GitHub Issue #25183 揭露，当 hybrid search 默认 <code>vectorWeight=0.7 / textWeight=0.3</code> 且 <code>minScore=0.35</code> 时，纯粹的精确关键词命中（如特定 ID、项目名）最高分只能到 0.30，从而被系统静默过滤 <a href="https://github.com/openclaw/openclaw/issues/25183" class="citation" target="_blank">[GitHub Issue: #25183]</a>。</li>
+        <li><strong>QMD 系统稳定性：</strong>在 Apple Silicon (macOS Metal) 上，QMD 的 <code>query</code> 模式在 rerank 后偶发 SIGABRT 崩溃，导致 OpenClaw 获取空结果 <a href="https://github.com/tobi/qmd/issues/368" class="citation" target="_blank">[QMD Issue: #368]</a>。目前官方推荐 <code>searchMode=search</code> 作为求稳配置。</li>
+        <li><strong>记忆污染风险：</strong>因为记忆最终落地为文件，任何注入的错误或 Prompt Injection 痕迹都会被保留并随检索放大。近期的安全论文将 Memory Integrity Validation (记忆完整性校验) 列为 OpenClaw 部署的必选项 <a href="https://arxiv.org/abs/2603.11619" class="citation" target="_blank">[arXiv: 2603.11619]</a>。</li>
+    </ul>
+
+    <h2>五、 研究研判与系统落地建议</h2>
+    <p><strong>宏观研判：</strong> OpenClaw 并非追求极致的数据库架构创新，而是巧妙地将 Agent 的记忆打造成一个<strong>“人类可见、检索可插拔、上下文可治理、AI 行为受规约”</strong>的系统。它的护城河在于其工作流的优雅解耦和文件基石底座。</p>
+    
+    <p><strong>工程落地建议：</strong></p>
+    <ol>
+        <li><strong>数据隔离规范：</strong>严格遵守 <code>MEMORY.md</code> 仅存核心法则（Durable facts），而 <code>memory/YYYY-MM-DD.md</code> 必须保持 Append-only（仅追加日志）以防核心状态崩溃。</li>
+        <li><strong>渐进式后端升级：</strong>小型系统或开发初期，坚守轻量级的内置 SQLite/sqlite-vec 后端。只有当遇到数百个 Markdown 跨文件组合长逻辑查询时，再启用 QMD Sidecar 引擎。</li>
+        <li><strong>参数调优：</strong>优先调整混合检索权重 (<code>vectorWeight/textWeight</code>) 和时间衰减 (<code>lambda</code>)，而非盲目更换更庞大的 Embedding 模型。善用 <code>openclaw memory status --deep</code> 和 <code>memory index --force</code> 进行 CLI 排错。</li>
+        <li><strong>CJK 多语种部署警告：</strong>对于处理中文/日韩文的企业，QMD 默认的 <code>embeddinggemma-300M</code> 严重偏向英文。强烈建议替换为 <strong>Qwen3-Embedding</strong> 等原生多语模型，并强制重建索引 <a href="https://github.com/tobi/qmd/blob/main/README.md" class="citation" target="_blank">[GitHub: QMD CJK Note]</a>。</li>
+    </ol>
+
+    <div class="footer">
+        生成时间：2026年3月25日 | 资料来源：OpenClaw Official Docs, GitHub Source/Issues (openclaw/openclaw, tobi/qmd), arXiv, Hacker News & AI 开发者社区。
+    </div>
+</body>
+</html>
