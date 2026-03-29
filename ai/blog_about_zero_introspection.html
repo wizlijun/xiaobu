@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深度专题：Mark Andreessen 的“零内省”哲学</title>
+    <style>
+        :root {
+            --primary-dark: #0f172a;
+            --accent-blue: #2563eb;
+            --bg-white: #ffffff;
+            --logic-bg: #f8fafc;
+            --highlight-yellow: #fef9c3;
+            --text-body: #334155;
+            --card-front: #eff6ff;
+            --podcast-bg: #f5f3ff;
+            --podcast-border: #8b5cf6;
+            --fact-bg: #e0f2fe;
+            --opinion-bg: #fef3c7;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-white);
+            color: var(--text-body);
+            line-height: 1.8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .wrapper {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* 顶部标题 */
+        .hero {
+            text-align: center;
+            border-bottom: 2px solid var(--primary-dark);
+            padding-bottom: 20px;
+            margin-bottom: 50px;
+        }
+
+        .hero h1 {
+            font-size: 2.2rem;
+            color: var(--primary-dark);
+            margin: 0;
+            letter-spacing: -1px;
+        }
+
+        .hero p {
+            color: var(--accent-blue);
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+
+        /* 核心定义区 */
+        .definition-box {
+            background-color: var(--logic-bg);
+            border-radius: 16px;
+            padding: 30px;
+            border-left: 8px solid var(--accent-blue);
+            margin-bottom: 40px;
+        }
+
+        .tag {
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            display: inline-block;
+        }
+        .tag-concept { background: #dbeafe; color: #1e40af; }
+        .tag-logic { background: #fef3c7; color: #92400e; }
+        .tag-podcast { background: #ede9fe; color: #5b21b6; }
+        .tag-fact { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc;}
+        .tag-opinion { background: #fef3c7; color: #b45309; border: 1px solid #fde047;}
+
+        /* 翻转卡片：逻辑深度拆解 */
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
+        }
+
+        .flip-card {
+            height: 250px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+        }
+
+        .flip-card.is-flipped .flip-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-front, .flip-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-sizing: border-box;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        .flip-front {
+            background-color: var(--card-front);
+            text-align: center;
+        }
+
+        .flip-front h3 {
+            color: var(--accent-blue);
+            font-size: 1.3rem;
+            margin: 0;
+        }
+
+        .flip-front .hint {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-top: 15px;
+        }
+
+        .flip-back {
+            background-color: #ffffff;
+            transform: rotateY(180deg);
+            font-size: 0.95rem;
+        }
+
+        /* 价值观与观点 */
+        .highlight-section {
+            margin: 50px 0;
+        }
+
+        .section-header {
+            font-weight: 900;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+        }
+
+        .section-header::before {
+            content: "";
+            width: 12px;
+            height: 12px;
+            background: var(--accent-blue);
+            margin-right: 15px;
+        }
+
+        .section-header.podcast::before {
+            background: var(--podcast-border);
+        }
+
+        .viewpoint-card {
+            padding: 20px 25px;
+            border-bottom: 1px solid #f1f5f9;
+            transition: all 0.3s;
+        }
+
+        .viewpoint-card:hover {
+            background-color: #f8fafc;
+        }
+
+        /* 播客专属卡片样式 */
+        .viewpoint-card.podcast-card {
+            border-left: 4px solid var(--podcast-border);
+            background-color: #faf5ff;
+            border-bottom: none;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        
+        .viewpoint-card.podcast-card:hover {
+            background-color: var(--podcast-bg);
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .quote {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            display: inline;
+            background: linear-gradient(180deg, transparent 65%, var(--highlight-yellow) 35%);
+        }
+        
+        .podcast-card .quote {
+            background: linear-gradient(180deg, transparent 65%, #ddd6fe 35%);
+        }
+
+        .analysis {
+            margin-top: 12px;
+            font-size: 0.95rem;
+            color: var(--text-body);
+            display: block;
+        }
+        
+        .hl-fact { background-color: var(--fact-bg); padding: 0 4px; border-radius: 2px; color: #0369a1; }
+        .hl-opinion { background-color: var(--opinion-bg); padding: 0 4px; border-radius: 2px; color: #b45309; font-style: italic; }
+
+        footer {
+            text-align: center;
+            padding-top: 60px;
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.8rem; }
+        }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <!-- ================= 原有观点部分 ================= -->
+    <header class="hero">
+        <p>Mindset Mastery</p>
+        <h1>Zero Introspection</h1>
+        <div style="margin-top:15px; font-weight:bold; color:#64748b;">拒绝向内看，只管向前冲</div>
+    </header>
+
+    <section class="definition-box">
+        <span class="tag tag-concept">核心定义</span>
+        <p style="font-size: 1.2rem; font-weight: 500; margin: 0;">
+            <strong>零内省 (Zero Introspection)</strong>：指有意识地拒绝进行自我剖析、情感回溯或过度关注内部感受，将所有认知资源投入到外部目标的实现与世界重构中。
+        </p>
+    </section>
+
+    <div class="section-header">逻辑深度拆解 (点击翻转)</div>
+
+    <div class="card-container">
+        <!-- 逻辑 1 -->
+        <div class="flip-card" onclick="this.classList.toggle('is-flipped')">
+            <div class="flip-inner">
+                <div class="flip-front">
+                    <span class="tag tag-logic">时间逻辑</span>
+                    <h3>“沉溺过去 vs 开启未来”</h3>
+                    <p class="hint">点击查看逻辑推导</p>
+                </div>
+                <div class="flip-back">
+                    <strong>推导：</strong>内省本质上是一种回溯行为。Mark 认为，“沉溺于过去的人会困在过去”。在极高速竞争的创业环境中，每一秒纠结于“我为什么会有这种感觉”都是在损耗前进的动能。
+                </div>
+            </div>
+        </div>
+
+        <!-- 逻辑 2 -->
+        <div class="flip-card" onclick="this.classList.toggle('is-flipped')">
+            <div class="flip-inner">
+                <div class="flip-front">
+                    <span class="tag tag-logic">历史逻辑</span>
+                    <h3>“内省是现代文明的‘寄生虫’”</h3>
+                    <p class="hint">点击查看逻辑推导</p>
+                </div>
+                <div class="flip-back">
+                    <strong>事实观点：</strong>他指出亚历山大大帝或杰斐逊绝不会坐下来分析童年阴影。内省是1910-20年代维也纳（弗洛伊德派）制造的工业垃圾，它发明了“自我怀疑”并将其制度化。
+                </div>
+            </div>
+        </div>
+
+        <!-- 逻辑 3 -->
+        <div class="flip-card" onclick="this.classList.toggle('is-flipped')">
+            <div class="flip-inner">
+                <div class="flip-front">
+                    <span class="tag tag-logic">神经科学逻辑</span>
+                    <h3>“内省 = 神经质(Neuroticism)”</h3>
+                    <p class="hint">点击查看逻辑推导</p>
+                </div>
+                <div class="flip-back">
+                    <strong>心理关联：</strong>内省程度与人格五大模型中的“神经质”呈正相关。顶级创始人的超能力是“情绪不敏感”。他们不被情绪左右，因为他们根本不去探测情绪。
+                </div>
+            </div>
+        </div>
+
+        <!-- 逻辑 4 -->
+        <div class="flip-card" onclick="this.classList.toggle('is-flipped')">
+            <div class="flip-inner">
+                <div class="flip-front">
+                    <span class="tag tag-logic">生存逻辑</span>
+                    <h3>“幸福不是目标，影响力才是”</h3>
+                    <p class="hint">点击查看逻辑推导</p>
+                </div>
+                <div class="flip-back">
+                    <strong>价值观转换：</strong>内省往往是为了寻找“内心的平静或幸福”。但 Mark 认同 Daniel Ek 的观点：顶级创始人优化的是 **Impact（影响力）**。为了影响力，可以牺牲对内部情绪舒适度的追求。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="highlight-section">
+        <div class="section-header">关键观点与价值观</div>
+
+        <div class="viewpoint-card">
+            <div class="quote">“只要我不向内看，我就没有弱点。”</div>
+            <span class="analysis">Mark 表现出一种极致的外倾性。他认为自我批评和负罪感是阻碍个体成为“超人”的枷锁。</span>
+        </div>
+
+        <div class="viewpoint-card">
+            <div class="quote">“竞争对手是自己，但仅限于技能和认知的竞争。”</div>
+            <span class="analysis">他鼓励“自我进化”，但这种进化是 **Extrinsic（外在属性）** 的：变得更聪明、更博学、技能更强，而不是心理状态的“通透”。</span>
+        </div>
+
+        <div class="viewpoint-card">
+            <div class="quote">“拒绝精神类药物与迷幻剂。”</div>
+            <span class="analysis">他批评硅谷流行的迷幻剂文化（IA/Psychedelics）。他认为这些药物促使人达成“自我满足”和“内心和解”，其代价往往是失去了改变世界的饥饿感（如辞职去海边当冲浪教练）。</span>
+        </div>
+
+        <div class="viewpoint-card">
+            <div class="quote">“世界是高度可塑的（Malleable）。”</div>
+            <span class="analysis">这是他最核心的价值观：如果你足够快、足够硬，世界会绕着你旋转。内省会弱化你的硬度，让你从重塑世界的人变成适应世界的人。</span>
+        </div>
+    </section>
+
+    <section class="definition-box" style="border-left-color: #f59e0b; background-color: #fffbeb;">
+        <span class="tag" style="background:#fef3c7; color:#b45309;">黄金金句</span>
+        <p style="font-style: italic; font-size: 1.1rem;">
+            “我绝对不愿意发现‘另一个更完善的自己’。如果那个自我满足的代价是放弃我的公司和我的影响力，我宁愿永远保持现在这种‘零内省’的不满足状态。”
+        </p>
+    </section>
+
+    <!-- ================= 播客延伸探讨部分 ================= -->
+    <section class="highlight-section">
+        <div class="section-header podcast">播客碰撞：当“零内省”撞上大众文化与荒诞现实</div>
+        <div style="margin-bottom: 20px; color: #64748b; font-size: 0.95rem;">
+            *以下内容提炼自喜剧播客《The Boyscast》针对 Mark Andreessen 爆红言论的深度调侃与现实拆解。主播们从“高绩效者的变态专注”与“普通人情感需求”的剧烈冲突中，发掘出了一系列犀利洞察。
+        </div>
+
+        <!-- 洞察 1：生产力压榨 -->
+        <div class="viewpoint-card podcast-card">
+            <div class="quote">“与其花时间内省，不如沉浸式敲代码 (Vibe Coding)。”</div>
+            <span class="analysis">
+                <span class="tag tag-podcast">变态效率榨取</span> 
+                <span class="hl-fact">安德森视内省为彻底的浪费。</span> 
+                在播客讨论中，主播将此定性为科技圈典型的“极限优化”——他们连1%的生产力损耗都要剔除。甚至衍生出科技CEO互相攀比的奇观：<span class="hl-opinion">“我穿纸尿裤上班，看看这饼状图，我上厕所的时间是0%。”</span> 这种拒绝一切生理和心理停顿的做法，在常人眼里简直是彻头彻尾的“精神变态（Psychopath）”。
+            </span>
+        </div>
+
+        <!-- 洞察 2：对立与挑衅 -->
+        <div class="viewpoint-card podcast-card">
+            <div class="quote">“这简直让普通人抓狂，让女人毛骨悚然 (Makes skin crawl)。”</div>
+            <span class="analysis">
+                <span class="tag tag-podcast">情绪价值的绞杀</span> 
+                主流价值观极度推崇“情绪智力 (EQ)”和“生活平衡”，而零内省则粗暴地将其踩在脚下。
+                <span class="hl-opinion">主播坦言，由于这句话杀伤力太强，他们甚至会将其作为恶作剧话术——面对伴侣探讨情感时，故意甩出一句“我不考虑过去，那纯属浪费时间”，纯粹为了享受破坏现代情绪教条、激怒对方的病态快感。</span>
+            </span>
+        </div>
+
+        <!-- 洞察 3：转盘子与边界保卫战 -->
+        <div class="viewpoint-card podcast-card">
+            <div class="quote">“解决大问题就像转盘子，哪怕是你奶奶去世，也得周日下午一点再谈。”</div>
+            <span class="analysis">
+                <span class="tag tag-podcast">认知带宽保卫战</span> 
+                主播提出了精妙的<span class="hl-fact">“转盘子理论（Spinning Plates）”</span>：顶级大脑处理问题时，脑子里同时维系着十几根逻辑链（盘子）。任何向内的情绪自省或向外的社交打扰，都会导致所有盘子瞬间摔碎。
+                <span class="hl-opinion">为了保护这种脆弱的单线程心流，他们必须极其残忍。连门把手上的“请勿打扰”牌，都会成为捍卫领地的生死战场。</span> 这与爱泼斯坦要求女伴“周一到周五绝对不准争吵”的极端规矩如出一辙。
+            </span>
+        </div>
+
+        <!-- 洞察 4：失败者言论的自我防卫 -->
+        <div class="viewpoint-card podcast-card">
+            <div class="quote">“当别人劝你‘其实你不需要这么累’，只要你信了，这就是失败者言论 (Loser talk)。”</div>
+            <span class="analysis">
+                <span class="tag tag-podcast">自我洗脑机制</span> 
+                <span class="hl-opinion">零内省者必须维持一种“老子别无选择”的虚妄狂热。</span> 
+                伴侣的温柔安慰往往是最致命的毒药，因为一旦开始反省“我真的需要这么累吗？”，紧绷的动力就会瞬间崩塌。拒绝内省，本质上就是拒绝软弱的退路。
+            </span>
+        </div>
+
+        <!-- 洞察 5：冠军的代价 -->
+        <div class="viewpoint-card podcast-card">
+            <div class="quote">“乔丹的孩子讨厌他，他离婚了。但他有六枚戒指和百亿身家，有任何问题吗？”</div>
+            <span class="analysis">
+                <span class="tag tag-podcast">巅峰的孤绝</span> 
+                <span class="hl-opinion">在顶尖竞技场，平衡就是平庸。</span> 
+                拳王泰森在擂台上的无敌心境，注定了他擂台外生活的灾难。内省让你成为一个“讨人喜欢、全面发展（Likable and rounded）”的正常人，而“零内省”让你成为暴君。
+                主播讽刺道：<span class="hl-opinion">“这个世界到处都是家庭幸福却身无分文的普通人。而赢家，只会像金刚狼一样，带着冠军戒指独自下葬。”</span>
+            </span>
+        </div>
+
+        <!-- 洞察 6：荒诞喜剧的降维打击 -->
+        <div class="viewpoint-card podcast-card">
+            <div class="quote">“这梗献给你，科比！——热狗到底是不是狗？”</div>
+            <span class="analysis">
+                <span class="tag tag-podcast">曼巴精神的喜剧反差</span> 
+                主播指出了一种极其荒谬的画面：
+                <span class="hl-opinion">想象你在贴满科比乔丹海报的房间里，紧握双拳大喊“全年无休（No days off）”，带着这种百亿富豪的“零内省”决绝心态，满腔热血地打开文档……然后敲出来几句诸如“伊朗最高领袖是同性恋吗”、“跟女友父母开黄腔”的低俗烂梗。</span> 
+                当最宏大冷血的英雄主义，被降维套用在最无营养的屎尿屁创作上时，这就构成了对“极致成功学”最绝妙的结构主义嘲讽。
+            </span>
+        </div>
+
+    </section>
+
+    <footer>
+        Deep Dive Summary | Source: Founders Podcast #366 & The Boyscast<br>
+        谨以此摘要献给那些在狂热专注中创造世界的人。
+    </footer>
+</div>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://www.laobu.com/ai/yt_yc_mark_andreessen_0_introspection.html" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
