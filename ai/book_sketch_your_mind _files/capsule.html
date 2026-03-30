@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《描绘你的大脑：培养充满游戏感与创造力的大脑》交互式精华摘要 (完整增强版)</title>
+    <style>
+        /* ================= 基础颜色与字体定义 ================= */
+        :root {
+            --bg-color: #fafbfc;
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --primary-color: #3182ce;
+            --primary-dark: #2b6cb0;
+            --secondary-color: #e2e8f0;
+            --fact-bg: #e6fffa;
+            --fact-text: #2c7a7b;
+            --opinion-bg: #fffaf0;
+            --opinion-text: #c05621;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-hover: 0 20px 25px -5px rgba(0,0,0,0.1);
+            --border-radius: 12px;
+            --border-radius-lg: 16px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* ================= 头部与通用排版 ================= */
+        header {
+            text-align: center;
+            background: var(--card-bg);
+            padding: 50px 30px;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 40px;
+            border-top: 5px solid var(--primary-color);
+        }
+
+        h1 {
+            color: #1a202c;
+            font-size: 2.4rem;
+            margin-bottom: 15px;
+            letter-spacing: -0.5px;
+        }
+
+        h2.section-title {
+            color: var(--primary-color);
+            font-size: 1.6rem;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-top: 50px;
+            margin-bottom: 30px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.15rem;
+            max-width: 800px;
+            margin: 0 auto 25px auto;
+        }
+
+        /* ================= 高亮标记说明 ================= */
+        .legend {
+            display: inline-flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            background: var(--secondary-color);
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+
+        mark.fact {
+            background-color: var(--fact-bg);
+            color: var(--fact-text);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        mark.opinion {
+            background-color: var(--opinion-bg);
+            color: var(--opinion-text);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        /* ================= 金句框 ================= */
+        .quote-box {
+            background: linear-gradient(to right, #ebf8ff, #ffffff);
+            border-left: 6px solid var(--primary-color);
+            padding: 25px 35px;
+            margin: 30px 0;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            font-family: "Georgia", serif;
+            font-size: 1.15rem;
+            color: var(--primary-dark);
+            font-style: italic;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+        }
+
+        .quote-box.red {
+            border-left-color: #e53e3e;
+            color: #c53030;
+            background: linear-gradient(to right, #fff5f5, #ffffff);
+        }
+
+        /* ================= 互动提示 ================= */
+        .instruction {
+            text-align: center;
+            font-size: 0.95rem;
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .instruction svg {
+            width: 20px;
+            height: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-8px); }
+            60% { transform: translateY(-4px); }
+        }
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+
+        /* ================= 翻转卡片基础系统 ================= */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            width: 100%;
+            height: 280px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .flip-card:hover .flip-card-inner,
+        .flip-card.active .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: var(--border-radius);
+            box-sizing: border-box;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .flip-card:hover .flip-card-front, 
+        .flip-card:hover .flip-card-back {
+            box-shadow: var(--shadow-md);
+        }
+
+        .flip-card-front {
+            background-color: var(--card-bg);
+            border: 1px solid var(--secondary-color);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .flip-card-back {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            transform: rotateY(180deg);
+            text-align: left;
+            align-items: flex-start;
+            justify-content: flex-start;
+            overflow-y: auto;
+        }
+
+        /* 滚动条美化 */
+        .flip-card-back::-webkit-scrollbar { width: 6px; }
+        .flip-card-back::-webkit-scrollbar-track { background: transparent; }
+        .flip-card-back::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 4px; }
+        .flip-card-back::-webkit-scrollbar-thumb:hover { background: #a0aec0; }
+
+        .card-icon {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .card-front-desc { display: none; } /* 基础卡片不显示正面描述 */
+
+        .card-back-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #1a202c;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 5px;
+            width: 100%;
+        }
+        
+        .card-back-header { display: none; } /* 基础卡片不使用header包裹 */
+
+        .card-desc {
+            font-size: 0.95rem;
+            color: #4a5568;
+            margin: 0;
+            flex-grow: 1;
+        }
+
+        .card-desc ul {
+            padding-left: 20px;
+            margin-top: 8px;
+            margin-bottom: 10px;
+        }
+
+        .card-desc li { margin-bottom: 6px; line-height: 1.6; }
+
+        /* ================= 深度解析专用卡片样式 (Chapter 5 扩展) ================= */
+        .deep-dive-grid {
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 35px;
+            margin-top: 20px;
+            margin-bottom: 50px;
+        }
+
+        .flip-card.deep-dive {
+            height: 480px;
+            perspective: 1500px;
+        }
+
+        .flip-card.deep-dive .flip-card-front {
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+            padding: 40px;
+        }
+
+        .flip-card.deep-dive .flip-card-back {
+            background-color: #ffffff;
+            border: 2px solid var(--primary-color);
+            padding: 30px;
+        }
+
+        .flip-card.deep-dive .card-icon {
+            font-size: 4.5rem;
+            margin-bottom: 25px;
+        }
+
+        .flip-card.deep-dive .card-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+
+        .flip-card.deep-dive .card-front-desc {
+            display: block;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+        }
+
+        .flip-card.deep-dive .card-back-title { display: none; } /* 隐藏基础的title，使用header里的 */
+
+        .flip-card.deep-dive .card-back-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            flex-shrink: 0;
+            width: 100%;
+        }
+
+        .flip-card.deep-dive .card-back-header h3 {
+            font-size: 1.4rem; 
+            font-weight: 700; 
+            color: var(--primary-dark); 
+            margin: 0;
+        }
+
+        .flip-card.deep-dive .card-desc { font-size: 1rem; }
+
+        .flip-card.deep-dive .card-desc h4 {
+            color: #2d3748;
+            margin: 15px 0 8px 0;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .flip-card.deep-dive .card-desc h4::before {
+            content: "";
+            display: inline-block;
+            width: 6px;
+            height: 18px;
+            background-color: var(--primary-color);
+            border-radius: 3px;
+        }
+
+        /* 深度解析底部协同区域 */
+        .synergy-section {
+            background: #ffffff;
+            border-radius: var(--border-radius-lg);
+            padding: 40px;
+            box-shadow: var(--shadow-md);
+            margin-top: 40px;
+            margin-bottom: 60px;
+            border: 1px solid var(--secondary-color);
+        }
+        
+        .synergy-title {
+            font-size: 1.6rem;
+            color: #2d3748;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .synergy-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            text-align: center;
+        }
+
+        .synergy-item {
+            padding: 20px 15px;
+            background: var(--bg-color);
+            border: 1px solid var(--secondary-color);
+            border-radius: 8px;
+            font-weight: 500;
+            color: var(--text-main);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .synergy-item:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-sm);
+            border-color: var(--primary-color);
+        }
+
+        .synergy-item strong { color: var(--primary-dark); }
+
+        /* ================= 响应式设计 ================= */
+        @media(max-width: 900px) {
+            .cards-grid { grid-template-columns: 1fr; }
+            .deep-dive-grid { grid-template-columns: 1fr; }
+            .synergy-grid { grid-template-columns: 1fr 1fr; }
+            
+            /* 在移动端将大卡片改为点击展开模式以防过高 */
+            .flip-card.deep-dive { height: auto; min-height: 400px; }
+            .flip-card.deep-dive .flip-card-back { position: relative; transform: none; display: none; }
+            .flip-card.deep-dive.active .flip-card-back { display: flex; transform: none; }
+            .flip-card.deep-dive.active .flip-card-front { display: none; }
+        }
+        @media(max-width: 500px) {
+            header { padding: 30px 15px; }
+            .synergy-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>描绘你的大脑：培养充满游戏感与创造力的大脑</h1>
+        <div class="subtitle">Sketch Your Mind — 作者：Zsolt Viczián</div>
+        <div class="legend">
+            <span><mark class="fact">绿色高亮：客观事实 / 专业术语 / 框架</mark></span>
+            <span><mark class="opinion">橙色高亮：核心观点 / 洞察 / 思维范式</mark></span>
+        </div>
+        <p>本书旨在打破数百年来“以文本为中心”的线性思维惯性，引导读者回归人类大脑最本能的工作方式：<strong>空间与视觉思维</strong>。这是一套将零散笔记转化为“活体知识网络”的完整方法论，通过降低认知负荷，释放你的创造力。</p>
+    </header>
+
+    <div class="quote-box">
+        “知识注定要被看到、塑造并释放。长期以来，我们的笔记被困在文字墙中，但我们的大脑并不以直线思考，我们以循环、形状、颜色和空间来思考。” ——《视觉思维宣言》
+    </div>
+
+    <div class="instruction">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
+        交互提示：鼠标悬停或点击下方卡片，翻转查看核心知识点
+    </div>
+
+    <!-- 章节 1-3：基础范式转换 -->
+    <h2 class="section-title">第一部分：颠覆认知的思维新范式 (Ch 1-3)</h2>
+    <div class="cards-grid">
+        <!-- Ch 1 -->
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🌌</div>
+                    <div class="card-title">4D PKM (个人知识管理)</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="card-back-title">从1D到4D的进化</div>
+                    <div class="card-desc">
+                        <ul>
+                            <li><mark class="fact">1D(点阵):</mark> 线性记录，缺乏大局观。</li>
+                            <li><mark class="fact">2D(文件夹):</mark> 孤立存储，依赖记忆。</li>
+                            <li><mark class="fact">3D(双向链接):</mark> 纯文本网络，仅激活一半大脑。</li>
+                            <li><mark class="opinion">4D(视觉空间):</mark> 视觉为主，文本为辅。将思想作为模块在空间中排列，揭示隐性关联。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ch 2 -->
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🧱</div>
+                    <div class="card-title">乐高积木法则</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="card-back-title">拥抱创造性约束</div>
+                    <div class="card-desc">
+                        将抽象笔记转化为可复用的“乐高模块”。
+                        <ul>
+                            <li><mark class="fact">卡片强制法则:</mark> 限制物理空间（如固定比例的卡片），强迫提炼核心想法。</li>
+                            <li><mark class="fact">标准化约束:</mark> 统一比例(1x1, 2x3等)和精简调色板(3-4种颜色)。</li>
+                            <li><mark class="opinion">约束带来自由：</mark>降低了拼接重组的摩擦力，使迭代和试错变得极具游戏感。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ch 3 -->
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🃏</div>
+                    <div class="card-title">混合笔记 (Hybrid Notes)</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="card-back-title">打破阅读的理解幻觉</div>
+                    <div class="card-desc">
+                        <mark class="opinion">我们常把“阅读流畅度”误认为是“真正理解”。</mark>混合笔记迫使你重组知识：
+                        <ul>
+                            <li><mark class="fact">正面(视觉):</mark> 绘制草图、图标或空间布局，瞬间展示全局结构和关系（高带宽）。</li>
+                            <li><mark class="fact">背面(文本):</mark> 存放详细总结、元数据和引用，提供精确深度。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 章节 4-6：视觉化与空间映射 -->
+    <h2 class="section-title">第二部分：视觉化与空间映射 (Ch 4-6)</h2>
+    <div class="cards-grid">
+        <!-- Ch 4 -->
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">👁️</div>
+                    <div class="card-title">7步概念视觉化 & ETC循环</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="card-back-title">具象化抽象概念</div>
+                    <div class="card-desc">
+                        <mark class="opinion">标签(Labels)会限制认知，画出来能让你发现被大脑过滤掉的细节。</mark>
+                        <ul>
+                            <li>1. 澄清核心信息 (使用表层/深层技术)。</li>
+                            <li>2. 寻找隐喻与类比。</li>
+                            <li>3. 选择视觉框架 (对比、流程、场景等)。</li>
+                            <li>4. <mark class="fact">ETC循环:</mark> 表达(Express) -> 测试(Test) -> 循环(Cycle)，通过快速涂鸦进行迭代，而非追求完美艺术。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ch 5 Summary (kept for flow, but expanded below) -->
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🗺️</div>
+                    <div class="card-title">思维映射工具箱 (Ch 5)</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="card-back-title">结构化思考的四种地图</div>
+                    <div class="card-desc">
+                        <ul>
+                            <li><mark class="fact">思维导图:</mark> 由中心向外发散，捕捉自由流动的思想。</li>
+                            <li><mark class="fact">砖块路:</mark> 线性模块化拼接，适合会议实时记录。</li>
+                            <li><mark class="fact">概念图:</mark> 带有标签连接线，建立命题，揭示严密的层级结构。</li>
+                            <li><mark class="fact">观点地图:</mark> 宏观阅读导航，迭代构建全书框架。</li>
+                        </ul>
+                        <p style="font-size: 0.85rem; color: var(--primary-color); margin-top: 10px; text-align: center;">⬇️ 请在下方查看深度解析 ⬇️</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ch 6 -->
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">📌</div>
+                    <div class="card-title">观点整合看板 (IIB)</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="card-back-title">你的虚拟思考作战室</div>
+                    <div class="card-desc">
+                        <mark class="opinion">环境塑造思维。我们需要一个数字化的“大教堂”来提升抽象推理。</mark>
+                        <ul>
+                            <li><mark class="fact">定义:</mark> 一个无限大的视觉工作区(犹如侦探的线索墙)，将相关的笔记、草图汇聚在同一空间。</li>
+                            <li><mark class="fact">作用:</mark> 避免混乱，通过物理位置展示关系，让系统记住上下文，减轻工作记忆负担。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= 深度解析区块 (Chapter 5 扩展) ================= -->
+    <h2 class="section-title" style="color: var(--primary-dark); border-bottom-color: var(--primary-color);">🔍 深度解析：结构化思考的四种空间地图 (Chapter 5)</h2>
+    <div class="quote-box" style="margin-top: 0;">
+        “当我们迷失在文本的海洋中时，地图能给我们提供方向。你的大脑并不以直线步骤思考；它跳跃、循环、聚类。当你的工具匹配你大脑的工作方式时，清晰感便会随之而来。”
+    </div>
+    
+    <div class="cards-grid deep-dive-grid">
+        
+        <!-- Deep Dive 1：思维导图 -->
+        <div class="flip-card deep-dive">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🌿</div>
+                    <div class="card-title">思维导图 (Mind Maps)</div>
+                    <div class="card-front-desc">Think in Branches<br>顺应大脑本能的发散性思考工具</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="card-back-header">
+                        <span style="font-size: 1.5rem;">🌿</span>
+                        <h3>思维导图深度解析</h3>
+                    </div>
+                    <div class="card-desc">
+                        <mark class="opinion">我们的大脑不以清单式步骤思考，而是以跳跃、循环和聚类的方式寻找联系。</mark>思维导图完美镜像了这种放射状组织方式。
+                        <h4>核心机制</h4>
+                        <ul>
+                            <li><mark class="fact">放射状布局:</mark> 从中心主题出发，向外自由延伸。赋予你随时添加分支的自由，永不卡壳。</li>
+                            <li><mark class="fact">视觉路标:</mark> 强制使用颜色和简单图标进行分组或强调（红色表紧急，灯泡表突破）。</li>
+                            <li><mark class="fact">持续生命力:</mark> 它不是一次性的头脑风暴，而是<mark class="opinion">与你共同生长的“白板”</mark>。</li>
+                        </ul>
+                        <h4>应用场景</h4>
+                        <p>探索新想法、化解信息过载、团队目标规划、书籍的初步摘要。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deep Dive 2：砖块路 -->
+        <div class="flip-card deep-dive">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🧱</div>
+                    <div class="card-title">砖块路 (The Brick Road)</div>
+                    <div class="card-front-desc">Follow the Yellow Brick Road<br>模块化构建，实时捕捉思想的序列</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="card-back-header">
+                        <span style="font-size: 1.5rem;">🧱</span>
+                        <h3>砖块路深度解析</h3>
+                    </div>
+                    <div class="card-desc">
+                        当清晰度依赖于顺序、模块化或心流时，你需要换一种结构。<mark class="opinion">在这里，你不是在发散，而是在“搭建”。</mark>
+                        <h4>核心原则</h4>
+                        <ul>
+                            <li><mark class="fact">一砖一念:</mark> 每个砖块（矩形框）只包含一个概念视觉化。</li>
+                            <li><mark class="fact">标准化约束:</mark> 遵循 1x1, 1x2 等标准比例，与默认字体对齐，保证卡片极高的“可复用性”。</li>
+                            <li><mark class="fact">边建边连:</mark> 砖块可以水平或垂直堆叠，使用箭头和接近性暗示逻辑流向。</li>
+                        </ul>
+                        <h4>应用场景</h4>
+                        <p>会议/讲座的实时视觉笔记、提炼书本的叙事弧线。<mark class="opinion">它赋予了非线性思想一个灵活的骨架。</mark></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deep Dive 3：概念图 -->
+        <div class="flip-card deep-dive">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🕸️</div>
+                    <div class="card-title">概念图 (Concept Maps)</div>
+                    <div class="card-front-desc">Structuring Relationships<br>揭示深层结构，建立严密的逻辑命题</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="card-back-header">
+                        <span style="font-size: 1.5rem;">🕸️</span>
+                        <h3>概念图深度解析</h3>
+                    </div>
+                    <div class="card-desc">
+                        概念图比思维导图更难构建，但这正是它的价值所在。<mark class="opinion">它不仅捕捉你知道什么，还迫使你理清它们是如何组合的。</mark>
+                        <h4>构建四步法</h4>
+                        <ul>
+                            <li><mark class="fact">焦点问题:</mark> 一切始于顶部的一个核心问题，锚定地图的边界。</li>
+                            <li><mark class="fact">渐进分化:</mark> 最包容、最宏观的概念在顶部，具体的在底部。</li>
+                            <li><mark class="fact">构建命题:</mark> 使用带“连接词”的箭头相连（如：A [导致] B），形成语义逻辑。</li>
+                            <li><mark class="fact">交叉链接:</mark> 寻找不同分支间的横向联系，<mark class="opinion">揭示知识是网状的本质</mark>。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deep Dive 4：观点地图 -->
+        <div class="flip-card deep-dive">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🗺️</div>
+                    <div class="card-title">观点地图 (Idea Atlases)</div>
+                    <div class="card-front-desc">Your Roadmap to Knowledge<br>宏观导航，系统化拆解复杂书籍与主题</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="card-back-header">
+                        <span style="font-size: 1.5rem;">🗺️</span>
+                        <h3>观点地图深度解析</h3>
+                    </div>
+                    <div class="card-desc">
+                        它比概念图更灵活，重在清晰度而非严格的层级。<mark class="opinion">它不是一张静态笔记，而是理解复杂事物的空间框架。</mark>
+                        <h4>阅读与拆解策略</h4>
+                        <ul>
+                            <li><mark class="fact">结构化阅读:</mark> 先看目录和引言，提取并画出主要观点框架（抓住森林）。</li>
+                            <li><mark class="fact">迭代式阅读:</mark> 遵循“整体 → 局部 → 整体”的循环。读完一章，提炼视觉块，返回地图确认位置。</li>
+                            <li><mark class="fact">系统思维:</mark> 知识是关系网络。先画核心思想，再向外延展次要和外围思想。</li>
+                        </ul>
+                        <h4>应用场景</h4>
+                        <p>拆解复杂书籍、构建大型项目概览、培训计划或梳理新的工作角色。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 深度解析：4D PKM 协同作用 -->
+    <div class="synergy-section">
+        <h2 class="synergy-title">💡 4D PKM：四种地图的无缝协同</h2>
+        <p style="text-align: center; color: var(--text-muted); margin-bottom: 25px;">
+            在视觉知识管理系统中，你不需要只选其一，它们分别服务于思维演进的不同阶段：
+        </p>
+        <div class="synergy-grid">
+            <div class="synergy-item">
+                <span style="font-size: 1.6rem; display:block; margin-bottom:8px;">🌿 发散期</span>
+                用<strong>思维导图</strong>激发和组织涌现的灵感。
+            </div>
+            <div class="synergy-item">
+                <span style="font-size: 1.6rem; display:block; margin-bottom:8px;">🧱 吸收期</span>
+                用<strong>砖块路</strong>在会议或阅读时实时捕获模块化思想。
+            </div>
+            <div class="synergy-item">
+                <span style="font-size: 1.6rem; display:block; margin-bottom:8px;">🕸️ 梳理期</span>
+                用<strong>概念图</strong>明确定义复杂关系，打磨逻辑结构。
+            </div>
+            <div class="synergy-item">
+                <span style="font-size: 1.6rem; display:block; margin-bottom:8px;">🗺️ 整合期</span>
+                用<strong>观点地图</strong>拉开视角，创建全书或项目的全局导航。
+            </div>
+        </div>
+    </div>
+    <!-- ================= 深度解析区块结束 ================= -->
+
+    <!-- 章节 7-9：导航、连接与卡片盒 -->
+    <h2 class="section-title">第三部分：知识导航与思想列车 (Ch 7-9)</h2>
+    <div class="cards-grid">
+        <!-- Ch 7 -->
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🧭</div>
+                    <div class="card-title">知识导航系统</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="card-back-title">LATCH 与 观点指南针</div>
+                    <div class="card-desc">
+                        文件夹和标签是不够的，大脑依赖空间记忆导航。
+                        <ul>
+                            <li><mark class="fact">LATCH框架:</mark> 通过位置、字母、时间、类别、层级组织提取路径。</li>
+                            <li><mark class="fact">观点指南针 (Idea Compass):</mark> 任何观点都有四个方向：北(来源/父级)、南(应用/推论)、西(支持/朋友)、东(挑战/竞争者)。</li>
+                            <li><mark class="opinion">复盘 (AAR):</mark> 找不到笔记时，立即修复检索系统。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ch 8 -->
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🎰</div>
+                    <div class="card-title">尤里卡制造机</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="card-back-title">让意外的联系自然涌现</div>
+                    <div class="card-desc">
+                        <ul>
+                            <li><mark class="fact">观点搅拌机 (Idea Mixer):</mark> 将不同语境下使用的重复视觉图标并排放在画布上，触发意想不到的洞察。</li>
+                            <li><mark class="fact">双气泡图 (Double-Bubble):</mark> 对比两个相近概念的异同，在对比张力中提取深层意义。</li>
+                            <li><mark class="opinion">洞察并非刻意制造，而是来自于视觉元素在空间中的相邻排列。</mark></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ch 9 -->
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🚋</div>
+                    <div class="card-title">视觉卡片盒 (Zettelkasten)</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="card-back-title">构建你的思想列车</div>
+                    <div class="card-desc">
+                        不要把笔记丢进废纸篓，让它们相互连接：
+                        <ul>
+                            <li><mark class="fact">视觉主笔记:</mark> 一卡一智（正面画图，背面写文）。</li>
+                            <li><mark class="fact">NoMa法则:</mark> 主动思考链接的意义（这导致了什么？这支持了什么？）。</li>
+                            <li><mark class="opinion">以“问题”组织笔记：</mark> 建立你的“12个最喜爱的问题”，用笔记去回答它们。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="quote-box">
+        “卡片盒笔记不是个人维基百科。维基百科向四面八方链接，而卡片盒负责建造思想的列车。”
+    </div>
+
+    <!-- 章节 10-11：故事叙事与终极转变 -->
+    <h2 class="section-title">第四部分：故事叙事与思维翻转 (Ch 10-11)</h2>
+    <div class="cards-grid">
+        <!-- Ch 10 -->
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">📖</div>
+                    <div class="card-title">一页书 (Book-on-a-Page)</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="card-back-title">用故事板创建思想闭环</div>
+                    <div class="card-desc">
+                        将散落的原子卡片组合成令人难忘的视觉故事：
+                        <ul>
+                            <li><mark class="opinion">摒弃“然后”：</mark> 线性叙事枯燥乏味。使用“但是”、“因此”构建因果张力。</li>
+                            <li><mark class="fact">表明立场 (Take a Stand):</mark> 总结不能是中立的。通过诉诸权威(Ethos)、情感(Pathos)和逻辑(Logos)，注入你强烈的个人观点。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ch 11 -->
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🧞‍♂️</div>
+                    <div class="card-title">释放瓶中精灵</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="card-back-title">成为双巧手思考者</div>
+                    <div class="card-desc">
+                        视觉思维是我们与生俱来的本能（画画先于写字）。
+                        <ul>
+                            <li><mark class="fact">双巧手思考 (Ambidextrous):</mark> 流畅地在空间视觉与文本表达之间切换：草绘 -> 写作 -> 迭代。</li>
+                            <li><mark class="opinion">颠覆习惯：先画后写！</mark> 把知识当成一场充满游戏感的实验，拥抱混乱，允许试错。</li>
+                            <li>释放被文字禁锢的思想精灵，让它们在空间中自由碰撞。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="quote-box red">
+        <strong>尾声思考：立体思考 (Thinking in Stereo)</strong><br><br>
+        “真实的世界既不是纯文本，也不是纯视觉。我们在失去深度阅读能力的同时，也在丧失将思想可视化的本能。最好的思考发生在边界的交汇处——平衡视觉结构与深度参与。去画出你的大脑，去进行你的人生实验吧！”
+    </div>
+
+</div>
+
+<script>
+    // 统一处理所有卡片的点击翻转逻辑（包含普通卡片和深度解析卡片）
+    // 适配移动端和防误触处理
+    document.querySelectorAll('.flip-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+            // 防止点击内部可能存在的链接或滚动条区域触发异常翻转
+            if(e.target.tagName !== 'A' && !e.target.closest('.card-desc')) {
+                this.classList.toggle('active');
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
