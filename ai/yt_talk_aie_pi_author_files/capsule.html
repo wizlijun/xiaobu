@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编程Agent的演进与极简主义革命：Pi框架访谈全纪录</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --light-bg: #f8fafc;
+            --primary-color: #2563eb;
+            --primary-light: #eff6ff;
+            --secondary-color: #475569;
+            --text-main: #334155;
+            --text-light: #64748b;
+            --fact-color: #dbeafe;
+            --fact-text: #1e40af;
+            --opinion-color: #ffedd5;
+            --opinion-text: #c2410c;
+            --pro-color: #dcfce7;
+            --pro-text: #166534;
+            --con-color: #fee2e2;
+            --con-text: #991b1b;
+            --quote-bg: #f1f5f9;
+            --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            background: var(--bg-color);
+            padding: 40px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+        }
+
+        h1 {
+            text-align: center;
+            color: #0f172a;
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-light);
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        /* Resume Section */
+        .resume-card {
+            background: var(--primary-light);
+            border-left: 5px solid var(--primary-color);
+            padding: 20px 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .resume-card h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.4rem;
+        }
+        .resume-list {
+            list-style-type: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            font-size: 0.95rem;
+        }
+        .resume-list li {
+            position: relative;
+            padding-left: 25px;
+        }
+        .resume-list li::before {
+            content: "📌";
+            position: absolute;
+            left: 0;
+            top: 2px;
+        }
+
+        /* Quotes Section */
+        .quotes-section {
+            background: var(--quote-bg);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+        }
+        .quotes-section h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+        }
+        .quote {
+            font-style: italic;
+            font-size: 1.05rem;
+            color: #475569;
+            margin-bottom: 15px;
+            padding-left: 15px;
+            border-left: 3px solid #cbd5e1;
+            transition: all 0.3s ease;
+        }
+        .quote:hover {
+            color: #0f172a;
+            border-left-color: var(--primary-color);
+            transform: translateX(5px);
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+        }
+        .badge {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .highlight-fact { background-color: var(--fact-color); color: var(--fact-text); }
+        .highlight-opinion { background-color: var(--opinion-color); color: var(--opinion-text); }
+        .highlight-pro { background-color: var(--pro-color); color: var(--pro-text); }
+        .highlight-con { background-color: var(--con-color); color: var(--con-text); }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e2e8f0;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+        .tab-btn:hover {
+            color: var(--primary-color);
+            background: var(--primary-light);
+            border-radius: 6px 6px 0 0;
+        }
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Flip Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        /* Flip Card Base */
+        .card-scene {
+            perspective: 1200px;
+            height: 480px;
+        }
+        .card {
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+            transform-style: preserve-3d;
+            cursor: pointer;
+            position: relative;
+        }
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+        .card__face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            padding: 25px;
+            box-sizing: border-box;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+        }
+        .card__face--front {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        }
+        .card__face--front .icon {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+        }
+        .card__face--front h3 {
+            color: var(--primary-color);
+            margin: 0 0 15px 0;
+            font-size: 1.5rem;
+        }
+        .card__face--front p {
+            color: var(--text-light);
+            font-size: 1rem;
+            padding: 0 10px;
+        }
+        .card__face--front .hint {
+            margin-top: auto;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            background: #f1f5f9;
+            padding: 6px 15px;
+            border-radius: 20px;
+        }
+        
+        /* Back Face Styling */
+        .card__face--back {
+            transform: rotateY(180deg);
+            overflow-y: auto;
+            justify-content: flex-start;
+        }
+        /* Custom Scrollbar for back face */
+        .card__face--back::-webkit-scrollbar {
+            width: 6px;
+        }
+        .card__face--back::-webkit-scrollbar-track {
+            background: #f1f5f9; 
+            border-radius: 4px;
+        }
+        .card__face--back::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        .card__face--back h4 {
+            margin-top: 0;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--primary-light);
+            color: #0f172a;
+            font-size: 1.2rem;
+            position: sticky;
+            top: 0;
+            background: #fff;
+            z-index: 10;
+        }
+        .card__face--back ul {
+            padding-left: 20px;
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+        .card__face--back li {
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .pro-con-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .pro-box {
+            background: #f0fdf4;
+            border-left: 4px solid #22c55e;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .con-box {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .box-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 20px; }
+            .tab-btn { padding: 10px 15px; font-size: 0.95rem; }
+            .card-scene { height: 550px; } /* taller for mobile text */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🚀 编程Agent的演进与极简主义革命</h1>
+    <div class="subtitle">各大CLI工具深度评测与Pi框架诞生记 · 互动式翻转卡片</div>
+
+    <!-- 访谈人简历 -->
+    <div class="resume-card">
+        <h2>👤 访谈嘉宾简介：Mario</h2>
+        <ul class="resume-list">
+            <li><strong>背景：</strong>来自奥地利，拥有深厚的游戏开发（Game Development）背景。</li>
+            <li><strong>开源资历：</strong>在开源社区摸爬滚打 <strong>17年</strong>，管理过各类大小型开源项目。</li>
+            <li><strong>AI探索：</strong>2025年4月前后，与业界大牛 Armin Ronacher（Flask/Sentry作者）、Peter 闭关极限编程，见证了代码Agent的爆发。</li>
+            <li><strong>核心成就：</strong>对现有Agent框架感到极度不满后，亲手缔造了开源极简编程Agent框架 <strong>"Pi"</strong>。</li>
+        </ul>
+    </div>
+
+    <!-- 核心金句 -->
+    <div class="quotes-section">
+        <h3>💡 访谈核心金句 (Golden Quotes)</h3>
+        <div class="quote">"The clankers can write so much code, why not just let it write all the features you could ever imagine... eventually you end up with a spaceship." <br>
+        <span style="font-size:0.9rem; color:#64748b;">(机器员工能写这么多代码，为什么不让它把你想象的所有功能都加进去？……结果就是你最终得到了一个臃肿复杂的“宇宙飞船”。)</span></div>
+        
+        <div class="quote">"If you come to a gym and don't behave and abuse the infrastructure... you're going to get banned." <br>
+        <span style="font-size:0.9rem; color:#64748b;">(如果你去健身房却不遵守规矩，滥用基础设施……你就会被封禁。——谈及部分开源工具被大模型厂商限制的隐情。)</span></div>
+        
+        <div class="quote">"Adapt your coding agent to your needs instead of the other way around." <br>
+        <span style="font-size:0.9rem; color:#64748b;">(让你的编程Agent适应你的需求，而不是反过来被工具裹挟。)</span></div>
+    </div>
+
+    <!-- 认知负荷图例 -->
+    <div class="legend">
+        <span>标识说明：</span>
+        <span class="badge highlight-fact">客观事实/技术细节</span>
+        <span class="badge highlight-opinion">嘉宾主观观点</span>
+        <span class="badge highlight-pro">优点 (Pros)</span>
+        <span class="badge highlight-con">缺点/痛点 (Cons)</span>
+    </div>
+
+    <!-- 动态Tabs交互 -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab(event, 'tab1')">1. 主流Agent框架深度解剖</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab2')">2. 早期工具与商业极简派</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab3')">3. 核心启示：Terminal Bench</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab4')">4. Pi 框架：做减法的艺术</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab5')">5. 开源生态保卫战</button>
+    </div>
+
+    <!-- Tab 1: 主流Agent框架深度解剖 -->
+    <div id="tab1" class="tab-content active">
+        <div class="cards-grid">
+            <!-- Cloud Code -->
+            <div class="card-scene" onclick="toggleCard(this)">
+                <div class="card">
+                    <div class="card__face card__face--front">
+                        <div class="icon">🛸</div>
+                        <h3>Cloud Code</h3>
+                        <p>Agentic Search的开创者，却陷入了“宇宙飞船”的功能膨胀陷阱。</p>
+                        <span class="hint">点击翻转查看优劣解剖 ⤻</span>
+                    </div>
+                    <div class="card__face card__face--back">
+                        <h4>🔍 Cloud Code 深度剖析</h4>
+                        <div class="pro-con-grid">
+                            <div class="pro-box">
+                                <div class="box-title">✅ 核心优点</div>
+                                <ul style="margin:0; padding-left:20px; font-size:0.9rem;">
+                                    <li><mark class="highlight-fact">开创性：</mark>2024年底发布，2025年初大火。放弃了Cursor构建AST索引的老路，首创让大模型通过Bash和文件工具直接探索代码库。</li>
+                                    <li><mark class="highlight-opinion">团队极佳：</mark>团队优秀，Anthropic生态原生模型表现极好。早期版本简单且工作流可预测。</li>
+                                </ul>
+                            </div>
+                            <div class="con-box">
+                                <div class="box-title">❌ 致命痛点</div>
+                                <ul style="margin:0; padding-left:20px; font-size:0.9rem;">
+                                    <li><mark class="highlight-fact">功能冗余：</mark>成了大杂烩("宇宙飞船")，用户只用5%功能，剩余90%是黑盒的"AI暗物质"。</li>
+                                    <li><mark class="highlight-fact">TUI性能极差：</mark>强行在终端用 React 渲染UI，重绘整个UI图耗时12ms导致无端闪烁。被 Ghosty 终端作者无情吐槽。</li>
+                                    <li><mark class="highlight-fact">极度封闭：</mark>零模型选择权；零扩展性（Hook系统靠启动新进程实现，开销极其高昂）。</li>
+                                    <li><mark class="highlight-opinion">缺乏可观测性：</mark>为配合花哨UI，牺牲了用户对底层Agent运作的透明度，且暗中改动经常破坏原有稳定工作流。子Agent(Team mode)也缺乏可见性。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Open Code -->
+            <div class="card-scene" onclick="toggleCard(this)">
+                <div class="card">
+                    <div class="card__face card__face--front">
+                        <div class="icon">💣</div>
+                        <h3>Open Code</h3>
+                        <p>高人气的开源方案，团队务实，但在上下文工程与底层架构上存在致命硬伤。</p>
+                        <span class="hint">点击翻转查看优劣解剖 ⤻</span>
+                    </div>
+                    <div class="card__face card__face--back">
+                        <h4>🔍 Open Code 深度剖析</h4>
+                        <div class="pro-con-grid">
+                            <div class="pro-box">
+                                <div class="box-title">✅ 核心优点</div>
+                                <ul style="margin:0; padding-left:20px; font-size:0.9rem;">
+                                    <li><mark class="highlight-fact">开源与务实：</mark>纯开源路线。核心团队不炒作花哨功能，致力于维持一条极其稳定的“快乐路径(Happy Path)”。</li>
+                                </ul>
+                            </div>
+                            <div class="con-box">
+                                <div class="box-title">❌ 致命痛点</div>
+                                <ul style="margin:0; padding-left:20px; font-size:0.9rem;">
+                                    <li><mark class="highlight-fact">摧毁Prompt Cache：</mark>每次调用 `session_compaction.prune` 直接丢弃4万Token前的工具结果，<mark class="highlight-opinion">直接导致提示词缓存失效，涉嫌滥用基础设施，引发Anthropic不满。</mark></li>
+                                    <li><mark class="highlight-fact">失败的LSP设计：</mark>默认开启语言服务器(LSP)。修改多行代码时会产生短暂语法错误，LSP过早注入错误反馈，<mark class="highlight-opinion">让LLM直接崩溃放弃</mark>。</li>
+                                    <li><mark class="highlight-fact">架构草率：</mark>每一次对话Message都会在硬盘上单独生成一个JSON文件。</li>
+                                    <li><mark class="highlight-fact">安全黑洞：</mark>默认开启的Server架构被曝出存在严重的远程代码执行（RCE）漏洞。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 2: 早期工具与商业极简派 -->
+    <div id="tab2" class="tab-content">
+        <div class="cards-grid">
+            <!-- 早期探索 -->
+            <div class="card-scene" onclick="toggleCard(this)">
+                <div class="card">
+                    <div class="card__face card__face--front">
+                        <div class="icon">🦖</div>
+                        <h3>早期探索：Copilot, Cursor, Aider</h3>
+                        <p>从复制粘贴到初具雏形的Agent工具进化史。</p>
+                        <span class="hint">点击翻转查看评价 ⤻</span>
+                    </div>
+                    <div class="card__face card__face--back">
+                        <h4>🔍 时代眼泪与先驱</h4>
+                        <ul>
+                            <li><strong>初代 GitHub Copilot：</strong><br>
+                                <span class="highlight-pro">优点：</span>集成在VS Code中，“敲击键盘通向幸福”。<br>
+                                <span class="highlight-con">痛点：</span>经常崩溃。更糟糕的是，<mark class="highlight-fact">会一字不差地默写带GPL传染协议的开源代码（例如John Carmack著名的平方根倒数算法）</mark>。
+                            </li>
+                            <li><strong>Cursor：</strong><br>
+                                <span class="highlight-con">痛点：</span>早期尝试通过构建AST（抽象语法树）来索引整个代码库，<mark class="highlight-opinion">“实际上效果并不好”</mark>。
+                            </li>
+                            <li><strong>Aider & Auto GPT：</strong><br>
+                                <mark class="highlight-fact">评价：</mark>行业先驱。Aider 是只有“白发老程序员”才懂的情怀，属于最早期的Agent尝试。
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 商业级产品 -->
+            <div class="card-scene" onclick="toggleCard(this)">
+                <div class="card">
+                    <div class="card__face card__face--front">
+                        <div class="icon">💼</div>
+                        <h3>商业极简派：Amp, Troy, Codex</h3>
+                        <p>另一条道路：拒绝功能堆砌的商业化产品表现如何？</p>
+                        <span class="hint">点击翻转查看评价 ⤻</span>
+                    </div>
+                    <div class="card__face card__face--back">
+                        <h4>🔍 商业化工具评测</h4>
+                        <ul>
+                            <li><strong>Amp：</strong><br>
+                                <span class="highlight-pro">优点：</span>由前 Sourcegraph 顶尖工程师团队打造。<mark class="highlight-opinion">极少数敢于“做减法”的商业Agent</mark>，产品决策极其务实，强烈推荐。<br>
+                                <span class="highlight-con">痛点：</span><mark class="highlight-fact">完全没有模型选择权</mark>，单一任务强绑定单一模型。
+                            </li>
+                            <li><strong>Factory Troy：</strong><br>
+                                <span class="highlight-pro">优点：</span>相对 Amp 来说模型选择更开放一些。<br>
+                                <span class="highlight-con">痛点：</span>当时试用时，没有展现出明显优于 Cloud Code 的特质，缺乏极客实验精神。
+                            </li>
+                            <li><strong>Codex CLI：</strong><br>
+                                <mark class="highlight-fact">评价：</mark>早期的UI和模型表现令人反感，但<mark class="highlight-opinion">近期的Codex模型能力已经变得相当出色</mark>。
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 3: 核心启示 -->
+    <div id="tab3" class="tab-content">
+        <div class="cards-grid">
+            <!-- Terminal Bench -->
+            <div class="card-scene" onclick="toggleCard(this)">
+                <div class="card">
+                    <div class="card__face card__face--front">
+                        <div class="icon">🏆</div>
+                        <h3>Terminal Bench的降维打击</h3>
+                        <p>权威评测榜单揭示了Agent的真正能力上限：复杂工具其实是伪需求。</p>
+                        <span class="hint">点击翻转查看核心论点 ⤻</span>
+                    </div>
+                    <div class="card__face card__face--back">
+                        <h4>🔍 终极启示与两大论断</h4>
+                        <ul>
+                            <li><mark class="highlight-fact">测试背景：</mark>Terminal Bench 包含 82 个涵盖计算机使用和编程的复杂任务（从修复Windows设置到编写蒙特卡洛模拟）。</li>
+                            <li><mark class="highlight-fact">榜一王者 Terminus：</mark>得分最高的工具 <strong>Terminus 2</strong>，<mark class="highlight-opinion">没有文件工具、没有网页搜索、没有子Agent</mark>。</li>
+                            <li><mark class="highlight-fact">极简原理：</mark>LLM仅仅拥有一个 `tmux` 会话，只能发送击键并读取VT控制码流。</li>
+                            <li><strong>论断一（探索期）：</strong><mark class="highlight-opinion">目前业界纯粹处于“瞎折腾”阶段(Messing around & finding out)。</mark>没有人知道完美的编程Agent长什么样。</li>
+                            <li><strong>论断二（高可塑性）：</strong>既然花哨功能并非必要，未来的工具必须具备<strong>极高可塑性(Malleable)</strong>，让开发者能自由定义专属工作流。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 4: Pi框架 -->
+    <div id="tab4" class="tab-content">
+        <div class="cards-grid">
+            <!-- Architecture -->
+            <div class="card-scene" onclick="toggleCard(this)">
+                <div class="card">
+                    <div class="card__face card__face--front">
+                        <div class="icon">🧱</div>
+                        <h3>Pi的极简主义架构</h3>
+                        <p>剥离一切冗余，构建最小可扩展核心。不要宇宙飞船，只要引擎。</p>
+                        <span class="hint">点击翻转查看底层设计 ⤻</span>
+                    </div>
+                    <div class="card__face card__face--back">
+                        <h4>🔍 底层模块分解</h4>
+                        <ul>
+                            <li><mark class="highlight-fact">模块化拆分：</mark>包含AI包(多协议提供商适配)、Agent Core(通用循环与验证层)、Headless SDK。</li>
+                            <li><mark class="highlight-fact">超轻量UI：</mark>纯TUI界面仅仅 <strong>600 行代码</strong>。<mark class="highlight-opinion">运行如丝般顺滑，因为“它不是由AI机器员工瞎写的代码”。</mark></li>
+                            <li><mark class="highlight-fact">树状会话结构：</mark>对话不是线性的！支持在任意节点开辟分支去阅读文件夹，携带总结回到根节点继续编写代码。</li>
+                            <li><mark class="highlight-fact">硬核成绩：</mark>在未加入上下文剪裁功能的早期版本（配合Claude Opus 4.5），在Terminal Bench上紧随榜一Terminus 2之后。提供完整的 Token 与成本追踪(Cost Tracking)。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Anti-consensus -->
+            <div class="card-scene" onclick="toggleCard(this)">
+                <div class="card">
+                    <div class="card__face card__face--front">
+                        <div class="icon">⚡</div>
+                        <h3>Pi的“反共识”哲学</h3>
+                        <p>向繁琐的System Prompt和弹窗审批说不。</p>
+                        <span class="hint">点击翻转查看设计理念 ⤻</span>
+                    </div>
+                    <div class="card__face card__face--back">
+                        <h4>🔍 核心哲学抉择</h4>
+                        <ul>
+                            <li><mark class="highlight-fact">极短系统提示词：</mark>全网最短的System Prompt。<mark class="highlight-opinion">前沿模型已经被重度强化学习(RL)训练过了，完全知道怎么写代码，天天提醒它“你是个写代码的”毫无意义。</mark></li>
+                            <li><mark class="highlight-fact">默认 YOLO 模式：</mark>抛弃“修改文件需用户点击Approve”的行业惯例。<mark class="highlight-opinion">安全审批只会导致操作疲劳，最终用户会无脑敲回车。真正的安全应该交给容器隔离(Containerization)。</mark></li>
+                            <li><mark class="highlight-fact">四大核心工具：</mark>底层只保留 Read, Write, Edit, Bash 四种基本能力。<mark class="highlight-opinion">Bash 就是一切的基础。</mark></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Extensibility -->
+            <div class="card-scene" onclick="toggleCard(this)">
+                <div class="card">
+                    <div class="card__face card__face--front">
+                        <div class="icon">🧩</div>
+                        <h3>极致扩展：做减法换来的自由</h3>
+                        <p>原生不支持的功能，你可以用 TypeScript 在几分钟内自己写出来并热重载生效。</p>
+                        <span class="hint">点击翻转查看扩展性实战 ⤻</span>
+                    </div>
+                    <div class="card__face card__face--back">
+                        <h4>🔍 扩展性如何碾压同行？</h4>
+                        <ul>
+                            <li><strong>替代复杂方案：</strong>不用MCP，改用 CLI+Bash；不用Sub-agent，改用原生的 `tmux` 多开；不用内置计划UI，直接让Agent写 `plan.md`。</li>
+                            <li><mark class="highlight-fact">TypeScript热重载(Hot Reload)：</mark>修改扩展代码后无需重启进程，即刻生效。</li>
+                            <li><mark class="highlight-fact">魔改底层工具：</mark><mark class="highlight-opinion">仅花5分钟，就能覆写底层，将文件读写工具重写为基于SSH的远程操作。</mark>五十行代码就能写出自定义权限拦截门(Permission Gates)。</li>
+                            <li><mark class="highlight-fact">生态扩展群：</mark>支持自定义UI，例如网页内联标注并直接反馈Agent的 <code>Pi annotate</code>；支持群聊监听并管理多Agent的 <code>Pi messenger</code>；甚至还有 <code>Pi mess</code> 让你在等代码时打游戏。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 5: 开源保卫战 -->
+    <div id="tab5" class="tab-content">
+        <div class="cards-grid">
+            <!-- Clankers -->
+            <div class="card-scene" onclick="toggleCard(this)">
+                <div class="card">
+                    <div class="card__face card__face--front">
+                        <div class="icon">⚔️</div>
+                        <h3>对抗 "AI机器人垃圾"</h3>
+                        <p>Rage against the clankers：当AI开始破坏开源生态，维护者该如何反击？</p>
+                        <span class="hint">点击翻转查看保卫战策略 ⤻</span>
+                    </div>
+                    <div class="card__face card__face--back">
+                        <h4>🔍 生态防卫战</h4>
+                        <ul>
+                            <li><mark class="highlight-fact">现象 (Clanker Filth & Slop)：</mark>开源项目经常遭到全自动Agent（如 Open Claw 衍生工具）生成的数百个毫无意义、充满幻觉的 Issue 和 PR 轰炸。</li>
+                            <li><mark class="highlight-fact">策略一 (OSS Vacation)：</mark>“开源休假”。直接在代码库关闭 Issue 和 PR 的提交入口几周，专心写代码不受干扰。</li>
+                            <li><mark class="highlight-fact">策略二 (人工白名单验证)：</mark>在项目中建立一个 Markdown 验证文件。如果想提PR，<mark class="highlight-opinion">必须先用纯人类的语气写一个极短的Issue自报家门</mark>。审核通过进入白名单后，PR才不会被自动关闭。</li>
+                            <li><mark class="highlight-fact">生态影响：</mark>基于这个理念，Mitchell (Ghosty作者) 开发了 <code>vouch</code> 工具，将其通用化，用于保护更多受害的开源仓库。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Tab 切换逻辑
+    function openTab(evt, tabId) {
+        var i, tabcontent, tablinks;
+        
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].classList.remove("active");
+        }
+        
+        tablinks = document.getElementsByClassName("tab-btn");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].classList.remove("active");
+        }
+        
+        document.getElementById(tabId).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+
+    // 翻转卡片交互逻辑
+    function toggleCard(element) {
+        var card = element.querySelector('.card');
+        card.classList.toggle('is-flipped');
+    }
+</script>
+
+</body>
+</html>
