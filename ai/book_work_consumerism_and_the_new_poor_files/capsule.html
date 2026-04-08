@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工作、消费主义与新穷人 - 核心摘要 (AI时代更新版)</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --primary: #0f172a;
+            --accent: #3b82f6;
+            --fact-bg: #e0f2fe;
+            --fact-text: #0369a1;
+            --opinion-bg: #fef08a;
+            --opinion-text: #854d0e;
+            --ai-bg: #f3e8ff;
+            --ai-text: #6b21a8;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.7;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            padding: 40px;
+            overflow: hidden;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2em;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        /* 标签栏 */
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 1em;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tab-btn:hover {
+            background: #f1f5f9;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.2);
+        }
+
+        .tab-btn.ai-tab {
+            background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
+            color: white;
+            box-shadow: 0 4px 10px rgba(126, 34, 206, 0.3);
+        }
+        .tab-btn.ai-tab:not(.active) {
+            opacity: 0.7;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 事实与观点高亮 */
+        .legend {
+            display: flex;
+            gap: 15px;
+            background: #f8fafc;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            flex-wrap: wrap;
+        }
+
+        .fact {
+            background-color: var(--fact-bg);
+            color: var(--fact-text);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .opinion {
+            background-color: var(--opinion-bg);
+            color: var(--opinion-text);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        /* 核心金句 */
+        .golden-quote {
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            border-left: 4px solid var(--primary);
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+            font-size: 1.1em;
+        }
+
+        .golden-quote.ai-quote {
+            border-left: 4px solid #9333ea;
+            background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+        }
+
+        /* 翻转卡片 (知识点) */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .flip-card {
+            perspective: 1000px;
+            height: 240px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            padding: 24px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        .flip-card-front {
+            background: #ffffff;
+            align-items: center;
+            text-align: center;
+        }
+
+        .flip-card-front .icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .flip-card-front h3 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 1.2em;
+        }
+        
+        .flip-card-front p {
+            color: var(--text-muted);
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .flip-card-back {
+            background: var(--primary);
+            color: #ffffff;
+            transform: rotateY(180deg);
+            align-items: flex-start;
+            justify-content: flex-start;
+            overflow-y: auto;
+        }
+
+        .flip-card-back.ai-back {
+            background: #7e22ce;
+        }
+
+        .flip-card-back h4 {
+            margin-top: 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 8px;
+            width: 100%;
+        }
+
+        .flip-card-back p {
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 12px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 600px) {
+            .container { padding: 20px; }
+            .tabs { justify-content: center; }
+            .tab-btn { padding: 8px 16px; font-size: 0.9em; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>工作、消费主义与新穷人</h1>
+    <div class="subtitle">Zygmunt Bauman (齐格蒙特·鲍曼) · 极简认知卡片</div>
+
+    <div class="legend">
+        <span>💡 <strong>图例说明：</strong></span>
+        <span class="fact">客观事实 (Fact)</span>
+        <span class="opinion">作者观点 (Opinion)</span>
+        <span style="color:var(--text-muted); font-size:0.9em;">(点击下方卡片可翻转查看专业概念)</span>
+    </div>
+
+    <!-- 导航栏 -->
+    <div class="tabs">
+        <button class="tab-btn ai-tab active" onclick="switchTab('ai')">🚀 现代AI视角加速</button>
+        <button class="tab-btn" onclick="switchTab('intro')">引言</button>
+        <button class="tab-btn" onclick="switchTab('ch1')">第一章</button>
+        <button class="tab-btn" onclick="switchTab('ch2')">第二章</button>
+        <button class="tab-btn" onclick="switchTab('ch3')">第三章</button>
+        <button class="tab-btn" onclick="switchTab('ch4')">第四章</button>
+        <button class="tab-btn" onclick="switchTab('ch5')">第五章</button>
+        <button class="tab-btn" onclick="switchTab('ch6')">第六章</button>
+    </div>
+
+    <!-- AI Perspective (New Tab) -->
+    <div id="tab-ai" class="tab-content active">
+        <div class="golden-quote ai-quote">
+            “在AI时代，冗余不仅是体力的过剩，更是认知的被剥夺；底层阶级正被算法悄无声息地折叠进‘数字废弃物’的深渊。”
+        </div>
+        <ul>
+            <li><span class="fact">AI与大模型（AGI）的普及正在完成从“体力劳动替代”向“脑力与符号劳动替代”的跨越。</span></li>
+            <li><span class="opinion">鲍曼预言的“人类废弃物”与“冗余人口”在AI时代将呈指数级爆发。不仅是底层体力劳动者，庞大的白领中产阶级也面临被无情踢出劳动力市场，降级为“有缺陷的消费者”的风险。</span></li>
+            <li><span class="fact">现代算法与大数据监控技术（如信用评分画像、自动化家计调查、预测性警务）被大规模应用于社会治理系统。</span></li>
+            <li><span class="opinion">“安全国家”正在进化为“算法全景监狱”。新穷人无需被物理隔离，他们直接被数据隐形，被剥夺信用额度与获取救济的资格（算法排斥）。穷人不仅在街区被隔离，更在数字世界被系统性抹除。</span></li>
+            <li><span class="opinion">今天硅谷科技精英们狂热推崇的“全民基本收入（UBI）”，正是鲍曼呼吁的“收入与就业脱钩”的赛博格复刻。然而其底层逻辑已被异化：它不是出于道德同情，而是为了给被AI挤出的冗余人口发放最低限度的“消费资格”，以防止消费主义机器因无人购物而彻底崩溃。</span></li>
+        </ul>
+        <div class="card-grid">
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🧠</div>
+                        <h3 style="color: #7e22ce;">认知冗余 <br>(Cognitive Redundancy)</h3>
+                        <p>点击翻转</p>
+                    </div>
+                    <div class="flip-card-back ai-back">
+                        <h4>工作伦理的彻底破产</h4>
+                        <p>过去，工作伦理训诫穷人“不努力就不配生活”。如今AI不仅能高效完成重复劳动，还能写代码、做设计、写文案。人类劳动力陷入结构性、甚至是永久性的“无用化”，这使得“工作伦理”的剥削外衣被彻底撕碎。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">👁️‍🗨️</div>
+                        <h3 style="color: #7e22ce;">算法排斥 <br>(Algorithmic Exclusion)</h3>
+                        <p>点击翻转</p>
+                    </div>
+                    <div class="flip-card-back ai-back">
+                        <h4>数字化的道德去敏化</h4>
+                        <p>福利的削减被外包给冷冰冰的算法模型（如自动化欺诈检测、贫困评分系统）。系统通过冷酷的数学计算剔除穷人，决策黑盒化让社会进一步对穷人的苦难实现“道德免疫”。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">💰</div>
+                        <h3 style="color: #7e22ce;">AI时代的 UBI <br>(Universal Basic Income)</h3>
+                        <p>点击翻转</p>
+                    </div>
+                    <div class="flip-card-back ai-back">
+                        <h4>变味的乌托邦</h4>
+                        <p>鲍曼主张让生存尊严与劳动力脱钩。但科技巨头眼中的UBI，更像是AI时代的“数字维稳费”和“消费券”：只要维持底层微弱的消费能力，资本的收割循环就不会停止。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Intro -->
+    <div id="tab-intro" class="tab-content">
+        <div class="golden-quote">
+            “穷人将永远与我们同在，但‘贫穷’的意义，取决于他们与什么样的‘我们’同在。”
+        </div>
+        <ul>
+            <li><span class="fact">现代历史经历了一个巨大的转变：从“生产者社会”转向“消费者社会”。</span></li>
+            <li><span class="opinion">在过去，穷人被视为“产业后备军”；而今天，穷人的首要身份被降级为“有缺陷的消费者”（Flawed Consumers）。</span></li>
+            <li><span class="opinion">穷人不再具备潜在的生产价值，这直接导致了他们社会地位的深渊式坠落，以及被救赎机会的彻底丧失。</span></li>
+        </ul>
+    </div>
+
+    <!-- Chapter 1 -->
+    <div id="tab-ch1" class="tab-content">
+        <div class="golden-quote">
+            “工作伦理本质上是一场关于控制与服从的权力斗争，是一场关于剥夺自由的战役。”
+        </div>
+        <ul>
+            <li><span class="fact">在工业化初期，传统工匠习惯于满足基本生存需求后即停止工作。</span></li>
+            <li><span class="opinion">工作伦理（Work Ethic）并非先天道德，而是早期工厂主发明的规训工具，目的是强迫穷人适应枯燥的工厂节律。</span></li>
+            <li><span class="fact">英国济贫法（Poor Law）确立了“劣等处置原则”，要求救济院的条件必须比最差的工作更恶劣。</span></li>
+            <li><span class="opinion">现代社会通过“让所有人成为生产者”来解决社会融合（Social Integration）和系统再生产问题。</span></li>
+        </ul>
+        <div class="card-grid">
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">⚙️</div>
+                        <h3>工作伦理 (Work Ethic)</h3>
+                        <p>点击翻转</p>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>工作伦理本质</h4>
+                        <p>表面上承诺“工作即道德升华”，实际上是为了切断工作与意义之间的联系，培养工人的盲目服从。它否认了个人对生活方式的选择权，把“不工作即罪恶”内化为社会共识。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">👁️</div>
+                        <h3>全景敞视规训 <br>(Panoptical Drill)</h3>
+                        <p>点击翻转</p>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>全景敞视机构</h4>
+                        <p>工厂、救济院、军队曾是现代社会的“全景敞视机构”，通过消除选择和实施机械化监视来塑造顺从的躯体。但在当今消费者社会，这种规训已被抛弃，因为消费者需要的是“不断的选择”而非“机械的习惯”。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chapter 2 -->
+    <div id="tab-ch2" class="tab-content">
+        <div class="golden-quote">
+            “如果生产者社会是靠伦理学整合的，那么消费者社会则是靠美学统治的。”
+        </div>
+        <ul>
+            <li><span class="fact">现代工业生产力大幅提升，大规模生产不再需要大规模劳动力参与。</span></li>
+            <li><span class="opinion">社会对人的基本角色要求，从“生产者”转变为“消费者”。消费者必须保持永不餍足的欲望和极易兴奋的特质。</span></li>
+            <li><span class="opinion">工作（Job）不再是确立终身身份的基础，而是受到“美学标准”的审查——有趣、刺激的工作被视为“特权”和精英的象征，无聊的工作则被鄙视。</span></li>
+            <li><span class="fact">穷人在当今社会最痛苦的体验是无聊（Boredom），因为参与消费市场的资格被金钱剥夺。</span></li>
+        </ul>
+        <div class="card-grid">
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🛒</div>
+                        <h3>有缺陷的消费者<br>(Flawed Consumers)</h3>
+                        <p>点击翻转</p>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>新穷人的定义</h4>
+                        <p>在消费社会中，“正常生活”被等同于能够自由选择和消费。穷人因为缺乏消费能力（无钱、无信用卡），无法履行“消费义务”，因而被定义为有缺陷、不合格的社会成员，遭受内部流放。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🎨</div>
+                        <h3>消费美学 <br>(Aesthetics of Consumption)</h3>
+                        <p>点击翻转</p>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>美学取代伦理</h4>
+                        <p>伦理看重责任和延迟满足；美学则看重即时的体验和感官刺激。消费社会不需要伦理规训，它通过“诱惑”和“欲望唤醒”来维持社会运转。贫穷不再是道德问题，而是审美上的失败。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chapter 3 -->
+    <div id="tab-ch3" class="tab-content">
+        <div class="golden-quote">
+            “针对穷人的项目，总是穷酸的项目 (Services for the poor were always poor services)。”
+        </div>
+        <ul>
+            <li><span class="fact">福利国家（Welfare State）最初由左右翼达成共识，既是为了缓解资本主义危机的压力，也是为了维持产业后备军的健康。</span></li>
+            <li><span class="opinion">从“普遍福利”（所有人享有权利）退化为“家计调查（Means-tested）”（仅针对最穷者），导致了社会共同体意识的撕裂。</span></li>
+            <li><span class="fact">资本全球化使得企业可以轻易在海外获取廉价劳动力，不再愿意为本地劳工的“福利和再商品化”买单。</span></li>
+            <li><span class="opinion">福利国家成功培育了一批自信的“满意的多数”（中产阶级），这些人“过河拆桥”，反过来成为削减福利政策最积极的支持者。</span></li>
+        </ul>
+        <div class="card-grid">
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">📋</div>
+                        <h3>家计调查 <br>(Means Test)</h3>
+                        <p>点击翻转</p>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>福利的污名化</h4>
+                        <p>将福利限定为“只给证明自己贫困的人”。这不仅降低了福利的质量（因为穷人缺乏政治话语权），还给接受者打上了“失败者”的污名，成功离间了纳税人与受助者，摧毁了社会团结。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chapter 4 -->
+    <div id="tab-ch4" class="tab-content">
+        <div class="golden-quote">
+            “底层阶级的发明，是为了给道德冷漠化提供完美的借口。”
+        </div>
+        <ul>
+            <li><span class="fact">在当今社会，劳动力的雇佣关系从稳定变为灵活、短期（Flexibility），“失业（Unemployment）”一词正在被“冗余（Redundancy）”取代。</span></li>
+            <li><span class="opinion">工作伦理在今天复活，不再是为了鼓励生产，而是作为“将贫困归咎于个人道德缺陷”的洗地工具。</span></li>
+            <li><span class="opinion">社会发明了“底层阶级（Underclass）”的概念，将单亲母亲、吸毒者、犯罪分子打包在一起，将其渲染为纯粹的“危险”。</span></li>
+            <li><span class="opinion">贫穷被定罪化（Criminalization of Poverty）。媒体通过将穷人与罪犯画等号，成功将穷人逐出了我们的道德义务范畴。</span></li>
+        </ul>
+        <div class="card-grid">
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🗑️</div>
+                        <h3>冗余 <br>(Redundancy)</h3>
+                        <p>点击翻转</p>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>无用的人类废弃物</h4>
+                        <p>“失业”暗示着这是一种暂时现象，人仍有回归岗位的希望；而“冗余”则宣告了最终的、不可逆转的无用。冗余人口被视为经济资产负债表上的纯粹负债。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🙈</div>
+                        <h3>道德去敏化 <br>(Adiaphorization)</h3>
+                        <p>点击翻转</p>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>将贫穷移出道德视域</h4>
+                        <p>指将某种行为从道德评价的范畴中剥离。通过谴责穷人缺乏“工作伦理”、具备“犯罪倾向”，主流社会说服自己：抛弃他们是理智且正义的，从而免除了良心上的负罪感。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chapter 5 -->
+    <div id="tab-ch5" class="tab-content">
+        <div class="golden-quote">
+            “这个星球已经满了……不再有‘无主之地’可以倾倒现代化产生的‘人类废弃物’。”
+        </div>
+        <ul>
+            <li><span class="fact">早期现代化通过帝国主义和殖民主义，将国内的“过剩人口”出口到美洲、大洋洲等所谓“无主之地”。</span></li>
+            <li><span class="opinion">随着全球化的完成，地球已经“客满”（社会学意义上的满）。发达国家无法再将废弃物倾倒出去，只能在本地寻找解决方案。</span></li>
+            <li><span class="opinion">由于国家无法再保证公民的“社会安全”（就业、福利），为了重建统治合法性，国家正在向“安全国家（State of Security）”转型。</span></li>
+            <li><span class="fact">政府越来越热衷于通过修建监狱、严打犯罪、制造恐怖主义恐慌，来彰显其存在感。</span></li>
+        </ul>
+        <div class="card-grid">
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🌍</div>
+                        <h3>垃圾处理危机 <br>(Waste Disposal Crisis)</h3>
+                        <p>点击翻转</p>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>全球化下的废弃物</h4>
+                        <p>现代化不可避免地产生“多余人口”。过去可以通过移民和殖民解决；今天这些出口被封死。无处可去的难民和边缘穷人，变成了全球化时代最棘手的“垃圾处理危机”。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🚔</div>
+                        <h3>安全国家 <br>(Garrison State)</h3>
+                        <p>点击翻转</p>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>替代“社会国家”</h4>
+                        <p>当政府面对全球资本流动无能为力，无法兑现“社会福利”承诺时，便会诉诸于放大“人身安全恐慌”（如犯罪、恐怖分子）。用监狱的墙壁代替福利的保护网，实施零容忍政策。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chapter 6 -->
+    <div id="tab-ch6" class="tab-content">
+        <div class="golden-quote">
+            “我们不能再仅仅以劳动力市场的标价，来衡量人类工作的意义和尊严。”
+        </div>
+        <ul>
+            <li><span class="fact">秩序（Order）和规范（Norm）本质上是排他性的，穷人作为不符合规范者，必然遭受社会性放逐。</span></li>
+            <li><span class="opinion">我们已经失去了将问题视为“系统缺陷”的能力。个人化乌托邦取代了集体愿景，把系统问题怪罪于个人。</span></li>
+            <li><span class="opinion">必须将收入权利与“赚钱能力（劳动力市场）”彻底脱钩。资本主义的“充分就业”目标已不再现实。</span></li>
+            <li><span class="opinion">应当用“工匠伦理（Ethics of Workmanship）”取代“工作伦理”，承认那些无法在市场上出售的劳动（如家庭照顾、社区维系、道德经济）的巨大社会价值。</span></li>
+        </ul>
+        <div class="card-grid">
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🔗</div>
+                        <h3>收入与就业脱钩 <br>(Decoupling)</h3>
+                        <p>点击翻转</p>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>基本收入保障</h4>
+                        <p>Claus Offe 提出的激进但必要的解法：无条件提供维持人基本尊严的收入保障，不再由个人是否参与劳动力市场（意愿和能力）决定。这是打破现有死亡循环的唯一出路。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card" onclick="this.classList.toggle('flipped')">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <div class="icon">🛠️</div>
+                        <h3>工匠伦理 <br>(Ethics of Workmanship)</h3>
+                        <p>点击翻转</p>
+                    </div>
+                    <div class="flip-card-back">
+                        <h4>恢复劳动的本真尊严</h4>
+                        <p>工作伦理将劳动的价值与市场标价死死绑定。而工匠伦理则承认人类具有天生的创造本能，从事社区维护、关怀他人的未计酬劳动，同样甚至更具备崇高的社会意义。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function switchTab(tabId) {
+        // 隐藏所有Tab内容
+        const contents = document.querySelectorAll('.tab-content');
+        contents.forEach(content => content.classList.remove('active'));
+        
+        // 移除所有按钮的Active状态
+        const btns = document.querySelectorAll('.tab-btn');
+        btns.forEach(btn => btn.classList.remove('active'));
+        
+        // 显示当前Tab
+        document.getElementById('tab-' + tabId).classList.add('active');
+        // 匹配对应的按钮并激活
+        document.querySelector(`.tab-btn[onclick="switchTab('${tabId}')"]`).classList.add('active');
+    }
+</script>
+
+</body>
+</html>
