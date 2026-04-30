@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深度解析：Harness Engineering 摘要</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --surface-color: #f8fafc;
+            --border-color: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
+            --accent: #f59e0b;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+
+        /* 头部与金句 */
+        .hero { text-align: center; margin-bottom: 50px; }
+        .hero h1 { font-size: 2.5rem; color: #0f172a; margin-bottom: 10px; }
+        .hero p.subtitle { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 30px; }
+        
+        .golden-quotes {
+            background: var(--surface-color);
+            border-left: 4px solid var(--accent);
+            padding: 20px 30px;
+            border-radius: 0 8px 8px 0;
+            text-align: left;
+            margin: 0 auto;
+            max-width: 800px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+        .golden-quotes p {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: #334155;
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+
+        h2 { font-size: 1.8rem; color: #0f172a; border-bottom: 2px solid var(--primary-light); padding-bottom: 10px; margin-top: 50px; display: flex; align-items: center; gap: 10px; }
+        h3 { font-size: 1.3rem; color: #1e293b; margin-top: 30px; }
+        
+        /* 标签页 (发展弧线) */
+        .tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+        .tab-btn {
+            padding: 10px 20px; background: var(--surface-color); border: 1px solid var(--border-color);
+            border-radius: 30px; cursor: pointer; font-weight: 600; color: var(--text-muted);
+            transition: all 0.3s ease; outline: none;
+        }
+        .tab-btn:hover { background: var(--border-color); }
+        .tab-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        
+        .tab-content { display: none; padding: 25px; background: var(--surface-color); border-radius: 12px; border: 1px solid var(--border-color); }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .highlight-box { background: var(--primary-light); padding: 15px 20px; border-radius: 8px; color: #1e40af; font-weight: 500; margin-top: 15px; border-left: 4px solid var(--primary); }
+
+        /* 翻转卡片 */
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-top: 20px; }
+        .flip-card { background-color: transparent; width: 100%; height: 260px; perspective: 1000px; cursor: pointer; }
+        .flip-card-inner { position: relative; width: 100%; height: 100%; text-align: left; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; }
+        .flip-card:hover .flip-card-inner { transform: rotateY(180deg); }
+        .flip-card-front, .flip-card-back { 
+            position: absolute; width: 100%; height: 100%; backface-visibility: hidden; 
+            border-radius: 16px; padding: 25px; box-sizing: border-box; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04); border: 1px solid var(--border-color);
+        }
+        .flip-card-front { background-color: #ffffff; display: flex; flex-direction: column; justify-content: center; }
+        .flip-card-back { background-color: var(--primary-light); color: #0f172a; transform: rotateY(180deg); overflow-y: auto; display: flex; flex-direction: column; justify-content: center;}
+        
+        .card-title { font-size: 1.25rem; font-weight: bold; color: var(--primary); margin-bottom: 12px; }
+        .card-desc { font-size: 0.95rem; color: var(--text-muted); }
+        .card-back-title { font-weight: bold; color: var(--primary); margin-bottom: 10px; font-size: 1.1rem; border-bottom: 1px solid #bfdbfe; padding-bottom: 5px;}
+        .card-back-content { font-size: 0.9rem; line-height: 1.6; }
+
+        /* 手风琴 (折叠面板) */
+        .accordion-item { border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 12px; overflow: hidden; background: #fff;}
+        .accordion-header { padding: 16px 20px; background: var(--surface-color); cursor: pointer; font-weight: 600; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s; }
+        .accordion-header:hover { background: var(--border-color); }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; padding: 0 20px; background: #fff; }
+        .accordion-item.active .accordion-content { max-height: 800px; padding: 16px 20px; border-top: 1px solid var(--border-color); }
+        
+        /* 列表与引用 */
+        ul { padding-left: 20px; }
+        li { margin-bottom: 8px; }
+        .tag { display: inline-block; padding: 3px 8px; background: #e0e7ff; color: #3730a3; border-radius: 4px; font-size: 0.8rem; margin-right: 5px; font-weight: 500; }
+        
+        .references-section { margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 0.9rem; }
+        .reference-item { margin-bottom: 15px; color: var(--text-muted); background: var(--surface-color); padding: 15px; border-radius: 8px; }
+        .reference-item strong { color: var(--text-main); }
+        .cite { color: var(--primary); font-size: 0.8rem; vertical-align: super; text-decoration: none; font-weight: bold; margin-left: 2px;}
+
+        /* 范式迁移横幅 */
+        .paradigm-flow { display: flex; justify-content: space-between; align-items: center; background: var(--surface-color); padding: 20px; border-radius: 12px; margin: 20px 0; overflow-x: auto;}
+        .paradigm-step { text-align: center; min-width: 120px; }
+        .paradigm-arrow { color: #cbd5e1; font-weight: bold; }
+        .paradigm-title { font-weight: bold; color: var(--primary); }
+        .paradigm-desc { font-size: 0.85rem; color: var(--text-muted); }
+    /* 主容器布局调整 - 移除flex布局以保持原始排版 */
+
+.attachments-panel {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+    border: 1px solid #e0e0e0;
+}
+.attachments-panel h3 {
+    color: #004085;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    border-bottom: 2px solid #004085;
+    padding-bottom: 10px;
+}
+.attachment-item {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+.attachment-item:hover {
+    background-color: #e9ecef;
+    border-color: #004085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.attachment-item h4 {
+    margin: 0 0 8px 0;
+    color: #004085;
+    font-size: 14px;
+}
+.attachment-item p {
+    margin: 0 0 10px 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
+.download-btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+.download-btn:hover {
+    background-color: #218838;
+    text-decoration: none;
+    color: white;
+}
+.download-btn:before {
+    content: "▼ ";
+    margin-right: 5px;
+}
+
+/* 可折叠浮动框样式 */
+.attachments-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: auto; /* 自适应宽度 */
+    min-width: 250px; /* 最小宽度 */
+    max-width: calc(100vw - 60px); /* 最大宽度，留出边距 */
+    max-height: calc(100vh - 80px); /* 留出更多空间避免滚动条 */
+    overflow-y: auto;
+    overflow-x: hidden; /* 隐藏横向滚动条 */
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    border: 2px solid #004085;
+    transform: translateX(100%); /* 默认完全隐藏 */
+    transition: transform 0.3s ease;
+    /* 自定义滚动条样式 */
+    scrollbar-width: thin;
+    scrollbar-color: #004085 #f0f0f0;
+}
+
+/* WebKit浏览器滚动条样式 */
+.attachments-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attachments-panel::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb {
+    background: #004085;
+    border-radius: 3px;
+}
+
+.attachments-panel::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* 展开时显示 */
+.attachments-panel.expanded {
+    transform: translateX(0);
+}
+
+/* 移除container的margin-right设置，保持原始布局 */
+
+.attachment-item {
+    width: 250px;
+    margin-right: 0;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 防止文本换行导致宽度过大 */
+}
+
+.attachment-item h4 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* 长文本显示省略号 */
+    max-width: 100%;
+}
+
+.attachments-panel h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    white-space: nowrap; /* 标题不换行 */
+}
+
+.attachments-panel a {
+    white-space: nowrap; /* 链接文本不换行 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* 浮动切换按钮 */
+.float-toggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: #004085;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.float-toggle:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+.float-toggle:active {
+    transform: scale(0.95);
+}
+
+/* 当面板展开时，按钮位置动态调整 */
+.attachments-panel.expanded ~ .float-toggle {
+    right: 20px; /* 保持在面板左侧的固定位置 */
+    opacity: 0.7; /* 展开时降低透明度，避免遮挡 */
+}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header class="hero">
+        <h1>深度解析：Harness Engineering</h1>
+        <p class="subtitle">超轻认知负荷 · 核心要点提取 · 知识卡片交互版</p>
+        
+        <div class="golden-quotes">
+            <p>💡 “模型不是瓶颈，系统才是。”</p>
+            <p>🚀 “当 AI Agent 从‘能跑’走向‘能治’，一门新的基础学科正在成形。”</p>
+            <p>🎯 “本文不是概念拼接，而是试图回答一个根本问题：我们怎么走到了这里，接下来该往哪里走。”</p>
+        </div>
+    </header>
+
+    <section>
+        <h2>⏳ 背景：走过的弧线 (2022 - 2026)</h2>
+        <p>AI 工程过去四年的演进不是线性的，而是经历着 <strong>“能力跳变 → 旧框架崩塌 → 新抽象涌现”</strong> 的循环。</p>
+        
+        <div class="tabs" id="timeline-tabs">
+            <button class="tab-btn active" onclick="switchTab(0)">幕一：生成 (2022-2023)</button>
+            <button class="tab-btn" onclick="switchTab(1)">幕二：连接 (2023-2024)</button>
+            <button class="tab-btn" onclick="switchTab(2)">幕三：推理 (2024)</button>
+            <button class="tab-btn" onclick="switchTab(3)">幕四：行动 (2025)</button>
+            <button class="tab-btn" onclick="switchTab(4)">幕五：治理 (2026至今)</button>
+        </div>
+
+        <div id="tab-0" class="tab-content active">
+            <h3>第一幕：生成 (ChatGPT时代)</h3>
+            <p><strong>核心事件：</strong> LLM成为对话界面，产生Prompt Engineering。</p>
+            <div class="highlight-box">🤯 核心矛盾：模型能生成，但不能行动。交互是无状态、单轮、被动的。</div>
+        </div>
+        <div id="tab-1" class="tab-content">
+            <h3>第二幕：连接 (GPT-4 / Plugins / LangChain)</h3>
+            <p><strong>核心事件：</strong> 模型“长出了手”，能调用外部工具(Function Calling)。</p>
+            <div class="highlight-box">🤯 教训一：让模型“能连接工具”是必要的，但远远不够。连接不等于编排，编排不等于治理。</div>
+        </div>
+        <div id="tab-2" class="tab-content">
+            <h3>第三幕：推理 (o1 / MCP协议 / Context Engineering)</h3>
+            <p><strong>核心事件：</strong> 推理模型(o1)质飞跃；MCP协议解决N×M连接问题；Anthropic提出Context Engineering与Agent架构指南。</p>
+            <div class="highlight-box">🤯 教训二：单步质量高不代表长任务可靠。解金牌题的模型依然会在长任务中“忘记在干什么”。</div>
+        </div>
+        <div id="tab-3" class="tab-content">
+            <h3>第四幕：行动 (Agent爆发年)</h3>
+            <p><strong>核心事件：</strong> 多款Agent(Claude Code, Manus等)进入自主运行，引发严重系统结构问题(一把梭耗尽上下文、级联错误、AI Slop垃圾代码)。</p>
+            <div class="highlight-box">🤯 教训三：Agent能力已达“自主数小时”，但基础设施停留在“单次对话”。断裂催生了新工程实践。</div>
+        </div>
+        <div id="tab-4" class="tab-content">
+            <h3>第五幕：治理 (Harness Engineering诞生)</h3>
+            <p><strong>核心事件：</strong> 行业焦点从“更能干”转向“不翻车”。Mitchell Hashimoto、OpenAI、Thoughtworks/Fowler相继确立“Harness Engineering”系统框架。</p>
+            <div class="highlight-box">🎯 现状：工程师工作重心转向设计环境 (design environments)、明确意图与构建反馈回路。</div>
+        </div>
+    </section>
+
+    <section>
+        <h2>🧩 Harness 究竟是什么？</h2>
+        <p><strong>一个精确定义：</strong>Harness 是让模型能够作为 Agent 行动起来的 <strong>外循环系统</strong>。</p>
+        <p><em>内循环(模型推理)决定单步质量，外循环(Harness)决定整条流水线运转。</em></p>
+        <div class="paradigm-flow" style="background:#e0e7ff;">
+            <div class="paradigm-step">
+                <div class="paradigm-title">Prompt Engineering</div>
+                <div class="paradigm-desc">解决：单步怎么问</div>
+            </div>
+            <div class="paradigm-arrow">➔ 包含于 ➔</div>
+            <div class="paradigm-step">
+                <div class="paradigm-title">Context Engineering</div>
+                <div class="paradigm-desc">解决：每步喂什么信息</div>
+            </div>
+            <div class="paradigm-arrow">➔ 包含于 ➔</div>
+            <div class="paradigm-step">
+                <div class="paradigm-title">Harness Engineering</div>
+                <div class="paradigm-desc">解决：整个任务外循环</div>
+            </div>
+        </div>
+
+        <h3>Agent 的五个根本性挑战 (为什么单独靠模型不行？)</h3>
+        <p><em>提示：鼠标悬停在卡片上翻转查看解决方案设计</em></p>
+        <div class="card-grid">
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <span class="tag">挑战 1</span>
+                        <div class="card-title">状态持久性</div>
+                        <div class="card-desc">模型无状态，Context Window有上限。Agent跨session工作容易“失忆上岗”。</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="card-back-title">不可靠原因</div>
+                        <div class="card-back-content">模型无法天然承担长期连续状态。保存历史对话会导致“上下文焦虑”(Context anxiety)。必须设计脱离会话历史的结构化外部可续航状态。</div>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <span class="tag">挑战 2</span>
+                        <div class="card-title">目标一致性</div>
+                        <div class="card-desc">长任务中容易漂移、自嗨，甚至提前宣布“已全部完成”。</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="card-back-title">不可靠原因</div>
+                        <div class="card-back-content">模型缺少外部锚点，无法稳定校准“什么才算真正完成”。解决之道是将高层需求展开成精确的特征清单，形成外部验证门。</div>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <span class="tag">挑战 3</span>
+                        <div class="card-title">行动可验证性</div>
+                        <div class="card-desc">每步是概率性的，需要区分“做了”和“做对了”。</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="card-back-title">不可靠原因</div>
+                        <div class="card-back-content">模型评价自己时，存在严重的“自我表扬”误判倾向。需要建立不依赖模型自我评价的独立反馈系统 (Sensors)。</div>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <span class="tag">挑战 4</span>
+                        <div class="card-title">熵增抑制</div>
+                        <div class="card-desc">持续产出会累积AI垃圾 (AI slop)、代码冗余、漂移和不一致。</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="card-back-title">不可靠原因</div>
+                        <div class="card-back-content">模型会机械复制已有模式(哪怕是坏模式)。Harness需引入垃圾回收机制(如定期重构Agent与架构强制CI)。</div>
+                    </div>
+                </div>
+            </div>
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <span class="tag">挑战 5</span>
+                        <div class="card-title">人机边界</div>
+                        <div class="card-desc">何时自主推进？何时停下交还人类干预？</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="card-back-title">不可靠原因</div>
+                        <div class="card-back-content">模型并没有可靠的“不确定性自觉”。需要工程化定义拦截规则和人类审批的介入点。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>🛠️ Harness 六大核心工程构件</h2>
+        <div class="card-grid">
+            <!-- 构件1 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <span class="tag">构件 1</span>
+                        <div class="card-title">Durable State Surfaces<br>状态外化</div>
+                        <div class="card-desc">应对“失忆”，让状态不依赖历史对话。</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="card-back-title">设计原理与实践</div>
+                        <div class="card-back-content">
+                            <strong>实践：</strong>Anthropic的Feature list和git diff冷启动恢复。<br>
+                            <strong>原理：</strong>冷启动后30秒内不知下一步干什么，状态管理即宣告失败。解决"Context anxiety"的最佳方案是 <em>Context reset</em> 配合外化状态。
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 构件2 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <span class="tag">构件 2</span>
+                        <div class="card-title">Decomposition & Plans<br>任务分解</div>
+                        <div class="card-desc">切分Agent吞得下的任务块，拒绝“一把梭”。</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="card-back-title">设计原理与实践</div>
+                        <div class="card-back-content">
+                            <strong>实践：</strong>Planner / Generator / Evaluator 三角色架构。<br>
+                            <strong>原理：</strong>计划必须被提升为“一等工件”，写入文件系统、可被版本管理、被验证门引用，而不是一次性聊天对话。
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 构件3 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <span class="tag">构件 3</span>
+                        <div class="card-title">Feedback Loops<br>反馈回路</div>
+                        <div class="card-desc">建立不依赖Agent“自夸”的质量验收。</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="card-back-title">设计原理与实践</div>
+                        <div class="card-back-content">
+                            <strong>实践：</strong>Fowler提出的 2×2 控制矩阵：Guides(前馈)与Sensors(反馈)；分计算型(便宜确定)与推断型(贵且主观)。<br>
+                            <strong>原理：</strong>无Guides则不知规则，无Sensors则重复犯错。
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 构件4 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <span class="tag">构件 4</span>
+                        <div class="card-title">Legibility<br>环境感知面</div>
+                        <div class="card-desc">为Agent建造“看”与感知世界的接口。</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="card-back-title">设计原理与实践</div>
+                        <div class="card-back-content">
+                            <strong>实践：</strong>提供独立浏览器(CDP[7])，暴露logs与metrics；建立仓库知识(记录决策历史)。<br>
+                            <strong>原理：</strong>凡不在Agent运行时可见范围内的知识=不存在。散落在人脑和Slack的信息对Agent无效。
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 构件5 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <span class="tag">构件 5</span>
+                        <div class="card-title">Tool Mediation<br>工具中介</div>
+                        <div class="card-desc">把工具使用从模型内循环挪到外部回路。</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="card-back-title">设计原理与实践</div>
+                        <div class="card-back-content">
+                            <strong>实践：</strong>让模型写代码调工具(沙箱运行)，而非直接把所有工具塞进Context。<br>
+                            <strong>原理：</strong>工具越多越易迷失。Harness负责过滤中间过程，按需发现工具，将最终结果回传，节省Context。
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 构件6 -->
+            <div class="flip-card">
+                <div class="flip-card-inner">
+                    <div class="flip-card-front">
+                        <span class="tag">构件 6</span>
+                        <div class="card-title">Entropy Control<br>熵增抑制</div>
+                        <div class="card-desc">Agent系统的持续垃圾回收与秩序维护。</div>
+                    </div>
+                    <div class="flip-card-back">
+                        <div class="card-back-title">设计原理与实践</div>
+                        <div class="card-back-content">
+                            <strong>实践：</strong>定期清理文档/代码一致性，清理“AI Slop”，CI强制维持模块边界。<br>
+                            <strong>原理：</strong>简单的框架关心“如何跑起来”，Harness 工程关心“长期的可治理性”。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="highlight-box" style="background:#fef3c7; border-left-color: #f59e0b; color: #b45309; margin-top:25px;">
+            <strong>✨ 隐性构件：Harnessability (系统的可驾驭性)</strong><br>
+            工程基础设施质量(强类型、CI、文档结构化)直接决定系统有多适合被Agent驯化(Agent-readiness)。
+        </div>
+    </section>
+
+    <section>
+        <h2>🌐 意图系统：从 Chatbot 到 AgentOS</h2>
+        <p>人机交互经历了四次断裂：<code>CLI (人适应机器)</code> ➔ <code>GUI (机器提供隐喻)</code> ➔ <code>App (人在预设中选择)</code> ➔ <code>Agent (机器理解意图，自主执行)</code>。</p>
+        
+        <div style="background:var(--surface-color); padding: 20px; border-radius: 8px; margin-top: 15px;">
+            <h3 style="margin-top:0;">🤖 应用正在为机器“CLI 化”</h3>
+            <p>MCP 协议本质上把所有应用变成了可编程 API。<strong>App 从“目的地”退化为了“基础设施”</strong>。应用可读性的第一受众变成了 Agent，而不是人。</p>
+        </div>
+
+        <div class="paradigm-flow">
+            <div class="paradigm-step">
+                <div class="paradigm-title">Level 1: Chatbot</div>
+                <div class="paradigm-desc">(22-23) 无状态<br>依赖Prompt</div>
+            </div>
+            <div class="paradigm-arrow">➔</div>
+            <div class="paradigm-step">
+                <div class="paradigm-title">Level 2: AI Browser / IDE</div>
+                <div class="paradigm-desc">(24-25) 多步/工具调用<br>轻量Harness</div>
+            </div>
+            <div class="paradigm-arrow">➔</div>
+            <div class="paradigm-step">
+                <div class="paradigm-title">Level 3: AgentOS</div>
+                <div class="paradigm-desc">(26 萌芽) 资源隔离/进程管理<br>Harness是其用户态层[8][9]</div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>🩺 避坑指南：症状与被忽视的问题</h2>
+        
+        <h3>五个典型翻车症状</h3>
+        <div class="accordion" id="symptoms-accordion">
+            <div class="accordion-item" onclick="toggleAccordion(this)">
+                <div class="accordion-header">症状一：框架丛林 <span>▼</span></div>
+                <div class="accordion-content">拼凑不同框架(LangChain, CrewAI等)，只得到脆弱的管道，缺乏完整的生命周期治理。</div>
+            </div>
+            <div class="accordion-item" onclick="toggleAccordion(this)">
+                <div class="accordion-header">症状二：Chatbot 皮 + Agent 芯 <span>▼</span></div>
+                <div class="accordion-content">界面是循环执行，但没有真实的状态管理与验证门，生产环境频频翻车。</div>
+            </div>
+            <div class="accordion-item" onclick="toggleAccordion(this)">
+                <div class="accordion-header">症状三：工具注册 ≠ 工具治理 <span>▼</span></div>
+                <div class="accordion-content">提供所有工具反而让Agent迷失，工具调用需要精简、分层暴露的治理策略。</div>
+            </div>
+            <div class="accordion-item" onclick="toggleAccordion(this)">
+                <div class="accordion-header">症状四：一次性规则 vs 可演进约束 <span>▼</span></div>
+                <div class="accordion-content">巨大的 system prompt 必定腐化失败。局部模式匹配取代了整体导航。</div>
+            </div>
+            <div class="accordion-item" onclick="toggleAccordion(this)">
+                <div class="accordion-header">症状五：缺乏 on-the-loop 思维 <span>▼</span></div>
+                <div class="accordion-content">开发者仍停留在手改错误产物(in the loop)，而不是修改Harness控制回路让其下次自动避免(on the loop)。</div>
+            </div>
+        </div>
+
+        <h3>被忽视的关键问题</h3>
+        <div class="accordion" id="issues-accordion">
+            <div class="accordion-item" onclick="toggleAccordion(this)">
+                <div class="accordion-header">🔍 Harness 的可测试性 <span>▼</span></div>
+                <div class="accordion-content">如果用会幻觉的LLM去评估另一个LLM，就是用不可靠验证不可靠。Anthropic建议计算型传感器兜底，推断型处理主观[6]。</div>
+            </div>
+            <div class="accordion-item" onclick="toggleAccordion(this)">
+                <div class="accordion-header">🛡️ 安全新维度：工具投毒攻击 (Tool Poisoning Attacks) <span>▼</span></div>
+                <div class="accordion-content">Invariant Labs发现的严重隐患[10]：攻击者在MCP工具描述中藏入恶意指令，劫持Agent执行越权操作（如数据外泄）。安全边界需要升级为动态权限模型。</div>
+            </div>
+            <div class="accordion-item" onclick="toggleAccordion(this)">
+                <div class="accordion-header">💸 涌现行为与成本权衡 <span>▼</span></div>
+                <div class="accordion-content">多Agent并发导致非确定性Bug涌现。同时，复杂的Harness(Planner/Sensor)大量消耗Token和延迟，需要平衡ROI。</div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>🎯 核心判断与展望</h2>
+        <ul style="list-style-type: '👉 '; font-weight: 500;">
+            <li><strong>一门基础学科：</strong>模型变强不会吞并Harness，它是软件架构、测试工程与安全的交叉新学科。</li>
+            <li><strong>护城河上移：</strong>底层模型趋同时，系统设计和Harness质量将决定产品巨大差距。</li>
+            <li><strong>演进需要耐心：</strong>2-3年内企业主要处于“AI Browser + 轻量 Harness”，直接跳跃到AgentOS易因治理崩溃而死。</li>
+            <li><strong>工程师角色巨变：</strong>从“代码生产者”转变为“自治系统设计者”(从 in the loop 走向 on the loop)。</li>
+        </ul>
+
+        <div class="highlight-box">
+            <strong>✅ 开始前请回答这三个自检问题：</strong><br>
+            1. 有无持久化状态面（30秒内从冷启动续航）？<br>
+            2. 有无机器可读的外部验收标准（Machine-readable acceptance criteria）？<br>
+            3. 你的库、工具、策略对Agent是否具备可视与可执行性（Legible and enforceable）？
+        </div>
+    </section>
+
+    <section class="references-section">
+        <h3>📚 引用文献摘要与探索记录</h3>
+        <div class="reference-item">
+            <strong>[1] Building Effective Agents (Anthropic, 2024.12)</strong><br>
+            明确区分了遵循预设代码路径的 Workflows 与自主决策工具使用的 Agents，并提出了从 Prompt Chaining 到 Evaluator-Optimizer 的渐进式工程模式，强调“尽量保持简单”。<a href="#" class="cite" onclick="return false;"></a><a href="#" class="cite" onclick="return false;"></a><a href="#" class="cite" onclick="return false;"></a>
+        </div>
+        <div class="reference-item">
+            <strong>[2] Effective context engineering for AI agents (Anthropic, 2025.09)</strong><br>
+            主张将上下文(Context window)视作约束资源，提出从"寻找提示词汇"转变为"动态管理信息"，解决因无效历史记录堆积引发的代理性能退化。<a href="#" class="cite" onclick="return false;"></a><a href="#" class="cite" onclick="return false;"></a>
+        </div>
+        <div class="reference-item">
+            <strong>[3] My AI Adoption Journey (Mitchell Hashimoto, 2026.02)</strong><br>
+            记录了自身从排斥Chatbot到彻底转向依靠AI运行后台代理任务的六个阶段。他明确使用"Engineer the Harness"来总结持续向代理运行环境中固化规则与约束的动作。<a href="#" class="cite" onclick="return false;"></a><a href="#" class="cite" onclick="return false;"></a><a href="#" class="cite" onclick="return false;"></a>
+        </div>
+        <div class="reference-item">
+            <strong>[4] Harness Engineering: Leveraging Codex in an Agent-First World (OpenAI, 2026.02)</strong><br>
+            披露了一项疯狂内部实验：团队不手写一行代码，完全由Codex配合完备的Harness生成约百万行系统代码。证实了工程师的角色已转向“设计环境与反馈回路”。<a href="#" class="cite" onclick="return false;"></a><a href="#" class="cite" onclick="return false;"></a><a href="#" class="cite" onclick="return false;"></a>
+        </div>
+        <div class="reference-item">
+            <strong>[5] Harness Engineering - first thoughts (Martin Fowler, 2026.02)</strong><br>
+            提出了一套2×2的Harness控制架构体系，包含前馈控制(Guides)与反馈控制(Sensors)，均可划分为计算型(确定性代码)与推断型(大模型推理)。<a href="#" class="cite" onclick="return false;"></a><a href="#" class="cite" onclick="return false;"></a><a href="#" class="cite" onclick="return false;"></a>
+        </div>
+        <div class="reference-item">
+            <strong>[6] Demystifying evals for AI agents (Anthropic, 2026.01)</strong><br>
+            论述Agent长任务难以评估的特质，提出评估时实质在评估“Model + Harness”系统整体。建议综合使用代码验证（客观性）、模型（处理主观性）以及人类标定进行结合评分。<a href="#" class="cite" onclick="return false;"></a><a href="#" class="cite" onclick="return false;"></a><a href="#" class="cite" onclick="return false;"></a>
+        </div>
+        <div class="reference-item">
+            <strong>[7] Chrome DevTools Protocol</strong><br>
+            底层浏览器调试协议，在Harness中经常被用于赋能AI Agent“看到”UI甚至拦截追踪网络请求与日志，实现环境的Legibility（可读性）。
+        </div>
+        <div class="reference-item">
+            <strong>[8] AIOS</strong><br>
+            学术界探索的LLM Agent OS内核层，主张将底层的代理调度、记忆隔离、状态访问权限抽象出来供上层应用统一调用。
+        </div>
+        <div class="reference-item">
+            <strong>[9] AgenticOS Workshop (ASPLOS 2026)</strong><br>
+            探讨专为Agent计算负载设计的新型操作系统原语工作坊，预示着Level 3体系的基础架构研究正在升温。
+        </div>
+        <div class="reference-item">
+            <strong>[10] Tool Poisoning Attacks (Invariant Labs, 2025.04)</strong><br>
+            报告了一种极其危险的新型间接提示词注入攻击方式。攻击者通过在MCP服务器的“工具描述元数据”中隐蔽恶意指令（用户不可见但模型可见），直接劫持AI代理意图，导致敏感文件与通信记录泄露。<a href="#" class="cite" onclick="return false;"></a><a href="#" class="cite" onclick="return false;"></a><a href="#" class="cite" onclick="return false;"></a><a href="#" class="cite" onclick="return false;"></a>
+        </div>
+    </section>
+</div>
+
+<script>
+    // Tab switching logic
+    function switchTab(idx) {
+        document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+            if (i === idx) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-content').forEach((content, i) => {
+            if (i === idx) content.classList.add('active');
+            else content.classList.remove('active');
+        });
+    }
+
+    // Accordion toggling logic
+    function toggleAccordion(element) {
+        element.classList.toggle('active');
+        const icon = element.querySelector('.accordion-header span');
+        if (element.classList.contains('active')) {
+            icon.style.transform = 'rotate(180deg)';
+        } else {
+            icon.style.transform = 'rotate(0deg)';
+        }
+    }
+</script>
+
+
+<div class="attachments-panel" id="attachments-panel">
+    <h3>原文</h3>
+    <a href="https://mp.weixin.qq.com/s/-mgf8K7XZrTKoD0pMOIn3w" target="_blank">源链接</a>
+</div>
+<button class="float-toggle" id="float-toggle" title="打开附件面板">◁</button>
+<script>
+// 浮动框展开/收起功能
+document.addEventListener('DOMContentLoaded', function() {
+    const panel = document.getElementById('attachments-panel');
+    const toggleBtn = document.getElementById('float-toggle');
+    
+    if (!panel || !toggleBtn) return;
+    
+    // 切换面板显示状态
+    function togglePanel() {
+        panel.classList.toggle('expanded');
+        // 更新按钮图标
+        const isExpanded = panel.classList.contains('expanded');
+        toggleBtn.textContent = isExpanded ? '▷' : '◁';
+        toggleBtn.title = isExpanded ? '关闭附件面板' : '打开附件面板';
+        
+        // 动态调整按钮位置
+        if (isExpanded) {
+            // 等待面板展开动画完成后调整按钮位置
+            setTimeout(() => {
+                const panelWidth = panel.offsetWidth;
+                toggleBtn.style.right = (panelWidth + 30) + 'px';
+            }, 300);
+        } else {
+            toggleBtn.style.right = '10px';
+        }
+    }
+    
+    // 点击切换按钮
+    toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePanel();
+    });
+    
+    // 点击页面其他地方时收起面板
+    document.addEventListener('click', function(e) {
+        const isClickOnPanel = panel.contains(e.target);
+        const isClickOnToggle = toggleBtn.contains(e.target);
+        
+        if (!isClickOnPanel && !isClickOnToggle) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+    
+    // ESC键关闭面板
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('expanded')) {
+            panel.classList.remove('expanded');
+            toggleBtn.textContent = '◁';
+            toggleBtn.title = '打开附件面板';
+            toggleBtn.style.right = '10px'; // 重置按钮位置
+        }
+    });
+});
+</script>
+</body>
+</html>
