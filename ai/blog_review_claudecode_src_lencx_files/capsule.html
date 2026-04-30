@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深度解析：Claude Code 源码 - 核心要点翻转卡片 (增强版)</title>
+    <style>
+        :root {
+            --bg-main: #ffffff;
+            --bg-sec: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --fact-bg: #e0f2fe;
+            --fact-text: #0284c7;
+            --opinion-bg: #fef08a;
+            --opinion-text: #b45309;
+            --clever-bg: #d1fae5;
+            --clever-text: #059669;
+            --border-color: #e2e8f0;
+            --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --quote-border: #94a3b8;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 侧边栏导航 */
+        .sidebar {
+            width: 280px;
+            background-color: var(--bg-sec);
+            border-right: 1px solid var(--border-color);
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .nav-brand {
+            padding: 0 20px 20px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            border-left: 4px solid transparent;
+            font-size: 0.95rem;
+        }
+
+        .nav-item:hover {
+            background-color: #e2e8f0;
+        }
+
+        .nav-item.active {
+            background-color: #eff6ff;
+            border-left-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            padding: 30px 40px;
+            overflow-y: auto;
+            position: relative;
+            background: #ffffff;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 顶部控制栏 */
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: var(--bg-sec);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .toggle-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-main);
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .toggle-btn[data-type="fact"].active {
+            background: var(--fact-bg);
+            color: var(--fact-text);
+            border-color: var(--fact-text);
+        }
+
+        .toggle-btn[data-type="opinion"].active {
+            background: var(--opinion-bg);
+            color: var(--opinion-text);
+            border-color: var(--opinion-text);
+        }
+
+        /* 高亮样式 */
+        .hl-fact, .hl-opinion {
+            transition: background-color 0.3s ease;
+            border-radius: 3px;
+            padding: 0 2px;
+        }
+        
+        body.show-facts .hl-fact {
+            background-color: var(--fact-bg);
+            border-bottom: 1px dashed var(--fact-text);
+        }
+
+        body.show-opinions .hl-opinion {
+            background-color: var(--opinion-bg);
+            border-bottom: 1px dashed var(--opinion-text);
+        }
+
+        /* 翻转卡片网格 */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 20px;
+            margin-bottom: 40px;
+        }
+
+        /* 3D 翻转卡片 */
+        .flip-card {
+            background-color: transparent;
+            height: 320px; /* 增加高度以容纳详细分析 */
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: left;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            padding: 24px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .flip-card-front {
+            background-color: var(--bg-main);
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .flip-card-front h3 {
+            margin: 10px 0;
+            font-size: 1.3rem;
+            color: var(--text-main);
+        }
+
+        .flip-card-front .icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .flip-card-back {
+            background-color: var(--bg-sec);
+            color: var(--text-main);
+            transform: rotateY(180deg);
+            overflow-y: auto; /* 内容过多可滚动 */
+        }
+
+        .flip-card-back h4 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+
+        .flip-card-back ul {
+            padding-left: 20px;
+            margin: 0;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .flip-card-back li {
+            margin-bottom: 10px;
+        }
+
+        /* 巧妙设计徽章 */
+        .clever-badge {
+            display: inline-block;
+            background: var(--clever-bg);
+            color: var(--clever-text);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            border: 1px solid #a7f3d0;
+        }
+
+        .why-badge {
+            display: inline-block;
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            border: 1px solid #fecaca;
+        }
+
+        /* 金句引用 */
+        blockquote {
+            border-left: 4px solid var(--primary);
+            background: var(--bg-sec);
+            padding: 15px 20px;
+            margin: 0 0 20px 0;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+            color: var(--text-muted);
+            position: relative;
+        }
+
+        blockquote::before {
+            content: '"';
+            font-size: 3rem;
+            color: #cbd5e1;
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            opacity: 0.5;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin: 4px 2px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        h1, h2, h3 {
+            color: var(--text-main);
+        }
+
+        h2 {
+            border-bottom: 2px solid var(--bg-sec);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .intro-text {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            padding: 15px;
+            background: var(--bg-sec);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .reference-box {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            padding: 25px;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .reference-box h3 {
+            color: #b45309;
+        }
+
+        /* 滚动条美化 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+    </style>
+</head>
+<body class="show-facts show-opinions">
+
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="nav-brand">Claude Code 源码深度解析<br><span style="font-size:0.8rem;color:#64748b;font-weight:normal;">Harness Engineering 视角</span></div>
+        <div class="nav-item active" data-target="sec-overview">0. 理论支点与全局蓝图</div>
+        <div class="nav-item" data-target="sec-ch1">1. 宿主与主循环 (God Loop)</div>
+        <div class="nav-item" data-target="sec-ch2">2. 提示词与指令栈</div>
+        <div class="nav-item" data-target="sec-ch3">3. 能力、工具与策略</div>
+        <div class="nav-item" data-target="sec-ch4">4. 连续性与缓存冻结</div>
+        <div class="nav-item" data-target="sec-ch5">5. 任务底座与远程执行</div>
+        <div class="nav-item" data-target="sec-ch6">6. 结构债与工程化建议</div>
+        <div class="nav-item" data-target="sec-quotes">💬 关键金句萃取</div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+        
+        <div class="controls">
+            <strong>认知减负过滤台：</strong>
+            <button class="toggle-btn active" data-type="fact">🔍 凸显事实 (Facts)</button>
+            <button class="toggle-btn active" data-type="opinion">💡 凸显观点 (Opinions)</button>
+            <span style="font-size: 0.85rem; color: var(--text-muted); margin-left: auto;">* 鼠标悬停卡片，翻转查看“Why”与“设计巧妙之处”</span>
+        </div>
+
+        <!-- 0. 全局蓝图 -->
+        <div id="sec-overview" class="section active">
+            <h2>0. 理论支点：Harness Engineering</h2>
+            <div class="intro-text">
+                <span class="hl-opinion">评估 Agent 的对象不能是模型单体，而必须是 "Model + Harness"（模型+安全带/外挂系统）。</span>
+                <span class="hl-fact">基于 npm claude-code-2.1.88.tgz 逆向分析。</span>
+                <span class="hl-opinion">真正的难点不在模型的单步推理，而在 Durable state (持久化状态)、Tool mediation (工具中介)、Feedback loops (反馈循环) 等外层治理。</span>
+            </div>
+            
+            <h3>支撑系统运转的「四大不变量」 (Invariants)</h3>
+            <div class="card-grid">
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🔗</div>
+                            <h3>轨迹拓扑不能破</h3>
+                            <span class="tag">Trajectory Stability</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>Why & 巧妙设计</h4>
+                            <ul>
+                                <li><span class="why-badge">Why</span> 如果 API 消息格式不合法（如缺少 tool_result），后续循环直接崩溃。</li>
+                                <li><span class="clever-badge">巧妙设计</span> <strong>Synthetic Error 补全</strong>：即使发生异常，系统也会伪造一个 <code>tool_result</code> 塞回消息流，确保闭环不断，防止 SDK 暴露于半成品状态。</li>
+                                <li><strong>Thinking block 保护</strong>：在错误边界截断时，宁可保留整个思维块，也不随意裁剪破坏结构。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🧊</div>
+                            <h3>缓存前缀不能漂</h3>
+                            <span class="tag">Prompt Cache Freeze</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>Why & 巧妙设计</h4>
+                            <ul>
+                                <li><span class="why-badge">Why</span> Context Token 非常贵，打断缓存会导致 API 延迟和成本非线性飙升。</li>
+                                <li><span class="clever-badge">巧妙设计</span> <strong>Fate Frozen</strong>：一旦模型“看到”了某段内容，它的字节串命运就被完全冻结。</li>
+                                <li>系统强行规定工具必须<strong>按名称排序</strong>，确保内置工具永远作为稳定前缀，以最大化命中 Cache。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🚪</div>
+                            <h3>能力面延迟敞开</h3>
+                            <span class="tag">Deferred Capability</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>Why & 巧妙设计</h4>
+                            <ul>
+                                <li><span class="why-badge">Why</span> 一次性加载所有能力（如数百个MCP工具），会引爆 Token 并让模型分心产生幻觉。</li>
+                                <li><span class="clever-badge">巧妙设计</span> <strong>按需展开 (ToolSearch)</strong>：初期只告诉模型“有这个工具的名字”，<strong>不加载 Schema 参数</strong>。</li>
+                                <li>明确提示模型：“只有获取后才能调用”。这是一种极具工程成熟度的能力暴露语义。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">💾</div>
+                            <h3>连续性多态外化</h3>
+                            <span class="tag">Polymorphic Continuity</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>Why & 巧妙设计</h4>
+                            <ul>
+                                <li><span class="why-badge">Why</span> 仅靠 Messages 数组（Transcript）无法承载长时间工作，会爆掉窗口。</li>
+                                <li><span class="clever-badge">巧妙设计</span> <strong>分离工件</strong>：
+                                    <br>- <code>Daily logs</code>: 高频原始追加。
+                                    <br>- <code>MEMORY.md</code>: 低频蒸馏的“大纲”。
+                                    <br>- <code>Session memory</code>: 记录“工作卡断点”用于恢复。
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1. 宿主与主循环 -->
+        <div id="sec-ch1" class="section">
+            <h2>1. 宿主与主循环 (Host & God Loop)</h2>
+            <div class="intro-text">
+                <span class="hl-fact">QueryEngine 不仅转发 prompt，更是会话宿主；query.ts 则是维持轨迹合法性的“状态机图”。</span>
+                <span class="hl-opinion">主流程的核心不是“提问并解析 JSON”，而是“不断修正和修补同一条对话轨迹”。</span>
+            </div>
+            
+            <div class="card-grid">
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">📥</div>
+                            <h3>落盘优先原则</h3>
+                            <span class="tag">Transcript Persistence</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>Why & 巧妙设计</h4>
+                            <ul>
+                                <li><span class="why-badge">Why</span> 若等待模型返回再记录，一旦断网或崩溃，用户的输入和上下文就彻底丢失了。</li>
+                                <li><span class="clever-badge">巧妙设计</span> <strong>BEFORE entering query loop</strong>：用户消息一旦接受，哪怕 API 还没请求，先落盘 Transcript。确保随时可进入“可恢复轨迹”。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🧩</div>
+                            <h3>合成工具 (Structured Output)</h3>
+                            <span class="tag">Synthetic Tool</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>Why & 巧妙设计</h4>
+                            <ul>
+                                <li><span class="why-badge">Why</span> 直接让模型输出 JSON 往往需要事后解析并处理报错，流程易碎。</li>
+                                <li><span class="clever-badge">巧妙设计</span> 宿主把外部 JSON Schema <strong>即时编译成一个一次性的合成工具 (Synthetic Tool)</strong>。</li>
+                                <li>“输出必须满足Schema” 这一约束被前移到了<strong>工具执行期</strong>，利用 AJV 校验，不合法直接触发 Tool Error 让模型自行重试。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🩺</div>
+                            <h3>错误分流即轨迹保护</h3>
+                            <span class="tag">Recovery Loop</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>Why & 巧妙设计</h4>
+                            <ul>
+                                <li><span class="why-badge">Why</span> Agent 会遇到各类越界（Token过多、图片太大），简单抛错会导致应用死锁。</li>
+                                <li><span class="clever-badge">巧妙设计</span> <strong>两级恢复机制</strong>：
+                                    <br>Prompt 过长：先尝试保留结构的 Context collapse，失败再走破坏性的全局 Reactive compact。
+                                    <br>这不是异常处理，这是上下文精细调度。
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 提示词与指令栈 -->
+        <div id="sec-ch2" class="section">
+            <h2>2. 提示词与系统指令栈 (System Prompts)</h2>
+            <div class="intro-text">
+                <span class="hl-opinion">System prompt 不是一段静态文案，而是控制 Agent 行为的“第一控制面 (Runtime Law)”。</span>
+                <span class="hl-fact">引入了独立的 Memory Selector、Auto Mode Classifier 等“专用 Prompt Worker”辅助主模型。</span>
+            </div>
+            
+            <div class="card-grid">
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🚧</div>
+                            <h3>缓存切分边界</h3>
+                            <span class="tag">Cache-Break Architecture</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>Why & 巧妙设计</h4>
+                            <ul>
+                                <li><span class="why-badge">Why</span> 混合静态系统指令和动态运行时状态（如当前连接的 MCP），会导致巨大的 Prompt 缓存失效。</li>
+                                <li><span class="clever-badge">巧妙设计</span> <strong>DANGEROUS_uncachedSystemPromptSection</strong>：显式拆分结构。</li>
+                                <li>系统强制规定，只有真正跨 turn 漂移的、无法作为附件的内容才允许放入动态区，以此死守静态前缀的缓存命中率。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">⚖️</div>
+                            <h3>纠偏模型天性法则</h3>
+                            <span class="tag">Behavior Prompting</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>Why & 巧妙设计</h4>
+                            <ul>
+                                <li><span class="why-badge">Why</span> LLM 天生喜欢“编造抽象”、“未看先改”、“打包返回半成品”。</li>
+                                <li><span class="clever-badge">巧妙设计</span> Prompt 中预置了硬核纠偏：
+                                    <br>1. "没读过的代码不准改"
+                                    <br>2. "不要写一次性的 Helper 函数"
+                                    <br>3. "如果有专有工具，不要直接用 Bash"
+                                    <br>这些并非“文笔好”，而是把工程偏差补丁灌入了模型世界观。
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">📨</div>
+                            <h3>第二指令通道</h3>
+                            <span class="tag">Attachments / Reminders</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>Why & 巧妙设计</h4>
+                            <ul>
+                                <li><span class="why-badge">Why</span> 如果把所有当前任务相关的约束都写进系统 Prompt，它将变得无比臃肿且难以管理。</li>
+                                <li><span class="clever-badge">巧妙设计</span> <strong>Context Router (attachments.ts)</strong></li>
+                                <li>将短期的强提示（如 critical_system_reminder）包装为 User Meta Message 或 Attachment 注入当前 Turn。实现了法则（长期）与约束（临时）的完美解耦。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 能力、工具与策略 -->
+        <div id="sec-ch3" class="section">
+            <h2>3. 能力、工具与策略 (Capabilities & Tools)</h2>
+            <div class="intro-text">
+                <span class="hl-opinion">ToolUseContext 过于庞大，甚至成了跨界访问宿主状态的万能胶。</span>
+                <span class="hl-fact">权限系统被设计成独立的 Policy Control Plane，支持替换同步 (Replacement Sync)。</span>
+            </div>
+
+            <div class="card-grid">
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🚦</div>
+                            <h3>执行与并发控制</h3>
+                            <span class="tag">Execution Pipeline</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>Why & 巧妙设计</h4>
+                            <ul>
+                                <li><span class="why-badge">Why</span> 简单地并发执行所有工具会导致严重的状态竞争（比如多工具同时修改文件上下文）。</li>
+                                <li><span class="clever-badge">巧妙设计</span> <strong>读并发，写串行</strong>：</li>
+                                <li>只读工具（如查询）可以并发收集结果。</li>
+                                <li>但上下文的副作用 (Context Modifiers) 必须<strong>按模型调用工具的原顺序严格排队提交</strong>，避免后续状态被乱序污染。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🎭</div>
+                            <h3>能力的虚拟与隐藏</h3>
+                            <span class="tag">REPL Virtualization</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>Why & 巧妙设计</h4>
+                            <ul>
+                                <li><span class="why-badge">Why</span> 基元工具（Bash, Read, Edit, Glob）如果全部平铺，会大幅增加模型的决策成本，也破坏前缀稳定。</li>
+                                <li><span class="clever-badge">巧妙设计</span> <strong>REPL 虚拟层</strong>：将海量小工具收束为一个统一的 REPL 虚拟入口。</li>
+                                <li>模型表面只看得到一个入口，但在内层（VM Context）原始能力依然可用，权限系统照样细粒度拦截。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🧠</div>
+                            <h3>降维旁路召回</h3>
+                            <span class="tag">Side Query (Memory)</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>Why & 巧妙设计</h4>
+                            <ul>
+                                <li><span class="why-badge">Why</span> 让昂贵的主模型 (如 Sonnet) 直接阅读庞大的历史文档并挑选记忆，极其浪费。</li>
+                                <li><span class="clever-badge">巧妙设计</span> <strong>小模型相关性过滤</strong>：</li>
+                                <li>不使用 RAG 向量检索，而是发起一个 <code>sideQuery</code>。</li>
+                                <li>将文档 Manifest (只带头信息不带正文) 喂给辅助模型判断相关性。再通过 <code>readFileState</code> 拦截，避免把刚看过的文件又当成“记忆”注入。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 连续性、缓存与恢复 -->
+        <div id="sec-ch4" class="section">
+            <h2>4. 连续性、缓存与恢复 (Continuity & Cache)</h2>
+            <div class="intro-text">
+                <span class="hl-opinion">这套系统没有单一的 "Memory" 模块，连续性被拆解为指令、能力、语义、操作四大维度。</span>
+                <span class="hl-fact">工具返回结果被替换后，会存入 Exact String 以维持后续重放时字节级一致。</span>
+            </div>
+
+            <div class="card-grid">
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🛡️</div>
+                            <h3>部分视图保护</h3>
+                            <span class="tag">Partial View Guard</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>Why & 巧妙设计</h4>
+                            <ul>
+                                <li><span class="why-badge">Why</span> 为了省 Token，记忆注入往往会裁掉大文件尾部或头信息。如果模型以为这就是“全量文件”并用 Write 工具覆写，就会破坏代码。</li>
+                                <li><span class="clever-badge">巧妙设计</span> <strong>Raw/Diff 拦截机制</strong>：</li>
+                                <li>当注入内容与磁盘不一致时，将其标记为 <code>isPartialView</code>。</li>
+                                <li>模型试图修改时，系统拦截并强迫其进行真实的 Read 全量操作，这是极具生产价值的一致性防线。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🪢</div>
+                            <h3>因果链与逆向回溯</h3>
+                            <span class="tag">Causality Recovery</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>Why & 巧妙设计</h4>
+                            <ul>
+                                <li><span class="why-badge">Why</span> 大文件的 JSONL 日志解析极慢，且包含大量 <code>progress</code> 冗余帧。</li>
+                                <li><span class="clever-badge">巧妙设计</span> <strong>Serialization Invariant</strong>：</li>
+                                <li>源码死定 <code>parentUuid</code> 必须是 JSON 序列化后的第一个键 (First Key)。</li>
+                                <li>恢复时无需完整解析 JSON 结构，仅靠前缀扫描和 <code>parentUuid</code> 链表逆向回溯，即可快速重建剔除无效节点的“对话因果链”。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">❄️</div>
+                            <h3>精确字符串替换</h3>
+                            <span class="tag">Exact String Replace</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>Why & 巧妙设计</h4>
+                            <ul>
+                                <li><span class="why-badge">Why</span> 如果仅保存重试状态，一旦 SDK UI 模板、换行格式更新，重建的 Prompt 就会与之前请求 API 时的完全不一致，导致缓存断裂。</li>
+                                <li><span class="clever-badge">巧妙设计</span> <strong>命运冻结</strong>：</li>
+                                <li>直接将替换后的 Exact String 原样落盘。后续任何会话恢复，不重新计算格式，原封不动贴回。确保 Wire Prefix (网络层前缀) 绝对稳定。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. 任务底座与远程执行 -->
+        <div id="sec-ch5" class="section">
+            <h2>5. 任务底座与远程执行 (Task Substrate)</h2>
+            <div class="intro-text">
+                <span class="hl-opinion">Task 框架根本不是 UI 层面的附属品，它是支撑异步 Agent 的底层执行底座 (Substrate)。</span>
+                <span class="hl-fact">Teammate 之间的通信必须依赖 SendMessage 工具 (RPC 调用)，而非共享文本流。</span>
+            </div>
+
+            <div class="card-grid">
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">📪</div>
+                            <h3>邮箱排水机制</h3>
+                            <span class="tag">Actor Mailbox Drain</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>Why & 巧妙设计</h4>
+                            <ul>
+                                <li><span class="why-badge">Why</span> 若其他 Agent (Teammate) 的消息随时注入，会打断当前主模型正在进行的连续思考和工具调用，导致上下文错乱。</li>
+                                <li><span class="clever-badge">巧妙设计</span> <strong>Tool-Round Boundary</strong>：</li>
+                                <li>引入 Actor Mailbox，消息先进入 <code>pendingMessages</code> 队列。</li>
+                                <li>系统只在“上一轮工具执行完毕，下一轮即将开始”的边界时刻进行 Drain (排水注入)。牺牲即时性，换取推理轨迹安全。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🌿</div>
+                            <h3>缓存友好的分叉</h3>
+                            <span class="tag">Cache-Safe Fork</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>Why & 巧妙设计</h4>
+                            <ul>
+                                <li><span class="why-badge">Why</span> 创建 Subagent (子代理) 时，如果重新拼接 Prompt，相当于完全浪费了父进程累积的上下文缓存。</li>
+                                <li><span class="clever-badge">巧妙设计</span> <strong>Placeholder Padding</strong>：</li>
+                                <li>完整拷贝父线程的 Assistant 消息和工具调用，用统一的占位符 (Placeholder) 补齐未完成的 Tool Result。</li>
+                                <li>只让最后一段 Directive (指令) 发生变化，最大化利用共享的 Prompt Cache 树干。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">☁️</div>
+                            <h3>跨端会话追踪</h3>
+                            <span class="tag">Remote Agent Poller</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <h4>Why & 巧妙设计</h4>
+                            <ul>
+                                <li><span class="why-badge">Why</span> 远程任务可能会因为网络波动断开，如果简单认定为失败，会导致昂贵的远程运行丢失。</li>
+                                <li><span class="clever-badge">巧妙设计</span> <strong>精细错误辨析</strong>：</li>
+                                <li>组合本地 Task Registry + 远端 Session Handle。</li>
+                                <li>恢复时区分 `404 Not Found` (真丢了，需归档) 和网络/认证错误 (可能还活着，保留重连机制)。扩展了 Durable Execution 的边界。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. 结构债与工程化建议 -->
+        <div id="sec-ch6" class="section">
+            <h2>6. 结构债与下一代工程化建议 (Debts & Advice)</h2>
+            <div class="intro-text">
+                <span class="hl-opinion">最亮眼的实现往往首先是“疤痕”，证明系统的边界曾被突破。过度依赖 Vibe Coding 最终会催生庞大的 God Loop。</span>
+            </div>
+
+            <div class="reference-box">
+                <h3 style="margin-top:0;">为什么要强烈建议引入 XState (显式状态机)?</h3>
+                <p>
+                    <span class="why-badge">核心痛点</span>
+                    在 Claude Code 中，由于长期采用 <strong>"Vibe Coding"</strong>（凭感觉打补丁快速迭代），控制流散落在各种布尔变量中 (如 <code>stopHookActive</code>, <code>hasAttemptedReactiveCompact</code>, <code>pendingToolUseSummary</code>)。
+                </p>
+                <p>
+                    <span class="why-badge">后果</span>
+                    导致 <code>query.ts</code> 变成了一个庞大且脆弱的 <strong>God Loop</strong>。出现 <code>progressBridge</code>, <code>orphaned permission replay</code> 等极其精巧但也极其危险的“幽灵补丁”。局部问题修了，全局所有权 (Ownership) 却丢失了。
+                </p>
+                <hr style="border:0; border-top:1px dashed #fcd34d; margin:15px 0;">
+                <p>
+                    <span class="clever-badge">架构升级</span> <strong>从隐式补丁走向显式状态流转图：</strong>
+                </p>
+                <ul>
+                    <li>利用 XState，将 Agent 复杂的流转 (如：<code>申请权限</code> → <code>分类预检</code> → <code>等待用户</code> → <code>重放工具调用</code>) 定义为严格的数学状态。</li>
+                    <li>它消除所有的“中间非法状态”，当请求被拒绝或中断时，系统只能沿着合法的图边退回，无需手工编写繁琐的重置逻辑。</li>
+                    <li><span class="hl-opinion">结论：生产级 Agent 的下一代形态，必须从“一团提示词和胶水代码 (Middleware)”，进化为“显式状态机驱动的执行引擎 (Runtime)”。</span></li>
+                </ul>
+            </div>
+            
+            <div class="card-grid">
+                <div class="flip-card" style="height: 220px;">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🔭</div>
+                            <h3>引入可观测性</h3>
+                            <span class="tag">Observability Plane</span>
+                        </div>
+                        <div class="flip-card-back" style="justify-content: center; align-items: flex-start;">
+                            <ul style="margin-top:0;">
+                                <li>代码中 <code>queryProfiler</code> 会详尽统计 Context 装配、API往返、工具执行各自的耗时。</li>
+                                <li>诊断 Cache Break (前缀变动、工具增减)。</li>
+                                <li><strong>没有可观测性，就没有可演化的 Harness。</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="flip-card" style="height: 220px;">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon">🚫</div>
+                            <h3>万能胶陷阱</h3>
+                            <span class="tag">Context Bloat</span>
+                        </div>
+                        <div class="flip-card-back" style="justify-content: center; align-items: flex-start;">
+                            <ul style="margin-top:0;">
+                                <li><code>ToolUseContext</code> 当前过胖，工具能轻易越权修改宿主系统。</li>
+                                <li>建议明确分离只读查询、事件提交、状态所有权。</li>
+                                <li>不要让所有子系统都能直接 Mutate 同一片共享内存。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 关键金句 -->
+        <div id="sec-quotes" class="section">
+            <h2>💬 关键金句与引言萃取</h2>
+            
+            <blockquote>
+                <span style="color:var(--text-main);font-weight:600;">The rules of thinking are lengthy and fortuitous... Thinking blocks must be preserved for the duration of an assistant trajectory.</span><br>
+                <br>— 源码中关于 Thinking block 的神圣约束。<br><br>
+                <span class="hl-opinion">解读：模型思考过程不是富文本，它是 Agent 认知拓扑的一部分，切断它等同于破坏其短期智力。</span>
+            </blockquote>
+
+            <blockquote>
+                <span style="color:var(--text-main);font-weight:600;">Do NOT use the Bash tool when a relevant dedicated tool is provided... You can call multiple tools in a single response. If there are no dependencies between them, make all independent tool calls in parallel.</span><br>
+                <br>— 工具并行的 System Prompt 法则。<br><br>
+                <span class="hl-opinion">解读：高阶并发语义并非仅靠代码调度，必须首先植入模型的世界观中，实现“知行合一”。</span>
+            </blockquote>
+
+            <blockquote>
+                <span style="color:var(--text-main);font-weight:600;">Until fetched, only the name is known — there is no parameter schema, so the tool cannot be invoked.</span><br>
+                <br>— ToolSearch 工具的坦白局提示词。<br><br>
+                <span class="hl-opinion">解读：非常直白地向 LLM 声明“延迟加载工具”的半激活状态，防止模型产生“以为自己能用”的幻觉。</span>
+            </blockquote>
+
+            <blockquote>
+                <span style="color:var(--text-main);font-weight:600;">Just writing a response in text is not visible to others on your team - you MUST use the SendMessage tool.</span><br>
+                <br>— Teammate 协作的 Actor 模型规约。<br><br>
+                <span class="hl-opinion">解读：用 Prompt 强制将纯文本对话扭转为显式的 RPC 协议调用，这是实现 Swarm (群体智能) 的关键门槛。</span>
+            </blockquote>
+        </div>
+
+    </div>
+
+    <!-- 交互脚本 -->
+    <script>
+        // 导航切换逻辑
+        const navItems = document.querySelectorAll('.nav-item');
+        const sections = document.querySelectorAll('.section');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                // 移除所有 active 类
+                navItems.forEach(nav => nav.classList.remove('active'));
+                sections.forEach(sec => sec.classList.remove('active'));
+
+                // 添加 active 类到当前选中项
+                item.classList.add('active');
+                const targetId = item.getAttribute('data-target');
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+
+        // 凸显开关逻辑
+        const toggleBtns = document.querySelectorAll('.toggle-btn');
+        const body = document.body;
+
+        toggleBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+                const type = btn.getAttribute('data-type');
+                
+                if (type === 'fact') {
+                    body.classList.toggle('show-facts');
+                } else if (type === 'opinion') {
+                    body.classList.toggle('show-opinions');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
