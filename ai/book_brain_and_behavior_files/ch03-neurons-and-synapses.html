@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第3章 神经元与突触 · 详解</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<style>
+  :root{
+    --bg:#0e1522; --ink:#e9eef4; --muted:#9db0c2; --line:#22303f;
+    --c-concept:#4f9cf9; --c-rel:#3fbf9f; --c-qa:#f0a13c; --c-fact:#7bd88f; --c-open:#c58bf0; --c-check:#ffd35b;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:linear-gradient(180deg,#0b1220,#0e1522); color:var(--ink);
+    font-family:-apple-system,"PingFang SC","Microsoft YaHei",Segoe UI,Roboto,sans-serif; line-height:1.7;}
+  .wrap{max-width:1160px; margin:0 auto; padding:36px 22px 72px;}
+  .kicker{color:var(--muted); font-size:13px; letter-spacing:.08em; text-transform:uppercase;}
+  h1{font-size:30px; margin:6px 0 10px;}
+  .lede{background:#152234; border:1px solid var(--line); border-left:4px solid var(--c-concept);
+    border-radius:12px; padding:16px 18px; color:#cfe0f0; font-size:15px;}
+  nav.jump{display:flex; flex-wrap:wrap; gap:8px; margin:22px 0 6px;}
+  nav.jump a{font-size:13px; color:var(--ink); text-decoration:none; padding:6px 12px;
+    border:1px solid var(--line); border-radius:999px; background:#131e2c;}
+  nav.jump a:hover{border-color:#3a5570;}
+  section{margin-top:38px;}
+  .sec-head{display:flex; align-items:center; gap:12px; margin-bottom:6px;}
+  .num{width:30px; height:30px; border-radius:8px; display:grid; place-items:center; font-weight:700; font-size:15px; color:#0e1522;}
+  h2{font-size:21px; margin:0;}
+  h3{font-size:15.5px; margin:20px 0 8px; color:#c7d6e6;}
+  .sec-note{color:var(--muted); font-size:13.5px; margin:2px 0 16px;}
+  .card{background:#141f2e; border:1px solid var(--line); border-radius:14px; padding:15px 16px; margin-bottom:14px;}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px;}
+  .card .term{font-weight:700; font-size:15.5px; margin-bottom:6px;}
+  .card .en{color:var(--muted); font-weight:400; font-size:13px;}
+  .card p{margin:0; font-size:14px; color:#d7e2ee;}
+  table{width:100%; border-collapse:collapse; font-size:13.5px; overflow:hidden; border-radius:10px;}
+  th,td{padding:9px 11px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top;}
+  th{background:#1b2a3b; color:#dce8f4; font-weight:600;}
+  tr:last-child td{border-bottom:none;}
+  tbody tr:nth-child(even){background:#111b28;}
+  .tbl-card{background:#141f2e; border:1px solid var(--line); border-radius:14px; padding:6px; margin-bottom:14px; overflow:auto;}
+  .mermaid{background:#0f1a27; border:1px solid var(--line); border-radius:14px; padding:16px; text-align:center; margin-bottom:14px;}
+  .s-concept .num{background:var(--c-concept);}
+  .s-rel .num{background:var(--c-rel);}
+  .s-qa .num{background:var(--c-qa);}
+  .s-fact .num{background:var(--c-fact);}
+  .s-open .num{background:var(--c-open);}
+  .s-check .num{background:var(--c-check);}
+  .s-bias .num{background:#ef8f6b;} .s-bias .card{border-left:3px solid #ef8f6b;}
+  .qa .q{font-weight:700; color:#ffd9a8; font-size:14.5px; margin-bottom:6px;}
+  .qa .a{font-size:14px; color:#d7e2ee;}
+  .s-qa .card{border-left:3px solid var(--c-qa);}
+  .s-concept .card{border-top:3px solid var(--c-concept);}
+  .callout{color:var(--muted); font-size:13px; margin:6px 2px 0;}
+  footer{margin-top:46px; padding-top:16px; border-top:1px solid var(--line); color:var(--muted); font-size:12.5px;}
+  .badge{display:inline-block; background:#26351f; color:#a9e0a0; border:1px solid #3c5a33; border-radius:6px; font-size:12px; padding:1px 8px; margin-left:8px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">Brain and Behavior · Eagleman &amp; Downar (2016)</div>
+    <h1>第 3 章　神经元与突触（Neurons and Synapses）</h1>
+    <div class="lede">以"歌舞伎名角坂东三津五郎醉后逞强、吞下四份河豚肝而中毒身亡"起笔：河豚毒素<b>阻断动作电位</b>——大脑指令因电信号无法抵达肌肉而全然失效，最终死于窒息。全章深入神经系统最小单元：神经元如何用<b>化学信号（突触传递）与电信号（动作电位）</b>在庞大网络中通信，以及"尖峰"（spikes）究竟编码了什么。</div>
+  </header>
+
+  <nav class="jump">
+    <a href="#s1">① 概念解释</a>
+    <a href="#s2">② 概念间关系</a>
+    <a href="#s3">③ 提问-回答</a>
+    <a href="#s4">④ 确定性结论</a>
+    <a href="#s5">⑤ 开放问题与方向</a>
+    <a href="#s6">⑥ 完整性核对</a>
+    <a href="#s7">⑦ 认知偏差</a>
+  </nav>
+
+  <!-- ① -->
+  <section id="s1" class="s-concept">
+    <div class="sec-head"><div class="num">①</div><h2>概念解释</h2></div>
+    <div class="sec-note">核心术语速查 + 神经元四区信号流示意图。</div>
+    <h3>1.1 核心概念速查表</h3>
+    <div class="tbl-card">
+      <table>
+        <thead><tr><th>概念</th><th>英文</th><th>一句话解释</th></tr></thead>
+        <tbody>
+          <tr><td>神经元</td><td>neuron</td><td>能远距离快速传电信号的细胞（人脑约千亿个）</td></tr>
+          <tr><td>神经元四区</td><td>four zones</td><td>树突（收）、胞体（整合）、轴突（传）、终末（出）</td></tr>
+          <tr><td>神经元学说</td><td>neuron doctrine</td><td>Cajal：脑由离散细胞而非连续网络构成</td></tr>
+          <tr><td>胶质细胞</td><td>glial cells / glia</td><td>髓鞘、清理递质、调节化学环境、免疫等支持角色</td></tr>
+          <tr><td>突触</td><td>synapse</td><td>神经元间信号传递的接触点（"原生质之吻"）</td></tr>
+          <tr><td>神经递质</td><td>neurotransmitter</td><td>突触前释放、扩散过间隙的化学信使</td></tr>
+          <tr><td>受体</td><td>receptor</td><td>膜上结合递质的蛋白（离子型/代谢型）</td></tr>
+          <tr><td>EPSP / IPSP</td><td>excit./inhib. postsynaptic potential</td><td>兴奋性（去极化）/抑制性（超极化）突触后电位</td></tr>
+          <tr><td>动作电位</td><td>action potential / spike</td><td>全或无、恒定大小的电信号</td></tr>
+          <tr><td>阈值</td><td>threshold</td><td>约 -60 mV，达到即在轴丘触发尖峰</td></tr>
+          <tr><td>髓鞘与郎飞结</td><td>myelin & nodes of Ranvier</td><td>绝缘层加跳跃式传导，大幅提速</td></tr>
+          <tr><td>时间/空间总和</td><td>temporal/spatial summation</td><td>胞体对同时或多分支到达的信号求和</td></tr>
+          <tr><td>速率编码</td><td>rate coding</td><td>用单位时间内的尖峰数（发放率）编码刺激</td></tr>
+          <tr><td>群体编码</td><td>population coding</td><td>由一群神经元的临时"联盟"共同表征刺激</td></tr>
+          <tr><td>巧合探测器</td><td>coincidence detector</td><td>靠众多兴奋输入同时到达才发放</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>1.2 神经元四区与信号流</h3>
+    <pre class="mermaid">
+flowchart LR
+  D["树突 dendrites<br/>收集数千化学信号"] --> S["胞体 soma<br/>整合/求和"]
+  S --> AH["轴丘 axon hillock<br/>尖峰起始（阈值-60mV）"]
+  AH --> AX["轴突 axon<br/>传导动作电位"]
+  AX --> T["轴突终末 terminals<br/>释放神经递质"]
+  T -. "突触·化学传递" .-> D2["下一神经元树突"]
+  classDef hi fill:#123,stroke:#4f9cf9,color:#dce9f7;
+  class AH hi;
+    </pre>
+    <div class="callout">关键点：四区对应四大功能——<b>收集（树突）、整合（胞体）、传导（轴突）、输出（终末）</b>。从千亿细胞的并行活动中涌现出认知与行为。</div>
+  </section>
+
+  <!-- ② -->
+  <section id="s2" class="s-rel">
+    <div class="sec-head"><div class="num">②</div><h2>概念间关系</h2></div>
+    <div class="sec-note">概念不是孤立词条，而是互相支撑的逻辑链。</div>
+    <h3>2.1 关系一览表</h3>
+    <div class="tbl-card">
+      <table>
+        <thead><tr><th>关系</th><th>内容</th></tr></thead>
+        <tbody>
+          <tr><td>化学信号 ↔ 电信号</td><td>树突/突触=化学；轴突=电（动作电位）；终末又转回化学，循环往复</td></tr>
+          <tr><td>EPSP + IPSP → 求和 → 阈值</td><td>胞体像做加法：兴奋累加、抑制抵消；总和达阈才发放尖峰</td></tr>
+          <tr><td>递质 ≠ 兴奋/抑制本身</td><td>决定兴奋或抑制的是<b>受体的作用</b>（如 GABA 幼年兴奋、成年抑制）</td></tr>
+          <tr><td>髓鞘 → 跳跃传导 → 提速</td><td>郎飞结间跳跃式传导，既加快又省能；脱髓鞘（MS）则信号受损</td></tr>
+          <tr><td>速率编码 → 群体编码</td><td>单神经元"嘈杂"，靠群体临时联盟实现精确、灵活、抗噪</td></tr>
+          <tr><td>药物 ↔ 神经传递各环节</td><td>精神活性药作用于释放/受体/再摄取/通道（激动剂/拮抗剂）</td></tr>
+          <tr><td>局部编码 vs 群体编码</td><td>"祖母细胞"式一对一不可行；分布式群体编码更强大灵活</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>2.2 从刺激到发放：信号整合流程</h3>
+    <pre class="mermaid">
+flowchart TB
+  NT["递质结合受体"] --> ION["离子型：离子直接流动<br/>代谢型：第二信使级联"]
+  ION --> PSP["EPSP（去极化）/ IPSP（超极化）"]
+  PSP --> SUM["时间总和 + 空间总和<br/>（胞体求和）"]
+  SUM --> TH{"达到阈值？约 -60 mV"}
+  TH -- "是" --> SPK["轴丘产生动作电位<br/>沿轴突传导"]
+  TH -- "否" --> NO["无尖峰"]
+  SPK --> REL["终末 Ca²⁺ 内流<br/>→ 囊泡融合释放递质"]
+  classDef hub fill:#0f2a24,stroke:#3fbf9f,color:#c8f0e4;
+  class TH hub;
+    </pre>
+  </section>
+
+  <!-- ③ -->
+  <section id="s3" class="s-qa">
+    <div class="sec-head"><div class="num">③</div><h2>提问-回答</h2></div>
+    <div class="sec-note">用问答直击本章最容易困惑之处。</div>
+    <div class="card qa"><div class="q">Q1：河豚毒素为什么致命？</div><div class="a">它精准阻断<b>电压门控 Na⁺ 通道</b>的孔道，使离子无法通过。没有 Na⁺ 通道活动就没有动作电位；没有动作电位，所有通信停止——包括膈肌等呼吸肌，于是窒息而死。因直击最基本的信号机制，其毒性约为氰化钾的 100 倍。</div></div>
+    <div class="card qa"><div class="q">Q2：动作电位为什么是"全或无"、且只向前传？</div><div class="a">达阈后 Na⁺ 涌入使膜迅速反转，随即 K⁺ 外流复极——每次尖峰大小恒定（全或无）。它靠"邻近通道被去极化依次开放"沿膜传播（如一排捕鼠夹依次弹开）。因刚发放处有<b>不应期</b>，尖峰无法回退，只能向前。</div></div>
+    <div class="card qa"><div class="q">Q3：说递质是"兴奋性/抑制性"，为什么不严谨？</div><div class="a">决定兴奋或抑制的不是分子本身，而是<b>受体的作用</b>。发育中动物 GABA 因受体让 Cl⁻ 外流而产生 EPSP（兴奋）；成年后受体改为让 Cl⁻ 内流，GABA 遂产生 IPSP（抑制）。分子未变，改变的只是结合受体后的后果。</div></div>
+    <div class="card qa"><div class="q">Q4：单个神经元"噪声"大，大脑如何做到精确？</div><div class="a">靠<b>群体编码</b>。单神经元逐试次可变、有自发背景发放，单个尖峰不可靠。但一群相似神经元的活动可对噪声求平均而精确。这比"用少量精确元件"更高效——如色觉只用三类感受器却能分辨上万颜色，靠三者相对活动的群体表征。</div></div>
+    <div class="card qa"><div class="q">Q5："祖母细胞"（一细胞对一人）为何不成立？</div><div class="a">三大问题：①神经元数量远不足以为一生所有可识别模式各配一个；②脑细胞会自然死亡，若一对一，记忆应像旧相册掉照片般"一个个突然消失"，但实际是随年龄"平缓、优雅退化"；③要恰好找到那唯一细胞无异于大海捞针。故必用分布式群体编码。</div></div>
+  </section>
+
+  <!-- ④ -->
+  <section id="s4" class="s-fact">
+    <div class="sec-head"><div class="num">④</div><h2>科学研究已确定的结论</h2></div>
+    <div class="sec-note">证据充分、共识较强的结论，配多张核心表。</div>
+    <h3>4.1 神经元的分类</h3>
+    <div class="tbl-card">
+      <table>
+        <thead><tr><th>维度</th><th>类型</th><th>特征</th></tr></thead>
+        <tbody>
+          <tr><td>按功能</td><td>感觉（传入 afferent）</td><td>直接响应外界信号（光/声/压力/气味）</td></tr>
+          <tr><td>按功能</td><td>运动（传出 efferent）</td><td>直接输出到肌肉/腺体，信号离开神经系统的末步</td></tr>
+          <tr><td>按功能</td><td>中间神经元</td><td>位于感觉与运动之间；哺乳动物绝大多数属此类</td></tr>
+          <tr><td>按形态</td><td>多极 multipolar</td><td>多树突，最常见</td></tr>
+          <tr><td>按形态</td><td>双极 bipolar</td><td>一端一树突、一端一轴突（视网膜/内耳）</td></tr>
+          <tr><td>按形态</td><td>单极 monopolar</td><td>单一突起分两向（触/痛感觉神经元）</td></tr>
+          <tr><td>共性</td><td>有丝分裂后 postmitotic</td><td>神经元不像其他细胞那样分裂</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>4.2 四类胶质细胞</h3>
+    <div class="tbl-card">
+      <table>
+        <thead><tr><th>类型</th><th>英文</th><th>功能</th></tr></thead>
+        <tbody>
+          <tr><td>少突胶质细胞</td><td>oligodendrocytes</td><td>中枢内髓鞘化（一个可包裹多达 50 条轴突）</td></tr>
+          <tr><td>施万细胞</td><td>Schwann cells</td><td>外周髓鞘化（一个只包裹一条轴突）</td></tr>
+          <tr><td>星形胶质细胞</td><td>astrocyte</td><td>结构支持、维持胞外化学平衡、修复、供养、调节血流</td></tr>
+          <tr><td>小胶质细胞</td><td>microglia</td><td>中枢免疫前线，占胶质约 20%，吞噬清除外来体</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>4.3 两类突触后受体对比</h3>
+    <div class="tbl-card">
+      <table>
+        <thead><tr><th>受体</th><th>机制</th><th>速度</th><th>特点</th></tr></thead>
+        <tbody>
+          <tr><td>离子型 ionotropic</td><td>递质门控，直接开孔让离子流动</td><td>快</td><td>常只选择性通过某离子（如 GABA→Cl⁻）</td></tr>
+          <tr><td>代谢型 metabotropic</td><td>经 G 蛋白等第二信使级联间接作用</td><td>慢</td><td>可调通道/酶/基因表达；约半数药物靶此类</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card"><p><b>结论要点：</b>①Cajal 神经元学说：脑由离散细胞组成；②Loewi 青蛙心脏实验证突触传递是化学的（1936 诺奖）；③递质清除三途径：降解/扩散/再摄取（最常见）；④静息电位约 -70 mV，Na⁺ 内流→EPSP、K⁺ 外流/Cl⁻ 内流→IPSP；⑤髓鞘经跳跃式传导提速省能；⑥尖峰到终末→Ca²⁺ 内流→囊泡释放递质；⑦神经元对特定刺激"调谐"（Hubel &amp; Wiesel，1981 诺奖）；⑧神经元是巧合探测器。</p></div>
+  </section>
+
+  <!-- ⑤ -->
+  <section id="s5" class="s-open">
+    <div class="sec-head"><div class="num">⑤</div><h2>开放性未解决的问题与研究方向</h2></div>
+    <div class="sec-note">本章明确抛出、尚待攻克的前沿。</div>
+    <h3>5.1 本章明确抛出的开放问题</h3>
+    <div class="tbl-card">
+      <table>
+        <thead><tr><th>开放问题</th><th>方向描述</th></tr></thead>
+        <tbody>
+          <tr><td>神经编码到底是什么？</td><td>尖峰的"含义"仍未解；速率编码只是起点，非全部</td></tr>
+          <tr><td>时间编码有多重要？</td><td>电鱼/同步发放提示精确时序也携带信息，但证据仍混合、未定论</td></tr>
+          <tr><td>"噪声"活动如何解读？</td><td>膜电压涨落与自发尖峰或非纯噪声，可能编码情境（近期经验、奖惩、内外状态）</td></tr>
+          <tr><td>尖峰之外的活动？</td><td>非尖峰神经元、胶质细胞是否参与信息处理、胞内生化级联的角色</td></tr>
+          <tr><td>联盟如何形成？</td><td>相互兴奋维持高发放 vs 同步发放，两机制孰主仍待厘清</td></tr>
+          <tr><td>记录技术瓶颈</td><td>现只能记录少量细胞；需同时测数千至百万神经元才能理解群体时间编码</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>5.2 传统实验范式的局限</h3>
+    <div class="tbl-card">
+      <table>
+        <thead><tr><th>局限</th><th>问题</th></tr></thead>
+        <tbody>
+          <tr><td>只记录少数细胞</td><td>错过跨大群体的时间编码</td></tr>
+          <tr><td>用简单非自然刺激</td><td>蜂鸣/光条便于分析，但回避了自然场景的复杂性</td></tr>
+          <tr><td>轻度麻醉动物</td><td>减少运动但改变细胞互动，且动物并未真正"知觉"刺激</td></tr>
+          <tr><td>无行为反应</td><td>难判刺激对整脑是否有意义</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>5.3 精神活性药作用于神经传递各环节</h3>
+    <pre class="mermaid">
+flowchart LR
+  A["药物"] --> B["激动剂 agonist<br/>SSRI/可卡因阻再摄取→递质↑"]
+  A --> C["拮抗剂 antagonist<br/>抗精神病药阻多巴胺受体"]
+  B --> D["神经传递被放大或延长"]
+  C --> E["受体功能被抑制或阻断"]
+  D --> F["情绪/认知/行为改变"]
+  E --> F
+    </pre>
+  </section>
+
+  <!-- ⑥ -->
+  <section id="s6" class="s-check">
+    <div class="sec-head"><div class="num">⑥</div><h2>完整性核对 <span class="badge">对照原文 KEY PRINCIPLES · 无遗漏</span></h2></div>
+    <div class="sec-note">逐条覆盖第 3 章章末 8 条 KEY PRINCIPLES（原文第 9518 行起）。</div>
+    <div class="tbl-card">
+      <table>
+        <thead><tr><th>#</th><th>原文 KEY PRINCIPLE（要点）</th><th>本详解对应位置</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>神经元与胶质细胞是神经系统的基本构件</td><td>①1.1 + ④4.1 + ④4.2</td></tr>
+          <tr><td>2</td><td>神经元含四区：树突（收）、胞体（求和）、单轴突（传尖峰）、终末（传化学信号）</td><td>①1.2 + ②2.2</td></tr>
+          <tr><td>3</td><td>神经元经突触结成致密网络，突触是化学传递之处</td><td>①1.1 + ④4.4</td></tr>
+          <tr><td>4</td><td>胶质细胞助降解递质、包髓鞘提速、调节神经元周围化学环境</td><td>④4.2</td></tr>
+          <tr><td>5</td><td>递质扩散过突触间隙、结合突触后受体</td><td>②2.2 + ④4.3</td></tr>
+          <tr><td>6</td><td>树突以小幅分级电压变化解码；胞体求和；输出取决于总和是否达阈</td><td>①1.2 + ②2.2 + Q2</td></tr>
+          <tr><td>7</td><td>用发放频率编码（速率编码）；单个嘈杂、群体精确</td><td>④4.4 + Q4</td></tr>
+          <tr><td>8</td><td>神经编码涉及神经元群体在瞬时联盟中协同工作</td><td>②2.1 + ⑤5.1 + Q5</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ⑦ -->
+  <section id="s7" class="s-bias">
+    <div class="sec-head"><div class="num">⑦</div><h2>认知偏差 · 成因(Why) · 对策</h2></div>
+    <div class="sec-note">本章聚焦神经元与编码，纠正的多是把"单个细胞/单个脉冲"当作信息载体的直觉误区——本章强调群体编码、统计求平均与噪声的意义。</div>
+    <div class="tbl-card">
+      <table>
+        <thead><tr><th>认知偏差 / 误区</th><th>成因（Why）</th><th>解决方案 / 对策</th></tr></thead>
+        <tbody>
+          <tr><td>"祖母细胞"：一个神经元对应一个概念/一个人</td><td>单细胞记录发现"面孔细胞"等调谐现象，被外推为一对一编码；直觉上简单可控</td><td>三大反驳：神经元数量不足、细胞死亡会致记忆"整块消失"（实际是平缓退化）、无法定位那唯一细胞——故必用分布式群体编码</td></tr>
+          <tr><td>"单个尖峰/单个神经元就能可靠编码信息"</td><td>教科书示意图常画单神经元对单刺激发放，掩盖其逐试次可变性</td><td>单神经元嘈杂、有自发背景发放；靠一群相似神经元对噪声求平均，才在任一试次实现精确（如三类感受器辨上万色）</td></tr>
+          <tr><td>"神经递质天生分兴奋性/抑制性"</td><td>谷氨酸常兴奋、GABA 常抑制的经验被当作分子固有属性</td><td>决定兴奋或抑制的是受体的作用：GABA 在幼年经受体产生 EPSP（兴奋）、成年产生 IPSP（抑制），分子未变</td></tr>
+          <tr><td>"膜电压涨落和自发放电只是无意义噪声"</td><td>信号处理传统把非刺激锁定的活动当作待滤除的噪声</td><td>本章提示这些"噪声"或编码情境（近期经验、奖惩、内外状态），是尚待破解的编码维度</td></tr>
+          <tr><td>"只记录少数细胞、用简单刺激就能读懂神经编码"</td><td>传统实验范式受技术限制，追求可分析性</td><td>需同时记录数千至百万神经元、用自然刺激与清醒行为动物，才能捕捉跨群体的时间编码</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    内容忠于第 3 章原文（STARTING OUT 河豚引子、脑的细胞、突触传递、尖峰电信号、神经编码、个体与群体各节及 MS/局部麻醉案例）与章末 KEY PRINCIPLES / KEY TERMS 整理，术语中英并列。图形需支持 JavaScript 的浏览器渲染。这是"逐章详解"系列的第 3 章。
+  </footer>
+</div>
+<script>
+  mermaid.initialize({ startOnLoad:true, theme:'base', securityLevel:'loose',
+    themeVariables:{ fontFamily:'-apple-system,"PingFang SC","Microsoft YaHei",sans-serif',
+      fontSize:'14px', lineColor:'#7f95a6', primaryColor:'#182838',
+      primaryTextColor:'#e8eef3', primaryBorderColor:'#3a4c5c' },
+    flowchart:{ curve:'basis', nodeSpacing:40, rankSpacing:46, padding:12 } });
+</script>
+</body>
+</html>

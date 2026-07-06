@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第5章 视觉 · 详解</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<style>
+  :root{
+    --bg:#0e1522; --ink:#e9eef4; --muted:#9db0c2; --line:#22303f;
+    --c-concept:#4f9cf9; --c-rel:#3fbf9f; --c-qa:#f0a13c; --c-fact:#7bd88f; --c-open:#c58bf0; --c-check:#ffd35b;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:linear-gradient(180deg,#0b1220,#0e1522); color:var(--ink);
+    font-family:-apple-system,"PingFang SC","Microsoft YaHei",Segoe UI,Roboto,sans-serif; line-height:1.7;}
+  .wrap{max-width:1160px; margin:0 auto; padding:36px 22px 72px;}
+  .kicker{color:var(--muted); font-size:13px; letter-spacing:.08em; text-transform:uppercase;}
+  h1{font-size:30px; margin:6px 0 10px;}
+  .lede{background:#152234; border:1px solid var(--line); border-left:4px solid var(--c-concept);
+    border-radius:12px; padding:16px 18px; color:#cfe0f0; font-size:15px;}
+  nav.jump{display:flex; flex-wrap:wrap; gap:8px; margin:22px 0 6px;}
+  nav.jump a{font-size:13px; color:var(--ink); text-decoration:none; padding:6px 12px;
+    border:1px solid var(--line); border-radius:999px; background:#131e2c;}
+  nav.jump a:hover{border-color:#3a5570;}
+  section{margin-top:38px;}
+  .sec-head{display:flex; align-items:center; gap:12px; margin-bottom:6px;}
+  .num{width:30px; height:30px; border-radius:8px; display:grid; place-items:center; font-weight:700; font-size:15px; color:#0e1522;}
+  h2{font-size:21px; margin:0;}
+  h3{font-size:15.5px; margin:20px 0 8px; color:#c7d6e6;}
+  .sec-note{color:var(--muted); font-size:13.5px; margin:2px 0 16px;}
+  .card{background:#141f2e; border:1px solid var(--line); border-radius:14px; padding:15px 16px; margin-bottom:14px;}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px;}
+  .card .term{font-weight:700; font-size:15.5px; margin-bottom:6px;}
+  .card .en{color:var(--muted); font-weight:400; font-size:13px;}
+  .card p{margin:0; font-size:14px; color:#d7e2ee;}
+  table{width:100%; border-collapse:collapse; font-size:13.5px; overflow:hidden; border-radius:10px;}
+  th,td{padding:9px 11px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top;}
+  th{background:#1b2a3b; color:#dce8f4; font-weight:600;}
+  tr:last-child td{border-bottom:none;}
+  tbody tr:nth-child(even){background:#111b28;}
+  .tbl-card{background:#141f2e; border:1px solid var(--line); border-radius:14px; padding:6px; margin-bottom:14px; overflow:auto;}
+  .mermaid{background:#0f1a27; border:1px solid var(--line); border-radius:14px; padding:16px; text-align:center; margin-bottom:14px;}
+  .s-concept .num{background:var(--c-concept);}
+  .s-rel .num{background:var(--c-rel);}
+  .s-qa .num{background:var(--c-qa);}
+  .s-fact .num{background:var(--c-fact);}
+  .s-open .num{background:var(--c-open);}
+  .s-check .num{background:var(--c-check);}
+  .s-bias .num{background:#ef8f6b;} .s-bias .card{border-left:3px solid #ef8f6b;}
+  .qa .q{font-weight:700; color:#ffd9a8; font-size:14.5px; margin-bottom:6px;}
+  .qa .a{font-size:14px; color:#d7e2ee;}
+  .s-qa .card{border-left:3px solid var(--c-qa);}
+  .s-concept .card{border-top:3px solid var(--c-concept);}
+  .callout{color:var(--muted); font-size:13px; margin:6px 2px 0;}
+  footer{margin-top:46px; padding-top:16px; border-top:1px solid var(--line); color:var(--muted); font-size:12.5px;}
+  .badge{display:inline-block; background:#26351f; color:#a9e0a0; border:1px solid #3c5a33; border-radius:6px; font-size:12px; padding:1px 8px; margin-left:8px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">Brain and Behavior · Eagleman &amp; Downar (2016)</div>
+    <h1>第 5 章　视觉（Vision）</h1>
+    <div class="lede">盲人滑雪冠军 Mike May 四十多岁角膜移植成功、光线重返视网膜，望着儿子的脸却<b>只看到一片视觉噪声</b>。因为大脑不知如何解读这些信号。由此确立核心立场：<b>"看见"不是免费的</b>——我们看到的不是"外界真实存在之物"，而是<b>大脑构建的内部模型</b>。本章沿视网膜→LGN→V1→腹侧/背侧流展示视觉层级，最后揭示知觉是主动、循环、依赖预期的推断。</div>
+  </header>
+
+  <nav class="jump">
+    <a href="#s1">① 概念解释</a>
+    <a href="#s2">② 概念间关系</a>
+    <a href="#s3">③ 提问-回答</a>
+    <a href="#s4">④ 确定性结论</a>
+    <a href="#s5">⑤ 开放问题与方向</a>
+    <a href="#s6">⑥ 完整性核对</a>
+    <a href="#s7">⑦ 认知偏差</a>
+  </nav>
+
+  <!-- ① -->
+  <section id="s1" class="s-concept">
+    <div class="sec-head"><div class="num">①</div><h2>概念解释</h2></div>
+    <div class="sec-note">核心术语速查 + 视觉通路层级示意图。</div>
+    <h3>1.1 核心概念速查表</h3>
+    <div class="tbl-card">
+      <table>
+        <thead><tr><th>概念</th><th>英文</th><th>一句话解释</th></tr></thead>
+        <tbody>
+          <tr><td>感觉转导</td><td>sensory transduction</td><td>光子经视杆/视锥转为神经电信号（光转导）</td></tr>
+          <tr><td>视杆与视锥</td><td>rods &amp; cones</td><td>视杆约9000万、对暗光敏、无色觉、低分辨；视锥约450万、亮光工作、三种对应红/绿/蓝、高分辨</td></tr>
+          <tr><td>中央凹</td><td>fovea</td><td>视网膜中央、视锥密集、空间分辨率最高</td></tr>
+          <tr><td>感受野</td><td>receptive field</td><td>能调制某神经元活动的那块视觉空间</td></tr>
+          <tr><td>中心-周边结构</td><td>center-surround</td><td>视网膜节细胞感受野，专测明暗边缘、实现对比增强</td></tr>
+          <tr><td>视神经/视交叉</td><td>optic nerve / chiasm</td><td>节细胞轴突汇成视神经，鼻侧纤维在视交叉处交叉</td></tr>
+          <tr><td>外侧膝状体</td><td>LGN</td><td>丘脑中继站，大细胞层（深度/亮度/运动）+小细胞层（形状/颜色）</td></tr>
+          <tr><td>初级视皮层 V1</td><td>primary visual cortex</td><td>纹状皮层；朝向调谐、简单/复杂细胞、视网膜拓扑</td></tr>
+          <tr><td>视网膜拓扑</td><td>retinotopic</td><td>相邻神经元对应视野中相邻位置</td></tr>
+          <tr><td>立体视觉</td><td>stereo vision</td><td>利用两眼视差计算三维深度</td></tr>
+          <tr><td>层级</td><td>hierarchy</td><td>沿通路上行，神经元响应越来越抽象的刺激</td></tr>
+          <tr><td>腹侧流</td><td>ventral stream</td><td>"什么"通路：识别、分类物体，达颞下皮层</td></tr>
+          <tr><td>背侧流</td><td>dorsal stream</td><td>"哪里/如何"通路：空间位置、与物体互动，达顶叶</td></tr>
+          <tr><td>无意识推断</td><td>unconscious inference</td><td>大脑基于先验对输入做"最可能"解读（Helmholtz）</td></tr>
+          <tr><td>循环/回路性</td><td>recurrence / loopiness</td><td>前馈与反馈一样多，视觉是内外信号交汇的环路</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>1.2 视觉通路层级</h3>
+    <pre class="mermaid">
+flowchart LR
+  R["视网膜<br/>视杆/视锥→节细胞<br/>中心-周边感受野"] --> C["视交叉<br/>鼻侧纤维交叉"]
+  C --> L["LGN（丘脑）<br/>大细胞层/小细胞层"]
+  L --> V1["V1 纹状皮层<br/>朝向调谐·简单/复杂细胞"]
+  V1 --> V2["V2<br/>错觉轮廓·曲线"]
+  V2 --> VEN["腹侧流→V4→颞下(IT)<br/>什么：物体/面孔"]
+  V2 --> DOR["背侧流→V5/MT→顶叶<br/>哪里/如何：运动/空间/注意"]
+  classDef hi fill:#123,stroke:#4f9cf9,color:#dce9f7;
+  class V1 hi;
+    </pre>
+    <div class="callout">关键点：信号沿层级上行，感受野越来越大、刺激越来越抽象——从视网膜"光点"到 IT"面孔识别"。但连接是<b>相互（reciprocal）</b>的，高层向低层回投，并大量<b>并行处理</b>。</div>
+  </section>
+
+  <!-- ② -->
+  <section id="s2" class="s-rel">
+    <div class="sec-head"><div class="num">②</div><h2>概念间关系</h2></div>
+    <div class="sec-note">概念不是孤立词条，而是互相支撑的逻辑链。</div>
+    <h3>2.1 关系一览表</h3>
+    <div class="tbl-card">
+      <table>
+        <thead><tr><th>关系</th><th>内容</th></tr></thead>
+        <tbody>
+          <tr><td>转导 → 层级 → 知觉</td><td>光子先转导为信号，再沿层级抽象，但知觉并非"到达终点线"才产生</td></tr>
+          <tr><td>视杆/视锥 → 大/小细胞 → 背/腹侧流</td><td>视杆经大细胞供给背侧流"运动/深度"；视锥经小细胞供给腹侧流"形状/颜色"</td></tr>
+          <tr><td>两眼分离 → V1 汇合 → 立体视</td><td>两眼信号在 LGN 与 V1 前始终分离，V1 首次汇合，利用视差算三维</td></tr>
+          <tr><td>层级损伤 → 缺失严重程度递增</td><td>损低层→失明；损高层→特异缺失（面孔盲、运动盲）</td></tr>
+          <tr><td>前馈 ↔ 反馈（循环）</td><td>视皮层→LGN 投射的轴突是反向的10倍，发送预测、回传预测误差</td></tr>
+          <tr><td>外部数据 ↔ 内部模型</td><td>知觉=外部输入与内部预期的比对；做梦/幻觉是"内部模型脱锚"</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>2.2 腹侧流 vs 背侧流</h3>
+    <pre class="mermaid">
+flowchart TB
+  V1["V1 / V2<br/>共同起点"] --> WHAT
+  V1 --> WHERE
+  WHAT["腹侧流（What）<br/>V4→颞下IT→梭状回<br/>识别·分类·面孔"] --> DFV["损伤→失认/面孔盲<br/>（D.F.：能抓不能认）"]
+  WHERE["背侧流（Where/How）<br/>V5/MT→顶叶<br/>运动·空间·注意·动作引导"] --> DFD["损伤→偏侧忽视/Balint<br/>（A.T.：能认不能抓）"]
+  classDef hub fill:#0f2a24,stroke:#3fbf9f,color:#c8f0e4;
+  class V1 hub;
+    </pre>
+  </section>
+
+  <!-- ③ -->
+  <section id="s3" class="s-qa">
+    <div class="sec-head"><div class="num">③</div><h2>提问-回答</h2></div>
+    <div class="sec-note">用问答直击本章最容易困惑之处。</div>
+    <div class="card qa"><div class="q">Q1：Mike May 手术成功、光线进入视网膜，为什么还"看不见"？</div><div class="a">因为<b>看见不是免费的</b>。光子成功转导并到达视皮层，但他的大脑没有可与新输入比对的<b>内部模型</b>——多年失明使视觉系统未曾训练。经数周主动练习（伸手触摸、敲击），把预期与输入对齐后，才"看见了光"。</div></div>
+    <div class="card qa"><div class="q">Q2：马赫带和赫尔曼栅格错觉从何而来？</div><div class="a">来自视网膜节细胞的<b>中心-周边感受野</b>与对比增强。落在较亮马赫带上的感受野，因部分周边处于较暗区、受抑制较少，故响应更强；落在较暗带上的受周边抑制更多。栅格交叉点抑制性周边接收更多光，故响应减弱、显灰点。</div></div>
+    <div class="card qa"><div class="q">Q3：为什么整个右视野由左半球处理，而非"左眼给右脑"？</div><div class="a">因为在<b>视交叉</b>处纤维被按<b>视野</b>而非按眼重新分选：鼻侧纤维交叉、颞侧不交叉。结果整个右视野由左半球处理，整个左视野由右半球处理，与由哪只眼捕获无关。交叉后称视束。</div></div>
+    <div class="card qa"><div class="q">Q4：运动盲（motion blindness）患者说明了什么？</div><div class="a">Melissa 因一氧化碳中毒损伤 V5，能看物体与位置却看不到运动，世界像"频闪快照"。这揭示<b>运动与位置对大脑是可分离的</b>：对物理学家运动=位置变化，对大脑运动是"画上去"的——正如瀑布错觉、旋转的蛇。</div></div>
+    <div class="card qa"><div class="q">Q5：盲视与 Anton 综合征分别揭示了什么？</div><div class="a">盲视：V1 受损者主观看不见，猜测却显著高于概率——约10%视网膜输出绕过 LGN 经上丘/丘脑枕/杏仁核，携带无意识视觉。Anton：卒中致盲却<b>否认失明</b>，因内部模型仍运转、脱离外界锚定，本质等同做梦入侵清醒。二者都证明"看见"依赖多脑区与内部模型。</div></div>
+  </section>
+
+  <!-- ④ -->
+  <section id="s4" class="s-fact">
+    <div class="sec-head"><div class="num">④</div><h2>科学研究已确定的结论</h2></div>
+    <div class="sec-note">证据充分、共识较强的结论，配三张核心表。</div>
+    <h3>4.1 视觉通路各站功能表</h3>
+    <div class="tbl-card">
+      <table>
+        <thead><tr><th>结构</th><th>英文</th><th>核心功能</th></tr></thead>
+        <tbody>
+          <tr><td>视网膜节细胞</td><td>retinal ganglion cells</td><td>中心-周边感受野，检测明暗边缘、对比增强</td></tr>
+          <tr><td>视交叉</td><td>optic chiasm</td><td>鼻侧纤维交叉，按视野重新分选（交叉后称视束）</td></tr>
+          <tr><td>LGN 大细胞层</td><td>magnocellular</td><td>处理视杆信息：深度、亮度、运动（→背侧流）</td></tr>
+          <tr><td>LGN 小细胞层</td><td>parvocellular</td><td>处理视锥信息：精细形状、颜色（→腹侧流）</td></tr>
+          <tr><td>V1 纹状皮层</td><td>primary visual cortex</td><td>朝向调谐、简单/复杂细胞、眼优势柱、超柱、立体视</td></tr>
+          <tr><td>V2</td><td>secondary</td><td>更大感受野，响应错觉轮廓（Kanizsa 方形）</td></tr>
+          <tr><td>V4 / 颞下 IT</td><td>ventral tertiary</td><td>复杂形状→物体/面孔（梭状回面孔区），位置/大小不变性</td></tr>
+          <tr><td>V5/MT / 顶叶</td><td>dorsal tertiary</td><td>运动检测、空间关系、注意聚光灯引导</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>4.2 层级损伤 → 缺失对照表</h3>
+    <div class="tbl-card">
+      <table>
+        <thead><tr><th>损伤部位</th><th>缺失（英文）</th><th>表现</th></tr></thead>
+        <tbody>
+          <tr><td>初级视皮层 V1</td><td>scotomas</td><td>暗点，视野内视力减退或完全失明</td></tr>
+          <tr><td>次级视皮层 V2</td><td>visual agnosias</td><td>物体识别/意义丧失</td></tr>
+          <tr><td>颞下皮层（腹侧）</td><td>prosopagnosia</td><td>面孔盲：见五官却认不出脸</td></tr>
+          <tr><td>V5/运动区（背侧）</td><td>motion blindness</td><td>运动盲：世界如快照</td></tr>
+          <tr><td>顶叶双侧（背侧）</td><td>Balint / hemineglect</td><td>注意转向障碍、同时失认、偏侧忽视</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>4.3 编码策略</h3>
+    <div class="tbl-card">
+      <table>
+        <thead><tr><th>编码</th><th>英文</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>稀疏编码</td><td>sparse coding</td><td>少量邻近神经元响应特定刺激（如熟悉面孔），越熟悉越稀疏</td></tr>
+          <tr><td>群体编码</td><td>population coding</td><td>大量神经元以不同程度响应（如房屋、一般形状）</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card"><p><b>结论要点：</b>①约30%皮层用于视觉（触觉8%、听觉3%）；②随机点立体图证明深度计算不需物体识别（Julesz）；③V1 朝向调谐由 Hubel &amp; Wiesel 意外发现，简单细胞对特定位置+朝向、复杂细胞对任意位置的朝向；④视皮层→LGN 反馈轴突是前馈的10倍，符合"发送预测、回传误差"；⑤<b>感觉≠知觉</b>：感觉是信号检测，知觉需内部模型不断比对。</p></div>
+  </section>
+
+  <!-- ⑤ -->
+  <section id="s5" class="s-open">
+    <div class="sec-head"><div class="num">⑤</div><h2>开放性未解决的问题与研究方向</h2></div>
+    <div class="sec-note">本章明确抛出、尚待攻克的前沿。</div>
+    <h3>5.1 本章明确抛出的开放问题</h3>
+    <div class="tbl-card">
+      <table>
+        <thead><tr><th>开放问题</th><th>方向描述</th></tr></thead>
+        <tbody>
+          <tr><td>视网膜"语言"如何破译？</td><td>视网膜编码极复杂、大部分未解，制约仿生视网膜芯片分辨率提升</td></tr>
+          <tr><td>盲视的机制？</td><td>皮层下通路（上丘/丘脑枕/杏仁核）如何在 V1 受损时携带无意识视觉，尚不明确</td></tr>
+          <tr><td>绑定问题</td><td>分散特征如何整合为统一知觉，本章未解、留待后续</td></tr>
+          <tr><td>循环网络如何理解？</td><td>前馈=反馈的大规模循环网络难研究（人更擅长想"流水线"），是最有前景方向之一</td></tr>
+          <tr><td>内部模型与意识</td><td>"知觉只在预期匹配输入时产生"等框架，可能是理解意识的钥匙</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>5.2 主动知觉的证据</h3>
+    <div class="tbl-card">
+      <table>
+        <thead><tr><th>现象</th><th>英文</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>眼动审讯场景</td><td>Yarbus 实验</td><td>不同问题使眼睛以不同轨迹搜索画面——视觉是主动的</td></tr>
+          <tr><td>盲点</td><td>blind spot</td><td>每眼一处无感光区（可容17个月亮），大脑"填充"使人无感</td></tr>
+          <tr><td>多稳态知觉</td><td>multistability</td><td>Necker 立方体等在解读间来回翻转</td></tr>
+          <tr><td>双眼竞争</td><td>binocular rivalry</td><td>两眼图像迥异时，知觉在高层表征间竞争，赢者通吃</td></tr>
+          <tr><td>变化盲视</td><td>change blindness</td><td>只把外界一小片纳入内部模型，故察觉不到大变化</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>5.3 主动、循环的视觉模型</h3>
+    <pre class="mermaid">
+flowchart LR
+  EXT["外部数据<br/>视网膜输入"] --> CMP{{"比对<br/>预期 vs 输入"}}
+  INT["内部模型<br/>先验经验·假设生成"] --> CMP
+  CMP --> ERR["预测误差<br/>回传更新模型"]
+  ERR --> INT
+  CMP --> PER["知觉<br/>最可能的解读"]
+  ERR -. "视皮层→LGN 反馈是前馈10倍" .-> INT
+  classDef hub fill:#241a2e,stroke:#c58bf0,color:#ecdcf7;
+  class CMP hub;
+    </pre>
+  </section>
+
+  <!-- ⑥ -->
+  <section id="s6" class="s-check">
+    <div class="sec-head"><div class="num">⑥</div><h2>完整性核对 <span class="badge">对照原文 KEY PRINCIPLES · 无遗漏</span></h2></div>
+    <div class="sec-note">逐条覆盖第 5 章章末 9 条 KEY PRINCIPLES（原文第 14168 行起）。</div>
+    <div class="tbl-card">
+      <table>
+        <thead><tr><th>#</th><th>原文 KEY PRINCIPLE（要点）</th><th>本详解对应位置</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>看似毫不费力，但约 30% 的大脑用于构建视觉</td><td>引子 + ④4.3</td></tr>
+          <tr><td>2</td><td>视网膜感光细胞把光子转导为神经信号，上行至高层</td><td>①转导 + ①1.2 + ④4.1</td></tr>
+          <tr><td>3</td><td>视觉系统是层级的，从精细细节构建到更大概念</td><td>①1.2 + ②2.1 + Q4</td></tr>
+          <tr><td>4</td><td>损低层→失明；损越高→越特异的知觉缺失（能看但不能识别）</td><td>④4.2 + Q5</td></tr>
+          <tr><td>5</td><td>信息越抽象越分两条流：腹侧（是什么）、背侧（在哪/如何）</td><td>②2.2 + ④4.1</td></tr>
+          <tr><td>6</td><td>视觉是主动而非被动：无意识地用眼审讯世界，拉入内部模型</td><td>⑤5.2 + Q1 + ⑤5.3</td></tr>
+          <tr><td>7</td><td>视觉场景依赖内部生成的活动，与外界数据同等重要</td><td>①循环 + Q5(Anton) + ⑤5.3</td></tr>
+          <tr><td>8</td><td>视觉系统同时含前馈与反馈投射，是"回路性"的</td><td>②2.1 + ⑤5.3 + ④结论</td></tr>
+          <tr><td>9</td><td>我们所见很大程度来自无意识推断——对"外界为何"的预期</td><td>①无意识推断 + ⑤5.3 + 结论</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="s7" class="s-bias">
+    <div class="sec-head"><div class="num">⑦</div><h2>认知偏差 · 成因(Why) · 对策</h2></div>
+    <div class="sec-note">本章证明"看=被动接收"是错的：视觉是大脑主动构建的内部模型，天然带系统性偏差；其可靠性靠外部测量与对照担保，而非"眼见为实"。</div>
+    <div class="tbl-card"><table>
+      <thead><tr><th>认知偏差 / 错觉</th><th>成因（Why）</th><th>解决方案 / 对策</th></tr></thead>
+      <tbody>
+        <tr><td>变化盲视（change blindness）</td><td>大脑每刻只把外界一小片纳入内部模型，未被注意处不实时更新，故大变化也察觉不到</td><td>承认视觉带宽有限；主动逐点审讯关键区域，用前后对照/叠加比对检出变化</td></tr>
+        <tr><td>非注意导致的"视而不见"（inattentional blindness）</td><td>注意是知觉的闸门，未获注意的信号进不了内部模型，等于没看见（大猩猩实验）</td><td>明确知道"看"需分配注意；重要目标用独立检查、清单或多人交叉观察</td></tr>
+        <tr><td>期望驱动的知觉（先入为主后"看见"胡子男）</td><td>知觉是无意识推断：大脑先生成最可能假设，输入被套进预期，故先有概念才"看清"</td><td>先记录原始输入再解读，用盲法/他人独立判读消除期望污染</td></tr>
+        <tr><td>马赫带 / 对比错觉</td><td>视网膜中心-周边感受野做侧抑制、增强边缘对比，主观亮度≠物理亮度</td><td>知觉是"关系"而非绝对量；需绝对值时用光度计等仪器测量，不靠眼估</td></tr>
+        <tr><td>填充（filling-in）与盲点</td><td>每眼有无感光的盲点，大脑据周边内容主动填补，令人对缺口毫无察觉</td><td>用单眼盲点实验主动暴露缺口；牢记无缝主观体验可能是构建物，非信息完整</td></tr>
+        <tr><td>"看=被动接收"的误解</td><td>直觉以为眼睛像相机被动录像，忽视约 30% 皮层主动构建、反馈多于前馈</td><td>采用"主动内部模型"视角：把知觉当可错假设，用测量、对照与多次采样校正</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <footer>
+    内容忠于第 5 章原文（STARTING OUT: Mike May 引子、视知觉、视觉系统解剖、仿生视网膜、高级视觉区、主动知觉、依赖预期各节）与章末 KEY PRINCIPLES / KEY TERMS 整理，术语中英并列。图形需支持 JavaScript 的浏览器渲染。这是"逐章详解"系列的第 5 章。
+  </footer>
+</div>
+<script>
+  mermaid.initialize({ startOnLoad:true, theme:'base', securityLevel:'loose',
+    themeVariables:{ fontFamily:'-apple-system,"PingFang SC","Microsoft YaHei",sans-serif',
+      fontSize:'14px', lineColor:'#7f95a6', primaryColor:'#182838',
+      primaryTextColor:'#e8eef3', primaryBorderColor:'#3a4c5c' },
+    flowchart:{ curve:'basis', nodeSpacing:40, rankSpacing:46, padding:12 } });
+</script>
+</body>
+</html>
