@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>《诚如我们所思》范内瓦·布什（1945）— 交互式全文摘要</title>
+<style>
+  :root{
+    --ink:#1A1D21;
+    --ink-2:#465060;
+    --ink-3:#7C8796;
+    --paper:#FFFFFF;
+    --panel:#F6F7F5;
+    --panel-2:#EDEFEC;
+    --line:#E2E5E1;
+
+    --fact:#16695B;        /* 事实 · 仪器绿 */
+    --fact-bg:#E5F1EE;
+    --view:#3B4A96;        /* 观点 · 靛 */
+    --view-bg:#EAECF8;
+    --pred:#96650B;        /* 预言 · 赭 */
+    --pred-bg:#FAF2E1;
+    --note:#8B3A52;        /* 编者注 · 绛 */
+    --note-bg:#F9ECF0;
+
+    --radius:12px;
+    --shadow:0 1px 2px rgba(26,29,33,.04), 0 8px 24px rgba(26,29,33,.05);
+    --serif:"Songti SC","Noto Serif SC","Source Han Serif SC",Georgia,"Times New Roman",serif;
+    --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --mono:"SF Mono",Menlo,Consolas,"Courier New",monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.85;-webkit-font-smoothing:antialiased}
+
+  #progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--fact),var(--pred));z-index:100;transition:width .1s linear}
+
+  header.bar{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.93);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .bar-inner{max-width:1080px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .brand{font-family:var(--serif);font-weight:700;font-size:17px;white-space:nowrap}
+  .brand small{display:block;font-family:var(--mono);font-weight:400;font-size:10.5px;color:var(--ink-3);letter-spacing:.1em}
+  nav.tabs{display:flex;gap:3px;flex-wrap:wrap;margin-left:auto}
+  nav.tabs a{font-size:13px;color:var(--ink-2);text-decoration:none;padding:6px 11px;border-radius:999px;transition:.18s;border:1px solid transparent}
+  nav.tabs a:hover{background:var(--panel);color:var(--ink)}
+  nav.tabs a.active{background:var(--ink);color:#fff}
+  nav.tabs a:focus-visible{outline:2px solid var(--fact);outline-offset:2px}
+
+  main{max-width:1080px;margin:0 auto;padding:0 20px 120px}
+  section{padding-top:60px}
+  h2.sec{font-family:var(--serif);font-size:30px;line-height:1.35;margin:0 0 6px}
+  .sec-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--ink-3);margin-bottom:8px}
+  .sec-lead{color:var(--ink-2);max-width:70ch;margin:0 0 24px;font-size:15.5px}
+
+  /* 首屏 */
+  .hero{padding:64px 0 12px}
+  .hero .fr{font-family:var(--mono);color:var(--ink-3);font-size:12px;letter-spacing:.16em;margin-bottom:20px}
+  .hero h1{font-family:var(--serif);font-size:clamp(34px,5.4vw,60px);line-height:1.16;margin:0 0 18px}
+  .hero p.tag{max-width:64ch;font-size:17px;color:var(--ink-2);margin:0 0 28px}
+  .hero .who{display:flex;gap:26px;flex-wrap:wrap;font-size:13px;color:var(--ink-3);border-top:1px solid var(--line);padding-top:18px}
+  .hero .who b{display:block;color:var(--ink);font-weight:600;font-size:14px}
+
+  .thesis{margin:34px 0 0;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:20px}
+  .thesis div span{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--ink-3);margin-bottom:4px}
+  .thesis div b{font-family:var(--serif);font-size:19px;display:block;line-height:1.4}
+  .thesis div p{margin:4px 0 0;font-size:13px;color:var(--ink-2);line-height:1.6}
+
+  /* 徽标 */
+  .badge{display:inline-block;font-size:11px;letter-spacing:.05em;padding:2px 8px;border-radius:999px;font-weight:600;vertical-align:1px;margin-right:8px;white-space:nowrap}
+  .b-fact{background:var(--fact-bg);color:var(--fact)}
+  .b-view{background:var(--view-bg);color:var(--view)}
+  .b-pred{background:var(--pred-bg);color:var(--pred)}
+  .b-note{background:var(--note-bg);color:var(--note)}
+
+  /* 过滤器 */
+  .filter{position:sticky;top:57px;z-index:40;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:999px;padding:8px 10px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:14px 0 30px;box-shadow:var(--shadow)}
+  .filter span.lab{font-family:var(--mono);font-size:11px;color:var(--ink-3);padding:0 8px;letter-spacing:.1em}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 13px;font-size:13px;cursor:pointer;color:var(--ink-2);font-family:inherit;transition:.16s}
+  .chip:hover{border-color:var(--ink-3)}
+  .chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip:focus-visible{outline:2px solid var(--fact);outline-offset:2px}
+
+  /* 章节：胶片齿孔轨 */
+  .chapter{position:relative;border-top:1px solid var(--line);padding:32px 0 6px 0}
+  .chapter:first-of-type{border-top:0}
+  .ch-head{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}
+  .ch-num{font-family:var(--mono);font-size:11px;color:var(--ink-3);border:1px solid var(--line);border-radius:5px;padding:3px 9px;letter-spacing:.12em;white-space:nowrap}
+  .ch-head h3{font-family:var(--serif);font-size:24px;margin:0;line-height:1.35}
+  .ch-sub{color:var(--ink-3);font-size:13px;margin:6px 0 0}
+  .ch-gist{background:var(--panel);border-left:3px solid var(--ink);border-radius:0 10px 10px 0;padding:14px 18px;margin:18px 0 20px;font-size:15px;color:var(--ink-2)}
+  .ch-gist b{color:var(--ink)}
+
+  ul.points{list-style:none;padding:0;margin:0 0 8px}
+  ul.points li{padding:11px 0;border-bottom:1px dashed var(--line);font-size:15px;color:var(--ink-2)}
+  ul.points li:last-child{border-bottom:0}
+  ul.points li b{color:var(--ink);font-weight:600}
+  ul.points li.hide{display:none}
+  .num{color:var(--fact);font-weight:600;font-variant-numeric:tabular-nums}
+  .term{border-bottom:1px dotted var(--ink-3);cursor:help}
+
+  /* 翻转卡片 */
+  .cards-title{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--ink-3);margin:26px 0 12px;display:flex;align-items:center;gap:10px}
+  .cards-title::after{content:"";flex:1;height:1px;background:var(--line)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+  .flip{background:transparent;border:0;padding:0;perspective:1100px;height:192px;cursor:pointer;font-family:inherit;text-align:left}
+  .flip.hide{display:none}
+  .flip:focus-visible .inner{outline:2px solid var(--fact);outline-offset:3px;border-radius:var(--radius)}
+  .inner{position:relative;width:100%;height:100%;transition:transform .55s cubic-bezier(.4,.2,.2,1);transform-style:preserve-3d}
+  .flip[aria-pressed="true"] .inner{transform:rotateY(180deg)}
+  .face{position:absolute;inset:0;backface-visibility:hidden;border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px 13px;display:flex;flex-direction:column;background:#fff;box-shadow:var(--shadow);overflow:hidden}
+  .front{justify-content:space-between}
+  .front .t{font-family:var(--serif);font-size:19px;line-height:1.35}
+  .front .t em{display:block;font-style:normal;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--ink-3);margin-top:7px;text-transform:uppercase}
+  .front .hint{font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.08em}
+  .back{transform:rotateY(180deg);background:var(--panel);justify-content:flex-start;overflow-y:auto}
+  .back p{margin:8px 0 0;font-size:13.4px;line-height:1.7;color:var(--ink-2)}
+  .back p:first-of-type{margin-top:6px}
+  .back .k{color:var(--ink);font-weight:600}
+  .face .badge{align-self:flex-start;margin:0 0 10px}
+
+  /* 金句 */
+  blockquote.gold{margin:24px 0 6px;background:var(--pred-bg);border:1px solid #EFE0BE;border-radius:var(--radius);padding:18px 22px;position:relative}
+  blockquote.gold p{margin:0;font-family:var(--serif);font-size:17.5px;line-height:1.7;color:#4A3406}
+  blockquote.gold .en{font-family:var(--mono);font-size:12px;color:#8A6A25;margin-top:8px;letter-spacing:.01em}
+  blockquote.gold cite{display:block;margin-top:6px;font-style:normal;font-size:12.5px;color:var(--pred)}
+  blockquote.gold::before{content:"“";position:absolute;top:2px;right:16px;font-family:var(--serif);font-size:56px;color:#E9D9AF;line-height:1}
+
+  /* 预言记分卡 */
+  .scorebar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+  .scorebar .chip[aria-pressed="true"]{background:var(--ink)}
+  .preds{display:grid;gap:10px}
+  .pred{border:1px solid var(--line);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow);overflow:hidden}
+  .pred.hide{display:none}
+  .pred summary{list-style:none;cursor:pointer;padding:14px 18px;display:flex;gap:12px;align-items:center}
+  .pred summary::-webkit-details-marker{display:none}
+  .pred summary:focus-visible{outline:2px solid var(--fact);outline-offset:-2px}
+  .verdict{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;padding:3px 9px;border-radius:5px;white-space:nowrap;font-weight:700}
+  .v-hit{background:var(--fact-bg);color:var(--fact)}
+  .v-part{background:var(--pred-bg);color:var(--pred)}
+  .v-miss{background:var(--note-bg);color:var(--note)}
+  .pred .s-t{font-size:15px;flex:1}
+  .pred .caret{color:var(--ink-3);font-size:12px}
+  .pred .body{padding:0 18px 16px 18px;font-size:14px;color:var(--ink-2);border-top:1px solid var(--line);margin-top:2px;padding-top:12px}
+  .pred .body .said{font-family:var(--serif);color:var(--ink);margin-bottom:6px}
+
+  /* 关联轨迹交互 */
+  .memex{border:1px solid var(--line);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow);padding:20px 22px;margin-top:22px}
+  .memex h4{font-family:var(--serif);margin:0 0 4px;font-size:20px}
+  .memex .desc{font-size:14px;color:var(--ink-2);margin:0 0 16px}
+  .pool{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+  .item{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 12px;font-size:13.5px;cursor:pointer;font-family:inherit;color:var(--ink-2);transition:.15s;text-align:left}
+  .item:hover{border-color:var(--ink-3)}
+  .item[aria-pressed="true"]{background:var(--fact-bg);border-color:var(--fact);color:var(--fact);font-weight:600}
+  .item.side{border-style:dashed}
+  .item:focus-visible{outline:2px solid var(--fact);outline-offset:2px}
+  .trail{background:var(--panel);border-radius:10px;padding:14px 16px;min-height:76px}
+  .trail-empty{color:var(--ink-3);font-size:13.5px}
+  .link{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .node{background:#fff;border:1px solid var(--line);border-radius:7px;padding:6px 11px;font-size:13px;transition:.2s}
+  .node.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .node.side{border-style:dashed;color:var(--ink-3)}
+  .arrow{color:var(--ink-3);font-family:var(--mono);font-size:12px}
+  .memex-ctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px}
+  .memex-ctl input[type=text]{border:1px solid var(--line);border-radius:8px;padding:7px 11px;font-family:inherit;font-size:13.5px;width:190px}
+  .memex-ctl input:focus-visible{outline:2px solid var(--fact);outline-offset:1px}
+  .memex-log{font-family:var(--mono);font-size:12px;color:var(--ink-3);margin-top:12px;min-height:18px}
+
+  /* 尾章 · 实现轨道 */
+  .tracks{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:24px 0 26px}
+  .track{border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;background:#fff;box-shadow:var(--shadow)}
+  .track .tk{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;margin-bottom:6px}
+  .track.done .tk{color:var(--fact)}
+  .track.wip .tk{color:var(--pred)}
+  .track.dead .tk{color:var(--note)}
+  .track h5{font-family:var(--serif);font-size:18px;margin:0 0 4px}
+  .track p{margin:0;font-size:13px;color:var(--ink-2);line-height:1.65}
+  .track .n{font-family:var(--mono);font-size:22px;display:block;margin-top:8px;color:var(--ink)}
+
+  .impls{display:grid;gap:10px}
+  .impl{border:1px solid var(--line);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow);overflow:hidden}
+  .impl.hide{display:none}
+  .impl summary{list-style:none;cursor:pointer;padding:14px 18px;display:flex;gap:12px;align-items:center}
+  .impl summary::-webkit-details-marker{display:none}
+  .impl summary:focus-visible{outline:2px solid var(--fact);outline-offset:-2px}
+  .impl .tag{font-family:var(--mono);font-size:10px;letter-spacing:.1em;padding:3px 9px;border-radius:5px;white-space:nowrap;font-weight:700}
+  .t-done{background:var(--fact-bg);color:var(--fact)}
+  .t-wip{background:var(--pred-bg);color:var(--pred)}
+  .t-dead{background:var(--note-bg);color:var(--note)}
+  .impl .s-t{font-size:15px;flex:1}
+  .impl .caret{color:var(--ink-3);font-size:12px}
+  .impl .body{padding:12px 18px 16px;border-top:1px solid var(--line);font-size:14px;color:var(--ink-2)}
+  .row{display:grid;grid-template-columns:74px 1fr;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line)}
+  .row:last-child{border-bottom:0}
+  .row .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--ink-3);padding-top:5px}
+  .row .val{line-height:1.7}
+  .row .val b{color:var(--ink)}
+  .row.need .lbl{color:var(--fact)}
+  .row.cost .lbl{color:var(--note)}
+
+  .blind{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:22px}
+  .blind div{border:1px solid var(--line);border-left:3px solid var(--note);border-radius:0 10px 10px 0;padding:15px 18px;background:#fff}
+  .blind h5{font-family:var(--serif);font-size:17px;margin:0 0 6px}
+  .blind p{margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.7}
+
+  /* 术语表 */
+  .glossary{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:10px}
+  .g{border:1px solid var(--line);border-radius:10px;padding:13px 16px;background:#fff}
+  .g dt{font-family:var(--serif);font-size:16px;margin:0 0 2px}
+  .g dt em{font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);display:block;letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
+  .g dd{margin:8px 0 0;font-size:13.5px;color:var(--ink-2);line-height:1.65}
+
+  /* 自测 */
+  .quiz{border:1px solid var(--line);border-radius:var(--radius);padding:22px;background:#fff;box-shadow:var(--shadow)}
+  .q{border-bottom:1px solid var(--line);padding:16px 0}
+  .q:first-child{padding-top:0}
+  .q:last-child{border-bottom:0;padding-bottom:0}
+  .q .stem{font-size:15.5px;margin-bottom:10px}
+  .opts{display:flex;gap:8px;flex-wrap:wrap}
+  .opt{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 14px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--ink-2);transition:.15s}
+  .opt:hover{border-color:var(--ink-3)}
+  .opt.ok{background:var(--fact-bg);border-color:var(--fact);color:var(--fact);font-weight:600}
+  .opt.no{background:var(--note-bg);border-color:var(--note);color:var(--note)}
+  .opt:disabled{cursor:default}
+  .explain{margin-top:10px;font-size:13.5px;color:var(--ink-2);background:var(--panel);border-radius:9px;padding:10px 13px;display:none}
+  .explain.show{display:block}
+  #score{margin-top:18px;font-size:14px;color:var(--ink-3)}
+
+  footer{border-top:1px solid var(--line);margin-top:70px;padding:26px 0;color:var(--ink-3);font-size:13px}
+  footer b{color:var(--ink-2)}
+
+  .totop{position:fixed;right:22px;bottom:22px;z-index:70;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#fff;box-shadow:var(--shadow);cursor:pointer;font-size:16px;color:var(--ink-2);opacity:0;pointer-events:none;transition:.25s}
+  .totop.show{opacity:1;pointer-events:auto}
+
+  @media (max-width:620px){
+    .hero{padding-top:42px}
+    .filter{position:static}
+    nav.tabs{width:100%;overflow-x:auto;margin-left:0}
+    .flip{height:206px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div id="progress" aria-hidden="true"></div>
+
+<header class="bar">
+  <div class="bar-inner">
+    <div class="brand">诚如我们所思<small>AS WE MAY THINK · 1945</small></div>
+    <nav class="tabs" id="tabs" aria-label="章节导航">
+      <a href="#intro" class="active">导读</a>
+      <a href="#body">全文八节</a>
+      <a href="#memex">试用 Memex</a>
+      <a href="#preds">预言记分卡</a>
+      <a href="#now">尾章 · 八十年后</a>
+      <a href="#glossary">术语表</a>
+      <a href="#quiz">自测</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<!-- ================= HERO ================= -->
+<section class="hero" id="intro" style="padding-top:64px">
+  <div class="fr">VANNEVAR BUSH · THE ATLANTIC MONTHLY · JULY 1945</div>
+  <h1>诚如我们所思<br />——记录、检索，与思维的形状</h1>
+  <p class="tag">二战刚刚结束，主持过六千名美国科学家战时工作的布什提出一个和平年代的新目标：<b>不再延伸人的体力，而是延伸人的心智</b>。他描述了一台名为 <b>memex</b> 的桌子，以及一种叫作「关联轨迹」的东西——那是超文本、万维网与个人知识库的第一张草图。</p>
+
+  <div class="who">
+    <div><b>作者</b>范内瓦·布什，美国科学研究与发展办公室主任</div>
+    <div><b>体裁</b>技术随笔 · 面向大众的科学政策与工程预测</div>
+    <div><b>核心主张</b>索引是人为的；<b>人脑靠联想工作</b>，机器也该如此</div>
+  </div>
+
+  <div class="thesis">
+    <div><span>诊断</span><b>知识的堰塞湖</b><p>研究成果堆成山，而我们穿越迷宫去找那一条关键记录的手段，还停留在方帆船的年代。</p></div>
+    <div><span>转机</span><b>廉价、复杂、可靠</b><p>可互换零件与真空管使复杂不再等于不可靠。三十美分一只的热离子管，工匠曾要做几个月。</p></div>
+    <div><span>关键洞见</span><b>选择应靠联想</b><p>字母序、分类树都是人造的，一项只能待在一处；而心智一抓住一物，便瞬间跳向下一个。</p></div>
+    <div><span>方案</span><b>Memex 与轨迹</b><p>把两项资料永久系在一起。轨迹可命名、可分叉、可复制赠人，且<b>不会消退</b>。</p></div>
+  </div>
+
+  <blockquote class="gold">
+    <p>人的心智不那样运作。它靠联想运作。</p>
+    <div class="en">“The human mind … operates by association.”</div>
+    <cite>全文的转折点——第 7 节</cite>
+  </blockquote>
+
+  <div class="ch-gist" style="margin-top:26px">
+    <b>怎么用这一页：</b>下面按原文 <b>八节</b> 逐节拆解。每条要点都标注了<span class="badge b-fact" style="margin-left:4px">事实</span><span class="badge b-view">观点</span><span class="badge b-pred">预言</span><span class="badge b-note">编者注</span>；顶部过滤器可只看某一类。每节配一组<b>知识翻转卡片</b>——点击翻面看解释。专业词汇统一收在<a href="#glossary" style="color:var(--fact)">术语表</a>。
+  </div>
+</section>
+
+<!-- ================= FILTER ================= -->
+<div class="filter" role="group" aria-label="内容过滤">
+  <span class="lab">显示</span>
+  <button class="chip" data-f="all" aria-pressed="true">全部</button>
+  <button class="chip" data-f="fact" aria-pressed="false">仅事实</button>
+  <button class="chip" data-f="view" aria-pressed="false">仅观点</button>
+  <button class="chip" data-f="pred" aria-pressed="false">仅预言</button>
+  <span class="lab" style="margin-left:auto">卡片</span>
+  <button class="chip" id="flipAll" aria-pressed="false">全部翻开</button>
+</div>
+
+<!-- ================= BODY ================= -->
+<section id="body">
+  <div class="sec-eyebrow">原文结构 · 八节</div>
+  <h2 class="sec">全文八节</h2>
+  <p class="sec-lead">布什的论证是一条直线：先诊断问题（记录太多、无法调用），再逐一检查手边的技术（摄影、缩微、语音、计算、选择），最后合成为一台机器（memex），末尾把手伸向神经系统与文明本身。</p>
+
+  <!-- 1 -->
+  <article class="chapter">
+    <div class="ch-head"><span class="ch-num">第 1 节</span><h3>科学家战后该做什么</h3></div>
+    <p class="ch-sub">从"造毁灭的机器"转向"造让人类调用全部遗产的机器"</p>
+    <div class="ch-gist"><b>一句话：</b>成果的<b>生产</b>速度已经远远超过我们<b>使用</b>它的能力；专业分工越深，跨学科的桥就越浅。真正的浪费不是发表太多，而是发表之后无人能取用。</div>
+
+    <ul class="points">
+      <li data-t="fact"><span class="badge b-fact">事实</span>布什以科学研究与发展办公室主任的身份，协调了约 <span class="num">6000</span> 名顶尖美国科学家的战时工作。编者按把这篇文章类比为爱默生 1837 年的《美国学者》演说。</li>
+      <li data-t="view"><span class="badge b-view">观点</span>历来的发明主要延伸<b>体力</b>——放大拳头的落锤、磨利眼睛的显微镜。如今该轮到延伸<b>心智</b>了。</li>
+      <li data-t="fact"><span class="badge b-fact">事实</span><b>孟德尔的遗传定律被埋没了整整一代人</b>：他的论文没有传到那少数看得懂、能推进它的人手里。布什断言，这类灾难此刻正在四处重演。</li>
+      <li data-t="view"><span class="badge b-view">观点</span>问题不在于"发表过多"，而在于<b>发表早已远远超出我们真正利用记录的能力</b>。</li>
+      <li data-t="view"><span class="badge b-view">观点</span>人类经验的总和在以惊人的速度膨胀，而我们穿过由此形成的迷宫、去够到那件此刻要紧的东西的手段，和方帆船时代<b>并无二致</b>。</li>
+      <li data-t="fact"><span class="badge b-fact">事实</span>专业化对进步是<b>必需</b>的；但代价是学科之间的沟通变得肤浅。研究者被成千上万同行的结论压垮——来不及领会，遑论记住。</li>
+    </ul>
+
+    <div class="cards-title">知识翻转卡片 · 点击查看</div>
+    <div class="cards">
+      <button class="flip" data-t="view" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-view">观点</span><div class="t">记录的三重要求<em>extend · store · consult</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>一份记录若要对科学有用，必须<span class="k">被不断扩充</span>、<span class="k">被存储</span>，而<span class="k">最重要的是被查阅</span>。</p><p>全文的整个技术清单，都是围绕这三个动词展开的——而当时人类只解决了前两个。</p></div>
+      </div></button>
+      <button class="flip" data-t="fact" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-fact">事实</span><div class="t">孟德尔之殇<em>the Mendel catastrophe</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>1866 年发表，1900 年才被重新发现——<span class="k">知识存在，却不可达</span>。</p><p>布什用它定义了本文要解决的问题类型：不是"没人做出成果"，而是<span class="k">真正重要的成果淹没在无关紧要的海量之中</span>。</p></div>
+      </div></button>
+      <button class="flip" data-t="view" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-view">观点</span><div class="t">方帆船式的检索<em>square-rigged ships</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>一个刺目的时代错位：记录的<span class="k">生产</span>已经工业化，记录的<span class="k">检索</span>却仍是手工业。</p><p>他还提醒：写与读所花时间的比例，若真去算，恐怕会让人吃惊。</p></div>
+      </div></button>
+    </div>
+
+    <blockquote class="gold">
+      <p>科学提供了个体之间最迅捷的沟通；它使知识随族类而绵延，而不只随个人而生灭。</p>
+      <cite>第 1 节 · 布什对"记录"的定义</cite>
+    </blockquote>
+  </article>
+
+  <!-- 2 -->
+  <article class="chapter">
+    <div class="ch-head"><span class="ch-num">第 2 节</span><h3>新器械已在手边</h3></div>
+    <p class="ch-sub">莱布尼茨与巴贝奇为何失败：经济学，而非构想</p>
+    <div class="ch-gist"><b>一句话：</b>可互换零件与量产把"复杂"从"不可靠"里拆了出来。世界第一次进入<b>廉价、复杂而高度可靠</b>的器械时代——"必有所出"。</div>
+
+    <ul class="points">
+      <li data-t="fact"><span class="badge b-fact">事实</span>可用的新器械：<span class="term" title="photocell：受光产生电流的器件">光电管</span>（能在物理意义上"看见"）、进阶摄影、<span class="term" title="thermionic tube：真空电子管">热离子管</span>（以少于蚊子振翅的功率去控制巨大的力）、<span class="term" title="cathode ray tube">阴极射线管</span>（让微秒相形之下都显漫长）、<span class="term" title="relay">继电器</span>组合（比人可靠、比人快上千倍）。</li>
+      <li data-t="fact"><span class="badge b-fact">事实</span>两个世纪前<b>莱布尼茨</b>造出的计算机已具备后世键盘装置的大部分要素，却无法普及：<b>在量产之前，造它的人工超过它省下的人工</b>。而且当时"复杂"与"不可靠"是同义词。</li>
+      <li data-t="fact"><span class="badge b-fact">事实</span><b>巴贝奇</b>的分析机构想是站得住的，只是建造与维护成本太重。布什的比喻：把汽车图纸给法老，就算他全懂，倾一国之力造出一辆，也会在去吉萨的第一趟路上抛锚。</li>
+      <li data-t="fact"><span class="badge b-fact">事实</span>反例是自动电话交换机——数十万个电触点，却可靠运行；一只热离子管的精密对位，行会大师要花数月，如今 <span class="num">30 美分</span>一只，成亿地造，随手插进插座就能用。</li>
+      <li data-t="view"><span class="badge b-view">观点</span><b>技术的门槛常常是经济的，而不是原理的。</b>好构想若生错时代，会被成本杀死；时代一变，它就复活。</li>
+    </ul>
+
+    <div class="cards-title">知识翻转卡片 · 点击查看</div>
+    <div class="cards">
+      <button class="flip" data-t="fact" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-fact">事实</span><div class="t">热离子管<em>thermionic tube</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>即真空电子管。玻璃壳内一张"金属蛛网"、一根炽热到发亮的灯丝。</p><p>在本文里它承担三重角色：<span class="k">放大器</span>、<span class="k">高速开关</span>（可把选择做到百分之一秒）、<span class="k">计数器</span>（每秒十万次）。</p><p>它是"廉价复杂可靠"这一论断的核心物证。</p></div>
+      </div></button>
+      <button class="flip" data-t="fact" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-fact">事实</span><div class="t">光电管<em>photocell</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>把光转成电。在布什笔下它是<span class="k">机器的眼睛</span>：自动测光、传真扫描、读取卡片上的点、以每秒数千件的速度掠过缩微胶片挑选条目。</p></div>
+      </div></button>
+      <button class="flip" data-t="view" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-view">观点</span><div class="t">经济学否决权<em>the economics of the situation</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>莱布尼茨的机器"能做的事，用足够多的纸笔都能做"——所以它没有市场。</p><p>推论：<span class="k">先进分析机器</span>之所以稀少，不是因为难，而是因为使用高等方法的人只占人口极小一部分；商业算术机则因市场巨大而必然量产。</p></div>
+      </div></button>
+    </div>
+  </article>
+
+  <!-- 3 -->
+  <article class="chapter">
+    <div class="ch-head"><span class="ch-num">第 3 节</span><h3>未来的摄影：额头上的核桃</h3></div>
+    <p class="ch-sub">随身相机、干式摄影，与"拍完立刻就能看"</p>
+    <div class="ch-gist"><b>一句话：</b>把摄影的现有趋势往前推一步，就得到一台随身、即拍、免冲洗的记录器——记录不再需要停下来书写。</div>
+
+    <ul class="points">
+      <li data-t="pred"><span class="badge b-pred">预言</span><b>额头相机</b>：未来的"摄影迷"额上有一块比核桃稍大的东西。它拍 <span class="num">3 毫米</span>见方的底片（不过是当下的 10 倍），<b>全焦</b>（因为焦距极短），内置光电管自动定曝光，一次上弦可拍 <span class="num">100</span> 张，出彩色片，或许还是立体的。</li>
+      <li data-t="pred"><span class="badge b-pred">预言</span>快门线顺着袖子伸到指尖；眼镜片顶部有一小方格线，物体落进方格就算取好景。<b>轻轻一捏，无声入档。</b>布什自嘲：唯一荒诞之处，是没人拍得了那么多照片。</li>
+      <li data-t="fact"><span class="badge b-fact">事实</span><b>干式摄影已经存在两种形式</b>：① 浸渍<span class="term" title="diazo dye">重氮染料</span>的胶片，曝光即成像，再以氨气破坏未曝光的染料；② 五十年来使用的浸渍纸——电触点扫过即变黑，电位随之变化，线条便有明暗。</li>
+      <li data-t="fact"><span class="badge b-fact">事实</span>第二种正是<b>传真</b>的原理：远端光电管逐行扫描图片，近端指针逐行画出相同明暗。它同时也是一台"能远距离成像的相机"。</li>
+      <li data-t="pred"><span class="badge b-pred">预言</span>把电视的<b>电子束</b>换掉指针、把荧光屏换成化学处理的胶片，就得到高速干式摄影。难点是电子束需要真空——可用一层"只允许电子垂直穿过"的隔膜绕开。</li>
+      <li data-t="view"><span class="badge b-view">观点</span>"敢断言这种工艺将永远笨拙、缓慢、粗糙的人，可称勇士。"当时电视每秒已能传 <span class="num">16</span> 幅像样的图像。</li>
+    </ul>
+
+    <div class="cards-title">知识翻转卡片 · 点击查看</div>
+    <div class="cards">
+      <button class="flip" data-t="fact" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-fact">事实</span><div class="t">干式摄影<em>dry photography</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>布拉迪拍南北战争时，<span class="k">曝光那一刻</span>底板必须是湿的；到 1945 年，只有<span class="k">显影</span>还需要湿。</p><p>布什的下一步：完全不必沾湿——「拍下即可看」。</p><p>他没料到的是，它最终以<span class="k">静电复印与数字传感器</span>的形式实现，而不是重氮染料。</p></div>
+      </div></button>
+      <button class="flip" data-t="pred" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-pred">预言</span><div class="t">免手记录<em>hands-free recording</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>科学家在实验室走动，<span class="k">看到值得记录的东西就按一下</span>，无声入档；晚上再对着录音把评注说进去；时间戳自动把两条记录绑在一起。</p><p>这是<span class="k">可穿戴设备 + 生活记录（lifelogging）+ 多模态笔记</span>的完整雏形。</p></div>
+      </div></button>
+      <button class="flip" data-t="fact" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-fact">事实</span><div class="t">传真<em>facsimile</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>逐行扫描 + 逐行复写：<span class="k">在任一瞬间，笔画的黑度等于光电管所看那一点的黑度</span>。扫完一遍，副本便在接收端出现。</p><p>把"场景"当作"图片"来扫，它就是相机；这一步等价替换，是布什推理的典型手法。</p></div>
+      </div></button>
+    </div>
+  </article>
+
+  <!-- 4 -->
+  <article class="chapter">
+    <div class="ch-head"><span class="ch-num">第 4 节</span><h3>缩微摄影：把大英百科装进火柴盒</h3></div>
+    <p class="ch-sub">压缩解决体积，但压缩不解决"查阅"</p>
+    <div class="ch-gist"><b>一句话：</b>线性缩小 100 倍，体积就是万分之一。存储的物理与经济障碍<b>就此消失</b>——剩下的全部难题，是如何找回来。</div>
+
+    <ul class="points">
+      <li data-t="fact"><span class="badge b-fact">事实</span>当时的缩微胶片已可做到<b>线性缩小 20 倍</b>而在放大后仍完全清晰。极限由胶片颗粒、光学系统与光源效率决定——三者都在快速改善。</li>
+      <li data-t="pred"><span class="badge b-pred">预言</span>假设未来达到<b>线性 100 倍</b>：普通纸质记录与其缩微副本之间的体积比就是 <span class="num">10 000</span> 倍。于是——</li>
+      <li data-t="pred"><span class="badge b-pred">预言</span><b>《大英百科全书》缩到一只火柴盒的体积</b>；<b>一座百万卷藏书的图书馆压进一张书桌的一头</b>；自活字印刷以来人类产出的全部记录（相当于十亿册书）——<b>一辆搬家卡车就能拉走</b>。</li>
+      <li data-t="fact"><span class="badge b-fact">事实</span>压缩的真正意义在<b>成本</b>：缩微版《大英百科》的材料费约合 <span class="num">5 美分</span>，寄到任何地方 <span class="num">1 美分</span>。全书可缩进一张 8½ × 11 英寸的纸面；批量复制，材料费之外每份约 1 美分。</li>
+      <li data-t="view"><span class="badge b-view">观点</span>但布什立刻自我限制：<b>"仅有压缩是不够的。"</b>不但要造出并存下记录，还要能查阅它——而<b>就连现代的大图书馆也不是被"查阅"的，它只是被少数人零星啃噬。</b></li>
+    </ul>
+
+    <div class="cards-title">知识翻转卡片 · 点击查看</div>
+    <div class="cards">
+      <button class="flip" data-t="fact" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-fact">事实</span><div class="t">线性比 vs 体积比<em>linear ratio 100 → 10 000×</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>缩小是<span class="k">二维</span>的：线性 100 倍 ⇒ 面积一万分之一。加上胶片可与纸同厚（甚至更薄），总体积比就取 <span class="k">10 000</span>。</p><p>这一步算术，撑起了后面所有"火柴盒/书桌/卡车"的意象。</p></div>
+      </div></button>
+      <button class="flip" data-t="view" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-view">观点</span><div class="t">存储不等于可及<em>storage ≠ access</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>这是全文最重要的枢纽句之一：把整个人类记录塞进一辆卡车之后，<span class="k">你依然一无所获</span>。</p><p>"图书馆不是被查阅的，它只是被少数人零星啃噬。"</p><p>由此他把主题从<span class="k">介质</span>转向<span class="k">检索</span>。</p></div>
+      </div></button>
+      <button class="flip" data-t="pred" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-pred">预言</span><div class="t">复制的边际成本趋零<em>a nickel, and a cent to mail</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>他准确预见到了<span class="k">信息复制成本的坍塌</span>——只是把媒介押在了胶片而非比特上。</p><p>结论方向完全正确：<span class="k">一旦复制近乎免费，稀缺性就转移到"选择"上。</span></p></div>
+      </div></button>
+    </div>
+  </article>
+
+  <!-- 5 -->
+  <article class="chapter">
+    <div class="ch-head"><span class="ch-num">第 5 节</span><h3>录入记录：会打字的机器</h3></div>
+    <p class="ch-sub">Voder + Vocoder + 速录机 = 你说话，它成文</p>
+    <div class="ch-gist"><b>一句话：</b>把三台已经存在的机器接起来，就得到语音转写。但布什随即划下一道界线：<b>重复性思维可以外包给机器，成熟的思考没有机械替代品。</b></div>
+
+    <ul class="points">
+      <li data-t="fact"><span class="badge b-fact">事实</span>世博会上展出过 <b>Voder</b>：按键即发出可辨识的语音，全程<b>不经人的声带</b>——只是把电产生的振动组合起来送进扬声器。</li>
+      <li data-t="fact"><span class="badge b-fact">事实</span>贝尔实验室有它的逆机器 <b>Vocoder</b>：把扬声器换成话筒，对它说话，对应的琴键就会动。</li>
+      <li data-t="fact"><span class="badge b-fact">事实</span>第三件是<b>速录机</b>（stenotype）：击键输出一条以<b>音位简化语言</b>记录的纸带，事后再誊成常文。</li>
+      <li data-t="pred"><span class="badge b-pred">预言</span><b>让 Vocoder 去驱动速录机，就得到一台"对它说话它就打字"的机器。</b></li>
+      <li data-t="view"><span class="badge b-view">观点</span>现有语言并不特别适合这种机械化。奇怪的是，人造语言的发明者们竟没想到去造一种<b>更适合传输与记录语音</b>的语言。机械化也许会逼出这个问题——届时科学术语对外行会更加不可解。</li>
+      <li data-t="view"><span class="badge b-view">观点</span><b>创造性思维与本质上重复性的思维是极不相同的两件事。</b>对后者，强有力的机械辅助已经存在，且还会更多。</li>
+    </ul>
+
+    <div class="cards-title">知识翻转卡片 · 点击查看</div>
+    <div class="cards">
+      <button class="flip" data-t="view" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-view">观点</span><div class="t">成熟思考无机械替代<em>no mechanical substitute</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>这句话常被引用，也常被误引。布什的完整立场是：</p><p>① <span class="k">成熟思考</span>无可替代；② 但<span class="k">重复性思考</span>——按既定逻辑组合并记录事实——理应交给机器；③ 创造性只剩下<span class="k">选择数据与选择方法</span>。</p><p>这几乎就是今天"人机协作"分工的原始表述。</p></div>
+      </div></button>
+      <button class="flip" data-t="fact" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-fact">事实</span><div class="t">Vocoder<em>voice coder</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>把语音分解为若干频带的<span class="k">参数</span>而非波形本身——这是语音编码与合成的基础，今天仍活在手机通话与语音助手里。</p><p>Voder 是它的合成端（1939 年纽约世博会）。</p></div>
+      </div></button>
+      <button class="flip" data-t="view" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-view">观点</span><div class="t">为机器而改造语言<em>alter his language</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>他认为要让机器读懂人，可能得<span class="k">先改造人的表达</span>。</p><p>某种意义上这条预言以奇怪的方式兑现了：我们没有改造自然语言，而是发明了<span class="k">编程语言、标记语言与结构化数据</span>——为机器另造了一套语言。</p></div>
+      </div></button>
+    </div>
+
+    <blockquote class="gold">
+      <p>对成熟的思考，没有机械的替代品。但创造性思维与本质上重复性的思维，是极不相同的两件事。</p>
+      <div class="en">“For mature thought there is no mechanical substitute.”</div>
+      <cite>第 5 节 · 人机分工的原始界碑</cite>
+    </blockquote>
+  </article>
+
+  <!-- 6 -->
+  <article class="chapter">
+    <div class="ch-head"><span class="ch-num">第 6 节</span><h3>计算与逻辑的机器</h3></div>
+    <p class="ch-sub">从算盘到"取指令、选数据、算完打印"</p>
+    <div class="ch-gist"><b>一句话：</b>加法早已交给机器；接下来该交出去的是高等数学的繁琐操作，乃至<b>形式逻辑</b>本身。数学家的本事不在算，而在<b>符号逻辑</b>与<b>选择方法的直觉</b>。</div>
+
+    <ul class="points">
+      <li data-t="fact"><span class="badge b-fact">事实</span>数字之所以要靠光电管去"读"，全因我们书写数字的方式笨拙。若改用<b>位置化</b>的点阵来记录——若那些点就是孔——便是<span class="term" title="Herman Hollerith，1890 年美国人口普查">霍尔瑞斯</span>为人口普查发明、如今遍布商界的<b>穿孔卡片机</b>。</li>
+      <li data-t="fact"><span class="badge b-fact">事实</span>物理学家为了数宇宙线，造出了每秒可计 <span class="num">100 000</span> 次电脉冲的热离子管设备。</li>
+      <li data-t="pred"><span class="badge b-pred">预言</span>未来的算术机器将是<b>电的</b>，速度是当时的 <span class="num">100</span> 倍以上；<b>由一张控制卡或控制胶片操纵，自行选取数据、按插入的指令操作、并把结果记录成便于分发或进一步处理的形式</b>。它们"胃口极大"。</li>
+      <li data-t="fact"><span class="badge b-fact">事实</span>高等分析的机器已存在：解<b>微分方程</b>（乃至泛函方程、积分方程）的机器；预报潮汐的<b>调和综合仪</b>。但它们没有大众市场，只会先出现在科学家手里、数量稀少。</li>
+      <li data-t="view"><span class="badge b-view">观点</span><b>数学家不是善于摆弄数字的人</b>——常常他并不擅长；甚至也不是能娴熟做微积分变换的人。他首先是在高层次上<b>运用符号逻辑</b>的人，尤其是在<b>选择操作方法</b>时具备直觉判断力的人。其余一切，都该像把驱动交给引擎盖下的机构那样，放心交给机器。</li>
+      <li data-t="pred"><span class="badge b-pred">预言</span>只要思维沿着<b>公认的沟槽</b>运行，机器就有可乘之机。用继电器电路即可造出按形式逻辑操作前提的机器：<b>把一组前提放进去，摇动曲柄，结论便一条条出来。</b></li>
+      <li data-t="view"><span class="badge b-view">观点</span>阻碍在于数学家表达关系的方式"像托普西一样乱长"，缺乏一致性——这在最讲逻辑的领域里实在古怪。<b>必须先有一套新的、大概是位置化的符号体系</b>，才谈得上把数学变换交给机器。</li>
+      <li data-t="fact"><span class="badge b-fact">事实</span>算盘——串在平行金属丝上的算珠——让阿拉伯人比世界其他地方早了好几个世纪走向<b>位置计数法与零的概念</b>；它有用到今天仍然存在。从算盘到现代键盘记账机是一大步，<b>从记账机到未来的算术机器是同样大的一步</b>。</li>
+      <li data-t="pred"><span class="badge b-pred">预言</span>终有一天，我们会像今天在收银机上打出销售额那样，<b>在机器上"敲出"论证</b>。但那台逻辑机器不会长得像收银机——哪怕是流线型的。</li>
+    </ul>
+
+    <div class="cards-title">知识翻转卡片 · 点击查看</div>
+    <div class="cards">
+      <button class="flip" data-t="pred" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-pred">预言</span><div class="t">程序控制的机器<em>controlled by a control card or film</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>写于 ENIAC 公开前一年。布什描述的是：<span class="k">外部指令载体 + 自动取数 + 高速运算 + 结果可再加工</span>。</p><p>他缺的最后一块是<span class="k">存储程序</span>与<span class="k">二进制电子逻辑</span>——他的想象仍停在模拟与机电之间。</p></div>
+      </div></button>
+      <button class="flip" data-t="fact" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-fact">事实</span><div class="t">穿孔卡片<em>punched card</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>霍尔瑞斯为 1890 年美国人口普查所造。核心思想是<span class="k">位置即信息</span>：数据的意义由孔的位置决定，机器因此能"读"。</p><p>布什说：有些复杂生意<span class="k">离了它几乎无法运转</span>。</p></div>
+      </div></button>
+      <button class="flip" data-t="view" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-view">观点</span><div class="t">思维的沟槽<em>an accepted groove</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>判据非常锋利：<span class="k">凡是思维在一段时间里沿着公认的路径运行，机器就有机会。</span></p><p>创造性只保留在两处——<span class="k">选择哪些数据</span>、<span class="k">选择哪种方法</span>。此后的操作都是重复性的。</p></div>
+      </div></button>
+      <button class="flip" data-t="fact" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-fact">事实</span><div class="t">调和综合仪<em>harmonic synthesizer</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>一种<span class="k">模拟计算机</span>：用机械叠加正弦分量来预报潮汐。</p><p>布什本人正是<span class="k">微分分析机</span>（differential analyzer）的建造者——他谈"高等分析的机器"，是在谈自己的手艺。</p></div>
+      </div></button>
+    </div>
+  </article>
+
+  <!-- 7 -->
+  <article class="chapter">
+    <div class="ch-head"><span class="ch-num">第 7 节</span><h3>选择：索引的人为性</h3></div>
+    <p class="ch-sub">全文的转折点——心智靠联想运作</p>
+    <div class="ch-gist"><b>一句话：</b>我们取用记录之所以笨拙，<b>主要不是机器落后，而是索引体系本身是人为的</b>。一项只能待在一处；找到之后还得退出体系、从新路径重新进入。而心智不是这样工作的。</div>
+
+    <ul class="points">
+      <li data-t="fact"><span class="badge b-fact">事实</span><b>百货公司的中央记录装置</b>：售货员把顾客卡、自己的卡与商品卡（都是穿孔卡）放上台架，拉下一根杆，触点穿孔而通，中央的机器完成盘存、记功、记账、开票。瓶颈只剩一个——<b>得有人从一万张账卡里挑出正确的那张</b>。</li>
+      <li data-t="fact"><span class="badge b-fact">事实</span>已有的机械选择：人事主管把几千张员工卡投入选择机，设定编码，很快得到"住在特伦顿且懂西班牙语"的名单。但要在五百万份指纹里比中一份，这类装置就太慢了。</li>
+      <li data-t="pred"><span class="badge b-pred">预言</span>借助光电管与缩微胶片，选择速度将从每分钟数百条提升到<b>每秒数千条</b>，并直接打印出被选中项的副本。</li>
+      <li data-t="fact"><span class="badge b-fact">事实</span>两种选择要区分：① <b>简单选择</b>——逐一检查全部条目，挑出符合特征者；② <b>分类选择</b>——如自动电话交换机，只看首位数字所给的类，层层收窄，几秒内从百万台里接通一台，<b>而不必遍历</b>。若换成真空管开关，可压到百分之一秒。</li>
+      <li data-t="view"><span class="badge b-view">观点</span><b>索引的原罪</b>：按字母或数字归档，自子类而子类地追踪；一项只能在一个位置（除非做副本）；必须有规则规定走哪条路，而规则笨重。</li>
+      <li data-t="view"><span class="badge b-view">观点</span><b>人的心智靠联想运作。</b>抓住一物，便顺着脑细胞中某张错综的<b>轨迹之网</b>，瞬间跳到由联想推出的下一物。它另有特性：不常走的轨迹会消退，条目不完全持久，记忆是易逝的。</li>
+      <li data-t="view"><span class="badge b-view">观点</span>人无法完全复制这一心理过程，<b>但完全可以向它学习</b>。而且在某些小处还能胜过它——因为<b>记录具有相对的永久性</b>。</li>
+      <li data-t="view"><span class="badge b-view">观点</span>于是得到全篇的方法论：<b>把"按联想选择"机械化</b>。速度与灵活性上追不上心智，但在<b>持久性与清晰度</b>上应当能决定性地胜过它。</li>
+    </ul>
+
+    <div class="cards-title">知识翻转卡片 · 点击查看</div>
+    <div class="cards">
+      <button class="flip" data-t="view" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-view">观点</span><div class="t">索引的人为性<em>artificiality of systems of indexing</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>树状分类的三宗罪：<span class="k">单一位置</span>、<span class="k">路径依赖</span>、<span class="k">出入成本</span>——找到一项后必须退出体系，再从头进入另一条路。</p><p>这正是后来"标签、反向链接、双向链接、图数据库"要解决的同一个问题。</p></div>
+      </div></button>
+      <button class="flip" data-t="view" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-view">观点</span><div class="t">联想 vs 遍历<em>selection by association</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>心智的优势：<span class="k">速度、轨迹的错综、心像的细节</span>——"在自然界中最令人敬畏"。</p><p>心智的劣势：<span class="k">轨迹会消退，记忆易逝</span>。</p><p>机器该做的不是模仿它的速度，而是<span class="k">补上它的永久性</span>。</p></div>
+      </div></button>
+      <button class="flip" data-t="fact" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-fact">事实</span><div class="t">分类选择<em>class selection</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>自动电话交换机的启示：<span class="k">不必扫描全部，就能精确命中一个</span>。</p><p>它是"逐条筛选"与"联想跳转"之间的中间形态——今天的<span class="k">索引结构与哈希</span>正是它的后裔。</p></div>
+      </div></button>
+      <button class="flip" data-t="note" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-note">编者注</span><div class="t">被引用最多的一句<em>the pivot</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>"心智靠联想运作"这一句，直接启发了<span class="k">道格拉斯·恩格尔巴特</span>（1962 年引用本文）与<span class="k">泰德·尼尔森</span>（1965 年造出 hypertext 一词），并经由他们传到<span class="k">蒂姆·伯纳斯-李</span>与万维网。</p></div>
+      </div></button>
+    </div>
+
+    <blockquote class="gold">
+      <p>选择——在这一宽泛意义上——是细木工手里的一把石斧。</p>
+      <div class="en">“Selection … is a stone adze in the hands of a cabinetmaker.”</div>
+      <cite>第 7 节 · 对当时检索水平的判词</cite>
+    </blockquote>
+  </article>
+
+  <!-- 8 -->
+  <article class="chapter">
+    <div class="ch-head"><span class="ch-num">第 8 节</span><h3>Memex：一张会联想的书桌</h3></div>
+    <p class="ch-sub">关联索引、轨迹、拓径者，以及"直通神经"的猜想</p>
+    <div class="ch-gist"><b>一句话：</b>Memex 是一件家具，一个人把他全部的书籍、记录与通信存进去，并能以极高的速度与灵活性查阅它——<b>它是记忆的放大而亲密的补充</b>。它的本质特征不是屏幕，而是<b>把两项资料系在一起</b>这个动作。</div>
+
+    <ul class="points">
+      <li data-t="pred"><span class="badge b-pred">预言</span><b>形制</b>：一张桌子。桌面是倾斜的半透明投影屏，有键盘、若干按钮与操纵杆。一端是存储；靠改良的缩微胶片，容量之大，<b>使用者每天存入 5000 页，也要几百年才填满</b>——所以他可以尽情挥霍地存。</li>
+      <li data-t="pred"><span class="badge b-pred">预言</span><b>输入</b>：多数内容以现成缩微胶片购入（书籍、图片、期刊、报纸、商业信函）；桌面另设透明压板，把手写笔记、照片、备忘放上去，压下一根杆，便以干式摄影拍进胶片的下一段空白。</li>
+      <li data-t="pred"><span class="badge b-pred">预言</span><b>常规查阅</b>：敲入代码，书的扉页立刻投影出来。常用代码取助记式。拨杆向右可逐页翻过（每页恰好一瞥的速度），再向右是<b>每次 10 页</b>，更右<b>每次 100 页</b>；向左则反向。还可批注——用一种触控笔方案，就像纸页真在眼前。</li>
+      <li data-t="pred"><span class="badge b-pred">预言</span><b>关联索引</b>（memex 的本质特征）：其基本想法是，<b>任一项都可以被随意地、立即而自动地用来调出另一项</b>。把两项系在一起，这个过程才是要紧的事。</li>
+      <li data-t="pred"><span class="badge b-pred">预言</span><b>建轨迹</b>：给轨迹命名、记入代码簿、在键盘上敲出。两项并排投影，各自底部有若干空白代码位，指针各指一个。<b>敲一下键，两项便被永久接合</b>；代码位里出现该轨迹名，另有供光电管读取的点阵，指明对方的索引号。</li>
+      <li data-t="pred"><span class="badge b-pred">预言</span>此后只要其中一项在屏上，按下对应代码位下方的按钮，另一项立即被调出。若干项接成一条轨迹后，可像翻书一样用拨杆<b>快或慢地逐一回顾</b>。这如同把那些实物集成了一本新书——<b>而且更胜一筹，因为任一项可以接入多条轨迹</b>。</li>
+      <li data-t="pred"><span class="badge b-pred">预言</span><b>土耳其弓的例子</b>：主人想弄清为何十字军中土耳其短弓优于英格兰长弓。他先从百科全书查到一篇有趣但简略的条目，留在屏上；又在史书里找到一条相关记述，把两者系起；一路建下去，间或插入自己的评注；当发现材料的<b>弹性</b>大有关系时，他<b>分出一条侧径</b>，穿过弹性学教科书与物理常数表，并插入自己手写的一页分析。</li>
+      <li data-t="view"><span class="badge b-view">观点</span><b>而他的轨迹不会消退。</b>数年后朋友谈起"民族何以抗拒革新"，他一按代码簿、几下按键，轨迹之首即被投出，拨杆一路穿行，可停可岔。于是他启动复制装置，把整条轨迹拍下来，交给朋友<b>插进自己的 memex</b>，接入更一般的轨迹。</li>
+      <li data-t="pred"><span class="badge b-pred">预言</span><b>全新形态的百科全书将会出现</b>：出厂时就织入一张关联轨迹之网，可直接放进 memex 并在其中扩充。律师随手调出全部相关判例；专利代理人手握数百万件专利并有通向客户利益点的熟径；医生沿旧病例的轨迹迅速跑过一系列类似病史，旁及经典的解剖与组织学；化学家把全部化学文献摊在实验台上，沿着化合物的类比追踪，并有侧径通向它们的物理化学行为。</li>
+      <li data-t="view"><span class="badge b-view">观点</span>历史学家把一部宏大的编年史平行地配上一条<b>跳跃轨迹</b>，只停在关键条目上。于是出现一种<b>新的职业：拓径者</b>——他们以在共同记录的巨量之中开辟有用的轨迹为乐。<b>大师留给后人的遗产，将不只是他对世界记录的增补，还有他借以搭建这一切的整副脚手架。</b></li>
+      <li data-t="pred"><span class="badge b-pred">预言</span><b>直通神经的猜想</b>：眼睛所见，全部信息经视神经以电振动送往大脑——这与电视电缆里的电振动<b>是精确的类比</b>。既然电缆可以不接触地感应取信，打字员手臂神经里的电流可否被拦截？既然骨传导已能把声音送进聋人的神经通道，能否略去"电→机械→电"的笨拙转换？脑电图已能画出与脑内电现象相关的墨迹——虽然那记录尚不可解。</li>
+      <li data-t="view"><span class="badge b-view">观点</span>他谨慎地划界：<b>基于已知外推的预言尚有分量，建立在未知之上的预言只是双重的猜测。</b>因此这一段"不是预言，只是提示"。</li>
+    </ul>
+
+    <div class="cards-title">知识翻转卡片 · 点击查看</div>
+    <div class="cards">
+      <button class="flip" data-t="pred" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-pred">预言</span><div class="t">Memex<em>memory + index</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>定义：<span class="k">个人存放全部书籍、记录与通信的装置，机械化到可以极快、极灵活地查阅。</span></p><p>布什的原话把它称作"记忆的一种放大而亲密的补充"。</p><p>注意它<span class="k">是私人的、离线的家具</span>——布什没有想到网络。</p></div>
+      </div></button>
+      <button class="flip" data-t="pred" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-pred">预言</span><div class="t">关联索引<em>associative indexing</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>本质特征只有一句：<span class="k">任一项都可以被随意地调出另一项。</span></p><p>要紧的不是存储，不是屏幕，而是<span class="k">"把两项系在一起"这个动作本身</span>。</p><p>这就是<span class="k">超链接</span>——早于这个词二十年。</p></div>
+      </div></button>
+      <button class="flip" data-t="pred" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-pred">预言</span><div class="t">轨迹与侧径<em>trail &amp; side trail</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>轨迹＝一串被命名、被接合的条目，可像书一样翻阅。<span class="k">任一项可属于多条轨迹</span>——树状分类做不到这一点。</p><p><span class="k">侧径</span>＝从主线上岔出的支线（弓 → 弹性 → 物理常数表）。</p><p><span class="k">跳跃轨迹</span>＝只停在要点上的略读线。</p></div>
+      </div></button>
+      <button class="flip" data-t="view" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-view">观点</span><div class="t">拓径者<em>trail blazers</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>一种<span class="k">新职业</span>：在共同记录的巨量之中开辟有用的路径，并以此为乐。</p><p>今天的对应物：<span class="k">综述作者、维基编者、书单与课程设计者、搜索与推荐系统</span>。</p><p>更深一层：遗产不只是结论，还有<span class="k">通向结论的整副脚手架</span>。</p></div>
+      </div></button>
+      <button class="flip" data-t="pred" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-pred">预言</span><div class="t">轨迹可赠<em>photographs the whole trail out</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>把整条轨迹拍下来交给朋友，插进他的 memex，再接入更一般的轨迹。</p><p>这是<span class="k">知识的社会性流通</span>：流通的单位不是文章，而是<span class="k">路径</span>。</p><p>今天的近亲：分享的书签集、引文网络、可复刻的笔记库。</p></div>
+      </div></button>
+      <button class="flip" data-t="view" aria-pressed="false"><div class="inner">
+        <div class="face front"><span class="badge b-view">观点</span><div class="t">预言的两种成色<em>substance vs doubly involved guess</em></div><div class="hint">点击翻转 ↻</div></div>
+        <div class="face back"><p>布什的自我约束条款：<span class="k">从已知外推的预言有分量；建立在未知之上的预言只是双重的猜测。</span></p><p>全文因此刻意"贴着现有器械说话"——这既是它准确的原因，也是它把宝押在缩微胶片上的原因。</p></div>
+      </div></button>
+    </div>
+
+    <blockquote class="gold">
+      <p>把两项资料系在一起的这个过程，才是要紧的事。</p>
+      <div class="en">“The process of tying two items together is the important thing.”</div>
+      <cite>第 8 节 · 超文本的第一原理</cite>
+    </blockquote>
+  </article>
+
+  <!-- 尾声 -->
+  <article class="chapter">
+    <div class="ch-head"><span class="ch-num">尾 声</span><h3>遗忘的特权</h3></div>
+    <p class="ch-sub">文明太复杂，人的记忆太有限</p>
+    <div class="ch-gist"><b>一句话：</b>人建起了一座过于复杂的文明，若不把记录更彻底地机械化，他就会在半途因记忆超载而陷落。而机械化记录换来的，是一项被遗失已久的权利——<b>放心地遗忘</b>。</div>
+
+    <ul class="points">
+      <li data-t="view"><span class="badge b-view">观点</span>若人能更好地回顾自己晦暗的过去、更完整而客观地分析当下的难题，他的精神理应因此提升。</li>
+      <li data-t="view"><span class="badge b-view">观点</span><b>遗忘的特权</b>：只要确信那些东西一旦重要还能找回来，人就可以重新获得"把不必即刻在手的万千事物忘掉"的自由——他的行程也会因此更愉快。</li>
+      <li data-t="view"><span class="badge b-view">观点</span>科学的应用为人盖起了一座供应充足的房子，又教他如何在其中健康地生活；它也使人得以用残酷的武器把人群掷向人群。<b>它还可能让人真正拥抱那份伟大的记录，在族类经验的智慧中成长。</b></li>
+      <li data-t="view"><span class="badge b-view">观点</span>结尾并不乐观也不绝望：人也许会在学会为善用之前先毁于争斗；<b>然而，在科学服务于人的需要与愿望这件事上，此刻实在是一个极不适合中止进程、或对结局失去希望的阶段。</b></li>
+      <li data-t="note"><span class="badge b-note">编者注</span>写作背景：本文发表于 1945 年 7 月，广岛与长崎在数周之后。布什主管的机构正是曼哈顿计划的行政母体。文中"把人群掷向人群"的句子，因此不是修辞。</li>
+    </ul>
+
+    <blockquote class="gold">
+      <p>他也许会在学会为善用之前先毁于争斗。然而此刻，实在是一个极不适合中止这一进程、或对结局失去希望的阶段。</p>
+      <cite>全文最后一段</cite>
+    </blockquote>
+  </article>
+</section>
+
+<!-- ================= MEMEX DEMO ================= -->
+<section id="memex">
+  <div class="sec-eyebrow">交互 · signature</div>
+  <h2 class="sec">试用 Memex：建一条轨迹</h2>
+  <p class="sec-lead">这是布什在第 8 节里亲自举的例子：为什么十字军中土耳其短弓胜过英格兰长弓？按顺序点击条目把它们「系」起来；虚线框是<b>侧径</b>。建好之后可以像拨动 memex 的操纵杆那样，回放整条轨迹。</p>
+
+  <div class="memex">
+    <h4>土耳其短弓 vs 英格兰长弓</h4>
+    <p class="desc">条目池（点击加入 / 再点移除）：</p>
+    <div class="pool" id="pool"></div>
+
+    <div class="trail" id="trail"><div class="trail-empty">轨迹为空。先选一项作为「轨迹之首」。</div></div>
+
+    <div class="memex-ctl">
+      <input type="text" id="trailName" placeholder="给轨迹命名…" aria-label="轨迹名称" value="土耳其弓" />
+      <button class="chip" id="play">▶ 回放（逐项）</button>
+      <button class="chip" id="play10">▶▶ 跳读（快）</button>
+      <button class="chip" id="copyTrail">复制给朋友</button>
+      <button class="chip" id="reset">清空</button>
+    </div>
+    <div class="memex-log" id="log">代码簿就绪。</div>
+  </div>
+</section>
+
+<!-- ================= PREDICTIONS ================= -->
+<section id="preds">
+  <div class="sec-eyebrow">八十年后回看</div>
+  <h2 class="sec">预言记分卡</h2>
+  <p class="sec-lead">布什说过：从已知外推的预言才有分量。下面逐条核对。判定与解释属<b>编者观点</b>，不是原文内容——点击展开。</p>
+
+  <div class="scorebar" role="group" aria-label="按判定过滤">
+    <button class="chip" data-v="all" aria-pressed="true">全部</button>
+    <button class="chip" data-v="hit" aria-pressed="false">命中</button>
+    <button class="chip" data-v="part" aria-pressed="false">部分命中</button>
+    <button class="chip" data-v="miss" aria-pressed="false">未中</button>
+  </div>
+  <div class="preds" id="predList"></div>
+</section>
+
+<!-- ================= 尾章 · 八十年后 ================= -->
+<section id="now">
+  <div class="sec-eyebrow">尾章 · 1945 → 2026</div>
+  <h2 class="sec">需求、实现与证伪</h2>
+  <p class="sec-lead">上一节只给判决。这一节追问三个问题：<b>每个构想背后真正的需求是什么？</b>它最终以什么技术形态被满足？以及——<b>我们为此付出了什么布什没有预见的代价？</b>技术会过时，需求不会。</p>
+
+  <div class="tracks">
+    <div class="track done"><div class="tk">TRACK A</div><h5>已实现</h5><p>需求成立，技术形态往往与布什设想的物理路线不同。</p><span class="n">9</span></div>
+    <div class="track wip"><div class="tk">TRACK B</div><h5>正在实现</h5><p>需求成立且更迫切，技术方向已明，但尚未成为日常基础设施。</p><span class="n">6</span></div>
+    <div class="track dead"><div class="tk">TRACK C</div><h5>已被证伪 · 不必实现</h5><p>需求被别的路径吸收，或前提本身错了。构想失效，不代表布什判断力差。</p><span class="n">6</span></div>
+  </div>
+
+  <div class="scorebar" role="group" aria-label="按轨道过滤">
+    <button class="chip" data-i="all" aria-pressed="true">全部 21 条</button>
+    <button class="chip" data-i="done" aria-pressed="false">已实现</button>
+    <button class="chip" data-i="wip" aria-pressed="false">正在实现</button>
+    <button class="chip" data-i="dead" aria-pressed="false">已证伪</button>
+  </div>
+  <div class="impls" id="implList"></div>
+
+  <div class="cards-title" style="margin-top:36px">布什漏掉的三件事</div>
+  <div class="blind">
+    <div>
+      <h5>一、网络</h5>
+      <p>memex 是一件<b>私人的、离线的家具</b>。轨迹靠拍照复制、当面交给朋友。布什想到了链接，却没想到<b>链接可以跨越机器</b>。真正的转折发生在轨迹变成公共可寻址资源（URL）的那一刻——万维网的力量不在超链接本身，而在超链接指向的是<b>别人</b>的文档。</p>
+    </div>
+    <div>
+      <h5>二、去中心化的社会生产</h5>
+      <p>他预见了「拓径者」这一职业，却把它想成少数专家的手艺。实际发生的是<b>数以百万计的业余者协同开辟轨迹</b>——维基百科、开源、Stack Overflow、开放数据集。记录的整理不是被专业化，而是被<b>众包</b>了。</p>
+    </div>
+    <div>
+      <h5>三、注意力的经济学</h5>
+      <p>他假定瓶颈永远是<b>检索</b>。但检索一旦免费，稀缺性就迁移到<b>注意力</b>：问题从"找不到"变成"过滤失败"，而过滤器由广告激励塑形。布什承诺的"遗忘的特权"兑现了；他没料到，随之而来的是<b>选择的负担</b>与<b>被代理选择的风险</b>。</p>
+    </div>
+  </div>
+
+  <div class="ch-gist" style="margin-top:30px">
+    <b>八十年的结论：</b>布什几乎每一次<b>问对了需求</b>，又几乎每一次<b>猜错了介质</b>。这正是他自己那条判据的代价——「从已知外推的预言才有分量」保证了他不会说胡话，也保证了他看不见跃迁。今天读它的正确方式，不是核对他猜中了几件事，而是问：<b>此刻我们把哪些"永久性需求"，误当成了"当前技术形态"？</b>
+  </div>
+
+  <blockquote class="gold">
+    <p>建立在已知之上的外推，尚有分量；建立在未知之上的预言，只是双重的猜测。</p>
+    <cite>范内瓦·布什，第 8 节——他既是这条规则的执行者，也是它的受害者</cite>
+  </blockquote>
+</section>
+
+<!-- ================= GLOSSARY ================= -->
+<section id="glossary">
+  <div class="sec-eyebrow">专业词汇</div>
+  <h2 class="sec">术语表</h2>
+  <p class="sec-lead">1945 年的工程词汇，今天多半已成古董——但概念都还活着。</p>
+
+  <div class="glossary">
+    <dl class="g"><dt>热离子管 / 真空管<em>thermionic tube</em></dt><dd>靠炽热阴极发射电子的真空器件。可放大、可开关、可计数。本文中它既是"廉价复杂可靠"的证据，也是高速选择与计算的引擎。</dd></dl>
+    <dl class="g"><dt>光电管<em>photocell</em></dt><dd>光→电的转换器件。相当于机器的眼睛：自动测光、传真扫描、读取卡片点阵、高速扫描缩微胶片。</dd></dl>
+    <dl class="g"><dt>阴极射线管<em>cathode ray tube</em></dt><dd>用电子束轰击荧光屏成像。布什用它说明"电子束能极快扫过画面"，并据此设想高速干式摄影。</dd></dl>
+    <dl class="g"><dt>继电器<em>relay</em></dt><dd>电控开关。组合起来可执行复杂动作序列，也可用来实现形式逻辑推理机。</dd></dl>
+    <dl class="g"><dt>缩微胶片<em>microfilm</em></dt><dd>把文献光学缩小拍摄到胶片上，阅读时再投影放大。文中的核心存储介质：线性缩小 100 倍 ⇒ 体积万分之一。</dd></dl>
+    <dl class="g"><dt>干式摄影<em>dry photography</em></dt><dd>无需湿法显影即成像。当时的两条路线：重氮染料胶片（曝光即成像，氨气去除未曝光染料）与浸渍导电纸（电触点使碘化物变色）。</dd></dl>
+    <dl class="g"><dt>重氮染料<em>diazo dye</em></dt><dd>一类见光分解的染料。构成早期免显影胶片的化学基础。</dd></dl>
+    <dl class="g"><dt>传真<em>facsimile</em></dt><dd>发端光电管逐行扫描原图，接收端指针逐行复写明暗。布什指出：它本质上就是一台"可远距离成像的相机"。</dd></dl>
+    <dl class="g"><dt>Voder / Vocoder<em>voice operation demonstrator / voice coder</em></dt><dd>前者按键合成语音（1939 年世博会），后者把语音分解为参数。二者互为逆运算，是语音编码与合成的祖先。</dd></dl>
+    <dl class="g"><dt>速录机<em>stenotype</em></dt><dd>击键输出音位简化文字的纸带，事后誊为常文。Vocoder + 速录机 = 语音转写。</dd></dl>
+    <dl class="g"><dt>穿孔卡片<em>punched card</em></dt><dd>霍尔瑞斯为 1890 年人口普查所创。核心是<b>位置即数据</b>：孔的位置承载信息，机器可读。</dd></dl>
+    <dl class="g"><dt>微分分析机<em>differential analyzer</em></dt><dd>用机械积分器求解微分方程的模拟计算机。布什本人是其主要建造者，文中"解微分方程的机器"即指此类。</dd></dl>
+    <dl class="g"><dt>调和综合仪<em>harmonic synthesizer</em></dt><dd>叠加正弦分量以预报潮汐的模拟装置。文中用作"专用科学机器"的例证。</dd></dl>
+    <dl class="g"><dt>简单选择 / 分类选择<em>simple vs class selection</em></dt><dd>前者逐条筛查全部条目；后者如自动电话交换机，按首位数字层层收窄，不必遍历即可命中。</dd></dl>
+    <dl class="g"><dt>关联索引<em>associative indexing</em></dt><dd>memex 的本质特征：任一项都可被随意地、立即而自动地用来调出另一项。即超链接的原型。</dd></dl>
+    <dl class="g"><dt>轨迹 / 侧径 / 跳跃轨迹<em>trail / side trail / skip trail</em></dt><dd>被命名并永久接合的条目序列；从主线岔出的支线；只停在要点上的略读线。一项可同时属于多条轨迹。</dd></dl>
+    <dl class="g"><dt>Memex<em>memory extender</em></dt><dd>一张桌子形态的个人机械化文库：倾斜的半透明投影屏、键盘、按钮与操纵杆，以缩微胶片为存储。"记忆的放大而亲密的补充。"</dd></dl>
+    <dl class="g"><dt>拓径者<em>trail blazer</em></dt><dd>布什预言的新职业：在共同记录的巨量之中开辟并留下有用轨迹的人。</dd></dl>
+    <dl class="g"><dt>脑电图<em>encephalograph</em></dt><dd>颅骨电极记录脑电活动的墨迹。布什承认"那记录尚不可解"，但拒绝为它划定边界。</dd></dl>
+  </div>
+</section>
+
+<!-- ================= QUIZ ================= -->
+<section id="quiz">
+  <div class="sec-eyebrow">检验一下</div>
+  <h2 class="sec">八题自测</h2>
+  <p class="sec-lead">先猜，再看解析。</p>
+  <div class="quiz" id="quizBox"></div>
+  <div id="score">尚未作答。</div>
+</section>
+
+<footer>
+  <p><b>原文</b>：Vannevar Bush, “As We May Think”, <i>The Atlantic Monthly</i>, July 1945（电子版由 Denys Duchier 于 1994 年 4 月整理）。</p>
+  <p>本页为中文摘要与学习工具。<b>事实</b>与<b>观点</b>徽标标示的是原文内容的性质，<b>预言</b>指布什对未来的推测，<b>编者注</b>为本页添加的背景与后见之明，不属原文。引文均为节译，不能替代原文阅读。</p>
+</footer>
+</main>
+
+<button class="totop" id="totop" aria-label="回到顶部">↑</button>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- 进度条与导航高亮 ---------- */
+  var bar = document.getElementById('progress');
+  var totop = document.getElementById('totop');
+  function onScroll(){
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + '%';
+    totop.classList.toggle('show', window.scrollY > 600);
+    var secs = document.querySelectorAll('main section');
+    var cur = secs[0].id;
+    secs.forEach(function(s){ if(s.getBoundingClientRect().top < 140) cur = s.id; });
+    document.querySelectorAll('#tabs a').forEach(function(a){
+      a.classList.toggle('active', a.getAttribute('href') === '#' + cur);
+    });
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+  totop.addEventListener('click', function(){ window.scrollTo({top:0}); });
+
+  /* ---------- 翻转卡片 ---------- */
+  var flips = Array.prototype.slice.call(document.querySelectorAll('.flip'));
+  flips.forEach(function(f){
+    f.addEventListener('click', function(){
+      f.setAttribute('aria-pressed', f.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+    });
+  });
+  var flipAll = document.getElementById('flipAll');
+  flipAll.addEventListener('click', function(){
+    var open = flipAll.getAttribute('aria-pressed') !== 'true';
+    flipAll.setAttribute('aria-pressed', open ? 'true' : 'false');
+    flipAll.textContent = open ? '全部合上' : '全部翻开';
+    flips.forEach(function(f){ f.setAttribute('aria-pressed', open ? 'true' : 'false'); });
+  });
+
+  /* ---------- 事实/观点/预言 过滤 ---------- */
+  var chips = document.querySelectorAll('.filter .chip[data-f]');
+  chips.forEach(function(c){
+    c.addEventListener('click', function(){
+      chips.forEach(function(o){ o.setAttribute('aria-pressed','false'); });
+      c.setAttribute('aria-pressed','true');
+      var f = c.dataset.f;
+      document.querySelectorAll('ul.points li').forEach(function(li){
+        li.classList.toggle('hide', f !== 'all' && li.dataset.t !== f);
+      });
+      flips.forEach(function(el){
+        el.classList.toggle('hide', f !== 'all' && el.dataset.t !== f);
+      });
+    });
+  });
+
+  /* ---------- Memex 轨迹构建器 ---------- */
+  var ITEMS = [
+    {id:'enc',  label:'百科全书：弓（简略条目）', side:false},
+    {id:'hist', label:'史书：十字军的遭遇战',      side:false},
+    {id:'turk', label:'土耳其短弓的形制',          side:false},
+    {id:'long', label:'英格兰长弓的射程记录',      side:false},
+    {id:'elas', label:'弹性学教科书',              side:true },
+    {id:'const',label:'物理常数表',                side:true },
+    {id:'note', label:'我的手写分析（一页）',      side:false},
+    {id:'inno', label:'评注：民族何以抗拒革新',    side:false}
+  ];
+  var pool = document.getElementById('pool');
+  var trailEl = document.getElementById('trail');
+  var log = document.getElementById('log');
+  var trail = [];
+
+  ITEMS.forEach(function(it){
+    var b = document.createElement('button');
+    b.className = 'item' + (it.side ? ' side' : '');
+    b.type = 'button';
+    b.textContent = it.label;
+    b.setAttribute('aria-pressed','false');
+    b.addEventListener('click', function(){
+      var i = trail.indexOf(it.id);
+      if(i >= 0){ trail.splice(i,1); b.setAttribute('aria-pressed','false'); }
+      else { trail.push(it.id); b.setAttribute('aria-pressed','true'); }
+      render();
+    });
+    b.dataset.id = it.id;
+    pool.appendChild(b);
+  });
+
+  function byId(id){ for(var i=0;i<ITEMS.length;i++){ if(ITEMS[i].id===id) return ITEMS[i]; } return null; }
+
+  function render(){
+    if(!trail.length){
+      trailEl.innerHTML = '<div class="trail-empty">轨迹为空。先选一项作为「轨迹之首」。</div>';
+      log.textContent = '代码簿就绪。';
+      return;
+    }
+    var html = '<div class="link">';
+    trail.forEach(function(id, i){
+      var it = byId(id);
+      if(i) html += '<span class="arrow">——▶</span>';
+      html += '<span class="node' + (it.side ? ' side' : '') + '" data-n="' + id + '">' + it.label + '</span>';
+    });
+    html += '</div>';
+    trailEl.innerHTML = html;
+    var sides = trail.filter(function(id){ return byId(id).side; }).length;
+    log.textContent = '轨迹「' + (document.getElementById('trailName').value || '未命名') + '」：' +
+      trail.length + ' 项接合，其中侧径 ' + sides + ' 项。轨迹不会消退。';
+  }
+
+  function play(step){
+    if(!trail.length){ log.textContent = '轨迹为空——无可回放。'; return; }
+    var nodes = trailEl.querySelectorAll('.node');
+    var i = 0;
+    var delay = step === 1 ? 620 : 160;
+    nodes.forEach(function(n){ n.classList.remove('on'); });
+    (function tick(){
+      if(i >= nodes.length){
+        log.textContent = '拨杆到底。回顾完毕——恰如把这些实物集成了一本新书。';
+        return;
+      }
+      nodes.forEach(function(n){ n.classList.remove('on'); });
+      nodes[i].classList.add('on');
+      log.textContent = '投影中：' + byId(trail[i]).label;
+      i += step;
+      if(i > nodes.length - 1 && i - step < nodes.length - 1) i = nodes.length - 1;
+      setTimeout(tick, delay);
+    })();
+  }
+  document.getElementById('play').addEventListener('click', function(){ play(1); });
+  document.getElementById('play10').addEventListener('click', function(){ play(2); });
+  document.getElementById('trailName').addEventListener('input', render);
+  document.getElementById('reset').addEventListener('click', function(){
+    trail = [];
+    pool.querySelectorAll('.item').forEach(function(b){ b.setAttribute('aria-pressed','false'); });
+    render();
+  });
+  document.getElementById('copyTrail').addEventListener('click', function(){
+    if(!trail.length){ log.textContent = '先建一条轨迹，才能复制给朋友。'; return; }
+    var name = document.getElementById('trailName').value || '未命名';
+    log.textContent = '已把轨迹「' + name + '」整条拍出（' + trail.length +
+      ' 项），交给朋友插进他自己的 memex，接入更一般的轨迹。';
+  });
+  render();
+
+  /* ---------- 预言记分卡 ---------- */
+  var PREDS = [
+    {v:'hit',  t:'任一项资料可随意调出另一项（关联索引）',
+     said:'“把两项资料系在一起的这个过程，才是要紧的事。”',
+     body:'这就是超链接。恩格尔巴特 1962 年引用本文，尼尔森 1965 年造出 hypertext 一词，伯纳斯-李 1989 年做出万维网。布什描述的机制——命名的链接、可分叉的路径、一项属于多条轨迹——几乎逐条兑现。'},
+    {v:'hit',  t:'个人拥有一台存放全部书籍、记录与通信的设备',
+     said:'“memex 是记忆的一种放大而亲密的补充。”',
+     body:'个人电脑、手机、个人知识库（wiki / 笔记软件 / 全文检索）都是它的后裔。连"尽情挥霍地存"这一条也成真了：存储成本的坍塌远超布什的估计。'},
+    {v:'hit',  t:'对着机器说话，它就打字',
+     said:'让 Vocoder 驱动速录机。',
+     body:'语音识别与实时转写已是消费级功能。有趣的是路径不同：不是"参数化语音 + 音位速记"的机械串联，而是统计与神经网络模型。'},
+    {v:'hit',  t:'随身、免手、即拍的记录器',
+     said:'额头上一块比核桃稍大的东西，眼镜上的取景方格。',
+     body:'手机、运动相机、智能眼镜。他连"唯一荒诞之处是没人拍得了那么多照片"都写对了——只是低估了人类的拍摄欲。'},
+    {v:'hit',  t:'干式摄影：拍完立刻能看',
+     said:'“往往，能按下快门后立刻看到照片会很有利。”',
+     body:'宝丽来（1948）、静电复印、再到数字传感器。方向完全正确，化学路线（重氮/氨）被彻底绕开。'},
+    {v:'hit',  t:'机器取指令、自选数据、高速运算并记录结果',
+     said:'“由一张控制卡或控制胶片操纵……胃口极大。”',
+     body:'写于 ENIAC 公开前一年。缺的一块是"存储程序"概念（冯·诺依曼架构，1945 年 6 月），以及二进制电子逻辑。'},
+    {v:'hit',  t:'出现"拓径者"这一新职业',
+     said:'“他们以在共同记录的巨量之中开辟有用的轨迹为乐。”',
+     body:'综述作者、维基编者、书单/课程设计者、策展人；机器版本则是搜索排序与推荐系统。布什附带的那句"遗产是整副脚手架"，正是今日开放科学与可复现研究的诉求。'},
+    {v:'hit',  t:'遗忘的特权',
+     said:'“重新获得把不必即刻在手的万千事物忘掉的特权。”',
+     body:'外部记忆改变了记忆本身的分工。心理学后来把它命名为"谷歌效应"：人更倾向记住"去哪里找"，而非内容本身——这既是布什的许诺，也是他没预见的代价。'},
+
+    {v:'part', t:'复制的边际成本趋于零',
+     said:'缩微版《大英百科》材料费一枚五分镍币，寄出一美分。',
+     body:'结论成立且更加极端（比特复制近乎完全免费），但载体押错了：不是胶片，而是磁介质与半导体。布什的推理链条对，物理假设过时。'},
+    {v:'part', t:'机器执行形式逻辑推理',
+     said:'“把一组前提放进去，摇动曲柄，结论便一条条出来。”',
+     body:'定理证明器、SAT/SMT 求解器、逻辑编程都实现了。但"像在收银机上打出销售额那样敲出日常论证"并未到来——日常推理不是形式逻辑。'},
+    {v:'part', t:'高速选择：每秒数千条，一次命中',
+     said:'光电管 + 缩微胶片 + 分类选择。',
+     body:'速度早已远超（每秒数十亿次）。但布什设想的是光学-机械选择；现代检索靠的是倒排索引、哈希与向量近邻——他的"分类选择"直觉正确，实现路径不同。'},
+    {v:'part', t:'直接读写神经系统',
+     said:'“谁又敢为这样的事情划定边界呢？”',
+     body:'脑机接口已能解码运动意图与部分语音，人工耳蜗把声音直接送进听神经。但"拦截打字员手臂神经里的电流"仍是研究前沿，远未成为记录工具。'},
+
+    {v:'miss', t:'缩微胶片将成为知识的主要载体',
+     said:'一座百万卷图书馆压进一张书桌的一头。',
+     body:'胶片走进了死胡同。原因恰恰是布什自己的判据——经济学：数字介质在可编辑性、可检索性与复制成本上全面胜出。他押注了"看得见的下一步"，而非"看不见的跃迁"。'},
+    {v:'miss', t:'为便于机器记录，人类将改造自己的语言',
+     said:'“机械化也许会逼出这个问题。”',
+     body:'自然语言没有被改造，反而是机器学会了将就人类。人类另建了一套语言给机器：编程语言、标记语言、结构化数据格式。'},
+    {v:'miss', t:'轨迹靠拍照复制、当面赠予朋友',
+     said:'“他启动复制装置，把整条轨迹拍下来，交给朋友。”',
+     body:'方向对，形态错——因为布什没有想到<b>网络</b>。memex 是一件私人的、离线的家具。共享变成了链接与云端，而不是胶片的物理传递。这是全文最大的结构性盲点。'},
+    {v:'miss', t:'重氮染料 + 氨气显影成为主流干式摄影',
+     said:'“这个过程现在很慢，但也许有人会把它加快。”',
+     body:'没人加快它。取而代之的是静电复印（施乐，1938 年发明，1959 年商用）与 CCD/CMOS 传感器。布什点对了目标，猜错了机制。'}
+  ];
+
+  var predList = document.getElementById('predList');
+  var VMAP = {hit:['v-hit','命中'], part:['v-part','部分命中'], miss:['v-miss','未中']};
+  PREDS.forEach(function(p){
+    var d = document.createElement('details');
+    d.className = 'pred';
+    d.dataset.v = p.v;
+    d.innerHTML =
+      '<summary><span class="verdict ' + VMAP[p.v][0] + '">' + VMAP[p.v][1] + '</span>' +
+      '<span class="s-t">' + p.t + '</span><span class="caret">▾</span></summary>' +
+      '<div class="body"><div class="said">' + p.said + '</div>' + p.body + '</div>';
+    predList.appendChild(d);
+  });
+  var vchips = document.querySelectorAll('#preds .scorebar .chip');
+  vchips.forEach(function(c){
+    c.addEventListener('click', function(){
+      vchips.forEach(function(o){ o.setAttribute('aria-pressed','false'); });
+      c.setAttribute('aria-pressed','true');
+      var v = c.dataset.v;
+      predList.querySelectorAll('.pred').forEach(function(p){
+        p.classList.toggle('hide', v !== 'all' && p.dataset.v !== v);
+      });
+    });
+  });
+
+
+  /* ---------- 尾章 · 需求 / 实现 / 证伪 ---------- */
+  var IMPL = [
+    /* ===== A 已实现 ===== */
+    {k:'done', t:'关联索引 → 超链接与万维网',
+     said:'“任一项都可以被随意地、立即而自动地用来调出另一项。”',
+     need:'绕开分类树的三宗罪：一项只能待在一处、必须按规则层层追踪、找到后还得退出体系再从新路径进入。',
+     form:'HTML 的 <b>&lt;a href&gt;</b>；维基的双向链接与反向链接；Roam / Obsidian / Logseq 的双链笔记；学术引文网络与 DOI；知识图谱的三元组。',
+     cost:'布什的轨迹是<b>有序的、被命名的、有作者的</b>。网页的链接是无序、匿名、单向的——我们得到了连接，丢掉了<b>路径</b>。双链笔记这十年的复兴，本质是在把「轨迹」这一层补回来。'},
+
+    {k:'done', t:'个人全记录设备 → 手机、云盘与全文检索',
+     said:'“memex 是记忆的一种放大而亲密的补充。”',
+     need:'把个人记忆外部化，并且存储便宜到<b>可以挥霍</b>——不必先判断某物是否值得保存。',
+     form:'个人电脑与手机；网盘与同步；Spotlight / Everything / grep 一类全文检索；Zotero、DEVONthink、Notion 等个人知识库。',
+     cost:'布什算过：每天存 5000 页要几百年才填满。今天的实情是<b>存得起、找不着</b>——挥霍权兑现了，整理的义务却被转嫁给了个人。'},
+
+    {k:'done', t:'语音成文 → 自动语音识别',
+     said:'让 Vocoder 驱动速录机，就得到一台「对它说话它就打字」的机器。',
+     need:'接入摩擦最低的输入通道。写字与打字都要求人停下思考、腾出双手。',
+     form:'端到端神经语音识别（Whisper 一类）；实时字幕；会议转录；语音助手。',
+     cost:'实现路径与布什的机械串联完全无关：不是「参数化语音 + 音位速记」，而是<b>统计与神经模型直接从波形映射到文字</b>。他把它想成两台旧机器的接线，实际上它需要一门尚未诞生的学科。'},
+
+    {k:'done', t:'免手、即拍的随身记录器 → 手机与可穿戴',
+     said:'额头上一块比核桃稍大的东西；眼镜片顶部的取景方格；快门线顺袖而下。',
+     need:'让「记录」的边际成本低到<b>看到就存</b>，从而使记录不再是一个需要下决心的动作。',
+     form:'智能手机；运动相机；智能眼镜；屏幕录制与生活记录（lifelogging）。',
+     cost:'他自嘲「唯一荒诞之处是没人拍得了那么多照片」——这句自嘲被证明是他全文<b>最错的一句</b>。人类拍得了，而且拍完再也不看。记录的成本降到零之后，<b>回看的成本成了新的瓶颈</b>。'},
+
+    {k:'done', t:'干式摄影 → 静电复印与数字传感器',
+     said:'“往往，能按下快门后立刻看到照片会很有利。”',
+     need:'消灭「记录 → 化学处理 → 才能查看」这条延迟链，让成像与观看合一。',
+     form:'宝丽来（1948）；施乐静电复印（1938 年发明，1959 年 914 型商用）；CCD / CMOS 图像传感器；手机相机。',
+     cost:'目标百分之百命中，机制百分之百落空。布什押注的重氮染料与氨气显影<b>无人去加速它</b>——因为另一条完全不同的物理路线走通了。'},
+
+    {k:'done', t:'程序控制的机器 → 通用计算机',
+     said:'“由一张控制卡或控制胶片操纵，自行选取数据……胃口极大。”',
+     need:'把「沿公认沟槽运行的思维」整体外包，使人只保留两件事：选择数据，选择方法。',
+     form:'存储程序架构（冯·诺依曼，1945 年 6 月，与本文几乎同月）；二进制电子逻辑；今日的一切计算。',
+     cost:'他缺的正是那两块：<b>指令与数据同处一片可写存储</b>，以及<b>二进制</b>。他的想象停在机电与模拟之间——所以他能描述行为，却造不出架构。'},
+
+    {k:'done', t:'高速选择 → 索引结构与向量检索',
+     said:'自动电话交换机：按首位数字层层收窄，不必遍历即可命中。',
+     need:'从「逐条筛查」升级为「不看全部就能命中」。',
+     form:'哈希表与 B 树；倒排索引（搜索引擎的核心）；近似最近邻检索（HNSW 一类），把「相似」也变成可跳转的一步。',
+     cost:'布什的「分类选择」直觉完全正确，只是他以为要靠光电管扫过胶片。真正的飞跃不在<b>器件</b>，而在<b>数据结构</b>——一个他没有的概念范畴。'},
+
+    {k:'done', t:'复制的边际成本趋零 → 比特',
+     said:'缩微版《大英百科》材料费一枚五分镍币，寄到任何地方一美分。',
+     need:'一旦复制近乎免费，稀缺性必然从「拥有副本」转移到「知道该看哪一份」。',
+     form:'数字复制、CDN、开放获取、种子与镜像。',
+     cost:'他的结论比他想的还要极端，也因此更危险：复制免费的世界里，<b>真伪的甄别成本反而暴涨</b>。这是他在意的「选择」问题的另一副面孔。'},
+
+    {k:'done', t:'拓径者 → 综述、维基编者与推荐系统',
+     said:'“一种新的职业：以在共同记录的巨量之中开辟有用的轨迹为乐。”',
+     need:'当记录本身不再稀缺，<b>穿过记录的路径</b>成为可交付的产品。',
+     form:'系统综述与元分析；维基百科编者；Awesome 列表、书单、课程大纲；引文索引（SCI、Google Scholar）；搜索排序与推荐算法。',
+     cost:'布什设想的是<b>署名的、人的</b>拓径者。今天最有影响力的拓径者是<b>匿名的排序函数</b>，它的目标函数不是「有用」，而是留存时长。这一替换他完全没有预见。'},
+
+    /* ===== B 正在实现 ===== */
+    {k:'wip', t:'语义联想 → 嵌入向量与检索增强生成',
+     said:'心智抓住一物，便顺着轨迹之网瞬间跳到由联想推出的下一物。',
+     need:'布什的轨迹必须<b>人手工建立</b>。真正的联想应当由机器<b>提出候选</b>，人只负责认可或否决。',
+     form:'词与文档嵌入；向量数据库；RAG（检索增强生成）；把大语言模型当成"联想引擎"来提出未被人链接过的关联。',
+     cost:'尚未解决的是<b>可溯源</b>与<b>可信</b>：机器提出的联想可能是幻觉。布什要求的是永久、清晰、可回放的轨迹；一条不能被审计的关联，比没有关联更糟。'},
+
+    {k:'wip', t:'脚手架的继承 → 可复现研究',
+     said:'“大师留给后人的遗产，将不只是他对世界记录的增补，还有他借以搭建这一切的整副脚手架。”',
+     need:'知识的流通单位不该是<b>结论</b>，而该是<b>通向结论的路径</b>——数据、代码、失败的尝试、被否决的分支。',
+     form:'Jupyter / 计算笔记本；开放数据与开源代码；预注册与注册报告；Git 的提交历史；开放同行评审。',
+     cost:'进展缓慢的原因是<b>激励</b>，不是技术：学术出版仍以「结论」计价。发表一条侧径、一次证伪、一段废弃的分析，几乎没有回报。'},
+
+    {k:'wip', t:'机器执行推理 → 形式化数学与证明助手',
+     said:'“把一组前提放进去，摇动曲柄，结论便一条条出来。”',
+     need:'把「思维沿着公认沟槽运行」的那一段外包出去，让人专注于选择前提与方法。',
+     form:'定理证明器（Lean、Coq、Isabelle）；SAT / SMT 求解器；Lean 上的形式化数学库；大模型辅助的证明搜索。',
+     cost:'布什低估了差距：<b>日常论证不是形式逻辑</b>。它是概率的、可废止的、依赖背景假设的。他想要的那台"逻辑收银机"，真正的对应物是贝叶斯推断与统计学习，而不是继电器。'},
+
+    {k:'wip', t:'位置化的新符号 → 可机读的数学表示',
+     said:'“必须先有一套新的、大概是位置化的符号体系。”并抱怨数学家的记号"像托普西一样乱长"。',
+     need:'机器要变换数学关系，就必须先能<b>无歧义地读懂</b>它。排版不等于语义。',
+     form:'Lean / Coq 的类型化语法；MathML 与语义标注；知识图谱；结构化数据格式。',
+     cost:'LaTeX 完美地解决了<b>排版</b>，从而<b>推迟</b>了语义化——一个典型的局部最优陷阱。布什的抱怨八十年后依然成立。'},
+
+    {k:'wip', t:'直接读写神经 → 脑机接口',
+     said:'“谁又敢为这样的事情划定边界呢？”——视神经与电视电缆是精确的类比。',
+     need:'绕过感官与肌肉这一<b>带宽瓶颈</b>：思维每秒能产生的信息，远多于手指每秒能敲出的。',
+     form:'人工耳蜗（已成熟，正是他说的「把声音送进聋人的神经通道」）；运动皮层解码光标与假肢；语音皮层解码；侵入式电极阵列与非侵入 EEG / fNIRS。',
+     cost:'现状是<b>读远优于写</b>，且医学用途优先。布什说"那记录尚不可解"——脑电的可解性至今仍是核心难题。他自己给这一段定性为"不是预言，只是提示"，这份克制是对的。'},
+
+    {k:'wip', t:'并置与空间化的工作面 → 多屏与空间计算',
+     said:'“他有几个投影位，可以把一项留在原处，同时调出另一项。”',
+     need:'联想需要<b>同时看见两项</b>。单窗口的界面把关联退化成了前后翻页。',
+     form:'多显示器与平铺窗口；分屏与画布式工具（Miro、tldraw、Muse）；AR / 空间计算里的多面板。',
+     cost:'这是 memex 里最<b>被忽视</b>的设计细节，也是最少被兑现的：主流界面仍以单一焦点为默认。'},
+
+    /* ===== C 已证伪 ===== */
+    {k:'dead', t:'缩微胶片作为知识的主要载体',
+     said:'一座百万卷藏书的图书馆，压进一张书桌的一头。',
+     need:'需求（体积、成本、可分发）真实且已被满足——但由磁介质与半导体满足。',
+     form:'缩微胶片退居利基：<b>千年级冷归档</b>（因为它不需要通电、不依赖特定读取设备）。日常载体是磁盘、闪存、光纤。',
+     cost:'布什败给了自己的判据。他要求"贴着已知外推"，于是把宝押在他<b>看得见</b>的最好介质上。跃迁恰恰发生在他划定的视野之外。'},
+
+    {k:'dead', t:'重氮染料 + 氨气显影',
+     said:'“这个过程现在很慢，但也许有人会把它加快。”',
+     need:'即拍即看。需求成立，机制作废。',
+     form:'没有人去加快它。静电复印与半导体传感器从旁边绕过。',
+     cost:'一条典型的<b>被绕过</b>而非被击败的技术路线。判据：当一个方案的改进空间是线性的，而旁边有一条指数曲线，它就已经死了。'},
+
+    {k:'dead', t:'为便于机器记录，人类改造自己的语言',
+     said:'“机械化也许会逼出这个问题，尤其在科学领域。”',
+     need:'人机之间需要一种双方都能处理的表示。',
+     form:'方向<b>反了</b>：机器学会将就人类（自然语言处理与大模型）。同时，人类为机器<b>另建</b>了一套语言——编程语言、标记语言、结构化数据格式，而没有动自然语言分毫。',
+     cost:'布什担心的副作用（"科学术语对外行会更加不可解"）以另一种形式发生了：不可解的不是术语，而是<b>模型的内部表示</b>。'},
+
+    {k:'dead', t:'轨迹靠拍照复制、当面赠予朋友',
+     said:'“他启动复制装置，把整条轨迹拍下来，交给朋友，插进他自己的 memex。”',
+     need:'路径必须可以流通。需求不但成立，而且是全文最重要的社会性洞见。',
+     form:'网络把「复制并交付」替换成了「引用一个地址」。分享的不是副本，是<b>指针</b>。',
+     cost:'这暴露了全文最大的结构性盲点——<b>没有网络</b>。memex 越完备，这个盲点越刺眼：一台完美的私人记忆机，仍然是一座孤岛。'},
+
+    {k:'dead', t:'代码簿与助记代码',
+     said:'“他敲入书的代码，扉页立刻投影出来。常用代码取助记式。”',
+     need:'快速定位一份已知的资料。',
+     form:'被<b>搜索</b>彻底取代。你不再记住书的编号，你键入你记得的任何一个片段。全文检索之后是语义检索。',
+     cost:'布什想象人去适应机器的寻址方式（背代码）。实际上机器学会了适应人的<b>模糊回忆</b>。这是"人机分工"的天平在八十年里最大的一次移动。'},
+
+    {k:'dead', t:'像在收银机上打出销售额那样敲出论证',
+     said:'“但那台逻辑机器不会长得像收银机——哪怕是流线型的。”',
+     need:'把日常推理机械化，减少人的谬误。',
+     form:'作为<b>通用日常工具</b>被证伪。形式逻辑机器只在数学与硬件验证等封闭领域成立。日常推理需要处理不确定、例外与可撤销的结论。',
+     cost:'讽刺的是：布什说对了那句玩笑（它确实不像收银机），却说错了那台机器的本性。今天最接近"日常论证机"的东西是大语言模型——它<b>不遵守形式逻辑</b>，靠的是统计上的似然。'}
+  ];
+
+  var implList = document.getElementById('implList');
+  var IMAP = {done:['t-done','已实现'], wip:['t-wip','正在实现'], dead:['t-dead','已证伪']};
+  IMPL.forEach(function(x){
+    var d = document.createElement('details');
+    d.className = 'impl';
+    d.dataset.i = x.k;
+    d.innerHTML =
+      '<summary><span class="tag ' + IMAP[x.k][0] + '">' + IMAP[x.k][1] + '</span>' +
+      '<span class="s-t">' + x.t + '</span><span class="caret">▾</span></summary>' +
+      '<div class="body">' +
+        '<div class="row"><div class="lbl">布什说</div><div class="val" style="font-family:var(--serif);color:var(--ink)">' + x.said + '</div></div>' +
+        '<div class="row need"><div class="lbl">底层需求</div><div class="val">' + x.need + '</div></div>' +
+        '<div class="row"><div class="lbl">今天的形态</div><div class="val">' + x.form + '</div></div>' +
+        '<div class="row cost"><div class="lbl">差额与代价</div><div class="val">' + x.cost + '</div></div>' +
+      '</div>';
+    implList.appendChild(d);
+  });
+  var ichips = document.querySelectorAll('#now .scorebar .chip');
+  ichips.forEach(function(c){
+    c.addEventListener('click', function(){
+      ichips.forEach(function(o){ o.setAttribute('aria-pressed','false'); });
+      c.setAttribute('aria-pressed','true');
+      var v = c.dataset.i;
+      implList.querySelectorAll('.impl').forEach(function(el){
+        el.classList.toggle('hide', v !== 'all' && el.dataset.i !== v);
+      });
+    });
+  });
+
+  /* ---------- 自测 ---------- */
+  var QUESTIONS = [
+    {q:'布什认为，我们利用科研记录的困难主要在于：',
+     o:['发表得太多','发表早已超出我们真正利用记录的能力','科学家不愿分享'], a:1,
+     e:'他明确说：问题不是发表过多，而是发表远远超出了当下"真正利用记录"的能力。'},
+    {q:'莱布尼茨的计算机与巴贝奇的分析机为何未能普及？',
+     o:['构想有根本缺陷','当时的经济与可靠性条件不允许','缺少数学理论'], a:1,
+     e:'布什说：造它的人工超过它省下的人工；而且当时"复杂"与"不可靠"是同义词。'},
+    {q:'关于压缩（缩微胶片），布什的关键限定是：',
+     o:['压缩解决了一切','仅有压缩是不够的——还必须能查阅','压缩会损失信息'], a:1,
+     e:'他随即指出："就连现代的大图书馆也不是被查阅的，它只是被少数人零星啃噬。"这句话把全文从介质转向检索。'},
+    {q:'布什如何划分机器与人的分工？',
+     o:['一切思维都可机械化','成熟思考无机械替代；重复性思维可交给机器','机器只能做算术'], a:1,
+     e:'创造性只保留在两处：选择哪些数据、选择哪种方法。此后的操作都是重复性的。'},
+    {q:'他所说的「索引的人为性」指的是：',
+     o:['索引编得不够细','一项只能待在一处，须按规则层层追踪，找到后还得退出体系再入','索引更新太慢'], a:1,
+     e:'与之相对，人脑抓住一物便顺着轨迹之网跳向下一物——它不必"退出"。'},
+    {q:'memex 的「本质特征」是什么？',
+     o:['缩微胶片存储','倾斜的投影屏','关联索引：任一项可随意调出另一项'], a:2,
+     e:'布什原话强调：把两项资料系在一起，这个过程才是要紧的事。屏幕与胶片都只是外壳。'},
+    {q:'轨迹（trail）相较于传统分类树的关键优势是：',
+     o:['更省空间','任一项可同时接入多条轨迹，且轨迹不会消退','检索速度更快'], a:1,
+     e:'"这如同把那些实物集成了一本新书——而且更胜一筹。"侧径、跳跃轨迹都是它的变体。'},
+    {q:'布什为自己的预言划下的界线是：',
+     o:['一切预言都不可信','基于已知外推的预言有分量，建立在未知之上的只是双重的猜测','只预言二十年内的事'], a:1,
+     e:'这既是他准确的原因（贴着现有器械推理），也是他把宝押在缩微胶片、并完全错过网络的原因。'}
+  ];
+  var box = document.getElementById('quizBox');
+  var scoreEl = document.getElementById('score');
+  var answered = 0, correct = 0;
+  QUESTIONS.forEach(function(item, i){
+    var d = document.createElement('div'); d.className = 'q';
+    var stem = document.createElement('div'); stem.className = 'stem';
+    stem.innerHTML = '<b>' + (i+1) + '.</b> ' + item.q;
+    var opts = document.createElement('div'); opts.className = 'opts';
+    var exp = document.createElement('div'); exp.className = 'explain'; exp.innerHTML = item.e;
+    item.o.forEach(function(text, j){
+      var b = document.createElement('button');
+      b.className = 'opt'; b.type = 'button'; b.textContent = text;
+      b.addEventListener('click', function(){
+        var all = opts.querySelectorAll('.opt');
+        all.forEach(function(x){ x.disabled = true; });
+        all[item.a].classList.add('ok');
+        if(j !== item.a) b.classList.add('no'); else correct++;
+        answered++;
+        exp.classList.add('show');
+        scoreEl.textContent = '已作答 ' + answered + ' / ' + QUESTIONS.length + ' · 答对 ' + correct +
+          (answered === QUESTIONS.length ? '　—— 现在回到第 8 节，为这篇文章建一条你自己的轨迹。' : '');
+      });
+      opts.appendChild(b);
+    });
+    d.appendChild(stem); d.appendChild(opts); d.appendChild(exp);
+    box.appendChild(d);
+  });
+})();
+</script>
+</body>
+</html>
