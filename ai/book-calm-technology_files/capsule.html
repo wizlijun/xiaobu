@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《平静技术》交互式核心摘要</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --surface-color: #f8f9fa;
+            --primary-color: #4A90E2;
+            --secondary-color: #50E3C2;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --highlight-fact: #e3f2fd;
+            --highlight-opinion: #fff9c4;
+            --card-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 4rem 2rem 2rem;
+            background: linear-gradient(180deg, var(--surface-color) 0%, var(--bg-color) 100%);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .author {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Golden Quotes */
+        .quotes-container {
+            margin-bottom: 3rem;
+            background: var(--surface-color);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .quote-box {
+            position: relative;
+            padding-left: 20px;
+            border-left: 4px solid var(--primary-color);
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .quote-box:hover {
+            transform: translateX(5px);
+        }
+
+        .quote-text {
+            font-size: 1.15rem;
+            font-style: italic;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .quote-context {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .quote-box:hover .quote-context {
+            display: block;
+        }
+
+        /* Highlights */
+        mark.fact {
+            background-color: var(--highlight-fact);
+            padding: 0 4px;
+            border-radius: 4px;
+            cursor: help;
+            border-bottom: 1px dashed var(--primary-color);
+        }
+
+        mark.opinion {
+            background-color: var(--highlight-opinion);
+            padding: 0 4px;
+            border-radius: 4px;
+            cursor: help;
+            border-bottom: 1px dashed #f39c12;
+        }
+
+        /* Tabs Navigation */
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--surface-color);
+            padding-bottom: 1rem;
+            justify-content: center;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: 2px solid transparent;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 30px;
+            transition: var(--transition);
+        }
+
+        .tab-btn:hover {
+            background: var(--surface-color);
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            background: rgba(74, 144, 226, 0.05);
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Flip Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        /* Flip Card Base */
+        .flip-card {
+            background-color: transparent;
+            width: 100%;
+            height: 220px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: left;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .flip-card.is-flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .flip-card-front {
+            background-color: var(--surface-color);
+            color: var(--text-main);
+        }
+
+        .flip-card-front h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        .flip-card-front .hint {
+            margin-top: auto;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-align: right;
+        }
+
+        .flip-card-back {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            transform: rotateY(180deg);
+            border-top: 4px solid var(--secondary-color);
+        }
+
+        .flip-card-back ul {
+            padding-left: 1.2rem;
+            font-size: 0.95rem;
+        }
+
+        .flip-card-back li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Content Formatting */
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 24px;
+            background: var(--secondary-color);
+            border-radius: 4px;
+        }
+
+        .content-block {
+            margin-bottom: 2rem;
+            background: var(--surface-color);
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+
+        /* Tooltip base styles */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85rem;
+            font-weight: normal;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .legend {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .tabs { flex-direction: column; }
+            .tab-btn { text-align: center; width: 100%; }
+            h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>平静技术 (Calm Technology)</h1>
+        <p class="subtitle">非侵入式设计的原则与模式（低认知负荷交互摘要）</p>
+        <p class="author">作者：Amber Case</p>
+    </header>
+
+    <div class="container">
+        
+        <div class="legend">
+            <span><mark class="fact">蓝色高亮</mark> = 核心事实/术语</span>
+            <span><mark class="opinion">黄色高亮</mark> = 作者观点/洞察</span>
+            <span>💡 提示：点击卡片可翻转查看详细解析</span>
+        </div>
+
+        <section class="quotes-container">
+            <h2 class="section-title" style="margin-bottom: 1.5rem;">核心金句 (Golden Quotes)</h2>
+            <div class="quote-box">
+                <p class="quote-text">“最深远的技术是那些消失的技术，它们交织在日常生活中，直到与生活融为一体。”</p>
+                <p class="quote-context">— Mark Weiser（普适计算之父）。技术的终极形态不是引人注目，而是化作无形的基础设施。</p>
+            </div>
+            <div class="quote-box">
+                <p class="quote-text">“不是我们不擅长使用技术，而是技术对我们太糟糕。”</p>
+                <p class="quote-context">— <mark class="opinion">技术的复杂性不应由用户承担，设计缺陷导致的注意力超载是技术本身的失败。</mark></p>
+            </div>
+            <div class="quote-box">
+                <p class="quote-text">“人的首要任务不应该是计算，而应该是做一个人。”</p>
+                <p class="quote-context">— 机器应该适应人的社会和情感特征，而不是要求人像机器一样按照严格的流程工作。</p>
+            </div>
+            <div class="quote-box">
+                <p class="quote-text">“优秀的设计让人用最少的步骤达成目标，而平静技术让人以最低的心智成本达成目标。”</p>
+                <p class="quote-context">— 步骤少不代表无压力，心智成本（认知负荷）的降低才是平静设计的核心。</p>
+            </div>
+        </section>
+
+        <!-- Navigation Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="openTab(event, 'chap1')">1. 500亿设备时代</button>
+            <button class="tab-btn" onclick="openTab(event, 'chap2')">2. 八大设计原则</button>
+            <button class="tab-btn" onclick="openTab(event, 'chap3')">3. 平静的沟通模式</button>
+            <button class="tab-btn" onclick="openTab(event, 'chap4')">4. 实践评估工具</button>
+            <button class="tab-btn" onclick="openTab(event, 'chap5')">5. 组织实施策略</button>
+        </div>
+
+        <!-- Chapter 1 -->
+        <div id="chap1" class="tab-content active">
+            <h2 class="section-title">为下一个 500 亿台设备进行设计</h2>
+            <div class="content-block">
+                <p>我们正在经历计算范式的巨大变迁。<mark class="fact tooltip">计算的四大浪潮<span class="tooltiptext">大型机、个人电脑、普适计算、分布式计算</span></mark>将我们带入了一个设备远多于人类的时代。当一个人被众多设备包围时，<mark class="opinion">注意力成为最稀缺的资源</mark>。</p>
+                
+                <ul style="margin-top: 1rem; padding-left: 1.5rem;">
+                    <li><strong>硬件的短暂性：</strong> 用户现在比关注设备本身更关注数据和功能。<mark class="fact">技术的首要价值已从硬件转移到数据。</mark></li>
+                    <li><strong>带宽与资源的限制：</strong> 物联网(IoT)会导致网络过载。必须通过<mark class="fact">分布式计算 (Distributed Computing)</mark>和本地网络(Local Networks)来缓解。</li>
+                    <li><strong>边缘案例 (Edge Cases) 的致命性：</strong> 在现实世界中，小概率失效可能带来灾难（如智能锁断电、云端瘫痪导致灯亮着无法关闭）。<mark class="opinion">真正有弹性的技术必须在断网时仍能工作。</mark></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Chapter 2 -->
+        <div id="chap2" class="tab-content">
+            <h2 class="section-title">平静技术的八大原则 (知识翻转卡片)</h2>
+            <div class="cards-grid">
+                
+                <div class="flip-card" onclick="this.classList.toggle('is-flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <h3>原则 1：最小化注意力成本</h3>
+                            <p>Technology should require the smallest possible amount of attention.</p>
+                            <span class="hint">点击翻转 🔄</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <ul>
+                                <li>避免将设备设计成需要全神贯注的“桌面电脑”。</li>
+                                <li>使用<mark class="opinion">次级信息系统</mark>（如电源线上的指示灯，无需打开屏幕即可知晓电量）。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card" onclick="this.classList.toggle('is-flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <h3>原则 2：创造平静感</h3>
+                            <p>Technology should inform and create calm.</p>
+                            <span class="hint">点击翻转 🔄</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <ul>
+                                <li>设备不应大喊“快看我！”，而应传达“任务已完成”或“一切正常”。</li>
+                                <li><mark class="opinion">只有消除不确定性（如外卖即将到达的轻震动），才能带来真正的内心平静。</mark></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card" onclick="this.classList.toggle('is-flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <h3>原则 3：利用边缘注意力</h3>
+                            <p>Technology should make use of the periphery.</p>
+                            <span class="hint">点击翻转 🔄</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <ul>
+                                <li>人类无法同时聚焦多件事，但视觉余光、触觉和听觉可并行处理信息。</li>
+                                <li><mark class="fact">高分辨率（视觉中心）应留给主任务</mark>，低分辨率指示器（周边光、轻音）处理次级任务。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card" onclick="this.classList.toggle('is-flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <h3>原则 4：放大技术与人类的各自优势</h3>
+                            <p>Amplify the best of technology and humanity.</p>
+                            <span class="hint">点击翻转 🔄</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <ul>
+                                <li>机器没有同理心、不懂语境；人类不擅长机械式计算。</li>
+                                <li><mark class="opinion">最好的界面不应让人感觉在连接技术，而是通过技术连接其他人类（如Google的搜索排序）。</mark></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card" onclick="this.classList.toggle('is-flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <h3>原则 5：沟通无需开口</h3>
+                            <p>Technology can communicate, but doesn't need to speak.</p>
+                            <span class="hint">点击翻转 🔄</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <ul>
+                                <li><mark class="fact">语音界面 (Voice Interfaces) 占用全部认知带宽</mark>，在嘈杂环境中容易失败。</li>
+                                <li>尽可能用环境光、特定嗡嗡声或触觉反馈替代拟人化的语音播报。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card" onclick="this.classList.toggle('is-flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <h3>原则 6：失败时也能运作</h3>
+                            <p>Technology should work even when it fails.</p>
+                            <span class="hint">点击翻转 🔄</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <ul>
+                                <li><mark class="opinion">优雅降级设计：自动扶梯坏了，它就变成了楼梯。</mark></li>
+                                <li>智能灯泡断网后，物理开关仍应能控制其开关。提供冗余和备份模式。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card" onclick="this.classList.toggle('is-flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <h3>原则 7：最少的技术解决问题</h3>
+                            <p>The right amount of tech is the minimum needed.</p>
+                            <span class="hint">点击翻转 🔄</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <ul>
+                                <li>更多的功能意味着更多的潜在故障点。</li>
+                                <li><mark class="fact">良好的设计就是做减法。</mark>不要为了增加一个新应用而让用户去适应一套全新系统，尽量复用现有交互（如短信控制）。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card" onclick="this.classList.toggle('is-flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <h3>原则 8：尊重社会规范</h3>
+                            <p>Technology should respect social norms.</p>
+                            <span class="hint">点击翻转 🔄</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <ul>
+                                <li>技术的“代谢”需要时间。Google Glass 失败在于无录像指示灯，引发隐私恐慌。</li>
+                                <li><mark class="opinion">技术必须以不引发恐惧、符合人类社会交往准则的方式逐步推向市场。</mark></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Chapter 3 -->
+        <div id="chap3" class="tab-content">
+            <h2 class="section-title">平静的沟通模式 (Communication Patterns)</h2>
+            <div class="content-block">
+                <p>将信息压缩到周边感官是平静设计的核心。不同层级的信息应采用不同的通信模式：</p>
+            </div>
+            
+            <div class="cards-grid">
+                <div class="flip-card" onclick="this.classList.toggle('is-flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <h3>视觉指示灯</h3>
+                            <p>Visual Status Indicators</p>
+                            <span class="hint">点击翻转 🔄</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <ul>
+                                <li><mark class="fact">最低分辨率的信息传递</mark>，传达常态信息（开/关，绿/黄/红）。</li>
+                                <li>例如：Macbook 磁吸充电线的绿/橙灯；变色水龙头（防烫伤）；Slack的未读小蓝点。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card" onclick="this.classList.toggle('is-flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <h3>提示音与高呼</h3>
+                            <p>Status Tones & Shouts</p>
+                            <span class="hint">点击翻转 🔄</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <ul>
+                                <li><strong>提示音 (Tones)：</strong>短促愉悦，如Roomba扫地机的完成音。</li>
+                                <li><strong>高呼 (Shouts)：</strong><mark class="fact">强制打断当前任务</mark>，仅限危及生命的警报（火灾报警器、救护车警笛）。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card" onclick="this.classList.toggle('is-flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <h3>触觉警报</h3>
+                            <p>Haptic Alerts</p>
+                            <span class="hint">点击翻转 🔄</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <ul>
+                                <li>通过身体感知，<mark class="opinion">不惊扰他人，非常适合私人通知。</mark></li>
+                                <li>例如：LUMOBack 姿势矫正带；Apple Watch 的导航敲击指引（免看屏幕即可转向）。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card" onclick="this.classList.toggle('is-flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <h3>环境感知</h3>
+                            <p>Ambient Awareness</p>
+                            <span class="hint">点击翻转 🔄</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <ul>
+                                <li>默认开启的信息流，属于“退出(opt-out)”机制，而非“加入(opt-in)”。</li>
+                                <li><mark class="fact">Live Wire 艺术装置：</mark>根据网络流量旋转的物理绳索，利用环境声光展现无形的网络状态。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card" onclick="this.classList.toggle('is-flipped')">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <h3>劝导式技术</h3>
+                            <p>Persuasive Technology</p>
+                            <span class="hint">点击翻转 🔄</span>
+                        </div>
+                        <div class="flip-card-back">
+                            <ul>
+                                <li>将不可见的行为后果可视化，引导人类积极改变。</li>
+                                <li>例如：OPOWER将你的电费单与邻居对比（带有笑脸）；发光的药瓶盖提醒吃药。</li>
+                                <li><mark class="opinion">阻力越小，用户能获得的洞察越大。</mark></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chapter 4 -->
+        <div id="chap4" class="tab-content">
+            <h2 class="section-title">平静技术评估工具 (Evaluation Tool)</h2>
+            <div class="content-block">
+                <p>在设计或改良交互时，作者提供了一个三维视角的评估矩阵，帮助识别引发“不平静”的冗余设计：</p>
+                
+                <table style="width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.95rem;">
+                    <tr style="background-color: var(--primary-color); color: white;">
+                        <th style="padding: 10px; border: 1px solid #ddd;">维度</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">情境 (Context)</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">警报方式 (Alert Style)</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">边缘案例 (Edge Cases)</th>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #ddd; font-weight: 600;">用户 (User)</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">谁在使用？有限制吗？</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">是否抢占了全部注意力？</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">有视力/听力障碍的人怎么用？</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #ddd; font-weight: 600;">环境 (Environment)</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">吵闹还是安静？公共还是私人？</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">环境是否会阻挡警报传递？</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">极端环境（如停电）如何处理？</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #ddd; font-weight: 600;">信息 (Information)</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">使用前必须知道什么？</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">警报强度与信息重要性匹配吗？</td>
+                        <td style="padding: 10px; border: 1px solid #ddd;">数据错误或缺失时，是否恢复模拟状态？</td>
+                    </tr>
+                </table>
+
+                <div style="margin-top: 1.5rem;">
+                    <h4>🧠 经典练习：重新设计闹钟</h4>
+                    <p style="font-size: 0.95rem; color: var(--text-muted);">
+                        <mark class="opinion">传统闹钟是机械的“定时状态高呼”</mark>，极度制造焦虑。平静设计的改良可能包括：结合天气数据的光线唤醒、枕头内的私密触觉震动（不吵醒伴侣）、根据当日日程自动调整强度的智能唤醒。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chapter 5 -->
+        <div id="chap5" class="tab-content">
+            <h2 class="section-title">在组织中推行平静技术</h2>
+            <div class="content-block">
+                <ul style="list-style-type: none; padding-left: 0;">
+                    <li style="margin-bottom: 1rem;">
+                        <strong>1. 遵循五人团队法则 (Rule of Five)</strong><br>
+                        <mark class="fact">超过五人的团队必然面临巨大的沟通损耗。</mark> 保持精益团队能更快做出具有创新性和“平静”属性的产品，降低管理者为了“存在感”而堆砌无用功能的风险。
+                    </li>
+                    <li style="margin-bottom: 1rem;">
+                        <strong>2. 隐私源于设计 (Privacy by Design)</strong><br>
+                        安全泄露是必然（"not if, but when"）。在用户交互触点<mark class="fact">提供清晰的开关、使用通俗易懂的隐私政策说明</mark>，并将控制权交还给用户。
+                    </li>
+                    <li style="margin-bottom: 1rem;">
+                        <strong>3. 应对“功能堆砌”的诅咒</strong><br>
+                        当高管要求保留所有冗余的遗留功能时：用数据说话，或者<mark class="opinion">推出一个"精简版(Light)"来过渡</mark>。要知道，好产品都是从小规模的清晰用例成长起来的，切忌一次性重构整个系统。
+                    </li>
+                    <li style="margin-bottom: 1rem;">
+                        <strong>4. 缓慢且从容的发布 (Calm Product Launch)</strong><br>
+                        <mark class="opinion">技术可能准备好了，但人类还没准备好。</mark> 不要极度保密地憋大招（如微软早期 Surface 桌面），应该内部先充分狗粮测试（Dogfooding），逐步向市场引入新概念。
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Tab switching logic
+        function openTab(evt, tabId) {
+            var i, tabcontent, tabbtns;
+            
+            // Hide all tab contents
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].className = tabcontent[i].className.replace(" active", "");
+            }
+            
+            // Remove active class from all buttons
+            tabbtns = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tabbtns.length; i++) {
+                tabbtns[i].className = tabbtns[i].className.replace(" active", "");
+            }
+            
+            // Show current tab and add active class to button
+            document.getElementById(tabId).className += " active";
+            evt.currentTarget.className += " active";
+        }
+    </script>
+</body>
+</html>
